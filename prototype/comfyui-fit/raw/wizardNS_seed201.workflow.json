@@ -1,0 +1,86 @@
+{
+ "4": {
+  "class_type": "CheckpointLoaderSimple",
+  "inputs": {
+   "ckpt_name": "flux1-schnell-fp8.safetensors"
+  }
+ },
+ "6": {
+  "class_type": "CLIPTextEncode",
+  "inputs": {
+   "clip": [
+    "4",
+    1
+   ],
+   "text": "chibi fantasy wizard game character, storybook night-garden guild style, bold dark plum outline contours, mint green and berry-pink and cream color palette, long pointed wizard hat and flowing robe with leaf and berry motifs, holding a slender wand with a glowing petal tip, one hand raised casting a spell, big head small body cute proportions, full body, side profile facing right, clean readable silhouette, soft flat cel shading, centered, flat solid cerulean blue background, no cast shadow, no drop shadow, character isolated on a perfectly flat uniform background, no ground plane, no floor, character reference sheet, no text"
+  }
+ },
+ "7": {
+  "class_type": "CLIPTextEncode",
+  "inputs": {
+   "clip": [
+    "4",
+    1
+   ],
+   "text": "photo, realistic, 3d render, blurry, extra limbs, extra arms, text, watermark, signature, gun, firearm, modern clothing, cluttered background, gradient background, multiple characters"
+  }
+ },
+ "5": {
+  "class_type": "EmptySD3LatentImage",
+  "inputs": {
+   "width": 512,
+   "height": 768,
+   "batch_size": 1
+  }
+ },
+ "3": {
+  "class_type": "KSampler",
+  "inputs": {
+   "model": [
+    "4",
+    0
+   ],
+   "positive": [
+    "6",
+    0
+   ],
+   "negative": [
+    "7",
+    0
+   ],
+   "latent_image": [
+    "5",
+    0
+   ],
+   "seed": 201,
+   "steps": 4,
+   "cfg": 1.0,
+   "sampler_name": "euler",
+   "scheduler": "simple",
+   "denoise": 1.0
+  }
+ },
+ "8": {
+  "class_type": "VAEDecode",
+  "inputs": {
+   "samples": [
+    "3",
+    0
+   ],
+   "vae": [
+    "4",
+    2
+   ]
+  }
+ },
+ "9": {
+  "class_type": "SaveImage",
+  "inputs": {
+   "images": [
+    "8",
+    0
+   ],
+   "filename_prefix": "c15_201"
+  }
+ }
+}

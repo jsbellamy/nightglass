@@ -1,0 +1,28 @@
+{
+  "name": "moonberry-16",
+  "version": 1,
+  "derived_from": [
+    "canonical/knight-32x48.png (seed 103)",
+    "canonical/wizard-32x48.png (seed 201)"
+  ],
+  "method": "median-cut depth 4 over opaque pixels of both canonical frames, hand-named",
+  "note": "Approved runtime palette for Party Member frames. Quantization is nearest-in-RGB with NO dithering, so this list is the complete set of colours a validated runtime frame may contain.",
+  "colors": [
+    { "name": "contour-plum-deepest", "hex": "#3a0614", "rgb": [58, 6, 20] },
+    { "name": "contour-plum-deep", "hex": "#4c0b24", "rgb": [76, 11, 36] },
+    { "name": "contour-plum", "hex": "#4f0417", "rgb": [79, 4, 23] },
+    { "name": "berry-shadow", "hex": "#701d32", "rgb": [112, 29, 50] },
+    { "name": "twilight-slate", "hex": "#4a4459", "rgb": [74, 68, 89] },
+    { "name": "berry-mid", "hex": "#853256", "rgb": [133, 50, 86] },
+    { "name": "berry", "hex": "#a6365a", "rgb": [166, 54, 90] },
+    { "name": "berry-bright", "hex": "#e8496f", "rgb": [232, 73, 111] },
+    { "name": "mint-shadow", "hex": "#62a58c", "rgb": [98, 165, 140] },
+    { "name": "mint", "hex": "#71ae92", "rgb": [113, 174, 146] },
+    { "name": "sage", "hex": "#95a187", "rgb": [149, 161, 135] },
+    { "name": "mint-light", "hex": "#b1d4a9", "rgb": [177, 212, 169] },
+    { "name": "mint-pale", "hex": "#c0d0af", "rgb": [192, 208, 175] },
+    { "name": "skin-warm", "hex": "#cf8e76", "rgb": [207, 142, 118] },
+    { "name": "cream-gold", "hex": "#ddca96", "rgb": [221, 202, 150] },
+    { "name": "cream", "hex": "#e9e2bd", "rgb": [233, 226, 189] }
+  ]
+}
