@@ -1,0 +1,110 @@
+{
+ "4": {
+  "class_type": "CheckpointLoaderSimple",
+  "inputs": {
+   "ckpt_name": "flux1-schnell-fp8.safetensors"
+  }
+ },
+ "10": {
+  "class_type": "LoadImage",
+  "inputs": {
+   "image": "knight_seed103.png"
+  }
+ },
+ "11": {
+  "class_type": "ImageScale",
+  "inputs": {
+   "image": [
+    "10",
+    0
+   ],
+   "upscale_method": "lanczos",
+   "width": 512,
+   "height": 768,
+   "crop": "center"
+  }
+ },
+ "12": {
+  "class_type": "VAEEncode",
+  "inputs": {
+   "pixels": [
+    "11",
+    0
+   ],
+   "vae": [
+    "4",
+    2
+   ]
+  }
+ },
+ "6": {
+  "class_type": "CLIPTextEncode",
+  "inputs": {
+   "clip": [
+    "4",
+    1
+   ],
+   "text": "chibi fantasy knight game character, storybook night-garden guild style, bold dark plum outline contours, mint green and berry-pink and cream color palette, plump rounded armor with leaf and stitched-fabric motifs, holding a short sword and a round shield, big head small body cute proportions, full body, side profile facing right, clean readable silhouette, soft flat cel shading, centered, flat solid cerulean blue background, no text, sword swung down and forward at full extension in front of the body, front foot planted, body leaning forward"
+  }
+ },
+ "7": {
+  "class_type": "CLIPTextEncode",
+  "inputs": {
+   "clip": [
+    "4",
+    1
+   ],
+   "text": "photo, realistic, 3d render, blurry, extra limbs, extra arms, text, watermark, signature, gun, firearm, modern clothing, cluttered background, gradient background, multiple characters, motion blur, speed lines, glowing projectile, magic bolt, energy trail, spark trail, impact flash, explosion, aura, glow effect, particles, sparkles, light beam, smoke"
+  }
+ },
+ "3": {
+  "class_type": "KSampler",
+  "inputs": {
+   "model": [
+    "4",
+    0
+   ],
+   "positive": [
+    "6",
+    0
+   ],
+   "negative": [
+    "7",
+    0
+   ],
+   "latent_image": [
+    "12",
+    0
+   ],
+   "seed": 103,
+   "steps": 8,
+   "cfg": 1.0,
+   "sampler_name": "euler",
+   "scheduler": "simple",
+   "denoise": 0.85
+  }
+ },
+ "8": {
+  "class_type": "VAEDecode",
+  "inputs": {
+   "samples": [
+    "3",
+    0
+   ],
+   "vae": [
+    "4",
+    2
+   ]
+  }
+ },
+ "9": {
+  "class_type": "SaveImage",
+  "inputs": {
+   "images": [
+    "8",
+    0
+   ],
+   "filename_prefix": "c19a"
+  }
+ }
+}
