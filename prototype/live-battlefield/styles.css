@@ -1,0 +1,117 @@
+:root {
+  color-scheme: dark;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --ink: #fff9e9;
+  --muted: #b8b4a8;
+  --gold: #ffd56b;
+  --line: rgba(255,255,255,.14);
+  --glass: rgba(17,19,27,.88);
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 620px; min-height: 100vh; overflow: auto; color: var(--ink); background: radial-gradient(circle at 20% 0,#2b3152,transparent 34rem),#090a0f; }
+button { font: inherit; }
+
+.prototype-page { min-height: 100vh; display: grid; place-items: center; padding: 60px 30px 104px; }
+.window { position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,.2); border-radius: 12px; background: var(--glass); box-shadow: 0 18px 42px rgba(0,0,0,.56); transition: width .2s ease,height .2s ease; }
+.window::after { content:"PROTOTYPE"; position:absolute; right:7px; top:5px; z-index:30; color:rgba(255,255,255,.34); font-size:6px; letter-spacing:.16em; pointer-events:none; }
+
+.variant-a.window { width: 480px; height: 112px; }
+.variant-b.window { width: 320px; height: 220px; }
+.variant-c.window { width: 384px; height: 160px; }
+
+.shell { height:100%; display:flex; flex-direction:column; }
+.topline { position:relative; z-index:15; height:24px; flex:0 0 24px; display:flex; align-items:center; gap:5px; padding:3px 6px; border-bottom:1px solid var(--line); background:rgba(15,17,24,.9); }
+.brand { font-size:8px; font-weight:900; letter-spacing:.08em; text-transform:uppercase; }
+.stage { font-size:7px; color:var(--muted); }
+.spacer { flex:1; }
+.tool { height:17px; min-width:18px; padding:0 5px; border:1px solid rgba(255,255,255,.13); border-radius:5px; color:var(--ink); background:#292d3d; cursor:pointer; font-size:7px; }
+.tool.active { color:#15151c; background:var(--gold); }
+.tool:hover { background:#3a4055; }
+
+.battlefield { position:relative; flex:1; min-height:0; overflow:hidden; isolation:isolate; background:linear-gradient(#91d5ea 0 42%,#d7edcf 42% 49%,#71a061 49% 55%,#3f613b 55%); }
+.battlefield::before { content:""; position:absolute; inset:24% 0 43%; z-index:-1; opacity:.45; background:radial-gradient(ellipse at 12% 100%,#4b7850 0 18%,transparent 19%),radial-gradient(ellipse at 42% 100%,#4b7850 0 23%,transparent 24%),radial-gradient(ellipse at 78% 100%,#4b7850 0 21%,transparent 22%); }
+.battlefield::after { content:""; position:absolute; inset:55% 0 0; z-index:-1; opacity:.24; background:repeating-linear-gradient(165deg,transparent 0 16px,rgba(255,255,255,.18) 17px 18px); }
+
+.lane { position:absolute; top:4px; z-index:11; padding:2px 4px; border-radius:4px; color:#f2faee; background:rgba(16,40,26,.58); font-size:6px; letter-spacing:.05em; }
+.lane.party { left:5px; }
+.lane.foes { right:5px; }
+
+.actor { position:absolute; left:var(--x); bottom:10px; z-index:6; width:32px; height:48px; transform:translateX(-50%); image-rendering:pixelated; animation:breathe 1.25s steps(2,end) infinite alternate; }
+.actor.enemy { width:28px; height:40px; bottom:10px; animation-delay:-.5s; }
+.actor .shadow { position:absolute; left:50%; bottom:0; width:26px; height:6px; transform:translateX(-50%); border-radius:50%; background:rgba(12,31,20,.35); }
+.actor .body { position:absolute; left:50%; bottom:4px; width:23px; height:28px; transform:translateX(-50%); border:2px solid #31303a; border-radius:9px 9px 6px 6px; background:var(--actor); box-shadow:inset 0 -7px rgba(0,0,0,.13); }
+.actor .head { position:absolute; left:50%; top:1px; width:27px; height:23px; transform:translateX(-50%); border:2px solid #31303a; border-radius:48%; background:#ffd5aa; }
+.actor .head::before { content:""; position:absolute; left:-2px; right:-2px; top:-3px; height:11px; border-radius:9px 9px 3px 3px; background:var(--hair,#4f382e); }
+.actor .head::after { content:"··"; position:absolute; left:6px; top:7px; color:#31241e; font-size:8px; font-weight:900; letter-spacing:4px; }
+.enemy .head { width:24px; height:21px; background:var(--actor); }
+.enemy .head::before { height:7px; background:rgba(0,0,0,.13); }
+.enemy .head::after { content:"××"; left:5px; letter-spacing:2px; color:#31243a; }
+.enemy .body { width:20px; height:24px; }
+.weapon { position:absolute; right:-2px; top:20px; width:20px; height:3px; transform-origin:left; border-radius:2px; background:#eef5f4; animation:swing 2.5s steps(3,end) infinite; }
+.priest .weapon { width:3px; height:22px; right:1px; top:17px; background:#e6cc7e; box-shadow:0 -4px 0 2px #fff3a9; }
+.wizard .weapon { width:3px; height:22px; right:1px; top:17px; background:#6c4a34; box-shadow:0 -4px 0 2px #94f2ff; }
+.name { position:absolute; left:50%; bottom:-7px; transform:translateX(-50%); color:white; font-size:5px; font-weight:800; text-shadow:0 1px 2px #000; white-space:nowrap; }
+.hp { position:absolute; left:4px; right:4px; bottom:-3px; height:2px; border-radius:2px; background:rgba(8,20,11,.7); overflow:hidden; }
+.hp i { display:block; width:var(--hp); height:100%; background:#76dd81; }
+.enemy .hp i { background:#ff6e78; }
+
+.effect { position:absolute; z-index:10; pointer-events:none; }
+.bolt { left:31%; bottom:44%; width:7px; height:7px; border-radius:50%; background:#fff2a0; box-shadow:0 0 0 3px #ff9837,0 0 8px 4px rgba(255,91,31,.7); animation:bolt 3s steps(8,end) infinite; }
+.arrow { left:28%; bottom:57%; width:22px; height:2px; background:#fff1c8; animation:arrow 2.2s steps(8,end) infinite .6s; }
+.impact { right:23%; bottom:31%; width:18px; height:18px; background:conic-gradient(transparent 0 10%,#fff2a0 11% 22%,transparent 23% 47%,#ff9652 48% 59%,transparent 60% 77%,#fff2a0 78% 86%,transparent 87%); animation:impact 2.8s steps(4,end) infinite; }
+.heal { left:16%; bottom:8%; width:48px; height:12px; border:2px solid #fff3a2; border-radius:50%; box-shadow:0 0 8px #fff4ac; animation:heal 3.7s steps(5,end) infinite 1.2s; }
+
+.battle-meta { position:absolute; left:5px; right:5px; bottom:3px; z-index:12; display:flex; align-items:center; justify-content:space-between; color:white; font-size:5px; text-shadow:0 1px 2px #000; }
+.boss { width:30%; height:3px; border-radius:2px; overflow:hidden; background:rgba(11,25,16,.6); }
+.boss i { display:block; width:63%; height:100%; background:#ff6e78; }
+
+.management { position:absolute; z-index:20; background:rgba(17,19,27,.96); border:1px solid rgba(255,255,255,.12); }
+.management[hidden] { display:none; }
+.panel-title { color:var(--muted); font-size:6px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
+.member { display:grid; grid-template-columns:18px 1fr auto; gap:4px; align-items:center; min-height:25px; padding:3px; border-radius:5px; background:#292d3d; }
+.face { display:grid; place-items:center; width:18px; height:18px; border-radius:5px; color:#15151d; background:var(--actor); font-size:7px; font-weight:900; }
+.member strong { display:block; font-size:6px; }
+.member span { display:block; color:var(--muted); font-size:5px; }
+.member em { color:var(--gold); font-size:5px; font-style:normal; }
+.gems { display:flex; gap:3px; }
+.gem { display:grid; place-items:center; width:19px; height:19px; border-radius:5px; background:#394058; font-size:8px; }
+
+/* A borrows the upper half of the same 480×112 strip; combat remains live in a 44px band. */
+.variant-a .management { left:0; right:0; top:24px; height:44px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:4px; padding:4px; border-width:0 0 1px; }
+.variant-a .management[hidden] { display:none; }
+.variant-a .management ~ .battlefield { transition:clip-path .15s; }
+.variant-a.management-open .battlefield { clip-path:inset(44px 0 0); }
+.variant-a .member { min-height:0; height:35px; }
+
+/* B retains SideScape's 320×220 outer budget. A compact drawer overlays the left half. */
+.variant-b .topline { height:26px; flex-basis:26px; }
+.variant-b .actor { width:30px; height:45px; }
+.variant-b .actor.enemy { width:25px; height:37px; }
+.variant-b .management { left:6px; top:32px; bottom:8px; width:148px; display:flex; flex-direction:column; gap:4px; padding:5px; border-radius:7px; box-shadow:5px 0 18px rgba(0,0,0,.35); }
+.variant-b .management[hidden] { display:none; }
+.variant-b .gems { margin-top:2px; }
+
+/* C uses a glass tile: 384×160 forever; a 72px dashboard overlays the top, leaving battle visible below. */
+.variant-c .management { left:6px; right:6px; top:30px; height:72px; display:grid; grid-template-columns:1.3fr 1fr; gap:5px; padding:5px; border-radius:7px; box-shadow:0 8px 18px rgba(0,0,0,.3); }
+.variant-c .management[hidden] { display:none; }
+.variant-c .members { display:grid; grid-template-columns:1fr 1fr 1fr; gap:3px; }
+.variant-c .member { display:flex; min-height:0; height:28px; }
+.variant-c .member > span:nth-child(2),.variant-c .member em { display:none; }
+
+.ruler { position:fixed; left:50%; top:20px; transform:translateX(-50%); display:flex; gap:5px; z-index:50; color:#ddd; font:9px/1 ui-monospace,SFMono-Regular,Menlo,monospace; }
+.ruler span { padding:5px 7px; border:1px solid var(--line); border-radius:5px; background:rgba(8,10,15,.86); }
+.switcher { position:fixed; left:50%; bottom:22px; z-index:100; transform:translateX(-50%); display:grid; grid-template-columns:34px minmax(235px,auto) 34px; align-items:center; padding:4px; border:1px solid rgba(255,255,255,.2); border-radius:999px; background:rgba(9,10,15,.95); box-shadow:0 10px 30px rgba(0,0,0,.48); }
+.switcher button { width:30px; height:30px; border:0; border-radius:50%; color:white; background:#292d3d; cursor:pointer; }
+.switcher-copy { padding:0 11px; text-align:center; }
+.switcher-copy strong { display:block; font-size:9px; }
+.switcher-copy span { display:block; margin-top:2px; color:var(--muted); font-size:7px; }
+.paused *, .paused *::before,.paused *::after { animation-play-state:paused!important; }
+
+@keyframes breathe { from{margin-bottom:0} to{margin-bottom:2px} }
+@keyframes swing { 0%,55%,100%{transform:rotate(20deg)} 62%{transform:rotate(-48deg)} 70%{transform:rotate(20deg)} }
+@keyframes bolt { 0%,35%{opacity:0;transform:translate(0,0)} 40%{opacity:1} 70%{opacity:1;transform:translate(180px,-3px)} 74%,100%{opacity:0;transform:translate(190px,-3px)} }
+@keyframes arrow { 0%,42%{opacity:0;transform:translate(0,0)} 46%{opacity:1} 70%{opacity:1;transform:translate(210px,-7px)} 74%,100%{opacity:0;transform:translate(220px,-7px)} }
+@keyframes impact { 0%,60%{opacity:0;transform:scale(.2)} 65%{opacity:1} 74%,100%{opacity:0;transform:scale(1.7)} }
+@keyframes heal { 0%,40%{opacity:0;transform:scale(.3)} 45%{opacity:1} 68%,100%{opacity:0;transform:scale(1.4) translateY(-8px)} }
+

@@ -1,0 +1,377 @@
+/* PROTOTYPE — throwaway styling for the management fan-out experiment. */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --glass: rgba(18, 22, 38, 0.78);
+  --glass-border: rgba(150, 170, 255, 0.35);
+  --ink: #e8ecff;
+  --ink-dim: #9aa4c8;
+  --accent: #8fb7ff;
+  --moss: #7fd7a8;
+  --berry: #d78fd0;
+  font-size: 14px;
+}
+
+body {
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+  color: var(--ink);
+  overflow: hidden;
+}
+
+/* ---- simulated desktop ---- */
+
+#app {
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(1200px 500px at 70% -10%, #2f3f68 0%, transparent 60%),
+    radial-gradient(900px 600px at 10% 110%, #23414a 0%, transparent 55%),
+    linear-gradient(160deg, #171c2e 0%, #1e2742 55%, #182236 100%);
+}
+
+.desktop-icon {
+  position: absolute;
+  width: 68px;
+  text-align: center;
+  color: rgba(230, 236, 255, 0.55);
+  font-size: 11px;
+  user-select: none;
+}
+
+.desktop-icon .glyph {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto 4px;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+/* ---- Battle Tile ---- */
+
+.battle-tile {
+  position: absolute;
+  width: 480px;
+  height: 112px;
+  border-radius: 10px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 12px 34px rgba(4, 8, 20, 0.55);
+  backdrop-filter: blur(6px);
+  overflow: visible;
+  z-index: 40;
+}
+
+.status-line {
+  height: 24px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 8px;
+  border-bottom: 1px solid rgba(150, 170, 255, 0.18);
+  font-size: 11px;
+}
+
+.status-line .stage {
+  color: var(--ink-dim);
+  margin-right: auto;
+  white-space: nowrap;
+}
+
+.mgmt-btn {
+  height: 18px;
+  padding: 0 7px;
+  border-radius: 5px;
+  border: 1px solid rgba(150, 170, 255, 0.3);
+  background: rgba(90, 110, 190, 0.22);
+  color: var(--ink);
+  font-size: 10.5px;
+  cursor: pointer;
+}
+
+.mgmt-btn:hover {
+  background: rgba(120, 145, 230, 0.35);
+}
+
+.mgmt-btn.active {
+  background: var(--accent);
+  color: #101528;
+  border-color: var(--accent);
+}
+
+.battlefield {
+  position: relative;
+  height: 86px;
+  overflow: hidden;
+}
+
+.actor {
+  position: absolute;
+  bottom: 8px;
+  image-rendering: pixelated;
+  animation: bob 1.4s ease-in-out infinite;
+}
+
+.actor.pm {
+  width: 32px;
+  height: 48px;
+}
+
+.actor.foe {
+  width: 28px;
+  height: 40px;
+  animation-duration: 1.1s;
+}
+
+.actor .body {
+  position: absolute;
+  inset: 0;
+  border-radius: 6px 6px 3px 3px;
+}
+
+.actor .head {
+  position: absolute;
+  top: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 55%;
+  height: 34%;
+  border-radius: 50%;
+  background: #f4d7b8;
+}
+
+.pm-knight .body { background: #6f86c9; }
+.pm-wizard .body { background: #9b6fc9; }
+.pm-priest .body { background: #e3d9a4; }
+.foe .body { background: #5f7a67; }
+.foe .head { background: #b9d7a8; }
+
+.projectile {
+  position: absolute;
+  bottom: 40px;
+  width: 10px;
+  height: 4px;
+  border-radius: 3px;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+  animation: fly 1.6s linear infinite;
+}
+
+.impact {
+  position: absolute;
+  bottom: 30px;
+  right: 96px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid var(--berry);
+  opacity: 0;
+  animation: pop 1.6s linear infinite;
+}
+
+@keyframes bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+@keyframes fly {
+  0% { left: 96px; opacity: 0; }
+  10% { opacity: 1; }
+  78% { opacity: 1; }
+  82% { left: 356px; opacity: 0; }
+  100% { left: 356px; opacity: 0; }
+}
+
+@keyframes pop {
+  0%, 78% { opacity: 0; transform: scale(0.4); }
+  84% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.5); }
+}
+
+/* ---- management cards (shared) ---- */
+
+.mgmt-card {
+  position: absolute;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  box-shadow: 0 10px 28px rgba(4, 8, 20, 0.5);
+  backdrop-filter: blur(6px);
+  display: flex;
+  flex-direction: column;
+  z-index: 30;
+  overflow: hidden;
+}
+
+.mgmt-card header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(150, 170, 255, 0.18);
+}
+
+.mgmt-card header .dims {
+  margin-left: auto;
+  font-weight: 400;
+  font-size: 10px;
+  color: var(--ink-dim);
+}
+
+.mgmt-card header .close {
+  border: none;
+  background: none;
+  color: var(--ink-dim);
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+}
+
+.mgmt-card header .close:hover { color: var(--ink); }
+
+.card-body {
+  padding: 8px;
+  font-size: 11.5px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.card-body h4 {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-dim);
+  margin: 8px 0 4px;
+}
+
+.card-body h4:first-child { margin-top: 0; }
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 4px;
+  border-radius: 5px;
+}
+
+.row:nth-child(even) { background: rgba(255, 255, 255, 0.04); }
+
+.chip {
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  background: rgba(143, 183, 255, 0.18);
+  color: var(--accent);
+}
+
+.chip.on { background: var(--moss); color: #0f2418; }
+.chip.dim { color: var(--ink-dim); background: rgba(255,255,255,0.06); }
+
+.bar {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.bar i {
+  display: block;
+  height: 100%;
+  background: var(--moss);
+}
+
+/* ---- variant B dock ---- */
+
+.dock-tabs {
+  display: flex;
+  gap: 2px;
+  padding: 4px 6px 0;
+}
+
+.dock-tabs button {
+  flex: 1;
+  padding: 4px 0;
+  font-size: 11px;
+  border: 1px solid rgba(150, 170, 255, 0.2);
+  border-bottom: none;
+  border-radius: 7px 7px 0 0;
+  background: rgba(90, 110, 190, 0.14);
+  color: var(--ink-dim);
+  cursor: pointer;
+}
+
+.dock-tabs button.active {
+  background: rgba(143, 183, 255, 0.25);
+  color: var(--ink);
+}
+
+/* ---- variant C spine ---- */
+
+.spine-section header {
+  cursor: pointer;
+  user-select: none;
+}
+
+.spine-section header .caret {
+  color: var(--ink-dim);
+  font-size: 10px;
+}
+
+.spine-section.collapsed .card-body { display: none; }
+
+/* ---- prototype chrome (not part of the design) ---- */
+
+.proto-switcher {
+  position: fixed;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: #f5f2e9;
+  color: #22252e;
+  font-size: 12.5px;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.45);
+  z-index: 100;
+}
+
+.proto-switcher button {
+  border: none;
+  background: #22252e;
+  color: #f5f2e9;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.proto-switcher .label { min-width: 190px; text-align: center; font-weight: 600; }
+
+.proto-park {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: #f5f2e9;
+  color: #22252e;
+  font-size: 11.5px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  z-index: 100;
+}
+
+.proto-park select { font-size: 11.5px; }
