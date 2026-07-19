@@ -28,19 +28,21 @@ context pointer. A missing value is a decision to resolve before generation.
   [`../acquisition-contract.md`](../acquisition-contract.md). It owns the logical
   grid, conservative prompt safe box, magenta key, Archived Raw Bundle,
   bottom-center anchor, `moonberry-16`, validator, manifest, and offline rebuild.
+- For **Equipment Base icons**, read [`../icon-contract.md`](../icon-contract.md).
+  It owns the 34×34 runtime, text-grid sources under `src/assets/icon-sources/`,
+  palette scoping, ingest gates, `src/assets/icons/` manifest layout, and the
+  deliberate divergence that icon provider raws are evidence under
+  `docs/research/evidence/` rather than `assets-raw/`. Stage-2 build, 8× previews,
+  and family contact sheets are produced by `pipeline/icons/` via
+  `npm run assets:build`. Prompting lessons from
+  [`../research/evidence/125-equipment-icons-34/`](../research/evidence/125-equipment-icons-34/)
+  still apply; do **not** resume the unmerged `issue-58-equipment-icons` 16×16 premise.
+  The `#125` prototype under `prototype/equipment-icons-34/` remains for in-situ
+  review until the Consumers slice removes it.
 - For Character presentation and Ability effects, also read
   [`../animation-contract.md`](../animation-contract.md). It owns layer separation,
   `moonberry-glow`, effect anchors, deterministic derivation, and runtime
   transforms.
-- For **Equipment Base icons**, the replacement workflow is being chosen on
-  [Choose a reliable native-grid workflow for Equipment Base icons](https://github.com/jsbellamy/nightglass/issues/121).
-  Until the icon contract ticket closes, treat the #125 prototype as the working
-  reference: native **34×34** runtime (32×32 drawable + derived outline ring),
-  committed **compact source** (1px/cell), optional AI ingest of a **32×32
-  logical** generation on `#ff00ff`, Stage-2 paint onto `moonberry-16`, Tier II
-  via `recolor` from the Tier I family source. Evidence and prompts:
-  [`../research/evidence/125-equipment-icons-34/`](../research/evidence/125-equipment-icons-34/).
-  Do **not** resume the unmerged `issue-58-equipment-icons` 16×16 premise.
 - For Moonberry visual language, use the decision and retained references from
   [Prototype the original-IP art direction](https://github.com/jsbellamy/nightglass/issues/3).
 - For another asset class, the task must declare its runtime shape and validator;

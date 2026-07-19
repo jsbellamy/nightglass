@@ -1,0 +1,22 @@
+{
+  "verify-canary-a": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "verify-canary",
+    "sha256": "7e0f26a7e597a6a16ab3aec4b7c50067ff863f503a2b9c52bf31166a6fcefab0"
+  },
+  "verify-canary-b": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "verify-canary",
+    "sha256": "146810038e1b8e371e9f86c7316a4a0070b9ccc614ecae2372942245d42e87b9"
+  }
+}
