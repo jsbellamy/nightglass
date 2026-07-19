@@ -9,9 +9,10 @@ which proposed a draft evidence map and left the concrete rendered scenarios,
 the harness choice, and the native residual to this ticket. This document
 records what a working prototype demonstrated, not a proposal.
 
-Prototype harness (throwaway, not production test code):
-[`prototype/rendered-evidence/`](../../prototype/rendered-evidence/).
-Screenshots: [`evidence/91-prototype/`](./evidence/91-prototype/).
+Prototype harness (throwaway; promoted by nightglass#96 to the runnable seam
+at [`e2e/`](../../e2e/) via `npm run test:evidence`):
+formerly `prototype/rendered-evidence/`.
+Screenshots from the prototype run: [`evidence/91-prototype/`](./evidence/91-prototype/).
 Measured against `main` at `3528abf`.
 
 ## The evidence path

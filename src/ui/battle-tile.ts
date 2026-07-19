@@ -5,10 +5,12 @@ import type { Content, StageDef } from "../core/types";
 import { createPresentation, type Presentation } from "./presentation";
 import { resolveSprite } from "./sprites";
 
-export const STATUS_LINE_HEIGHT = 24;
-export const BATTLEFIELD_HEIGHT = 86;
-export const TILE_WIDTH = 480;
-export const TILE_HEIGHT = 112;
+export {
+  BATTLEFIELD_HEIGHT,
+  STATUS_LINE_HEIGHT,
+  TILE_HEIGHT,
+  TILE_WIDTH,
+} from "./tile-geometry";
 
 const FORMATION_ORDER = ["back", "middle", "front"] as const;
 

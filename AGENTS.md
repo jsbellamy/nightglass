@@ -37,6 +37,13 @@ Before creating or changing any raster asset, follow the acquisition loop in
 `docs/agents/asset-generation.md`. It routes each asset class to its authoritative
 contract and defines the evidence required before an asset task is complete.
 
+### Native observation
+
+Browser rendered-evidence (`npm run test:evidence`) covers layout, contrast,
+keyboard, and cross-page bus delivery under `vite preview`. The residual that
+must be observed in `npm run tauri dev` is listed in
+`docs/agents/native-observation.md` (window lifecycle and close semantics only).
+
 ## Git workflow
 
 One branch per issue (`issue-<N>-<slug>`, based on `main`); never work
