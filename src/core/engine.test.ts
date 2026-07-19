@@ -179,6 +179,29 @@ function stable(value: unknown): string {
   return JSON.stringify(value);
 }
 
+describe("beginFreshAttempt", () => {
+  it("discards the transient Attempt and starts Wave 1 at the resulting Stage", () => {
+    const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
+    engine.advanceBy(1);
+    engine.advanceBy(5_000);
+    const mid = engine.snapshot();
+    expect(mid.attempt?.encounter).not.toBe(1);
+
+    const events = engine.beginFreshAttempt();
+    const after = engine.snapshot();
+    expect(events.some((event) => event.type === "wave-started" && event.encounter === 1)).toBe(
+      true,
+    );
+    expect(after.attempt).toMatchObject({
+      stage: mid.attempt?.stage ?? 1,
+      encounter: 1,
+      phase: "fighting",
+    });
+    expect(after.attempt?.combatants.every((c) => c.side === "party" || c.health === c.maxHealth)).toBe(
+      true,
+    );
+  });
+});
 describe("createEngine boot", () => {
   it("starts a fresh Stage 1 Attempt with full Party restore", () => {
     const engine = createEngine(fixtureContent, undefined, LOOT_SEED, fixtureNow);

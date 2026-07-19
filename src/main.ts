@@ -1,5 +1,7 @@
 import { createEngine, type Engine } from "./core/engine";
 import { buildContent } from "./data";
+import type { Content } from "./core/types";
+import { bootTile } from "./ui/boot";
 import { createBusEndpoint, type BusEndpoint, type TileCommand } from "./ui/bus";
 import { mountBattleTile } from "./ui/battle-tile";
 import { createProductionDockWindowPort, type DockWindowPort } from "./ui/dock-window";
@@ -10,12 +12,12 @@ import type { EngineEvent } from "./core/events";
 
 export { TILE_HEIGHT, TILE_WIDTH } from "./ui/battle-tile";
 
-/** Interim #50: fresh Engine each launch until save/boot slice lands. */
-const LOOT_SEED = 42;
-
 export interface TileShellOptions {
   dockWindow?: DockWindowPort;
   busFactory?: typeof createBusEndpoint;
+  engine?: Engine;
+  content?: Content;
+  onBeforeUnload?: () => void;
 }
 
 export interface TileShell extends PumpController {
@@ -111,8 +113,8 @@ export function mountDockShell(root: HTMLElement): { destroy(): void } {
 }
 
 export function mountTileShell(root: HTMLElement, options: TileShellOptions = {}): TileShell {
-  const content = buildContent();
-  const engine = createEngine(content, undefined, LOOT_SEED);
+  const content = options.content ?? buildContent();
+  const engine = options.engine ?? createEngine(content, undefined, 42);
   const dockWindow = options.dockWindow ?? createProductionDockWindowPort();
   const busFactory = options.busFactory ?? createBusEndpoint;
 
@@ -170,12 +172,20 @@ export function mountTileShell(root: HTMLElement, options: TileShellOptions = {}
 
   publishSnapshot();
 
+  const onBeforeUnload = options.onBeforeUnload;
+  if (onBeforeUnload) {
+    window.addEventListener("pagehide", onBeforeUnload);
+  }
+
   return {
     stop() {
       pump.stop();
     },
     destroy() {
       pump.stop();
+      if (onBeforeUnload) {
+        window.removeEventListener("pagehide", onBeforeUnload);
+      }
       bus?.close();
       dockWindow.destroy();
       tile.destroy();
@@ -201,5 +211,5 @@ window.addEventListener("DOMContentLoaded", () => {
 
   dockRoot.hidden = true;
   tileRoot.hidden = false;
-  mountTileShell(tileRoot);
+  bootTile(tileRoot, { content: buildContent() });
 });

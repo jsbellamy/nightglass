@@ -71,6 +71,7 @@ const FORMATION_SLOTS = ["front", "middle", "back"] as const;
 export interface Engine {
   advanceBy(ms: number): EngineEvent[];
   snapshot(): Snapshot;
+  beginFreshAttempt(): EngineEvent[];
   selectStage(stage: 1 | 2 | 3): EngineEvent[];
   setLoadout(classId: ClassId, loadout: [string, string, string]): void;
   setFormation(order: [ClassId, ClassId, ClassId]): void;
@@ -1210,6 +1211,8 @@ export function createEngine(
   const bootEvents: EngineEvent[] = [];
   if (!saved) {
     startFreshAttempt(state, index, 1, bootEvents);
+  } else if (saved.attempt === null) {
+    startFreshAttempt(state, index, state.progression.unlockedStage, bootEvents);
   }
   let bootEventsPending = bootEvents.length > 0;
 
@@ -1238,6 +1241,14 @@ export function createEngine(
     }
 
     state.simNowMs = targetMs;
+    return events;
+  }
+
+  function beginFreshAttemptCommand(): EngineEvent[] {
+    const events: EngineEvent[] = [];
+    const stage = state.attempt?.stage ?? state.progression.unlockedStage;
+    state.attempt = null;
+    startFreshAttempt(state, index, stage, events);
     return events;
   }
 
@@ -1346,6 +1357,7 @@ export function createEngine(
   return {
     advanceBy,
     snapshot: () => toSnapshot(state, now),
+    beginFreshAttempt: beginFreshAttemptCommand,
     selectStage,
     setLoadout,
     setFormation,
