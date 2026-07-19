@@ -20,10 +20,11 @@ Determinism guarantees:
 from __future__ import annotations
 
 import hashlib
-import io
 import json
 import math
 import pathlib
+import struct
+import zlib
 from typing import Iterable
 
 from PIL import Image
@@ -51,15 +52,37 @@ PALETTE = [tuple(c["rgb"]) for c in
            json.loads((HERE / "palette.json").read_text())["colors"]]
 PALETTE_SET = set(PALETTE)
 
-# Fixed PNG encoder settings so offline rebuilds are byte-identical across OSes.
-RUNTIME_PNG_KWARGS = {"format": "PNG", "compress_level": 9, "optimize": False}
+# Minimal PNG writer (filter-none rows + zlib level 9). Pillow's adaptive
+# row filters differ across OS/libpng builds for some frames, so we avoid it
+# for committed runtime bytes that CI must rebuild byte-identically.
+RUNTIME_PNG_ZLIB_LEVEL = 9
+
+
+def _png_chunk(tag: bytes, data: bytes) -> bytes:
+    checksum = zlib.crc32(tag + data) & 0xFFFFFFFF
+    return struct.pack(">I", len(data)) + tag + data + struct.pack(">I", checksum)
 
 
 def runtime_png_bytes(frame: Image.Image) -> bytes:
     """Encode a runtime frame to PNG with platform-independent settings."""
-    output = io.BytesIO()
-    frame.save(output, **RUNTIME_PNG_KWARGS)
-    return output.getvalue()
+    if frame.mode != "RGBA":
+        frame = frame.convert("RGBA")
+    w, h = frame.size
+    row_bytes = w * 4
+    pixels = frame.tobytes()
+    raw = bytearray()
+    for y in range(h):
+        raw.append(0)  # PNG filter type None -- fixed for cross-platform bytes
+        start = y * row_bytes
+        raw.extend(pixels[start:start + row_bytes])
+    compressed = zlib.compress(bytes(raw), level=RUNTIME_PNG_ZLIB_LEVEL)
+    ihdr = struct.pack(">IIBBBBB", w, h, 8, 6, 0, 0, 0)
+    return (
+        b"\x89PNG\r\n\x1a\n"
+        + _png_chunk(b"IHDR", ihdr)
+        + _png_chunk(b"IDAT", compressed)
+        + _png_chunk(b"IEND", b"")
+    )
 
 
 def save_runtime_png(frame: Image.Image, path: pathlib.Path) -> None:
