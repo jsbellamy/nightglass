@@ -268,6 +268,23 @@ describe("presentation mapping", () => {
     expect(banner?.textContent).toBe("Boss Wave");
   });
 
+  it("shows Stage Attempt and Stage-cleared centre-lane banners", () => {
+    const tile = mountBattleTile(root, buildContent());
+    const engine = createEngine(buildContent(), undefined, LOOT_SEED);
+    const snapshot = engine.snapshot();
+    snapshot.simNowMs = 3_000;
+    tile.render(snapshot);
+
+    tile.applyEvents(
+      [{ seq: 4, atMs: 3_000, type: "stage-attempt-started", stage: 1, attemptId: 2 }],
+      snapshot,
+    );
+    expect(root.querySelector<HTMLElement>(".lane-banner")?.textContent).toBe("Orchard Understory");
+
+    tile.applyEvents([{ seq: 5, atMs: 3_500, type: "stage-cleared", stage: 1 }], snapshot);
+    expect(root.querySelector<HTMLElement>(".lane-banner")?.textContent).toBe("Orchard Understory");
+  });
+
   it("shows and clears centre-lane banners over ~1.5s", () => {
     const tile = mountBattleTile(root, buildContent());
     const engine = createEngine(buildContent(), undefined, LOOT_SEED);
