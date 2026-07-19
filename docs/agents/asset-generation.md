@@ -47,12 +47,17 @@ style reference, or edit target. Archive any direct input needed to reproduce an
 accepted generation and record its SHA-256.
 
 Write the prompt as a contract: subject and identity, composition, art language,
-geometry, background, and acceptance constraints. For a bounded sprite, request
-the conservative safe box from the acquisition contract rather than asking the
-subject to fill the runtime canvas.
+geometry, background, and acceptance constraints. For Battle Tile bodies, paste
+the acquisition contract's **grid shell** (exact logical canvas, flat-block
+pixels, conservative **safe box**, magenta clearance, outline/palette bans)
+around the subject description — do not paraphrase the shell into softer art
+direction. Request the safe box; never ask the subject to fill the runtime
+canvas.
 
-This step is complete when the prompt names every identity-bearing feature and
-every geometric constraint, and every direct image input has a recorded role.
+This step is complete when (a) the prompt names every identity-bearing feature
+and every geometric constraint, (b) Battle Tile body prompts contain the
+contract grid shell verbatim or by an explicit quote of its clauses, and
+(c) every direct image input has a recorded role.
 
 ## 3. Generate and archive the raw
 
@@ -75,25 +80,29 @@ a fresh acquisition loop with shipping gates declared in step 1.
 ## 4. Measure, then retry
 
 Run the earliest deterministic ingest or validator immediately. Use its report as
-feedback for the next candidate.
+feedback for the next candidate. Provider-resolution prettiness is not a gate.
 
-For logical-grid art, record recovered width, height, X/Y pitch, and confidence.
-When a candidate exceeds its safe box or runtime canvas, retry prompt-side with
-the measured result:
+For logical-grid art, record recovered width, height, X/Y pitch, pitch
+confidence, and whether the subject touches a raw canvas edge. Classify each
+reject as exactly one primary failure, then retry **prompt-side** with that
+class's move. Keep render resolution constant; never resize a failed candidate
+into an accepted raw.
 
-> The previous candidate recovered as `<W>×<H>`. Preserve its identity and pose,
-> simplify its detail, and redraw the complete silhouette inside the contract's
-> safe box with clearance on every edge.
+| Failure | Signal | Retry move |
+| --- | --- | --- |
+| **Overshoot** | Recovered grid wider/taller than the acceptance canvas, or above the declared safe box | Preserve identity; shrink silhouette into the safe box; restate magenta clearance on every edge. Template: *"The previous candidate recovered as `<W>×<H>`. Preserve its identity and pose, simplify its detail, and redraw the complete silhouette inside the contract's safe box with clearance on every edge."* |
+| **Pitch-fail** | X or Y pitch confidence below the acquisition contract gate (soft/anti-aliased blocks, uneven cell size) | Strengthen the grid shell; attach an already-accepted grid-faithful raw as **style reference**; demand uniform square blocks and aligned seams. Do not only ask for "chunkier" art. |
+| **Clip-fail** | Subject touches a raw canvas edge (clipping gate) | Preserve identity; add at least two magenta cells of clearance on the clipped side(s); keep the safe box. |
 
-Keep resolution constant; change logical composition and detail density. A
-candidate advances when its recovered grid fits naturally and every raw-level
-gate passes. Resizing a failed candidate does not make it an accepted raw.
+If two signals fire, fix **clip-fail** first, then **overshoot**, then
+**pitch-fail**. A candidate advances only when its recovered grid fits and every
+raw-level gate passes.
 
 For non-grid art, use the equivalent measurable failure—dimensions, crop,
 contrast, alpha coverage, palette count, or layout occupancy—in the retry.
 
-This step is complete when the accepted candidate has a saved validator report,
-not when it merely looks close at provider resolution.
+This step is complete when the accepted candidate has a saved validator report
+naming recovered grid (or equivalent) and every raw-level gate result.
 
 ## 5. Build and validate
 
