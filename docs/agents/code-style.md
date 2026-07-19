@@ -60,7 +60,9 @@ Test at these public boundaries, nowhere internal:
   timestamps, not ranges.
 - Test names read as behavior specifications in `CONTEXT.md` vocabulary
   ("Knockout at zero health emits `knockout` and starts recovery"), not
-  implementation descriptions.
+  implementation descriptions. Registered `evidence:` / `manual-check:`
+  citation slugs from `docs/agents/acceptance-evidence.md` may prefix a
+  title; the remainder of the name stays a behavior specification.
 - Every abstraction, parameter, and hook is needed by the implementing issue's
   acceptance criteria (promoted from the Speculative Generality smell —
   a hard standard here, not a judgement call, because wave issues are precise

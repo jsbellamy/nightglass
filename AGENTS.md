@@ -66,7 +66,5 @@ subagent is defined in `.agents/issue-implementer.md`; tool-specific runtimes
 may provide their own pinned variant (for example
 `.claude/agents/issue-implementer.md`) — prefer the variant native to the
 runtime you are in. The orchestrator independently owns the acceptance gate in
-`docs/agents/acceptance-evidence.md`: before merging, re-read the live issue,
-verify every acceptance row at its named seam, and for browser-seam criteria
-re-run `npm run test:evidence` and look at the emitted scenes — green CI and
-a scope-matching file list are necessary but never sufficient.
+`docs/agents/acceptance-evidence.md` — green CI and a scope-matching file list
+are necessary but never sufficient.

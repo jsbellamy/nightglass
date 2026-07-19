@@ -50,7 +50,7 @@ async function openTile(browser: Browser): Promise<{ context: Awaited<ReturnType
 }
 
 test.describe("rendered-output evidence seam", () => {
-  test("evidence: tile-geometry / evidence: native-1x-scaling / evidence: aa-contrast / evidence: knockout-readability — Battle Tile geometry, sprites, contrast, and combat feedback at native 1×", async ({
+  test("evidence: tile-geometry / evidence: native-1x-scaling / evidence: aa-contrast — Battle Tile geometry, sprites, contrast, and combat feedback at native 1×", async ({
     browser,
   }) => {
     const { context, tile } = await openTile(browser);

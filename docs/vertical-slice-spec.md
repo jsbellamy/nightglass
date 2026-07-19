@@ -489,7 +489,8 @@ an implementer or orchestrator ticks to publish a PR.
 Slice sign-off still includes the §10 manual performance checklist, the CI
 Offline Progress timing test, and every shipped asset passing its contract
 validator from the Archived Raw Bundle offline. Accessibility-floor and other
-rendered criteria are proved per
+rendered criteria — including any cross-platform observation the issue names —
+are proved per
 [`docs/agents/acceptance-evidence.md`](agents/acceptance-evidence.md), not by
 re-stating a second suite here.
 

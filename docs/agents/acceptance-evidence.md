@@ -26,16 +26,23 @@ not the renderer. Prefer the narrowest seam that can prove the claim; forbid
 only happy-dom / unit tests that cannot see layout, cascade, or a second
 webview.
 
-## Citation naming (B5)
+## Citation naming
 
 Acceptance rows cite scenarios by registered slug — never by paraphrasing a
 test file. The slug must appear in the test title (or `describe` title) that
-proves it, so the row is addressable without opening the suite.
+proves it, so the row is addressable without opening the suite. (Closes the
+named-scenario blind spot from the acceptance-evidence seams audit.)
 
 | Prefix | Seam | Runner |
 | --- | --- | --- |
 | `evidence: <slug>` | Playwright scenarios under `e2e/` | `npm run test:evidence` |
 | `manual-check: <slug>` | Port-injected `DockWindowPort` / shell tests | `npm test` |
+
+A title may list several slugs when one scenario body proves several named
+checks; the acceptance row still cites the single slug that matches its claim.
+Do not put a slug on a title that does not prove that claim — for example
+`evidence: knockout-readability` belongs on a review-artifact citation, not on
+a harness CSS assertion.
 
 Native residual rows cite the checklist item name from
 `docs/agents/native-observation.md`, plus platform and observed result — not
@@ -56,7 +63,7 @@ here.
 | AA contrast (status, dock toggle, health text) | `evidence: aa-contrast` | Same suite: computed-style contrast ≥ WCAG AA floor |
 | Dock surfaces (five tabs, one row, scroll not clip, each surface populated) | `evidence: dock-surfaces` | Same suite; review screenshots `e2e-screenshots/03-dock-initial.png`, `04-dock-*-*.png` |
 | Native-1× scaling (intrinsic ≡ rendered, excluding deliberate knockout transforms) | `evidence: native-1x-scaling` | Browser assertion in the suite **or** a pure test of `SPRITE_SOURCES` / PNG IHDR vs `.combatant-sprite` — either is sufficient; happy-dom alone is not |
-| Knockout readability (non-colour signal readable in the crowded tile) | `evidence: knockout-readability` | Scenario-keyed review artifact (committed under `docs/research/evidence/` when the artifact *is* the evidence); numeric non-colour CSS signals in the harness support but do not retire the judgement |
+| Knockout readability (non-colour signal readable in the crowded tile) | `evidence: knockout-readability` | Scenario-keyed review artifact only (committed under `docs/research/evidence/` when the artifact *is* the evidence, else attached to the PR). Harness CSS non-colour signals may support the claim but must not carry this slug and do not retire the judgement |
 | Dock window port (open/close/toggle sequencing, reposition math, tile APIs untouched) | `manual-check: dock-position-only`, `manual-check: dock-pump-continuity`, `manual-check: dock-no-tile-resize` | Vitest over injected `DockWindowPort` deps — proves call sequencing and geometry wiring, **not** native window chrome |
 | Native dock lifecycle / OS close / positioning | checklist items in `docs/agents/native-observation.md` | Manual `npm run tauri dev` only when `src-tauri/**`, `app.windows`, or capabilities change |
 
