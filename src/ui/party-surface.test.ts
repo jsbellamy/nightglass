@@ -12,10 +12,17 @@ import { mountPartySurface } from "./party-surface";
 const LOOT_SEED = 42;
 const content = buildContent();
 
-async function flushBus(): Promise<void> {
-  await new Promise((resolve) => {
-    setTimeout(resolve, 0);
-  });
+/** Drain BroadcastChannel delivery across hops until `predicate` holds. */
+async function flushBus(predicate?: () => boolean): Promise<void> {
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    await new Promise((resolve) => {
+      setTimeout(resolve, 0);
+    });
+    if (!predicate || predicate()) {
+      return;
+    }
+  }
+  throw new Error("BroadcastChannel flush timed out");
 }
 
 function activateFocused(): void {
@@ -123,10 +130,12 @@ describe("Party surface", () => {
     const party = engine.snapshot().progression.party;
     const reserve = engine.snapshot().progression.reserve;
 
-    root
-      .querySelector<HTMLButtonElement>(`[data-party-swap="${party[0]}"]`)
-      ?.click();
-    await flushBus();
+    const swapButton = root.querySelector<HTMLButtonElement>(
+      `[data-party-swap="${party[0]}"]`,
+    );
+    expect(swapButton).not.toBeNull();
+    swapButton!.click();
+    await flushBus(() => root.querySelector('[data-pending-kind="party"]') !== null);
 
     expect(engine.snapshot().progression.pendingParty).not.toBeNull();
     expect(root.querySelector('[data-pending-kind="party"]')?.textContent).toMatch(
@@ -135,7 +144,7 @@ describe("Party surface", () => {
     expect(root.querySelector('[data-pending-kind="formation"]')).toBeNull();
 
     dockBus.publish({ type: "command", command: { cmd: "selectStage", args: [1] } });
-    await flushBus();
+    await flushBus(() => root.querySelector('[data-pending-kind="party"]') === null);
 
     expect(engine.snapshot().progression.party).toEqual([reserve, party[1], party[2]]);
     expect(engine.snapshot().progression.reserve).toBe(party[0]);

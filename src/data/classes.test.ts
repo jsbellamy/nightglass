@@ -1,11 +1,18 @@
 import { describe, expect, it } from "vitest";
 import { isAbilityValid } from "../core/combat";
-import type { AbilityDef, ClassKitDef } from "../core/types";
+import type { AbilityDef, ClassKitDef, StatusEffectDef } from "../core/types";
 import type { CombatantState } from "../core/snapshot";
 import { validateContent } from "../core/validate-content";
+import {
+  REVIEWED_CLASS_BASES,
+  REVIEWED_CLASS_KIT_ABILITIES,
+  REVIEWED_STATUSES,
+  REVIEWED_XP_THRESHOLDS,
+} from "./fixtures/class-kit-number-contract";
 import { buildClassKitSlice, buildContent } from "./index";
 
 const content = buildContent();
+const classKit = buildClassKitSlice();
 
 function abilityById(id: string): AbilityDef {
   const ability = content.abilities.find((entry) => entry.id === id);
@@ -16,48 +23,28 @@ function abilityById(id: string): AbilityDef {
 }
 
 function classById(id: ClassKitDef["id"]): ClassKitDef {
-  const classKit = content.classes.find((entry) => entry.id === id);
-  if (!classKit) {
+  const classKitEntry = content.classes.find((entry) => entry.id === id);
+  if (!classKitEntry) {
     throw new Error(`missing class ${id}`);
   }
-  return classKit;
+  return classKitEntry;
+}
+
+function statusById(id: string, statuses: StatusEffectDef[]): StatusEffectDef {
+  const status = statuses.find((entry) => entry.id === id);
+  if (!status) {
+    throw new Error(`missing status ${id}`);
+  }
+  return status;
+}
+
+function sortById<T extends { id: string }>(entries: T[]): T[] {
+  return [...entries].sort((a, b) => a.id.localeCompare(b.id));
 }
 
 describe("assembled Class Kit content", () => {
   it("passes validateContent with fixture stubs for sibling slices", () => {
     expect(validateContent(content, { fixture: true })).toEqual([]);
-  });
-
-  it("declares all four Classes with Level 1 bases from issue #7", () => {
-    expect(content.classes).toHaveLength(4);
-    expect(classById("knight").base).toEqual({
-      maxHealth: 180,
-      physical: 14,
-      elemental: 4,
-      armor: 30,
-      elementalResistance: 12,
-    });
-    expect(classById("wizard").base).toEqual({
-      maxHealth: 100,
-      physical: 4,
-      elemental: 16,
-      armor: 10,
-      elementalResistance: 24,
-    });
-    expect(classById("priest").base).toEqual({
-      maxHealth: 125,
-      physical: 5,
-      elemental: 13,
-      armor: 15,
-      elementalResistance: 20,
-    });
-    expect(classById("hunter").base).toEqual({
-      maxHealth: 120,
-      physical: 15,
-      elemental: 6,
-      armor: 16,
-      elementalResistance: 14,
-    });
   });
 
   it("ships 28 Class Abilities: 4 basics, 16 Core, 8 Ability Talents", () => {
@@ -93,94 +80,33 @@ describe("assembled Class Kit content", () => {
       ability.effects.some((effect) => effect.kind === "apply-status" && effect.stunMs !== undefined),
     )).toBe(true);
   });
-
-  it("pins default loadouts from issue #7", () => {
-    expect(classById("knight").defaultLoadout).toEqual([
-      "shield-brace",
-      "rallying-guard",
-      "sweeping-arc",
-    ]);
-    expect(classById("wizard").defaultLoadout).toEqual([
-      "prism-ward",
-      "frost-lance",
-      "cinder-bloom",
-    ]);
-    expect(classById("priest").defaultLoadout).toEqual([
-      "dawn-recall",
-      "mending-light",
-      "war-hymn",
-    ]);
-    expect(classById("hunter").defaultLoadout).toEqual([
-      "barbed-arrow",
-      "pinpoint-shot",
-      "split-volley",
-    ]);
-  });
-
-  it("pins xpThresholds in assembled Content", () => {
-    expect(content.xpThresholds).toEqual([0, 100, 250, 450, 650, 850]);
-  });
 });
 
-describe("spot-check Ability transcription", () => {
-  it("pins Heartseeker field-by-field", () => {
-    expect(abilityById("heartseeker")).toEqual({
-      id: "heartseeker",
-      name: "Heartseeker",
-      classId: "hunter",
-      slot: "talent",
-      targeting: { kind: "closest-opponent" },
-      effects: [{ kind: "damage", channel: "physical", coefficient: 2.8 }],
-      windUpMs: 850,
-      recoveryMs: 650,
-      cooldownMs: 13000,
-    });
+describe("Class Kit number contract", () => {
+  it("Ability coefficients, Wind-up, Recovery, and cooldowns match the reviewed contract", () => {
+    expect(REVIEWED_CLASS_KIT_ABILITIES).toHaveLength(28);
+    expect(sortById(classKit.abilities)).toEqual(sortById(REVIEWED_CLASS_KIT_ABILITIES));
   });
 
-  it("pins Steel Cut field-by-field", () => {
-    expect(abilityById("steel-cut")).toEqual({
-      id: "steel-cut",
-      name: "Steel Cut",
-      classId: "knight",
-      slot: "basic",
-      targeting: { kind: "closest-opponent" },
-      effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
-      windUpMs: 350,
-      recoveryMs: 650,
-      cooldownMs: 0,
-    });
+  it("Status Effect durations and modifiers match the reviewed contract", () => {
+    expect(REVIEWED_STATUSES).toHaveLength(9);
+    for (const expected of REVIEWED_STATUSES) {
+      expect(statusById(expected.id, classKit.statuses)).toEqual(expected);
+    }
   });
 
-  it("pins Frost Lance field-by-field", () => {
-    expect(abilityById("frost-lance")).toEqual({
-      id: "frost-lance",
-      name: "Frost Lance",
-      classId: "wizard",
-      slot: "core",
-      targeting: { kind: "closest-opponent" },
-      effects: [{ kind: "damage", channel: "elemental", element: "frost", coefficient: 1.8 }],
-      windUpMs: 800,
-      recoveryMs: 600,
-      cooldownMs: 8000,
-    });
+  it("Level 1 bases and default Ability Loadouts match the reviewed contract", () => {
+    expect(content.classes).toHaveLength(4);
+    expect(REVIEWED_CLASS_BASES).toHaveLength(4);
+    for (const expected of REVIEWED_CLASS_BASES) {
+      const shipped = classById(expected.id);
+      expect(shipped.base).toEqual(expected.base);
+      expect(shipped.defaultLoadout).toEqual(expected.defaultLoadout);
+    }
   });
 
-  it("pins Dawn Recall field-by-field", () => {
-    expect(abilityById("dawn-recall")).toEqual({
-      id: "dawn-recall",
-      name: "Dawn Recall",
-      classId: "priest",
-      slot: "core",
-      targeting: { kind: "first-knocked-out-ally" },
-      effects: [{ kind: "revive", coefficient: 2 }],
-      windUpMs: 1200,
-      recoveryMs: 800,
-      cooldownMs: 20000,
-    });
-  });
-
-  it("pins Hold the Line validWhile below half health", () => {
-    expect(abilityById("hold-the-line").validWhile).toBe("below-half-health");
+  it("Character XP thresholds match the reviewed contract", () => {
+    expect(classKit.xpThresholds).toEqual([...REVIEWED_XP_THRESHOLDS]);
   });
 });
 

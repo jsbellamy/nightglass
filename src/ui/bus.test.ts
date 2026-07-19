@@ -5,10 +5,13 @@ import { createEngine } from "../core/engine";
 import { fixtureContent } from "../core/testing/fixture-content";
 import { createBusEndpoint, type BusMessage } from "./bus";
 
+/** Drain BroadcastChannel delivery (command hop + snapshot hop). */
 async function flushBus(): Promise<void> {
-  await new Promise((resolve) => {
-    setTimeout(resolve, 0);
-  });
+  for (let i = 0; i < 2; i += 1) {
+    await new Promise((resolve) => {
+      setTimeout(resolve, 0);
+    });
+  }
 }
 
 describe("nightglass BroadcastChannel bus", () => {
