@@ -5,7 +5,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { createEngine } from "../core/engine";
-import { cloneSnapshot } from "../core/snapshot";
+import { cloneSnapshot, type DropInstance } from "../core/snapshot";
 import { buildContent } from "../data";
 import { createBusEndpoint } from "./bus";
 import { mountStageSurface } from "./stage-surface";
@@ -92,15 +92,24 @@ describe("Stage surface", () => {
     engine.advanceBy(1);
 
     let xpBefore = 0;
-    for (let ms = 0; ms < 60_000; ms += 1) {
+    let awardedDrop: DropInstance | null = null;
+    for (let ms = 0; ms < 300_000; ms += 1) {
       const events = engine.advanceBy(1);
-      const awarded = events.find((event) => event.type === "xp-awarded");
-      if (awarded) {
-        xpBefore = engine.snapshot().progression.characterXp[awarded.classId] ?? 0;
+      const xpAwarded = events.find((event) => event.type === "xp-awarded");
+      if (xpAwarded) {
+        xpBefore = engine.snapshot().progression.characterXp[xpAwarded.classId] ?? 0;
+      }
+      const dropAwarded = events.find((event) => event.type === "drop-awarded");
+      if (dropAwarded) {
+        awardedDrop = structuredClone(
+          engine.snapshot().progression.armory.find((drop) => drop.dropId === dropAwarded.dropId) ??
+            null,
+        );
         break;
       }
     }
     expect(xpBefore).toBeGreaterThan(0);
+    expect(awardedDrop).not.toBeNull();
 
     const surface = mountStageSurface(root, {
       onCommand: (command) => {
@@ -117,6 +126,8 @@ describe("Stage surface", () => {
 
     const snap = engine.snapshot();
     expect(snap.progression.characterXp.knight).toBeGreaterThanOrEqual(xpBefore);
+    expect(snap.progression.armory).toHaveLength(1);
+    expect(snap.progression.armory[0]).toEqual(awardedDrop);
     expect(snap.attempt?.encounter).toBe(1);
 
     surface.destroy();
