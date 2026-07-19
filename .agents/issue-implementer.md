@@ -41,11 +41,31 @@ the runtime supports worktrees.
    human adds the row; successor-falsified → flag for editorial disposition,
    do not tick, do not stop.
 6. Commit only the issue's changes. Let any commit hooks run; never bypass them.
-   Push with `git push -u origin <branch>`, then create a pull request whose
+7. Review your own work before publishing: run `/code-review` with `main` as the
+   fixed point (`git diff main...HEAD`) and the live issue body as the Spec
+   source, passing the acceptance matrix in so the Spec reviewer returns a
+   per-criterion `met` / `unmet` / `needs manual` verdict with an evidence
+   pointer per row. If the runtime does not expose `/code-review`, run the
+   equivalent Standards and Spec reviews as parallel sub-agents. Rework every
+   Spec finding, every `unmet` row, and every hard Standards violation (a
+   documented repo-standard breach), then commit and re-run the review until
+   those are clear. Judgement-call Standards smells need no rework — carry them
+   into the verdict table for the merge decision.
+8. Push with `git push -u origin <branch>`, then create a pull request whose
    body includes a summary, verification details, the complete acceptance
    matrix, and `Closes #<N>`.
-7. Report the PR URL, what was built, test results, the full matrix, and
-   anything deliberately left out of scope.
+9. Post the review to the PR with `gh pr comment <N> --body-file <path>`: the
+   **verbatim** Standards and Spec sub-agent output under separate headings,
+   plus the reworked findings and the commits that resolved them. Paste what the
+   reviewers wrote — never a summary of your own review, and never a report
+   rewritten to read better than the one you received.
+10. Report the PR URL, what was built, test results, and the review **verdict
+    table** derived mechanically from that comment: one row per acceptance
+    criterion with its `met` / `unmet` / `needs manual` verdict and evidence
+    pointer, the count of blocking findings before and after rework, any
+    unreworked judgement-call smells, the comment URL, and anything
+    deliberately left out of scope. The full reports stay in the PR comment —
+    the report you return is the table, not the reviews.
 
 ## Constraints
 
