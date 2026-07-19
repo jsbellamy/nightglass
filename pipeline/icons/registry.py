@@ -1,4 +1,4 @@
-"""Six Equipment Base families — registry only until #131 lands art."""
+"""Six Equipment Base families — sources, palette subsets, Tier II recolor maps."""
 
 from __future__ import annotations
 
@@ -6,10 +6,54 @@ from dataclasses import dataclass
 
 from .paint import validate_recolor_map
 
-BLADE_TO_EDGE: dict[str, str] = {}
-RELIC_TO_LANTERN: dict[str, str] = {}
-VEST_TO_AEGIS: dict[str, str] = {}
-CHARM_TO_LOCKET: dict[str, str] = {}
+# Tier II maps — targets must NOT appear in the family's palette_subset
+# (flatten guard; see #125 mint→berry-mid merge).
+BLADE_TO_EDGE: dict[str, str] = {
+    "mint-light": "berry-bright",
+    "mint": "contour-plum",
+    "mint-shadow": "contour-plum-deepest",
+    "cream-gold": "berry-bright",
+    "skin-warm": "berry-bright",
+}
+
+FOCUS_TO_PRISM: dict[str, str] = {
+    "mint-light": "skin-warm",
+    "mint": "skin-warm",
+    "mint-shadow": "contour-plum-deepest",
+    "sage": "twilight-slate",
+    "cream-gold": "contour-plum",
+}
+
+RELIC_TO_LANTERN: dict[str, str] = {
+    "berry": "berry-bright",
+    "berry-mid": "berry-bright",
+    "berry-shadow": "contour-plum",
+    "cream-gold": "contour-plum",
+    "cream": "berry-bright",
+}
+
+BOW_TO_LONGBOW: dict[str, str] = {
+    "mint": "berry-mid",
+    "mint-shadow": "contour-plum-deepest",
+    "mint-light": "berry-bright",
+    "cream": "berry-bright",
+    "sage": "contour-plum",
+}
+
+VEST_TO_AEGIS: dict[str, str] = {
+    "mint": "berry",
+    "mint-light": "berry-bright",
+    "mint-shadow": "berry-shadow",
+    "mint-pale": "contour-plum",
+    "cream": "cream-gold",
+}
+
+CHARM_TO_LOCKET: dict[str, str] = {
+    "berry-mid": "contour-plum",
+    "mint-shadow": "contour-plum",
+    "mint": "contour-plum",
+    "cream-gold": "contour-plum",
+}
 
 
 @dataclass(frozen=True)
@@ -39,13 +83,18 @@ FAMILIES: tuple[IconFamily, ...] = (
     IconFamily(
         "thornquill-blade",
         _subset(
-            "contour-plum-deepest",
             "contour-plum-deep",
             "mint-shadow",
             "mint",
             "mint-light",
+            "mint-pale",
             "cream",
             "cream-gold",
+            "berry",
+            "berry-mid",
+            "berry-shadow",
+            "skin-warm",
+            "sage",
             "twilight-slate",
         ),
         (
@@ -59,16 +108,20 @@ FAMILIES: tuple[IconFamily, ...] = (
         _subset(
             "contour-plum-deep",
             "mint-pale",
-            "cream",
-            "cream-gold",
+            "mint-light",
             "mint",
             "mint-shadow",
-            "mint-light",
             "sage",
+            "cream",
+            "cream-gold",
+            "berry",
+            "berry-mid",
+            "berry-shadow",
+            "berry-bright",
         ),
         (
             IconVariant("dewlight-focus", {}),
-            IconVariant("starfruit-prism", {}),
+            IconVariant("starfruit-prism", FOCUS_TO_PRISM),
         ),
         "dewlight-focus/source.grid",
     ),
@@ -79,10 +132,10 @@ FAMILIES: tuple[IconFamily, ...] = (
             "berry-shadow",
             "berry-mid",
             "berry",
-            "berry-bright",
             "cream",
             "cream-gold",
             "mint-pale",
+            "mint-light",
         ),
         (
             IconVariant("moonpetal-relic", {}),
@@ -101,16 +154,14 @@ FAMILIES: tuple[IconFamily, ...] = (
             "cream",
             "cream-gold",
             "berry",
-            "berry-mid",
-            "berry-bright",
             "berry-shadow",
-            "twilight-slate",
             "sage",
+            "twilight-slate",
             "skin-warm",
         ),
         (
             IconVariant("bramblesong-bow", {}),
-            IconVariant("nightvine-longbow", {}),
+            IconVariant("nightvine-longbow", BOW_TO_LONGBOW),
         ),
         "bramblesong-bow/source.grid",
     ),
@@ -118,13 +169,15 @@ FAMILIES: tuple[IconFamily, ...] = (
         "leafmail-vest",
         _subset(
             "contour-plum-deep",
+            "contour-plum-deepest",
             "mint-shadow",
             "mint",
             "sage",
             "mint-light",
-            "twilight-slate",
-            "berry-mid",
+            "mint-pale",
             "cream",
+            "berry-mid",
+            "twilight-slate",
         ),
         (
             IconVariant("leafmail-vest", {}),
@@ -136,12 +189,20 @@ FAMILIES: tuple[IconFamily, ...] = (
         "berrybright-charm",
         _subset(
             "contour-plum-deepest",
+            "contour-plum-deep",
             "berry",
             "berry-bright",
             "berry-mid",
+            "berry-shadow",
             "cream-gold",
+            "cream",
             "mint-light",
             "mint-pale",
+            "mint",
+            "mint-shadow",
+            "skin-warm",
+            "twilight-slate",
+            "sage",
         ),
         (
             IconVariant("berrybright-charm", {}),

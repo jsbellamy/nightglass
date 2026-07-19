@@ -1,4 +1,124 @@
 {
+  "thornquill-blade": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "thornquill-blade",
+    "sha256": "35cbfc0aa650db6ad9183ddbf84bc88b5c5258e339b49d46180d645f5167974c"
+  },
+  "duskthorn-edge": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "thornquill-blade",
+    "sha256": "70390b2197d8267ff59cf063c271bce45ede6ebade8ecff8bbccc6365a3662fa"
+  },
+  "dewlight-focus": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "dewlight-focus",
+    "sha256": "31e6228363482c5550316cd4cd3b31838571240f0febc781144c0bcfe8296f6d"
+  },
+  "starfruit-prism": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "dewlight-focus",
+    "sha256": "cfc3bcf63f66544ab27eeaa222d58da2ed967f49ba2386fd7914f2b9dc1d8465"
+  },
+  "moonpetal-relic": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "moonpetal-relic",
+    "sha256": "ed5b990ae00fd690a8b3abc09167fc6c1b92ca865aacfe76efbe8c84a3f1c9f6"
+  },
+  "halcyon-lantern": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "moonpetal-relic",
+    "sha256": "d34a193fe5ba87b77b5063bc77cc74012c3b661d53065489019a8bbcc0c271dc"
+  },
+  "bramblesong-bow": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "bramblesong-bow",
+    "sha256": "04de3dd4887f744f66ebbfc6e8bf55fe75d2969d32c00644703f10acbeaa561b"
+  },
+  "nightvine-longbow": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "bramblesong-bow",
+    "sha256": "a0cdfb5251395df48995ed0f16ebc404622a7d2858918eb50dfe41ba87e000d0"
+  },
+  "leafmail-vest": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "leafmail-vest",
+    "sha256": "9bc8041e8fb13b539872c524c2db7589c255fdd61ca945f58655a9bc488d32ee"
+  },
+  "plumweave-aegis": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "leafmail-vest",
+    "sha256": "2ac2f3a70da9b304301a0d51043123bacfcb72f11519cb083db496f2e805b4a3"
+  },
+  "berrybright-charm": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "berrybright-charm",
+    "sha256": "0be0cef8c07c1b7b77864ead0727fa67a7727ceed9727ac75f6135f183c2c138"
+  },
+  "gloamberry-locket": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "berrybright-charm",
+    "sha256": "7b91664d740161e5916aff7fddccdc96d89b20716cdbb0f90385fb417d62b8ee"
+  },
   "verify-canary-a": {
     "canvas": [
       34,

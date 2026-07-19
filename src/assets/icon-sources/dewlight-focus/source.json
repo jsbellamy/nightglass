@@ -1,0 +1,60 @@
+{
+  "provider": "Cursor GenerateImage",
+  "prompt": "TRUE chunky pixel art inventory icon ONLY. Drawn on an exact 32x32 logical pixel grid rendered large; every logical pixel is one clean flat square block \u2014 no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered storybook night-garden fantasy item in three-quarter display angle: a round mint-crystal orb held in a berry-vine sprig stand, a single cream dew drop at its crown. Subject's long side spans about 26\u201330 logical pixels, with at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel dark-plum outline. Use only mint / berry / cream / plum Moonberry colours (8\u201312 flat colors max) \u2014 no brown, tan, cyan, pure white, or pure black. Structural members at least 3 logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "raw_sha256": "4cb24ecd0cc34e878bf47936abb072f3774e4a0fc5fb5b81ec07041d651c26e7",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        172,
+        135,
+        851,
+        848
+      ],
+      "pitch_x": {
+        "pitch": 23.483333333333384,
+        "score": 0.42394706360143714
+      },
+      "pitch_y": {
+        "pitch": 23.733333333333388,
+        "score": 0.41653121255267683
+      },
+      "grid": [
+        29,
+        30
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 504,
+      "far_cells": 60,
+      "far_fraction": 0.119,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "contour-plum-deep": 183,
+        "cream": 47,
+        "cream-gold": 3,
+        "berry": 76,
+        "mint": 48,
+        "mint-pale": 5,
+        "mint-light": 49,
+        "mint-shadow": 32,
+        "sage": 57,
+        "berry-bright": 4
+      }
+    }
+  },
+  "palette_subset": [
+    "contour-plum-deep",
+    "mint-pale",
+    "mint-light",
+    "mint",
+    "mint-shadow",
+    "sage",
+    "cream",
+    "cream-gold",
+    "berry",
+    "berry-mid",
+    "berry-shadow",
+    "berry-bright"
+  ],
+  "evidence_raw": "docs/research/evidence/126-equipment-icons/accepted-raws/dewlight-focus.png"
+}

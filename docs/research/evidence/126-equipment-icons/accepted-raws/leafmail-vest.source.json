@@ -1,0 +1,77 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "45a628b1e070238c84d6d93ff094a2467df19f91e9e2e96753df1b965eff4cc6",
+  "asset_class": "interface",
+  "runtime_destination": "src/assets/icons/leafmail-vest.png",
+  "palette_subset": [
+    "contour-plum-deep",
+    "contour-plum-deepest",
+    "mint-shadow",
+    "mint",
+    "sage",
+    "mint-light",
+    "mint-pale",
+    "cream",
+    "berry-mid",
+    "twilight-slate"
+  ],
+  "style_references": [
+    {
+      "path": "src/assets/sprites/knight.png",
+      "sha256": "6ae9b30bf9157e0cb5054c72a79b3cccc115f2a9aad8b4ab417bf288c3d9d4b6",
+      "role": "style_reference"
+    },
+    {
+      "path": "src/assets/sprites/wizard.png",
+      "sha256": "a8646b1925f434c2d802d69f828d933ebbbbd5a32ef90b339ff558f3682d46d7",
+      "role": "style_reference"
+    },
+    {
+      "path": "src/assets/sprites/priest.png",
+      "sha256": "1decef54968ce8437afbf1d27c6755560542db69d89e554c8eacad1aa4ac2b2a",
+      "role": "style_reference"
+    }
+  ],
+  "prompt": "TRUE chunky pixel art inventory icon ONLY. Drawn on an exact 32x32 logical pixel grid rendered large; every logical pixel is one clean flat square block \u2014 no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered storybook night-garden fantasy item in three-quarter display angle: a stitched vest of overlapping plump mint leaves with cream trim and berry stitching. Subject's long side spans about 26\u201330 logical pixels, with at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel dark-plum outline. Use only mint / berry / cream / plum Moonberry colours (8\u201312 flat colors max) \u2014 no brown, tan, cyan, pure white, or pure black. Structural members at least 3 logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        160,
+        114,
+        863,
+        880
+      ],
+      "pitch_x": {
+        "pitch": 31.95555555555571,
+        "score": 0.28609801892573106
+      },
+      "pitch_y": {
+        "pitch": 31.905555555555708,
+        "score": 0.2945394530674007
+      },
+      "grid": [
+        22,
+        24
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 422,
+      "far_cells": 22,
+      "far_fraction": 0.0521,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "contour-plum-deep": 46,
+        "cream": 29,
+        "mint-shadow": 160,
+        "sage": 94,
+        "mint": 12,
+        "twilight-slate": 9,
+        "mint-light": 55,
+        "mint-pale": 3,
+        "berry-mid": 14
+      }
+    }
+  },
+  "note": "#131 Equipment Base icon family Tier I raw"
+}

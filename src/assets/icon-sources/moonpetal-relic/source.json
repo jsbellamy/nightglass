@@ -1,0 +1,54 @@
+{
+  "provider": "Cursor GenerateImage",
+  "prompt": "TRUE chunky pixel art inventory icon ONLY. Drawn on an exact 32x32 logical pixel grid rendered large; every logical pixel is one clean flat square block \u2014 no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered storybook night-garden fantasy item in three-quarter display angle: a rounded hand lantern of cream panels in a berry-vine frame, a pale moon-petal charm hanging inside. Subject's long side spans about 26\u201330 logical pixels, with at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel dark-plum outline. Use only mint / berry / cream / plum Moonberry colours (8\u201312 flat colors max) \u2014 no brown, tan, cyan, pure white, or pure black. Structural members at least 3 logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "raw_sha256": "848f3d82db55a61eadc337acbb6ada7ef261c3513d34471439acce0339078ad2",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        183,
+        56,
+        872,
+        974
+      ],
+      "pitch_x": {
+        "pitch": 34.427777777777735,
+        "score": 0.24196160558307914
+      },
+      "pitch_y": {
+        "pitch": 35.17777777777769,
+        "score": 0.21279272222498816
+      },
+      "grid": [
+        20,
+        27
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 345,
+      "far_cells": 26,
+      "far_fraction": 0.0754,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "contour-plum-deepest": 83,
+        "berry": 77,
+        "berry-shadow": 52,
+        "berry-mid": 42,
+        "mint-light": 19,
+        "cream-gold": 25,
+        "cream": 44,
+        "mint-pale": 3
+      }
+    }
+  },
+  "palette_subset": [
+    "contour-plum-deepest",
+    "berry-shadow",
+    "berry-mid",
+    "berry",
+    "cream",
+    "cream-gold",
+    "mint-pale",
+    "mint-light"
+  ],
+  "evidence_raw": "docs/research/evidence/126-equipment-icons/accepted-raws/moonpetal-relic.png"
+}
