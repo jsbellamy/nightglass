@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:evidence": "playwright install chromium && playwright test",
     "assets:build": "python3 pipeline/acquire.py",
     "assets:effects": "python3 pipeline/effects/author.py && python3 pipeline/effects/derive.py",
     "assets:verify": "python3 pipeline/test_contract.py && python3 pipeline/effects/verify.py",
@@ -19,6 +20,7 @@
     "@tauri-apps/api": "^2"
   },
   "devDependencies": {
+    "@playwright/test": "1.61.1",
     "@tauri-apps/cli": "^2",
     "happy-dom": "^20",
     "typescript": "~5.6",

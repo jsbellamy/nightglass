@@ -27,3 +27,8 @@ dist-ssr
 
 # Rust
 src-tauri/target
+
+# Rendered-evidence / Playwright artifacts (review-only; no pixel-diff gate)
+e2e-screenshots/
+playwright-report/
+test-results/
