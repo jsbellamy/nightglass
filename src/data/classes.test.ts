@@ -82,20 +82,20 @@ describe("assembled Class Kit content", () => {
   });
 });
 
-describe("reviewed Class Kit number contract", () => {
-  it("ships every Class Kit Ability matching the reviewed contract field-by-field", () => {
+describe("Class Kit number contract", () => {
+  it("matches reviewed Ability coefficients, Wind-up, Recovery, and cooldowns for every Class Kit Ability", () => {
     expect(ISSUE_7_ABILITIES).toHaveLength(28);
     expect(sortById(classKit.abilities)).toEqual(sortById(ISSUE_7_ABILITIES));
   });
 
-  it("ships Status durations and modifiers matching the reviewed contract", () => {
+  it("matches reviewed Status Effect durations and modifiers", () => {
     expect(ISSUE_7_STATUSES).toHaveLength(9);
     for (const expected of ISSUE_7_STATUSES) {
       expect(statusById(expected.id, classKit.statuses)).toEqual(expected);
     }
   });
 
-  it("ships Level 1 bases and default Ability Loadouts matching the reviewed contract", () => {
+  it("matches reviewed Level 1 bases and default Ability Loadouts for every Class", () => {
     expect(content.classes).toHaveLength(4);
     expect(ISSUE_7_CLASS_BASES).toHaveLength(4);
     for (const expected of ISSUE_7_CLASS_BASES) {
@@ -105,7 +105,7 @@ describe("reviewed Class Kit number contract", () => {
     }
   });
 
-  it("ships xpThresholds matching the reviewed contract", () => {
+  it("matches reviewed Character XP thresholds", () => {
     expect(classKit.xpThresholds).toEqual([...ISSUE_7_XP_THRESHOLDS]);
   });
 });
