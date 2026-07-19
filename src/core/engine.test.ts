@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { createEngine } from "./engine";
 import type { EngineEvent } from "./events";
-import type { ProgressionState, Snapshot } from "./snapshot";
+import type { DropInstance, ProgressionState, Snapshot } from "./snapshot";
 import { defaultTalentsForClasses } from "./talents";
 import { fixtureContent } from "./testing/fixture-content";
 import type { Content } from "./types";
@@ -2161,6 +2161,32 @@ describe("Equipment and Drops", () => {
 
     expect(defeated.snapshot().progression.armory).toHaveLength(1);
     expect(defeated.snapshot().progression.armory[0]?.dropId).toBe(1);
+  });
+
+  it("keeps committed Drops through Stage abandonment via selectStage", () => {
+    const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
+    engine.advanceBy(1);
+
+    let awardedDrop: DropInstance | null = null;
+    for (let ms = 0; ms < 300_000; ms += 1) {
+      const events = engine.advanceBy(1);
+      const awarded = events.find((event) => event.type === "drop-awarded");
+      if (awarded) {
+        awardedDrop = structuredClone(
+          engine.snapshot().progression.armory.find((drop) => drop.dropId === awarded.dropId) ??
+            null,
+        );
+        break;
+      }
+    }
+    expect(awardedDrop).not.toBeNull();
+
+    engine.selectStage(1);
+
+    expect(engine.snapshot().progression.armory).toHaveLength(1);
+    expect(engine.snapshot().progression.armory[0]).toEqual(awardedDrop);
+    expect(engine.snapshot().attempt?.stage).toBe(1);
+    expect(engine.snapshot().attempt?.encounter).toBe(1);
   });
 
   it("applies Equipment stats only from the next Stage Attempt", () => {
