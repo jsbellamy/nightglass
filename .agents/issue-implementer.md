@@ -27,7 +27,9 @@ the runtime supports worktrees.
      finished generation prompt and its intended read: run the prompt as
      written, judge the result against the stated read, and keep the archived
      raw plus provenance sidecar so `assets:verify` proves a byte-identical
-     rebuild.
+     rebuild. Generated images, archived raws, sidecars, and scratch files all
+     land at repo-relative paths inside the worktree — write every tool's
+     output there, including any temp directory a generation step wants.
 5. Before publishing, make an **acceptance matrix** containing every checkbox
    from the live issue. Follow `docs/agents/acceptance-evidence.md`: for each
    row, state a disposition plus specific evidence at the seam the criterion
@@ -69,6 +71,12 @@ the runtime supports worktrees.
 
 ## Constraints
 
+- The worktree is the workspace: every file you create or edit lives under its
+  root, addressed by a repo-relative path. Run commands with the worktree root
+  as the working directory so relative paths resolve inside it, and keep scratch
+  work in a gitignored directory there rather than `/tmp` or a system temp dir.
+  A step that seems to need a path outside the worktree is a signal to stop and
+  report, not to write there.
 - Respect the simulation boundary (`docs/vertical-slice-spec.md` §9): the
   Engine stays caller-pumped and chunk-size-neutral; time and RNG are injected;
   Presentation Events carry domain facts, never asset names.
