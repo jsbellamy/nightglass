@@ -37,6 +37,13 @@ Before creating or changing any raster asset, follow the acquisition loop in
 `docs/agents/asset-generation.md`. It routes each asset class to its authoritative
 contract and defines the evidence required before an asset task is complete.
 
+### Acceptance evidence
+
+Criterion-by-criterion publication gate: which seam proves a rendered,
+cross-window, or native criterion, the three dispositions for unsupported
+rows, and the orchestrator's independent browser-scene step. See
+`docs/agents/acceptance-evidence.md`.
+
 ### Native observation
 
 Browser rendered-evidence (`npm run test:evidence`) covers layout, contrast,
@@ -48,9 +55,8 @@ must be observed in `npm run tauri dev` is listed in
 
 One branch per issue (`issue-<N>-<slug>`, based on `main`); never work
 directly on `main`. Finish with a pull request that includes `Closes #<N>` and
-an acceptance matrix: every issue checkbox as an evidence row citing a test,
-code location, command result, or attached review sheet at the seam the
-criterion names.
+an acceptance matrix: every issue checkbox as an evidence row citing evidence
+at the seam named by `docs/agents/acceptance-evidence.md`.
 
 ## Delegating work
 
@@ -59,7 +65,8 @@ model, or effort setting to delegate work. A reusable issue-implementation
 subagent is defined in `.agents/issue-implementer.md`; tool-specific runtimes
 may provide their own pinned variant (for example
 `.claude/agents/issue-implementer.md`) — prefer the variant native to the
-runtime you are in. The orchestrator independently owns the acceptance gate:
-before merging, re-read the live issue and verify every acceptance row at its
-seam — green CI and a scope-matching file list are necessary but never
-sufficient.
+runtime you are in. The orchestrator independently owns the acceptance gate in
+`docs/agents/acceptance-evidence.md`: before merging, re-read the live issue,
+verify every acceptance row at its named seam, and for browser-seam criteria
+re-run `npm run test:evidence` and look at the emitted scenes — green CI and
+a scope-matching file list are necessary but never sufficient.

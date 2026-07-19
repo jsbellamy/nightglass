@@ -463,10 +463,17 @@ What content data and assets the slice must author, derived from §§3–8:
 
 ## 12. Acceptance evidence
 
-Each decision area was resolved with recorded evidence; implementation inherits
-these as its acceptance baseline.
+**How to prove a live acceptance criterion** — including rendered geometry,
+contrast, cross-window delivery, and native windowing — is governed only by
+[`docs/agents/acceptance-evidence.md`](agents/acceptance-evidence.md). Do not
+treat this section as a second publication gate.
 
-| Area | Evidence |
+The table below is the **design-time baseline**: each decision area was
+resolved with recorded prototype or research evidence before implementation.
+It is historical context for *why* the slice looks this way, not the checklist
+an implementer or orchestrator ticks to publish a PR.
+
+| Area | Design-time evidence |
 | --- | --- |
 | Battle Tile readability at 480×112, five-opponent stress | [live-battlefield prototype](../prototype/live-battlefield/README.md) ([#1](https://github.com/jsbellamy/nightglass/issues/1)) |
 | Art direction at native scale | [art-direction prototype](../prototype/art-direction/NOTES.md) ([#3](https://github.com/jsbellamy/nightglass/issues/3)) |
@@ -479,10 +486,12 @@ these as its acceptance baseline.
 | Body-motion rejections (closed evidence, not dependencies) | [#13](https://github.com/jsbellamy/nightglass/issues/13), [#19](https://github.com/jsbellamy/nightglass/issues/19), [#26](https://github.com/jsbellamy/nightglass/issues/26), [#24](https://github.com/jsbellamy/nightglass/issues/24) |
 | SideScape reuse/reject inventory | [foundation research](research/sidescape-foundation.md) ([#9](https://github.com/jsbellamy/nightglass/issues/9)) |
 
-Slice sign-off additionally requires: the §10 manual performance checklist, the
-CI Offline Progress timing test, the accessibility floor verified on both
-platforms, and every shipped asset passing its contract validator from the
-Archived Raw Bundle offline.
+Slice sign-off still includes the §10 manual performance checklist, the CI
+Offline Progress timing test, and every shipped asset passing its contract
+validator from the Archived Raw Bundle offline. Accessibility-floor and other
+rendered criteria are proved per
+[`docs/agents/acceptance-evidence.md`](agents/acceptance-evidence.md), not by
+re-stating a second suite here.
 
 ---
 

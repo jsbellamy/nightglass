@@ -41,8 +41,10 @@ Test at these public boundaries, nowhere internal:
   fresh Wave 1 Attempt; unreadable saves reset without crashing.
 - **UI seam** — DOM integration tests (Vitest + happy-dom) mount a renderer,
   feed it Snapshots and recorded Presentation Events, and assert on the DOM.
-  The Playwright e2e suite owns the accessibility floor (keyboard, contrast,
-  reduced-motion); ordinary UI slices do not duplicate it.
+  The rendered-evidence harness (`npm run test:evidence`, under `e2e/`) owns
+  the accessibility floor (keyboard, contrast) and other browser-seam
+  criteria named in `docs/agents/acceptance-evidence.md`; ordinary UI slices
+  do not duplicate it.
 
 ## Style rules
 

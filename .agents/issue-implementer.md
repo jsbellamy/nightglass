@@ -29,13 +29,17 @@ the runtime supports worktrees.
      raw plus provenance sidecar so `assets:verify` proves a byte-identical
      rebuild.
 5. Before publishing, make an **acceptance matrix** containing every checkbox
-   from the live issue. For each row, state `met` plus specific evidence at the
-   seam the criterion names: a test name, code location, command result, or
-   attached review sheet. Never infer a visual or integration criterion from a
-   merely related test — readability and review-sheet criteria need the sheet
-   attached, and byte-identity criteria need the `assets:verify` result. If any
-   row cannot be supported, stop and report the issue as incomplete rather than
-   opening a completion PR.
+   from the live issue. Follow `docs/agents/acceptance-evidence.md`: for each
+   row, state `met` plus specific evidence at the seam the criterion names —
+   citing `evidence:` / `manual-check:` scenario slugs where those apply, a
+   code location, command result, or scenario-keyed review artifact. Never
+   infer a rendered, contrast, cross-window, or native criterion from a
+   happy-dom or unit test. Readability and review-sheet criteria need the
+   sheet attached; byte-identity criteria need the `assets:verify` result.
+   Apply the three dispositions in that doc (unsupportable → stop;
+   agent-blocked native → open PR and block merge; successor-falsified → flag,
+   do not tick). If any row cannot be supported, stop and report the issue as
+   incomplete rather than opening a completion PR.
 6. Commit only the issue's changes. Let any commit hooks run; never bypass them.
    Push with `git push -u origin <branch>`, then create a pull request whose
    body includes a summary, verification details, the complete acceptance
