@@ -451,7 +451,7 @@ What content data and assets the slice must author, derived from §§3–8:
 | --- | --- | --- |
 | Class Kits (bases, basic attacks, 4 Core Abilities, Talent Tier each) | 4 | [#7](https://github.com/jsbellamy/nightglass/issues/7) |
 | Stages (2 Waves + Boss, opponent rosters, XP allocation) | 3 | [#5](https://github.com/jsbellamy/nightglass/issues/5) |
-| Opponent designs incl. Bosses (Moonberry botanical language) | per Stage data | [#3](https://github.com/jsbellamy/nightglass/issues/3), [#30](https://github.com/jsbellamy/nightglass/issues/30) (open) |
+| Opponent stills: one ordinary family (Pipcap-class, reused across Waves) + one distinct Boss silhouette per Stage | 1 + 3 (Pipcap and one Boss accepted) | [#30](https://github.com/jsbellamy/nightglass/issues/30) |
 | Canonical Character references | 4 (Knight, Wizard accepted; Priest, Hunter to acquire) | [#29](https://github.com/jsbellamy/nightglass/issues/29) |
 | Ability effect stills + derivation recipes | one still per distinct effect | [#20](https://github.com/jsbellamy/nightglass/issues/20), [#4](https://github.com/jsbellamy/nightglass/issues/4) |
 | Hand-authored idle micro-loops (optional) and downed poses | up to 4 + 4 | [#4](https://github.com/jsbellamy/nightglass/issues/4) |
@@ -475,6 +475,7 @@ these as its acceptance baseline.
 | Acquisition: byte-identical offline rebuild, provider-neutral, validator gates | `prototype/comfyui-fit/test_contract.py` all-green with no provider/network; accepted Knight/Wizard hashes ([#29](https://github.com/jsbellamy/nightglass/issues/29), [#21](https://github.com/jsbellamy/nightglass/issues/21)) |
 | Effects read at 1× under stress; separation enforced; deterministic | `prototype/comfyui-fit/effects/verify.py` 6/6 gates ([#20](https://github.com/jsbellamy/nightglass/issues/20)) |
 | Animation contract: attribution, cue alignment, 30fps legibility, anchors | [presentation-contract prototype](../prototype/presentation-contract/NOTES.md) `verify.py` 7/7 gates ([#4](https://github.com/jsbellamy/nightglass/issues/4)) |
+| Opponent art through grid recovery: Pipcap (29×40) and Boss (32×41) accepted, shared `moonberry-16`, byte-identical offline rebuild | [opponent-art prototype](../prototype/comfyui-fit/opponents/NOTES.md) ([#30](https://github.com/jsbellamy/nightglass/issues/30)) |
 | Body-motion rejections (closed evidence, not dependencies) | [#13](https://github.com/jsbellamy/nightglass/issues/13), [#19](https://github.com/jsbellamy/nightglass/issues/19), [#26](https://github.com/jsbellamy/nightglass/issues/26), [#24](https://github.com/jsbellamy/nightglass/issues/24) |
 | SideScape reuse/reject inventory | [foundation research](research/sidescape-foundation.md) ([#9](https://github.com/jsbellamy/nightglass/issues/9)) |
 
@@ -489,14 +490,14 @@ Archived Raw Bundle offline.
 
 Carried forward deliberately; none blocks implementation planning.
 
-- **Opponent art acquisition** is being validated by the open
-  [opponent-art prototype](https://github.com/jsbellamy/nightglass/issues/30);
-  the pipeline is expected to extend, but the ~28×40 opponent canvas is
-  unproven through grid recovery.
-- **Priest and Hunter canonical references** are not yet acquired; the accepted
-  pipeline is proven on Knight and Wizard only.
-- **`moonberry-16` extension** to a fuller cast (opponents, backdrops) is
-  unresolved; `moonberry-glow` disjointness must be preserved as effects grow.
+- **Priest and Hunter canonical references** and **two of the three Boss
+  stills** are not yet acquired; the pipeline is proven on Knight, Wizard,
+  Pipcap, and one Boss
+  ([#30](https://github.com/jsbellamy/nightglass/issues/30) confirmed the
+  opponent canvases through grid recovery).
+- **`moonberry-16` extension**: opponents and Bosses share the palette (#30);
+  extending it for Priest, Hunter, and backdrops is unresolved, and
+  `moonberry-glow` disjointness must be preserved as effects grow.
 - **Presentation concurrency** is validated at three simultaneous actor pools,
   not five; whether five stay legible (or must dim) awaits opponent art and a
   real Wave.
