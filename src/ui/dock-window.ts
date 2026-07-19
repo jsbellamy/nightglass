@@ -1,5 +1,6 @@
 import { dockRect, type Rect } from "./dock-geometry";
 import { DOCK_HEIGHT, DOCK_WIDTH } from "./dock-geometry";
+import type { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 
 export const DOCK_WINDOW_LABEL = "dock";
 
@@ -34,7 +35,16 @@ export interface DockWebviewWindow {
   show(): Promise<void>;
   hide(): Promise<void>;
   setPosition(x: number, y: number): Promise<void>;
-  once(event: "tauri://created", handler: () => void): void;
+  ready(): Promise<void>;
+}
+
+export function physicalRectToLogical(rect: Rect, scaleFactor: number): Rect {
+  return {
+    x: rect.x / scaleFactor,
+    y: rect.y / scaleFactor,
+    width: rect.width / scaleFactor,
+    height: rect.height / scaleFactor,
+  };
 }
 
 export function createDockWindowPort(deps: DockWindowDeps = {}): DockWindowPort {
@@ -87,8 +97,14 @@ export function createDockWindowPort(deps: DockWindowDeps = {}): DockWindowPort 
         return;
       }
       const windowRef = await ensureDockWindow();
-      await applyPosition();
       if (windowRef) {
+        try {
+          await windowRef.ready();
+        } catch {
+          dockWindow = null;
+          return;
+        }
+        await applyPosition();
         await windowRef.show();
       }
       open = true;
@@ -147,6 +163,35 @@ export const DOCK_WINDOW_SIZE = {
   height: DOCK_HEIGHT,
 } as const;
 
+function wrapDockWebviewWindow(
+  windowRef: Pick<WebviewWindow, "show" | "hide" | "setPosition" | "once">,
+  LogicalPosition: new (x: number, y: number) => object,
+  options: { awaitCreated: boolean },
+): DockWebviewWindow {
+  return {
+    show: () => windowRef.show(),
+    hide: () => windowRef.hide(),
+    setPosition: async (x, y) => {
+      await windowRef.setPosition(
+        new LogicalPosition(x, y) as Parameters<WebviewWindow["setPosition"]>[0],
+      );
+    },
+    ready: () => {
+      if (!options.awaitCreated) {
+        return Promise.resolve();
+      }
+      return new Promise<void>((resolve, reject) => {
+        windowRef.once("tauri://created", () => {
+          resolve();
+        });
+        windowRef.once("tauri://error", () => {
+          reject(new Error("tauri://error"));
+        });
+      });
+    },
+  };
+}
+
 export function createProductionDockWindowPort(): DockWindowPort {
   if (!isTauriRuntime()) {
     return createDockWindowPort();
@@ -158,27 +203,35 @@ export function createProductionDockWindowPort(): DockWindowPort {
     async getTileOuterPosition() {
       const { getCurrentWindow } = await import("@tauri-apps/api/window");
       const tile = getCurrentWindow();
+      const scaleFactor = await tile.scaleFactor();
       const position = await tile.outerPosition();
       const size = await tile.outerSize();
-      return {
-        x: position.x,
-        y: position.y,
-        width: size.width,
-        height: size.height,
-      };
+      return physicalRectToLogical(
+        {
+          x: position.x,
+          y: position.y,
+          width: size.width,
+          height: size.height,
+        },
+        scaleFactor,
+      );
     },
     async getMonitorForTile() {
-      const { currentMonitor } = await import("@tauri-apps/api/window");
+      const { currentMonitor, getCurrentWindow } = await import("@tauri-apps/api/window");
+      const scaleFactor = await getCurrentWindow().scaleFactor();
       const monitor = await currentMonitor();
       if (!monitor) {
         return { x: 0, y: 0, width: 1920, height: 1080 };
       }
-      return {
-        x: monitor.position.x,
-        y: monitor.position.y,
-        width: monitor.size.width,
-        height: monitor.size.height,
-      };
+      return physicalRectToLogical(
+        {
+          x: monitor.position.x,
+          y: monitor.position.y,
+          width: monitor.size.width,
+          height: monitor.size.height,
+        },
+        scaleFactor,
+      );
     },
     async getDockWindow() {
       const { WebviewWindow } = await import("@tauri-apps/api/webviewWindow");
@@ -187,16 +240,7 @@ export function createProductionDockWindowPort(): DockWindowPort {
       if (!existing) {
         return null;
       }
-      return {
-        show: () => existing.show(),
-        hide: () => existing.hide(),
-        setPosition: async (x, y) => {
-          await existing.setPosition(new LogicalPosition(x, y));
-        },
-        once: (event, handler) => {
-          existing.once(event, handler);
-        },
-      };
+      return wrapDockWebviewWindow(existing, LogicalPosition, { awaitCreated: false });
     },
     async createDockWindow(url) {
       const { WebviewWindow } = await import("@tauri-apps/api/webviewWindow");
@@ -212,16 +256,7 @@ export function createProductionDockWindowPort(): DockWindowPort {
         visible: false,
         focus: true,
       });
-      return {
-        show: () => dock.show(),
-        hide: () => dock.hide(),
-        setPosition: async (x, y) => {
-          await dock.setPosition(new LogicalPosition(x, y));
-        },
-        once: (event, handler) => {
-          dock.once(event, handler);
-        },
-      };
+      return wrapDockWebviewWindow(dock, LogicalPosition, { awaitCreated: true });
     },
     onTileMoved(listener) {
       let unlisten: (() => void) | null = null;
