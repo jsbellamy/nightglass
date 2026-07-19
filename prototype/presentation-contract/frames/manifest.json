@@ -1,0 +1,90 @@
+{
+  "priest_heal": {
+    "frame_size": [
+      20,
+      34
+    ],
+    "palette": "moonberry-glow@1",
+    "anchor": "strike_target",
+    "anchor_dx": 0,
+    "strike_dy": -26,
+    "align_to": "impact_expected",
+    "cues_ms": {
+      "impact_expected": 0
+    },
+    "total_ms": 500,
+    "frames": [
+      {
+        "file": "priest_heal_0.png",
+        "duration_ms": 90,
+        "sha256": "42a86e380d5ff56c038e42835af200eb85f06dd7202c49fdee2fa14d8f29b1b2",
+        "opaque_px": 21
+      },
+      {
+        "file": "priest_heal_1.png",
+        "duration_ms": 90,
+        "sha256": "227b057bb585476ba9e3939ec516e692140c407f21443e2219a28892681c21e3",
+        "opaque_px": 32
+      },
+      {
+        "file": "priest_heal_2.png",
+        "duration_ms": 110,
+        "sha256": "6631955e9982cb52f0b8483a9b1370ebb9e5748439aa1e6cfe5fdc43207baf95",
+        "opaque_px": 49
+      },
+      {
+        "file": "priest_heal_3.png",
+        "duration_ms": 110,
+        "sha256": "5b693ab34beb89128b79ad6ac16baa6c3f4f7ca71bf041b237d5ab654ce9f78d",
+        "opaque_px": 36
+      },
+      {
+        "file": "priest_heal_4.png",
+        "duration_ms": 100,
+        "sha256": "a38adee9c1f2671aa2ed1b9bfd0ac1817b172eb33060fd0dfcffe5e9662a07f0",
+        "opaque_px": 12
+      }
+    ],
+    "source": {
+      "still": "priest_heal.png",
+      "sha256": "6631955e9982cb52f0b8483a9b1370ebb9e5748439aa1e6cfe5fdc43207baf95",
+      "authored_by": "presentation-contract/author_extra.py",
+      "generator": null
+    }
+  },
+  "hunter_arrow": {
+    "frame_size": [
+      13,
+      7
+    ],
+    "palette": "moonberry-glow@1",
+    "anchor": "lane_travel",
+    "anchor_dx": 0,
+    "strike_dy": -26,
+    "align_to": "release_projectile",
+    "cues_ms": {
+      "release_projectile": 0
+    },
+    "total_ms": 120,
+    "frames": [
+      {
+        "file": "hunter_arrow_0.png",
+        "duration_ms": 60,
+        "sha256": "f482d73534fcaa2a49178282349d5b9e69d67cb5ca849c70597cd52904b4d3e3",
+        "opaque_px": 16
+      },
+      {
+        "file": "hunter_arrow_1.png",
+        "duration_ms": 60,
+        "sha256": "a7c5b319e3fd6ba5ca068a7ca9449cfab65f0173f811298e84704ce40efa12ad",
+        "opaque_px": 16
+      }
+    ],
+    "source": {
+      "still": "hunter_arrow.png",
+      "sha256": "f482d73534fcaa2a49178282349d5b9e69d67cb5ca849c70597cd52904b4d3e3",
+      "authored_by": "presentation-contract/author_extra.py",
+      "generator": null
+    }
+  }
+}
