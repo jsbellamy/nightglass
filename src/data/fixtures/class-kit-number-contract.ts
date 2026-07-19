@@ -6,27 +6,29 @@ import type {
 } from "../../core/types";
 
 /**
- * Reviewed Ability-number contract transcribed from issue #7's Answer.
+ * Reviewed Class Kit number contract: Level 1 bases, default Ability Loadouts,
+ * all Class Kit Abilities (coefficients, Wind-up, Recovery, cooldowns), and
+ * Status Effect durations.
  *
- * This file is the reviewable artifact: one deliberate pass from the GitHub
- * comment into the repo. Do not regenerate it from `src/data/classes/*` —
- * the mechanical comparison test guards drift between this fixture and
- * shipped content, not the original transcription's correctness.
+ * This file is the reviewable artifact — one deliberate transcription into the
+ * repo. Do not regenerate it from `src/data/classes/*`; the comparison test
+ * guards drift between this fixture and shipped content, not the original
+ * transcription's correctness.
  *
- * Source: https://github.com/jsbellamy/nightglass/issues/7
+ * Provenance: https://github.com/jsbellamy/nightglass/issues/7 (Answer)
  */
 
-export interface Issue7ClassBases {
+export interface ClassKitBasesContract {
   id: ClassId;
   base: BaseStats;
   defaultLoadout: [string, string, string];
 }
 
-/** Cumulative XP thresholds pinned alongside the Class Kit contract. */
-export const ISSUE_7_XP_THRESHOLDS = [0, 100, 250, 450, 650, 850] as const;
+/** Cumulative Character XP thresholds pinned with the Class Kit contract. */
+export const REVIEWED_XP_THRESHOLDS = [0, 100, 250, 450, 650, 850] as const;
 
-/** Level 1 bases and default Ability Loadouts from issue #7. */
-export const ISSUE_7_CLASS_BASES: Issue7ClassBases[] = [
+/** Reviewed Level 1 bases and default Ability Loadouts. */
+export const REVIEWED_CLASS_BASES: ClassKitBasesContract[] = [
   {
     id: "knight",
     base: {
@@ -74,11 +76,11 @@ export const ISSUE_7_CLASS_BASES: Issue7ClassBases[] = [
 ];
 
 /**
- * Status durations and modifiers from issue #7.
+ * Reviewed Status Effect durations and modifiers.
  * Stun duration is authored per Ability via `stunMs`; the shared stun entry
  * is the fallback Status definition referenced by those effects.
  */
-export const ISSUE_7_STATUSES: StatusEffectDef[] = [
+export const REVIEWED_STATUSES: StatusEffectDef[] = [
   {
     id: "braced",
     name: "Braced",
@@ -143,8 +145,8 @@ export const ISSUE_7_STATUSES: StatusEffectDef[] = [
   },
 ];
 
-/** All 28 Class Kit Abilities: coefficients, Wind-up, Recovery, cooldowns, Status links. */
-export const ISSUE_7_ABILITIES: AbilityDef[] = [
+/** Reviewed Class Kit Abilities: coefficients, Wind-up, Recovery, cooldowns, Status links. */
+export const REVIEWED_CLASS_KIT_ABILITIES: AbilityDef[] = [
   // Knight — basic + four Core + two Ability Talents
   {
     id: "steel-cut",

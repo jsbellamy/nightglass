@@ -4,11 +4,11 @@ import type { AbilityDef, ClassKitDef, StatusEffectDef } from "../core/types";
 import type { CombatantState } from "../core/snapshot";
 import { validateContent } from "../core/validate-content";
 import {
-  ISSUE_7_ABILITIES,
-  ISSUE_7_CLASS_BASES,
-  ISSUE_7_STATUSES,
-  ISSUE_7_XP_THRESHOLDS,
-} from "./fixtures/issue-7-ability-contract";
+  REVIEWED_CLASS_BASES,
+  REVIEWED_CLASS_KIT_ABILITIES,
+  REVIEWED_STATUSES,
+  REVIEWED_XP_THRESHOLDS,
+} from "./fixtures/class-kit-number-contract";
 import { buildClassKitSlice, buildContent } from "./index";
 
 const content = buildContent();
@@ -83,30 +83,30 @@ describe("assembled Class Kit content", () => {
 });
 
 describe("Class Kit number contract", () => {
-  it("matches reviewed Ability coefficients, Wind-up, Recovery, and cooldowns for every Class Kit Ability", () => {
-    expect(ISSUE_7_ABILITIES).toHaveLength(28);
-    expect(sortById(classKit.abilities)).toEqual(sortById(ISSUE_7_ABILITIES));
+  it("Ability coefficients, Wind-up, Recovery, and cooldowns match the reviewed contract", () => {
+    expect(REVIEWED_CLASS_KIT_ABILITIES).toHaveLength(28);
+    expect(sortById(classKit.abilities)).toEqual(sortById(REVIEWED_CLASS_KIT_ABILITIES));
   });
 
-  it("matches reviewed Status Effect durations and modifiers", () => {
-    expect(ISSUE_7_STATUSES).toHaveLength(9);
-    for (const expected of ISSUE_7_STATUSES) {
+  it("Status Effect durations and modifiers match the reviewed contract", () => {
+    expect(REVIEWED_STATUSES).toHaveLength(9);
+    for (const expected of REVIEWED_STATUSES) {
       expect(statusById(expected.id, classKit.statuses)).toEqual(expected);
     }
   });
 
-  it("matches reviewed Level 1 bases and default Ability Loadouts for every Class", () => {
+  it("Level 1 bases and default Ability Loadouts match the reviewed contract", () => {
     expect(content.classes).toHaveLength(4);
-    expect(ISSUE_7_CLASS_BASES).toHaveLength(4);
-    for (const expected of ISSUE_7_CLASS_BASES) {
+    expect(REVIEWED_CLASS_BASES).toHaveLength(4);
+    for (const expected of REVIEWED_CLASS_BASES) {
       const shipped = classById(expected.id);
       expect(shipped.base).toEqual(expected.base);
       expect(shipped.defaultLoadout).toEqual(expected.defaultLoadout);
     }
   });
 
-  it("matches reviewed Character XP thresholds", () => {
-    expect(classKit.xpThresholds).toEqual([...ISSUE_7_XP_THRESHOLDS]);
+  it("Character XP thresholds match the reviewed contract", () => {
+    expect(classKit.xpThresholds).toEqual([...REVIEWED_XP_THRESHOLDS]);
   });
 });
 

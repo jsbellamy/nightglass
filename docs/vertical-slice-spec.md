@@ -245,11 +245,11 @@ Decision: [Automatic Combat rules](https://github.com/jsbellamy/nightglass/issue
 ## 6. Class Kits
 
 Decision: [four Class kits](https://github.com/jsbellamy/nightglass/issues/7).
-The reviewed Ability-number contract is committed as
-[`src/data/fixtures/issue-7-ability-contract.ts`](../src/data/fixtures/issue-7-ability-contract.ts)
-(Level 1 bases, default loadouts, all 28 Abilities with coefficients /
-Wind-up / Recovery / cooldowns, and Status durations); `src/data` is compared
-to that fixture field-by-field.
+The reviewed Class Kit number contract is committed as
+[`src/data/fixtures/class-kit-number-contract.ts`](../src/data/fixtures/class-kit-number-contract.ts)
+(Level 1 bases, default Ability Loadouts, all 28 Abilities with coefficients /
+Wind-up / Recovery / cooldowns, and Status Effect durations); `src/data` is
+compared to that fixture field-by-field.
 
 - Shared structure: one fixed basic attack (outside the loadout, its fallback),
   **four Core Abilities** available immediately, a three-slot Ability Loadout
