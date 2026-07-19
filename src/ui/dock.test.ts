@@ -8,10 +8,14 @@ import { createEngine } from "../core/engine";
 import { fixtureContent } from "../core/testing/fixture-content";
 import { DOCK_TABS, mountManagementDock } from "./dock";
 
+function mountDock(root: HTMLElement, options: Parameters<typeof mountManagementDock>[1] = {}) {
+  return mountManagementDock(root, { content: fixtureContent, ...options });
+}
+
 describe("Management Dock shell", () => {
-  it("shows one placeholder surface at a time across the five tabs", () => {
+  it("shows one surface at a time across the five tabs", () => {
     const root = document.createElement("main");
-    const dock = mountManagementDock(root);
+    const dock = mountDock(root);
     const engine = createEngine(fixtureContent, undefined, 3);
     dock.render(engine.snapshot());
 
@@ -31,7 +35,7 @@ describe("Management Dock shell", () => {
   it("closes when the active tab is pressed again or the close button is used", () => {
     const root = document.createElement("main");
     const onClose = vi.fn();
-    const dock = mountManagementDock(root, { onClose });
+    const dock = mountDock(root, { onClose });
 
     root.querySelector<HTMLButtonElement>('[data-dock-tab="party"]')?.click();
     expect(onClose).toHaveBeenCalledTimes(1);
@@ -46,7 +50,7 @@ describe("Management Dock shell", () => {
   it("cycles tabs with keyboard arrows and closes on Escape", () => {
     const root = document.createElement("main");
     const onClose = vi.fn();
-    mountManagementDock(root, { onClose });
+    mountDock(root, { onClose });
 
     const partyTab = root.querySelector<HTMLButtonElement>('[data-dock-tab="party"]');
     partyTab?.focus();
@@ -57,25 +61,31 @@ describe("Management Dock shell", () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it("renders interim placeholders only for Loadout, Talents, and Armory", () => {
+  it("renders Loadout and Talents surfaces while Armory remains interim", () => {
     const root = document.createElement("main");
-    mountManagementDock(root);
+    const dock = mountDock(root);
+    const engine = createEngine(fixtureContent, undefined, 3);
+    dock.render(engine.snapshot());
 
     for (const tab of DOCK_TABS) {
       const panel = root.querySelector<HTMLElement>(`[data-dock-panel="${tab.id}"]`);
-      if (tab.id === "party" || tab.id === "stage") {
+      if (tab.id === "party" || tab.id === "stage" || tab.id === "loadout" || tab.id === "talents") {
         expect(panel?.querySelector(".dock-placeholder-copy")).toBeNull();
-        expect(panel?.querySelector(".party-surface, .stage-surface")).not.toBeNull();
         continue;
       }
       expect(panel?.querySelector(".dock-placeholder-title")?.textContent).toBe(tab.label);
       expect(panel?.textContent).toMatch(/interim/i);
     }
+
+    expect(root.querySelector(".loadout-surface")).not.toBeNull();
+    expect(root.querySelector(".talents-surface")).not.toBeNull();
+
+    dock.destroy();
   });
 
   it("shows the Armory tab badge when the drop-toast hook fires", () => {
     const root = document.createElement("main");
-    const dock = mountManagementDock(root);
+    const dock = mountDock(root);
 
     expect(root.querySelector<HTMLElement>('[data-dock-tab="armory"] .dock-tab-badge')?.hidden).toBe(true);
     dock.setArmoryBadge(true);
