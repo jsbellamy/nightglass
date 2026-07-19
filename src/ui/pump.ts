@@ -31,7 +31,7 @@ export function startPump(deps: PumpDeps): PumpController {
   let pumpTimer: ReturnType<typeof setInterval> | null = null;
   let heartbeatTimer: ReturnType<typeof setInterval> | null = null;
   let rafId: number | null = null;
-  let renderAccumulatorMs = 0;
+  let lastRenderAtMs = -RENDER_FRAME_MS;
   let lastPumpAtMs = now();
   let lastHiddenPumpAtMs = now();
   let stopped = false;
@@ -48,21 +48,28 @@ export function startPump(deps: PumpDeps): PumpController {
     scheduleRender();
   }
 
+  function maybeRender(): void {
+    if (stopped || isHidden()) {
+      return;
+    }
+    const at = now();
+    if (at - lastRenderAtMs < RENDER_FRAME_MS) {
+      return;
+    }
+    lastRenderAtMs = at;
+    deps.render();
+  }
+
   function scheduleRender(): void {
     if (stopped || isHidden() || rafId !== null) {
       return;
     }
     rafId = requestFrame(() => {
       rafId = null;
-      if (stopped || isHidden()) {
-        return;
+      maybeRender();
+      if (!stopped && !isHidden()) {
+        scheduleRender();
       }
-      renderAccumulatorMs += RENDER_FRAME_MS;
-      if (renderAccumulatorMs >= RENDER_FRAME_MS) {
-        renderAccumulatorMs = 0;
-        deps.render();
-      }
-      scheduleRender();
     });
   }
 
@@ -71,7 +78,7 @@ export function startPump(deps: PumpDeps): PumpController {
       cancelFrame(rafId);
       rafId = null;
     }
-    renderAccumulatorMs = 0;
+    lastRenderAtMs = -RENDER_FRAME_MS;
   }
 
   function startLivePump(): void {

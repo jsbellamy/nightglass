@@ -2,7 +2,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { EngineEvent } from "../core/events";
-import { HIDDEN_HEARTBEAT_MS, PUMP_INTERVAL_MS, startPump } from "./pump";
+import { HIDDEN_HEARTBEAT_MS, PUMP_INTERVAL_MS, RENDER_FRAME_MS, startPump } from "./pump";
 
 describe("live pump loop", () => {
   beforeEach(() => {
@@ -67,6 +67,61 @@ describe("live pump loop", () => {
     doc.dispatchEvent(new Event("visibilitychange"));
     vi.advanceTimersByTime(PUMP_INTERVAL_MS);
     expect(advanceBy.mock.calls.length).toBeGreaterThanOrEqual(2);
+
+    pump.stop();
+  });
+
+  it("caps render cadence at 30fps via wall-clock gating between rAF ticks", () => {
+    let clock = 0;
+    const renderTimes: number[] = [];
+    const render = vi.fn(() => {
+      renderTimes.push(clock);
+    });
+    const rafCallbacks: FrameRequestCallback[] = [];
+    const doc = {
+      hidden: false,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    } as unknown as Document;
+
+    const pump = startPump({
+      advanceBy: vi.fn(() => [] as EngineEvent[]),
+      onAdvance: vi.fn(),
+      render,
+      now: () => clock,
+      requestAnimationFrame: (callback) => {
+        rafCallbacks.push(callback);
+        return rafCallbacks.length;
+      },
+      cancelAnimationFrame: vi.fn(),
+      setInterval: vi.fn(),
+      clearInterval: vi.fn(),
+      document: doc,
+    });
+
+    function runRafAt(at: number): void {
+      clock = at;
+      let guard = 0;
+      while (rafCallbacks.length > 0 && guard < 20) {
+        const callbacks = rafCallbacks.splice(0);
+        for (const callback of callbacks) {
+          callback(at);
+        }
+        guard += 1;
+      }
+    }
+
+    for (let at = 0; at <= 100; at += 8) {
+      runRafAt(at);
+    }
+
+    const maxRendersInWindow = Math.floor(100 / RENDER_FRAME_MS) + 1;
+    expect(renderTimes.length).toBeLessThanOrEqual(maxRendersInWindow);
+    expect(renderTimes.length).toBeGreaterThanOrEqual(2);
+
+    for (let index = 1; index < renderTimes.length; index++) {
+      expect(renderTimes[index]! - renderTimes[index - 1]!).toBeGreaterThanOrEqual(RENDER_FRAME_MS);
+    }
 
     pump.stop();
   });
