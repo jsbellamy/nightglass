@@ -25,10 +25,11 @@ decisions under `docs/adr/`. See `docs/agents/domain.md`.
 
 ### Code style and test seams
 
-Engine changes are test-first at the seams named in
-`docs/agents/code-style.md` — that doc is the standing seam agreement for the
-`/tdd` (red-green) workflow, and it holds the layout and style rules for
-`src/core` / `src/data` / `src/ui`.
+`docs/agents/code-style.md` is this repo's documented coding standard: the
+layout and style rules for `src/core` / `src/data` / `src/ui`, and the
+standing seam agreement for the `/tdd` (red-green) workflow. Engine changes
+are test-first at its seams, and code review judges every diff against its
+rules — a breach is a documented-standard violation, not a judgement call.
 
 ### Asset generation
 
