@@ -1,0 +1,1011 @@
+{
+  "arc-slash": {
+    "frame_size": [
+      30,
+      30
+    ],
+    "palette": "moonberry-glow@1",
+    "anchor": "strike_target",
+    "anchor_dx": -15,
+    "strike_dy": -26,
+    "align_to": "impact_expected",
+    "cues_ms": {
+      "impact_expected": 120
+    },
+    "total_ms": 250,
+    "frames": [
+      {
+        "file": "arc-slash/arc-slash_0.png",
+        "duration_ms": 60,
+        "sha256": "06a6a8327364ebe7039f8b73b93d180f723d65bb30ab53cbadb29872784443da",
+        "opaque_px": 86
+      },
+      {
+        "file": "arc-slash/arc-slash_1.png",
+        "duration_ms": 60,
+        "sha256": "ab28e85440aaebe7f49f3bdbb34312e39f302335747d47c257ef9c04886c17f3",
+        "opaque_px": 97
+      },
+      {
+        "file": "arc-slash/arc-slash_2.png",
+        "duration_ms": 60,
+        "sha256": "b08a7257abec68d1583c98510424d9869c63105ee949f9781c2fab41faecc6a3",
+        "opaque_px": 116
+      },
+      {
+        "file": "arc-slash/arc-slash_3.png",
+        "duration_ms": 70,
+        "sha256": "0c1cac992f82595788bca4adc53150151a948d13451d49ea53012834c5541890",
+        "opaque_px": 93
+      }
+    ],
+    "source": {
+      "still": "arc-slash.png",
+      "sha256": "143bd46ee0b38c5a4b29b511ec2d429f6a7fd4b697213ee63cab5fbe45aab74e",
+      "authored_by": "pipeline/effects/author.py",
+      "generator": null
+    }
+  },
+  "arc-slash-wide": {
+    "frame_size": [
+      30,
+      30
+    ],
+    "palette": "moonberry-glow@1",
+    "anchor": "strike_target",
+    "anchor_dx": -15,
+    "strike_dy": -26,
+    "align_to": "impact_expected",
+    "cues_ms": {
+      "impact_expected": 140
+    },
+    "total_ms": 290,
+    "frames": [
+      {
+        "file": "arc-slash-wide/arc-slash-wide_0.png",
+        "duration_ms": 70,
+        "sha256": "41ae95a6eee662ca1a9b59fc058177486318ca6c5c0141811e75a0eadabdc1e6",
+        "opaque_px": 71
+      },
+      {
+        "file": "arc-slash-wide/arc-slash-wide_1.png",
+        "duration_ms": 70,
+        "sha256": "a0142349f93499cdc893aa2cb86f975ffb4808ecd2f516dd7bda1bd03f6c6f93",
+        "opaque_px": 125
+      },
+      {
+        "file": "arc-slash-wide/arc-slash-wide_2.png",
+        "duration_ms": 70,
+        "sha256": "70a5481d8a7ef8d3847b00e160514ce6b3c2e1b6d16ae61c212a653c03e6b2ef",
+        "opaque_px": 119
+      },
+      {
+        "file": "arc-slash-wide/arc-slash-wide_3.png",
+        "duration_ms": 80,
+        "sha256": "0c1cac992f82595788bca4adc53150151a948d13451d49ea53012834c5541890",
+        "opaque_px": 93
+      }
+    ],
+    "source": {
+      "still": "arc-slash.png",
+      "sha256": "143bd46ee0b38c5a4b29b511ec2d429f6a7fd4b697213ee63cab5fbe45aab74e",
+      "authored_by": "pipeline/effects/author.py",
+      "generator": null
+    }
+  },
+  "arc-slash-heavy": {
+    "frame_size": [
+      30,
+      30
+    ],
+    "palette": "moonberry-glow@1",
+    "anchor": "strike_target",
+    "anchor_dx": -15,
+    "strike_dy": -26,
+    "align_to": "impact_expected",
+    "cues_ms": {
+      "impact_expected": 160
+    },
+    "total_ms": 330,
+    "frames": [
+      {
+        "file": "arc-slash-heavy/arc-slash-heavy_0.png",
+        "duration_ms": 80,
+        "sha256": "47c01574c474e4e4938803149d7024fba98c42c5248d5905817969e11c66ee2f",
+        "opaque_px": 94
+      },
+      {
+        "file": "arc-slash-heavy/arc-slash-heavy_1.png",
+        "duration_ms": 80,
+        "sha256": "ff78d23f75402a08e30ecc43175861f78c9468de0748b5ca08f8d92214e52c98",
+        "opaque_px": 118
+      },
+      {
+        "file": "arc-slash-heavy/arc-slash-heavy_2.png",
+        "duration_ms": 80,
+        "sha256": "8da18c0912d0e4eea35b6c3a45ebca1c7322959b45d0d5af7de2bfb8f669d069",
+        "opaque_px": 130
+      },
+      {
+        "file": "arc-slash-heavy/arc-slash-heavy_3.png",
+        "duration_ms": 90,
+        "sha256": "25e0352bdcfc06e1c0997fa7eaa1c194a099c3001ab0d97974f6e9f546827ab5",
+        "opaque_px": 139
+      }
+    ],
+    "source": {
+      "still": "arc-slash.png",
+      "sha256": "143bd46ee0b38c5a4b29b511ec2d429f6a7fd4b697213ee63cab5fbe45aab74e",
+      "authored_by": "pipeline/effects/author.py",
+      "generator": null
+    }
+  },
+  "arc-impact": {
+    "frame_size": [
+      23,
+      23
+    ],
+    "palette": "moonberry-glow@1",
+    "anchor": "strike_target",
+    "anchor_dx": 0,
+    "strike_dy": -26,
+    "align_to": "impact_expected",
+    "cues_ms": {
+      "impact_expected": 0
+    },
+    "total_ms": 180,
+    "frames": [
+      {
+        "file": "arc-impact/arc-impact_0.png",
+        "duration_ms": 50,
+        "sha256": "cb2b1867fc646b914f7a201d7d661f33a1f481da960448e5df55b6c2759a01d5",
+        "opaque_px": 39
+      },
+      {
+        "file": "arc-impact/arc-impact_1.png",
+        "duration_ms": 70,
+        "sha256": "894454c62a5deee7945d33af562f7243183c5237bd8989c30f99d582a62e73c8",
+        "opaque_px": 128
+      },
+      {
+        "file": "arc-impact/arc-impact_2.png",
+        "duration_ms": 60,
+        "sha256": "db5538ca989c1b1e5653436f13ce230d611799f4738c4cecc6671b3400792681",
+        "opaque_px": 85
+      }
+    ],
+    "source": {
+      "still": "arc-impact.png",
+      "sha256": "82ba274fa5f1604db914b699f7f45d21194ef6f722149d7c6e4dabbb75e01f10",
+      "authored_by": "pipeline/effects/author.py",
+      "generator": null
+    }
+  },
+  "arrow-bolt": {
+    "frame_size": [
+      19,
+      9
+    ],
+    "palette": "moonberry-glow@1",
+    "anchor": "lane_travel",
+    "anchor_dx": 0,
+    "strike_dy": -26,
+    "align_to": "release_projectile",
+    "cues_ms": {
+      "release_projectile": 0
+    },
+    "total_ms": 100,
+    "frames": [
+      {
+        "file": "arrow-bolt/arrow-bolt_0.png",
+        "duration_ms": 50,
+        "sha256": "627353ef62283b5bac64bc34d1e6f13e7eeaf083edc85f0aa36a0bd2039d7457",
+        "opaque_px": 61
+      },
+      {
+        "file": "arrow-bolt/arrow-bolt_1.png",
+        "duration_ms": 50,
+        "sha256": "65191e1b29c8e3c684ab94dc02c6591a47a3bd1ccd7a1c69f539bcab98da3038",
+        "opaque_px": 46
+      }
+    ],
+    "source": {
+      "still": "arrow-bolt.png",
+      "sha256": "222e21d82588359211db2ed3edf88888667dba4e40b08e55852008b96989ca4b",
+      "authored_by": "pipeline/effects/author.py",
+      "generator": null
+    }
+  },
+  "spell-bolt": {
+    "frame_size": [
+      11,
+      11
+    ],
+    "palette": "moonberry-glow@1",
+    "anchor": "lane_travel",
+    "anchor_dx": 0,
+    "strike_dy": -26,
+    "align_to": "release_projectile",
+    "cues_ms": {
+      "release_projectile": 0
+    },
+    "total_ms": 100,
+    "frames": [
+      {
+        "file": "spell-bolt/spell-bolt_0.png",
+        "duration_ms": 50,
+        "sha256": "51fcfee23e41d1e76d7317b3d7f921bdd1006cec895aaea9e0480901ffbc9a93",
+        "opaque_px": 47
+      },
+      {
+        "file": "spell-bolt/spell-bolt_1.png",
+        "duration_ms": 50,
+        "sha256": "9ad455412813c13a3ba867d5b5ff5ac0f347e675805845d71e5e3c75afa0fa19",
+        "opaque_px": 46
+      }
+    ],
+    "source": {
+      "still": "spell-bolt.png",
+      "sha256": "6363da7b77c841c26b88dceb3969da0a30a2c8242dc7c8a81abacf525a6570e8",
+      "authored_by": "pipeline/effects/author.py",
+      "generator": null
+    }
+  },
+  "spell-bloom": {
+    "frame_size": [
+      27,
+      27
+    ],
+    "palette": "moonberry-glow@1",
+    "anchor": "strike_target",
+    "anchor_dx": 0,
+    "strike_dy": -26,
+    "align_to": "impact_expected",
+    "cues_ms": {
+      "impact_expected": 0
+    },
+    "total_ms": 220,
+    "frames": [
+      {
+        "file": "spell-bloom/spell-bloom_0.png",
+        "duration_ms": 50,
+        "sha256": "472e637e7a8caaf29b543d2e70cf78c33e6addbb8049e896c6b21dd207fc65d2",
+        "opaque_px": 52
+      },
+      {
+        "file": "spell-bloom/spell-bloom_1.png",
+        "duration_ms": 60,
+        "sha256": "7a066b6377a364494b9c966f9b177b78aaa85d01d6e52442d5318357fc296973",
+        "opaque_px": 156
+      },
+      {
+        "file": "spell-bloom/spell-bloom_2.png",
+        "duration_ms": 60,
+        "sha256": "5adbafeb4c4e870578665fdc4fdd31840b9bc0a9cd31273341d6e669206c1528",
+        "opaque_px": 205
+      },
+      {
+        "file": "spell-bloom/spell-bloom_3.png",
+        "duration_ms": 50,
+        "sha256": "3017c0ec3cd4c3e246b2bf04034de7ac323866fa179be3b15939c9a3d63bf3c5",
+        "opaque_px": 100
+      }
+    ],
+    "source": {
+      "still": "spell-bloom.png",
+      "sha256": "cb53759c523f3e05d6f9de3ea084e09135358f5c169b8ad291fb9acc3ee4aab3",
+      "authored_by": "pipeline/effects/author.py",
+      "generator": null
+    }
+  },
+  "spell-bloom-scaled": {
+    "frame_size": [
+      27,
+      27
+    ],
+    "palette": "moonberry-glow@1",
+    "anchor": "strike_target",
+    "anchor_dx": 0,
+    "strike_dy": -26,
+    "align_to": "impact_expected",
+    "cues_ms": {
+      "impact_expected": 0
+    },
+    "total_ms": 260,
+    "frames": [
+      {
+        "file": "spell-bloom-scaled/spell-bloom-scaled_0.png",
+        "duration_ms": 60,
+        "sha256": "87f091c13435a6c354eedbecf26079d1d4282eda823785f3f9299aaef2071d85",
+        "opaque_px": 100
+      },
+      {
+        "file": "spell-bloom-scaled/spell-bloom-scaled_1.png",
+        "duration_ms": 70,
+        "sha256": "248d0542b22a1b7dcd3450743990a87e3826f1eca422aa034724c7e104f81cc9",
+        "opaque_px": 196
+      },
+      {
+        "file": "spell-bloom-scaled/spell-bloom-scaled_2.png",
+        "duration_ms": 70,
+        "sha256": "f75e3c0e2440bdc8a794f2fb7f2493b4668a085e15146ab49b167b1fe7c42f94",
+        "opaque_px": 232
+      },
+      {
+        "file": "spell-bloom-scaled/spell-bloom-scaled_3.png",
+        "duration_ms": 60,
+        "sha256": "688d54eab2ded597c0592b52abfdce992bdc8ffa9cc3bafba7dead1034316f36",
+        "opaque_px": 144
+      }
+    ],
+    "source": {
+      "still": "spell-bloom.png",
+      "sha256": "cb53759c523f3e05d6f9de3ea084e09135358f5c169b8ad291fb9acc3ee4aab3",
+      "authored_by": "pipeline/effects/author.py",
+      "generator": null
+    }
+  },
+  "heal-rise": {
+    "frame_size": [
+      14,
+      40
+    ],
+    "palette": "moonberry-glow@1",
+    "anchor": "band",
+    "anchor_dx": 0,
+    "strike_dy": -26,
+    "align_to": "impact_expected",
+    "cues_ms": {
+      "impact_expected": 240
+    },
+    "total_ms": 390,
+    "frames": [
+      {
+        "file": "heal-rise/heal-rise_0.png",
+        "duration_ms": 80,
+        "sha256": "f125ca8fe57b60afd3e00aa6976a60246bb7e24244b38a0d1e76c23404f1c310",
+        "opaque_px": 27
+      },
+      {
+        "file": "heal-rise/heal-rise_1.png",
+        "duration_ms": 80,
+        "sha256": "63a0a2778f8e70c2c7cf8a8837615932e59bc9386bbbd2ff53d8ed2396f3ef2e",
+        "opaque_px": 54
+      },
+      {
+        "file": "heal-rise/heal-rise_2.png",
+        "duration_ms": 80,
+        "sha256": "2ded43f770d06d5f464525d0105da5e1ed7b04a0256999245266c90e6af19aa8",
+        "opaque_px": 88
+      },
+      {
+        "file": "heal-rise/heal-rise_3.png",
+        "duration_ms": 80,
+        "sha256": "f59740489aff84d02f16618b06d776618fa4f26a73f4c0889d1f89d6698df602",
+        "opaque_px": 136
+      },
+      {
+        "file": "heal-rise/heal-rise_4.png",
+        "duration_ms": 70,
+        "sha256": "1642363528c2b3601d4cab359f4e85dd4d64a61fbe408cc624ba368944e2dc20",
+        "opaque_px": 115
+      }
+    ],
+    "source": {
+      "still": "heal-rise.png",
+      "sha256": "15e03c56ea973dd78a68d51dfa48661008b9a4184311cba9b1f002b53c1628d9",
+      "authored_by": "pipeline/effects/author.py",
+      "generator": null
+    }
+  },
+  "revive-burst": {
+    "frame_size": [
+      25,
+      25
+    ],
+    "palette": "moonberry-glow@1",
+    "anchor": "strike_target",
+    "anchor_dx": 0,
+    "strike_dy": -26,
+    "align_to": "impact_expected",
+    "cues_ms": {
+      "impact_expected": 120
+    },
+    "total_ms": 360,
+    "frames": [
+      {
+        "file": "revive-burst/revive-burst_0.png",
+        "duration_ms": 120,
+        "sha256": "c0c744a16f61c54b67a42afa143d04d434b8f42f3a6748814ecb0d6c624be5e4",
+        "opaque_px": 39
+      },
+      {
+        "file": "revive-burst/revive-burst_1.png",
+        "duration_ms": 140,
+        "sha256": "f5608b5c2a03c577423867016abb5ad1e3c46bd8bc32a269f9b910405caf20d2",
+        "opaque_px": 231
+      },
+      {
+        "file": "revive-burst/revive-burst_2.png",
+        "duration_ms": 100,
+        "sha256": "3fc9eeb54fbdc4ec8e78b20eaffed3ff649eb82b00ac8f9f92753958c3aea6e0",
+        "opaque_px": 123
+      }
+    ],
+    "source": {
+      "still": "revive-burst.png",
+      "sha256": "99aab4f1815957ad11564fbafc98ed74c9bbc490c8dd956af8722c31ab48cc90",
+      "authored_by": "pipeline/effects/author.py",
+      "generator": null
+    }
+  },
+  "buff-halo": {
+    "frame_size": [
+      21,
+      21
+    ],
+    "palette": "moonberry-glow@1",
+    "anchor": "strike_target",
+    "anchor_dx": 0,
+    "strike_dy": -26,
+    "align_to": "impact_expected",
+    "cues_ms": {
+      "impact_expected": 80
+    },
+    "total_ms": 300,
+    "frames": [
+      {
+        "file": "buff-halo/buff-halo_0.png",
+        "duration_ms": 80,
+        "sha256": "b1d785743541e42632f01f4d9ef4166987640d19351d1a64adcab27432d6a395",
+        "opaque_px": 100
+      },
+      {
+        "file": "buff-halo/buff-halo_1.png",
+        "duration_ms": 120,
+        "sha256": "df7cca94e6b48321814f7c10802c28157ea21913eb827aeb49c987f89c6aa2cc",
+        "opaque_px": 184
+      },
+      {
+        "file": "buff-halo/buff-halo_2.png",
+        "duration_ms": 100,
+        "sha256": "88e4a1dc6884a1bc13ba4162bc8d04a248ed49f7db50e82f35469aaffdaec580",
+        "opaque_px": 184
+      }
+    ],
+    "source": {
+      "still": "buff-halo.png",
+      "sha256": "c9c028343b42821ef358862c0bc3f0c6c7a4c36147c4b0483799f27a77378d03",
+      "authored_by": "pipeline/effects/author.py",
+      "generator": null
+    }
+  },
+  "spell-bolt-fire": {
+    "frame_size": [
+      11,
+      11
+    ],
+    "palette": "moonberry-glow@1",
+    "anchor": "lane_travel",
+    "anchor_dx": 0,
+    "strike_dy": -26,
+    "align_to": "release_projectile",
+    "cues_ms": {
+      "release_projectile": 0
+    },
+    "total_ms": 100,
+    "frames": [
+      {
+        "file": "spell-bolt-fire/spell-bolt-fire_0.png",
+        "duration_ms": 50,
+        "sha256": "264ea2c7c5a295a2d89004f8065fc7327e79f372397275001b5f210d01251c4a",
+        "opaque_px": 47
+      },
+      {
+        "file": "spell-bolt-fire/spell-bolt-fire_1.png",
+        "duration_ms": 50,
+        "sha256": "333d48a044a619974a4758100b1b61c162b22f1479b282f84d9f47936f807044",
+        "opaque_px": 46
+      }
+    ],
+    "source": {
+      "still": "spell-bolt.png",
+      "sha256": "6363da7b77c841c26b88dceb3969da0a30a2c8242dc7c8a81abacf525a6570e8",
+      "authored_by": "pipeline/effects/author.py",
+      "generator": null
+    },
+    "element": "fire"
+  },
+  "spell-bloom-fire": {
+    "frame_size": [
+      27,
+      27
+    ],
+    "palette": "moonberry-glow@1",
+    "anchor": "strike_target",
+    "anchor_dx": 0,
+    "strike_dy": -26,
+    "align_to": "impact_expected",
+    "cues_ms": {
+      "impact_expected": 0
+    },
+    "total_ms": 220,
+    "frames": [
+      {
+        "file": "spell-bloom-fire/spell-bloom-fire_0.png",
+        "duration_ms": 50,
+        "sha256": "29cd768604adf1bfa18038d831eda24b8f3f310424af20563ecfe1addce26be3",
+        "opaque_px": 52
+      },
+      {
+        "file": "spell-bloom-fire/spell-bloom-fire_1.png",
+        "duration_ms": 60,
+        "sha256": "bff63f039473e6cc93d90dff6e5c932fc52d5bc627decafd8ac1b442264a8546",
+        "opaque_px": 156
+      },
+      {
+        "file": "spell-bloom-fire/spell-bloom-fire_2.png",
+        "duration_ms": 60,
+        "sha256": "4740edbc925c346549c64155203db88aef12657deee85f6b6835d71f428a016d",
+        "opaque_px": 205
+      },
+      {
+        "file": "spell-bloom-fire/spell-bloom-fire_3.png",
+        "duration_ms": 50,
+        "sha256": "3f201e905b7b36e22d775e394362d03d30b4907832256dd964d7f1ce118acf7e",
+        "opaque_px": 100
+      }
+    ],
+    "source": {
+      "still": "spell-bloom.png",
+      "sha256": "cb53759c523f3e05d6f9de3ea084e09135358f5c169b8ad291fb9acc3ee4aab3",
+      "authored_by": "pipeline/effects/author.py",
+      "generator": null
+    },
+    "element": "fire"
+  },
+  "spell-bloom-scaled-fire": {
+    "frame_size": [
+      27,
+      27
+    ],
+    "palette": "moonberry-glow@1",
+    "anchor": "strike_target",
+    "anchor_dx": 0,
+    "strike_dy": -26,
+    "align_to": "impact_expected",
+    "cues_ms": {
+      "impact_expected": 0
+    },
+    "total_ms": 260,
+    "frames": [
+      {
+        "file": "spell-bloom-scaled-fire/spell-bloom-scaled-fire_0.png",
+        "duration_ms": 60,
+        "sha256": "97b89a0a7cd427602ffaeafd212e9101a6b42274e10b2fd1115b7d18b7ea683a",
+        "opaque_px": 100
+      },
+      {
+        "file": "spell-bloom-scaled-fire/spell-bloom-scaled-fire_1.png",
+        "duration_ms": 70,
+        "sha256": "4bcd5cbd3c39e48235185726ef9906336a14fccc56ff457c6a2fd36b09d96adc",
+        "opaque_px": 196
+      },
+      {
+        "file": "spell-bloom-scaled-fire/spell-bloom-scaled-fire_2.png",
+        "duration_ms": 70,
+        "sha256": "98eb62cf56194924923eba1965bbf152722e85f9dccbe3d4f50b39d19df1fd98",
+        "opaque_px": 232
+      },
+      {
+        "file": "spell-bloom-scaled-fire/spell-bloom-scaled-fire_3.png",
+        "duration_ms": 60,
+        "sha256": "ae5e8ee4fd12424f57d5d4d0461cc9cfd0f49fcc44309ca9559defd7b788e37c",
+        "opaque_px": 144
+      }
+    ],
+    "source": {
+      "still": "spell-bloom.png",
+      "sha256": "cb53759c523f3e05d6f9de3ea084e09135358f5c169b8ad291fb9acc3ee4aab3",
+      "authored_by": "pipeline/effects/author.py",
+      "generator": null
+    },
+    "element": "fire"
+  },
+  "spell-bolt-frost": {
+    "frame_size": [
+      11,
+      11
+    ],
+    "palette": "moonberry-glow@1",
+    "anchor": "lane_travel",
+    "anchor_dx": 0,
+    "strike_dy": -26,
+    "align_to": "release_projectile",
+    "cues_ms": {
+      "release_projectile": 0
+    },
+    "total_ms": 100,
+    "frames": [
+      {
+        "file": "spell-bolt-frost/spell-bolt-frost_0.png",
+        "duration_ms": 50,
+        "sha256": "0f3b03b159849fb50882e4ace0d19d300ab875edc7bef8629125a7653364e034",
+        "opaque_px": 47
+      },
+      {
+        "file": "spell-bolt-frost/spell-bolt-frost_1.png",
+        "duration_ms": 50,
+        "sha256": "afe26302dbd06c43b839c762fc02bf7fbc17b00eb68a7f828906a754f18e0614",
+        "opaque_px": 46
+      }
+    ],
+    "source": {
+      "still": "spell-bolt.png",
+      "sha256": "6363da7b77c841c26b88dceb3969da0a30a2c8242dc7c8a81abacf525a6570e8",
+      "authored_by": "pipeline/effects/author.py",
+      "generator": null
+    },
+    "element": "frost"
+  },
+  "spell-bloom-frost": {
+    "frame_size": [
+      27,
+      27
+    ],
+    "palette": "moonberry-glow@1",
+    "anchor": "strike_target",
+    "anchor_dx": 0,
+    "strike_dy": -26,
+    "align_to": "impact_expected",
+    "cues_ms": {
+      "impact_expected": 0
+    },
+    "total_ms": 220,
+    "frames": [
+      {
+        "file": "spell-bloom-frost/spell-bloom-frost_0.png",
+        "duration_ms": 50,
+        "sha256": "43b452f6ddffb2fa29bac2b6262df9e1f737dad25118adf06d93ec986b5dcbd2",
+        "opaque_px": 52
+      },
+      {
+        "file": "spell-bloom-frost/spell-bloom-frost_1.png",
+        "duration_ms": 60,
+        "sha256": "71fe10a56b192d1cabb0463a2bd487cd646793bb2197f7cc7e5d13d29c62afe7",
+        "opaque_px": 156
+      },
+      {
+        "file": "spell-bloom-frost/spell-bloom-frost_2.png",
+        "duration_ms": 60,
+        "sha256": "9a33126a7033e19b9a39ad9520a0063af1bde18f314955d239b775551e749bf4",
+        "opaque_px": 205
+      },
+      {
+        "file": "spell-bloom-frost/spell-bloom-frost_3.png",
+        "duration_ms": 50,
+        "sha256": "41346ff99bcc36db95ce5069f1b8f226c048d1f934e149cc68074320c8c2924e",
+        "opaque_px": 100
+      }
+    ],
+    "source": {
+      "still": "spell-bloom.png",
+      "sha256": "cb53759c523f3e05d6f9de3ea084e09135358f5c169b8ad291fb9acc3ee4aab3",
+      "authored_by": "pipeline/effects/author.py",
+      "generator": null
+    },
+    "element": "frost"
+  },
+  "spell-bloom-scaled-frost": {
+    "frame_size": [
+      27,
+      27
+    ],
+    "palette": "moonberry-glow@1",
+    "anchor": "strike_target",
+    "anchor_dx": 0,
+    "strike_dy": -26,
+    "align_to": "impact_expected",
+    "cues_ms": {
+      "impact_expected": 0
+    },
+    "total_ms": 260,
+    "frames": [
+      {
+        "file": "spell-bloom-scaled-frost/spell-bloom-scaled-frost_0.png",
+        "duration_ms": 60,
+        "sha256": "68160839a5954764b14fd10ac09f69eb080dab67a8cf07c06c8f6755647915ba",
+        "opaque_px": 100
+      },
+      {
+        "file": "spell-bloom-scaled-frost/spell-bloom-scaled-frost_1.png",
+        "duration_ms": 70,
+        "sha256": "85eb66d1c5e6b28ad1358ec9f26fd648d458d32e6a0cec81c7ac22e5b1797b78",
+        "opaque_px": 196
+      },
+      {
+        "file": "spell-bloom-scaled-frost/spell-bloom-scaled-frost_2.png",
+        "duration_ms": 70,
+        "sha256": "6e4219bf2f2163aea0f89560910c4feb4fb7e7f1cb3c5a489aace7e2a3c00423",
+        "opaque_px": 232
+      },
+      {
+        "file": "spell-bloom-scaled-frost/spell-bloom-scaled-frost_3.png",
+        "duration_ms": 60,
+        "sha256": "9311b4eeb59bed31d99bb83f5a31cb434b9e7ed8037fadb853b7ab99ec22471d",
+        "opaque_px": 144
+      }
+    ],
+    "source": {
+      "still": "spell-bloom.png",
+      "sha256": "cb53759c523f3e05d6f9de3ea084e09135358f5c169b8ad291fb9acc3ee4aab3",
+      "authored_by": "pipeline/effects/author.py",
+      "generator": null
+    },
+    "element": "frost"
+  },
+  "spell-bolt-lightning": {
+    "frame_size": [
+      11,
+      11
+    ],
+    "palette": "moonberry-glow@1",
+    "anchor": "lane_travel",
+    "anchor_dx": 0,
+    "strike_dy": -26,
+    "align_to": "release_projectile",
+    "cues_ms": {
+      "release_projectile": 0
+    },
+    "total_ms": 100,
+    "frames": [
+      {
+        "file": "spell-bolt-lightning/spell-bolt-lightning_0.png",
+        "duration_ms": 50,
+        "sha256": "85aa386f65aa5451e1655245d28b2d04ae6623954a7db9c316fda840a02027cd",
+        "opaque_px": 47
+      },
+      {
+        "file": "spell-bolt-lightning/spell-bolt-lightning_1.png",
+        "duration_ms": 50,
+        "sha256": "b627823b9861fff4c51af8c9b86a8754c0ce35f55560fe3c04927e33b185d92a",
+        "opaque_px": 46
+      }
+    ],
+    "source": {
+      "still": "spell-bolt.png",
+      "sha256": "6363da7b77c841c26b88dceb3969da0a30a2c8242dc7c8a81abacf525a6570e8",
+      "authored_by": "pipeline/effects/author.py",
+      "generator": null
+    },
+    "element": "lightning"
+  },
+  "spell-bloom-lightning": {
+    "frame_size": [
+      27,
+      27
+    ],
+    "palette": "moonberry-glow@1",
+    "anchor": "strike_target",
+    "anchor_dx": 0,
+    "strike_dy": -26,
+    "align_to": "impact_expected",
+    "cues_ms": {
+      "impact_expected": 0
+    },
+    "total_ms": 220,
+    "frames": [
+      {
+        "file": "spell-bloom-lightning/spell-bloom-lightning_0.png",
+        "duration_ms": 50,
+        "sha256": "e02f63f10e30426e793215d2a0a19ef1552ed343f095fb4f4d0e83747db6f403",
+        "opaque_px": 52
+      },
+      {
+        "file": "spell-bloom-lightning/spell-bloom-lightning_1.png",
+        "duration_ms": 60,
+        "sha256": "ee85074b71273750cc5a405cc28b44de4995f76216ae3723ab02ed796301aef3",
+        "opaque_px": 156
+      },
+      {
+        "file": "spell-bloom-lightning/spell-bloom-lightning_2.png",
+        "duration_ms": 60,
+        "sha256": "b3f26979ac48f152c58a8bf253d2f216982abd1ac892b217742dcbc2f83986e3",
+        "opaque_px": 205
+      },
+      {
+        "file": "spell-bloom-lightning/spell-bloom-lightning_3.png",
+        "duration_ms": 50,
+        "sha256": "3017c0ec3cd4c3e246b2bf04034de7ac323866fa179be3b15939c9a3d63bf3c5",
+        "opaque_px": 100
+      }
+    ],
+    "source": {
+      "still": "spell-bloom.png",
+      "sha256": "cb53759c523f3e05d6f9de3ea084e09135358f5c169b8ad291fb9acc3ee4aab3",
+      "authored_by": "pipeline/effects/author.py",
+      "generator": null
+    },
+    "element": "lightning"
+  },
+  "spell-bloom-scaled-lightning": {
+    "frame_size": [
+      27,
+      27
+    ],
+    "palette": "moonberry-glow@1",
+    "anchor": "strike_target",
+    "anchor_dx": 0,
+    "strike_dy": -26,
+    "align_to": "impact_expected",
+    "cues_ms": {
+      "impact_expected": 0
+    },
+    "total_ms": 260,
+    "frames": [
+      {
+        "file": "spell-bloom-scaled-lightning/spell-bloom-scaled-lightning_0.png",
+        "duration_ms": 60,
+        "sha256": "88596c4dffd8ba548318dca7f4159bedc0abf2948653eb466417fab87880840e",
+        "opaque_px": 100
+      },
+      {
+        "file": "spell-bloom-scaled-lightning/spell-bloom-scaled-lightning_1.png",
+        "duration_ms": 70,
+        "sha256": "59aae7bbdc6971a6a6b1a30623371a767fb84e6cbdb813467bd9303d03721509",
+        "opaque_px": 196
+      },
+      {
+        "file": "spell-bloom-scaled-lightning/spell-bloom-scaled-lightning_2.png",
+        "duration_ms": 70,
+        "sha256": "2e09d0d37099a48c93c7a12d5af262ca88d025d426756bd8e0d286b452464f69",
+        "opaque_px": 232
+      },
+      {
+        "file": "spell-bloom-scaled-lightning/spell-bloom-scaled-lightning_3.png",
+        "duration_ms": 60,
+        "sha256": "688d54eab2ded597c0592b52abfdce992bdc8ffa9cc3bafba7dead1034316f36",
+        "opaque_px": 144
+      }
+    ],
+    "source": {
+      "still": "spell-bloom.png",
+      "sha256": "cb53759c523f3e05d6f9de3ea084e09135358f5c169b8ad291fb9acc3ee4aab3",
+      "authored_by": "pipeline/effects/author.py",
+      "generator": null
+    },
+    "element": "lightning"
+  },
+  "spell-bolt-light": {
+    "frame_size": [
+      11,
+      11
+    ],
+    "palette": "moonberry-glow@1",
+    "anchor": "lane_travel",
+    "anchor_dx": 0,
+    "strike_dy": -26,
+    "align_to": "release_projectile",
+    "cues_ms": {
+      "release_projectile": 0
+    },
+    "total_ms": 100,
+    "frames": [
+      {
+        "file": "spell-bolt-light/spell-bolt-light_0.png",
+        "duration_ms": 50,
+        "sha256": "80e37327aa1b119e43e94db1b1d2f93f21ce547f94523a19bdff32bfa5576bd1",
+        "opaque_px": 47
+      },
+      {
+        "file": "spell-bolt-light/spell-bolt-light_1.png",
+        "duration_ms": 50,
+        "sha256": "fc5b6a0f80c0ae929435a0320042db499d8e378f9e71d38de74bc770c30354d1",
+        "opaque_px": 46
+      }
+    ],
+    "source": {
+      "still": "spell-bolt.png",
+      "sha256": "6363da7b77c841c26b88dceb3969da0a30a2c8242dc7c8a81abacf525a6570e8",
+      "authored_by": "pipeline/effects/author.py",
+      "generator": null
+    },
+    "element": "light"
+  },
+  "spell-bloom-light": {
+    "frame_size": [
+      27,
+      27
+    ],
+    "palette": "moonberry-glow@1",
+    "anchor": "strike_target",
+    "anchor_dx": 0,
+    "strike_dy": -26,
+    "align_to": "impact_expected",
+    "cues_ms": {
+      "impact_expected": 0
+    },
+    "total_ms": 220,
+    "frames": [
+      {
+        "file": "spell-bloom-light/spell-bloom-light_0.png",
+        "duration_ms": 50,
+        "sha256": "10b1646db933872c7f9c6406c23d8c99973bd9da79f583c9387650bcbc7073d0",
+        "opaque_px": 52
+      },
+      {
+        "file": "spell-bloom-light/spell-bloom-light_1.png",
+        "duration_ms": 60,
+        "sha256": "d8653eb5d49d10a3e46ab61d5d83fcd114427656d2841c59df4994b6af295a59",
+        "opaque_px": 156
+      },
+      {
+        "file": "spell-bloom-light/spell-bloom-light_2.png",
+        "duration_ms": 60,
+        "sha256": "81d74635c59777162056d4a53047a0a82e72663ce4d8e1ed015c40a6aa956e2d",
+        "opaque_px": 205
+      },
+      {
+        "file": "spell-bloom-light/spell-bloom-light_3.png",
+        "duration_ms": 50,
+        "sha256": "4553bbafd75889cdfd3cd30e0452799eec918462403599f052dd44e89a456e6e",
+        "opaque_px": 100
+      }
+    ],
+    "source": {
+      "still": "spell-bloom.png",
+      "sha256": "cb53759c523f3e05d6f9de3ea084e09135358f5c169b8ad291fb9acc3ee4aab3",
+      "authored_by": "pipeline/effects/author.py",
+      "generator": null
+    },
+    "element": "light"
+  },
+  "spell-bloom-scaled-light": {
+    "frame_size": [
+      27,
+      27
+    ],
+    "palette": "moonberry-glow@1",
+    "anchor": "strike_target",
+    "anchor_dx": 0,
+    "strike_dy": -26,
+    "align_to": "impact_expected",
+    "cues_ms": {
+      "impact_expected": 0
+    },
+    "total_ms": 260,
+    "frames": [
+      {
+        "file": "spell-bloom-scaled-light/spell-bloom-scaled-light_0.png",
+        "duration_ms": 60,
+        "sha256": "83debb1b5596e6e17ccd38bf9f3fae7aceecfe569b110b7034308a71c002c5cd",
+        "opaque_px": 100
+      },
+      {
+        "file": "spell-bloom-scaled-light/spell-bloom-scaled-light_1.png",
+        "duration_ms": 70,
+        "sha256": "98b28004fef830484a4ed0f502864eb979e9a368fb03cfc303d70c0a68696c7f",
+        "opaque_px": 196
+      },
+      {
+        "file": "spell-bloom-scaled-light/spell-bloom-scaled-light_2.png",
+        "duration_ms": 70,
+        "sha256": "bcb6779478becc159d4b97512a80e7829af6ad5aef4532c7615dc0f60e5a0159",
+        "opaque_px": 232
+      },
+      {
+        "file": "spell-bloom-scaled-light/spell-bloom-scaled-light_3.png",
+        "duration_ms": 60,
+        "sha256": "dc7b396ea3e2e4dafb14751d4cfedf26d6f68f2bf5999c4d5f5d7701c5f8f5ce",
+        "opaque_px": 144
+      }
+    ],
+    "source": {
+      "still": "spell-bloom.png",
+      "sha256": "cb53759c523f3e05d6f9de3ea084e09135358f5c169b8ad291fb9acc3ee4aab3",
+      "authored_by": "pipeline/effects/author.py",
+      "generator": null
+    },
+    "element": "light"
+  }
+}

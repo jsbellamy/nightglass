@@ -11,7 +11,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "assets:build": "python3 pipeline/acquire.py",
-    "assets:verify": "python3 pipeline/test_contract.py",
+    "assets:effects": "python3 pipeline/effects/author.py && python3 pipeline/effects/derive.py",
+    "assets:verify": "python3 pipeline/test_contract.py && python3 pipeline/effects/verify.py",
     "tauri": "tauri"
   },
   "dependencies": {
