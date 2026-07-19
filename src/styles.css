@@ -1013,6 +1013,24 @@ html.dock-window body {
   letter-spacing: 0.04em;
 }
 
+/* PROTOTYPE #125 — native 34×34 Equipment icon chip (no CSS scale). */
+.equipment-icon-chip--native-34 {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border-style: solid;
+  border-color: rgba(255, 249, 233, 0.22);
+  overflow: hidden;
+  image-rendering: pixelated;
+}
+
+.equipment-icon-img {
+  display: block;
+  width: 34px;
+  height: 34px;
+  image-rendering: pixelated;
+}
+
 .equipment-name {
   margin: 0;
   font-size: 12px;

@@ -1,0 +1,54 @@
+[
+  {
+    "name": "dewlight-focus",
+    "status": "rejected",
+    "error": "dewlight-focus.png: overshoot recovered 27\u00d735 (max body 30\u00d730 before outline ring)"
+  },
+  {
+    "name": "bramblesong-bow",
+    "raw_sha256": "da44eb8e3084f6faeeedb7002df5c29cdcd058630f22f0db724ee2e352a9142b",
+    "recovered": {
+      "bbox": [
+        300,
+        23,
+        675,
+        995
+      ],
+      "pitch_x": {
+        "pitch": 32.07777777777785,
+        "score": 0.1575822574539678
+      },
+      "pitch_y": {
+        "pitch": 32.32777777777783,
+        "score": 0.14582944568364795
+      },
+      "grid": [
+        12,
+        30
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 144,
+      "far_cells": 25,
+      "far_fraction": 0.1736,
+      "off_ramp_reject": true,
+      "quantize_histogram": {
+        "contour-plum-deep": 28,
+        "skin-warm": 9,
+        "berry": 8,
+        "berry-mid": 21,
+        "mint": 8,
+        "cream": 32,
+        "mint-shadow": 14,
+        "twilight-slate": 12,
+        "cream-gold": 2,
+        "mint-light": 5,
+        "berry-shadow": 4,
+        "contour-plum-deepest": 1
+      }
+    },
+    "runtime": "out/ai/bramblesong-bow.png",
+    "tier2": "nightvine-longbow",
+    "status": "rejected-off-ramp"
+  }
+]

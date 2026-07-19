@@ -1,0 +1,41 @@
+{
+  "canvas": 34,
+  "palette": "moonberry-16",
+  "outline": "contour-plum-deepest (derived)",
+  "families": [
+    {
+      "source": "dewlight-focus",
+      "variants": [
+        "dewlight-focus",
+        "starfruit-prism"
+      ]
+    },
+    {
+      "source": "bramblesong-bow",
+      "variants": [
+        "bramblesong-bow",
+        "nightvine-longbow"
+      ]
+    }
+  ],
+  "pass_1": {
+    "source:dewlight-focus": "934041bac61100aa77e114631025a15b62d4b154d7e6317ab58167a41770b515",
+    "runtime:dewlight-focus": "2cb1628430e6104b6233497609c4a74d8f6d5bdc947348f71a1e59c6e9d4a48f",
+    "runtime:starfruit-prism": "a3f3bf53c6697c760195e2b8dd6722e1ba377725b89d5880ff6abd275e71d8c5",
+    "source:bramblesong-bow": "7b3a51580b6dc38f42109afd1de00e0246e9895b2a775e23c06113630e700f30",
+    "runtime:bramblesong-bow": "355bab2ba62ff21b456920cdf2db3ef9a2c02ccc696cf4df84bb6d4560b40571",
+    "runtime:nightvine-longbow": "10cab45313d83ccc91966b12ad061fbfbeea3e27d7cff15feaddd013fbd55440",
+    "runtime:family-sheet": "4264e13275453f3d51b4c3f7a96c9d99eec8f62bd4f8b00416c7ad6258bf88d1"
+  },
+  "pass_2": {
+    "source:dewlight-focus": "934041bac61100aa77e114631025a15b62d4b154d7e6317ab58167a41770b515",
+    "runtime:dewlight-focus": "2cb1628430e6104b6233497609c4a74d8f6d5bdc947348f71a1e59c6e9d4a48f",
+    "runtime:starfruit-prism": "a3f3bf53c6697c760195e2b8dd6722e1ba377725b89d5880ff6abd275e71d8c5",
+    "source:bramblesong-bow": "7b3a51580b6dc38f42109afd1de00e0246e9895b2a775e23c06113630e700f30",
+    "runtime:bramblesong-bow": "355bab2ba62ff21b456920cdf2db3ef9a2c02ccc696cf4df84bb6d4560b40571",
+    "runtime:nightvine-longbow": "10cab45313d83ccc91966b12ad061fbfbeea3e27d7cff15feaddd013fbd55440",
+    "runtime:family-sheet": "4264e13275453f3d51b4c3f7a96c9d99eec8f62bd4f8b00416c7ad6258bf88d1"
+  },
+  "byte_stable": true,
+  "mismatched": []
+}
