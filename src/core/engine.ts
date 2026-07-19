@@ -38,10 +38,10 @@ import type {
   ProgressionState,
   Snapshot,
 } from "./snapshot";
+import { createDefaultProgression } from "./load-state";
 import {
   allocateTalentPoint,
   deallocateTalentPoint,
-  defaultTalentsForClasses,
   emptyTalentState,
   stripAbilityFromLoadout,
   talentStatModifiers,
@@ -71,6 +71,7 @@ const FORMATION_SLOTS = ["front", "middle", "back"] as const;
 export interface Engine {
   advanceBy(ms: number): EngineEvent[];
   snapshot(): Snapshot;
+  beginFreshAttempt(): EngineEvent[];
   selectStage(stage: 1 | 2 | 3): EngineEvent[];
   setLoadout(classId: ClassId, loadout: [string, string, string]): void;
   setFormation(order: [ClassId, ClassId, ClassId]): void;
@@ -126,38 +127,11 @@ function indexContent(content: Content): ContentIndex {
   };
 }
 
-function defaultLoadouts(content: Content): Record<ClassId, [string, string, string]> {
-  return Object.fromEntries(
-    content.classes.map((entry) => [entry.id, [...entry.defaultLoadout] as [string, string, string]]),
-  ) as Record<ClassId, [string, string, string]>;
-}
-
-function defaultProgression(content: Content): ProgressionState {
-  const roster = content.classes.map((entry) => entry.id);
-  if (roster.length === 0) {
-    throw new Error("Content must define at least one Class Kit");
-  }
-  const pick = (index: number): ClassId => roster[index % roster.length]!;
-  const characterXp = Object.fromEntries(
-    roster.map((classId) => [classId, 0]),
-  ) as Record<ClassId, number>;
-  return {
-    unlockedStage: 1,
-    party: [pick(0), pick(1), pick(2)],
-    reserve: pick(3),
-    characterXp,
-    talents: defaultTalentsForClasses(content.classes),
-    loadouts: defaultLoadouts(content),
-    armory: [],
-    pendingParty: null,
-  };
-}
-
 function restoreProgression(
   saved: Snapshot["progression"],
   content: Content,
 ): ProgressionState {
-  const defaults = defaultProgression(content);
+  const defaults = createDefaultProgression(content);
   return {
     unlockedStage: saved.unlockedStage,
     party: saved.party,
@@ -1202,7 +1176,7 @@ export function createEngine(
         nextEventSeq: 1,
         nextAttemptId: 1,
         nextDropId: 1,
-        progression: defaultProgression(content),
+        progression: createDefaultProgression(content),
         attempt: null,
         pendingEdits: [],
       };
@@ -1210,6 +1184,8 @@ export function createEngine(
   const bootEvents: EngineEvent[] = [];
   if (!saved) {
     startFreshAttempt(state, index, 1, bootEvents);
+  } else if (saved.attempt === null) {
+    startFreshAttempt(state, index, state.progression.unlockedStage, bootEvents);
   }
   let bootEventsPending = bootEvents.length > 0;
 
@@ -1238,6 +1214,14 @@ export function createEngine(
     }
 
     state.simNowMs = targetMs;
+    return events;
+  }
+
+  function beginFreshAttemptCommand(): EngineEvent[] {
+    const events: EngineEvent[] = [];
+    const stage = state.attempt?.stage ?? state.progression.unlockedStage;
+    state.attempt = null;
+    startFreshAttempt(state, index, stage, events);
     return events;
   }
 
@@ -1346,6 +1330,7 @@ export function createEngine(
   return {
     advanceBy,
     snapshot: () => toSnapshot(state, now),
+    beginFreshAttempt: beginFreshAttemptCommand,
     selectStage,
     setLoadout,
     setFormation,

@@ -1,26 +1,28 @@
 import { createEngine, type Engine } from "./core/engine";
 import { buildContent } from "./data";
+import type { Content } from "./core/types";
+import { bootTile } from "./ui/boot";
 import { createBusEndpoint, type BusEndpoint, type TileCommand } from "./ui/bus";
 import { mountBattleTile } from "./ui/battle-tile";
 import { createProductionDockWindowPort, type DockWindowPort } from "./ui/dock-window";
 import { mountManagementDock } from "./ui/dock";
 import { startPump, type PumpController } from "./ui/pump";
+import type { TileShell } from "./ui/tile-shell-types";
 import { ARMORY_BADGE_EVENT } from "./ui/presentation";
 import type { EngineEvent } from "./core/events";
 
 export { TILE_HEIGHT, TILE_WIDTH } from "./ui/battle-tile";
 
-/** Interim #50: fresh Engine each launch until save/boot slice lands. */
-const LOOT_SEED = 42;
-
 export interface TileShellOptions {
   dockWindow?: DockWindowPort;
   busFactory?: typeof createBusEndpoint;
+  engine?: Engine;
+  content?: Content;
+  onBeforeUnload?: () => void;
+  deferPump?: boolean;
 }
 
-export interface TileShell extends PumpController {
-  destroy(): void;
-}
+export type { TileShell } from "./ui/tile-shell-types";
 
 function isDockWindow(): boolean {
   return new URLSearchParams(window.location.search).get("window") === "dock";
@@ -111,8 +113,8 @@ export function mountDockShell(root: HTMLElement): { destroy(): void } {
 }
 
 export function mountTileShell(root: HTMLElement, options: TileShellOptions = {}): TileShell {
-  const content = buildContent();
-  const engine = createEngine(content, undefined, LOOT_SEED);
+  const content = options.content ?? buildContent();
+  const engine = options.engine ?? createEngine(content, undefined, 42);
   const dockWindow = options.dockWindow ?? createProductionDockWindowPort();
   const busFactory = options.busFactory ?? createBusEndpoint;
 
@@ -159,23 +161,46 @@ export function mountTileShell(root: HTMLElement, options: TileShellOptions = {}
     bus?.publish({ type: "armory-badge" });
   });
 
-  const pump = startPump({
-    advanceBy: (ms) => engine.advanceBy(ms),
-    onAdvance: (events) => {
+  const pumpDeps = {
+    advanceBy: (ms: number) => engine.advanceBy(ms),
+    onAdvance: (events: EngineEvent[]) => {
       tile.applyEvents(events, engine.snapshot());
       bus?.publish({ type: "pump", events, snapshot: engine.snapshot() });
     },
     render: () => tile.render(engine.snapshot()),
-  });
+  };
+
+  let pump: PumpController | null = null;
+  function startLivePump(): void {
+    if (pump) {
+      return;
+    }
+    pump = startPump(pumpDeps);
+  }
+
+  if (!options.deferPump) {
+    startLivePump();
+  }
 
   publishSnapshot();
 
+  const onBeforeUnload = options.onBeforeUnload;
+  if (onBeforeUnload) {
+    window.addEventListener("pagehide", onBeforeUnload);
+  }
+
   return {
+    startPump: startLivePump,
     stop() {
-      pump.stop();
+      pump?.stop();
+      pump = null;
     },
     destroy() {
-      pump.stop();
+      pump?.stop();
+      pump = null;
+      if (onBeforeUnload) {
+        window.removeEventListener("pagehide", onBeforeUnload);
+      }
       bus?.close();
       dockWindow.destroy();
       tile.destroy();
@@ -201,5 +226,8 @@ window.addEventListener("DOMContentLoaded", () => {
 
   dockRoot.hidden = true;
   tileRoot.hidden = false;
-  mountTileShell(tileRoot);
+  bootTile(tileRoot, {
+    content: buildContent(),
+    mountTile: mountTileShell,
+  });
 });
