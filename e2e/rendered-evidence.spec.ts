@@ -1,5 +1,6 @@
 import { expect, test, type Browser, type Page } from "@playwright/test";
 import { mkdirSync } from "node:fs";
+import { NIGHTGLASS_BUS_CHANNEL } from "../src/ui/bus";
 import { DOCK_HEIGHT, DOCK_WIDTH } from "../src/ui/dock-geometry";
 import {
   STATUS_LINE_HEIGHT,
@@ -10,6 +11,8 @@ import { postBusCommand } from "./helpers/bus";
 import { contrastRatio, parseRGB } from "./helpers/contrast";
 
 const SCREENSHOTS = "e2e-screenshots";
+/** Committed review artifact for the knockout-readability judgement (#103). */
+const KNOCKOUT_ARTIFACT = "docs/research/evidence/knockout-readability/tile-combat.png";
 
 type Rect = { x: number; y: number; w: number; h: number; cls?: string };
 
@@ -47,6 +50,30 @@ async function openTile(browser: Browser): Promise<{ context: Awaited<ReturnType
   await tile.goto("/", { waitUntil: "networkidle" });
   await tile.waitForSelector(".battle-tile .status-line");
   return { context, tile };
+}
+
+/** Third-peer bus spy on the page — observes delivery without production hooks. */
+async function installBusSpy(page: Page): Promise<void> {
+  await page.evaluate((channelName) => {
+    const w = window as unknown as {
+      __ngBusLog: { type: string }[];
+      __ngBusSpy?: BroadcastChannel;
+    };
+    w.__ngBusLog = [];
+    w.__ngBusSpy?.close();
+    const channel = new BroadcastChannel(channelName);
+    channel.onmessage = (event: MessageEvent<{ type: string }>) => {
+      w.__ngBusLog.push({ type: event.data.type });
+    };
+    w.__ngBusSpy = channel;
+  }, NIGHTGLASS_BUS_CHANNEL);
+}
+
+async function readBusSpyTypes(page: Page): Promise<string[]> {
+  return page.evaluate(() => {
+    const w = window as unknown as { __ngBusLog?: { type: string }[] };
+    return (w.__ngBusLog ?? []).map((m) => m.type);
+  });
 }
 
 test.describe("rendered-output evidence seam", () => {
@@ -146,8 +173,12 @@ test.describe("rendered-output evidence seam", () => {
       expect(ratio, `AA contrast ${sample.sel}`).toBeGreaterThanOrEqual(floor);
     }
 
-    await tile.waitForTimeout(2500);
+    // Seeded run knocks someone out by ~2.5s sim; wait for the DOM class, then
+    // assert on the nodes CSS actually targets (.combatant-sprite / .combatant-stack).
+    await expect(tile.locator(".combatant.knocked-out")).toBeVisible({ timeout: 15_000 });
+    mkdirSync("docs/research/evidence/knockout-readability", { recursive: true });
     await tile.screenshot({ path: `${SCREENSHOTS}/02-tile-combat.png` });
+    await tile.screenshot({ path: KNOCKOUT_ARTIFACT });
 
     const ko = await tile.evaluate(() => {
       const combatant = document.querySelector(".combatant.knocked-out");
@@ -159,12 +190,11 @@ test.describe("rendered-output evidence seam", () => {
         stackTransform: stack ? getComputedStyle(stack).transform : null,
       };
     });
-    if (ko) {
-      expect(
-        ko.spriteFilter !== "none" || ko.stackTransform !== "none",
-        "knockout non-colour signal on the nodes CSS targets",
-      ).toBe(true);
-    }
+    expect(ko, "knocked-out combatant present").not.toBeNull();
+    expect(
+      ko!.spriteFilter !== "none" || ko!.stackTransform !== "none",
+      "knockout non-colour signal on the nodes CSS targets",
+    ).toBe(true);
 
     expect(pageErrors, "tile page errors").toEqual([]);
     await context.close();
@@ -176,9 +206,8 @@ test.describe("rendered-output evidence seam", () => {
     test.setTimeout(240_000);
     const { context, tile } = await openTile(browser);
 
-    // Stage 2 unlocks after Stage 1 clears (engine advances on its own). Once Moonlit
-    // is reachable, force Stage 2 over the bus as a third peer, then wait for Wave 2
-    // (the five-opponent encounter).
+    // Five-opponent waves exist only in stages 2–3. Wait until Stage 2 unlocks,
+    // then force it over the bus as a third peer (no production test hook).
     await expect(tile.locator(".stage-wave-text")).toContainText("Moonlit", {
       timeout: 90_000,
     });
@@ -190,22 +219,41 @@ test.describe("rendered-output evidence seam", () => {
         timeout: 120_000,
         intervals: [2_000],
       })
-      .toBeGreaterThanOrEqual(5);
+      .toBe(5);
 
     await expect(tile.locator(".battlefield")).toHaveClass(/opponent-stress-layout/);
 
     const geometry = await tile.evaluate(() => {
-      const r = (el: Element): Rect => {
+      const r = (el: Element | null): Rect => {
+        if (!el) return { x: 0, y: 0, w: 0, h: 0 };
         const b = el.getBoundingClientRect();
         return { x: b.x, y: b.y, w: b.width, h: b.height, cls: el.className };
       };
       return {
-        opponents: [...document.querySelectorAll(".opponent-zone .combatant")].map(r),
-        party: [...document.querySelectorAll(".party-zone .combatant")].map(r),
+        root: r(document.querySelector(".battle-tile")),
+        statusLine: r(document.querySelector(".status-line")),
+        opponents: [...document.querySelectorAll(".opponent-zone .combatant")].map((el) => ({
+          cls: el.className,
+          ...r(el),
+        })),
+        party: [...document.querySelectorAll(".party-zone .combatant")].map((el) => ({
+          cls: el.className,
+          ...r(el),
+        })),
       };
     });
 
-    expect(geometry.opponents.length).toBeGreaterThanOrEqual(5);
+    expect(geometry.root.w, "tile width in stress layout").toBe(TILE_WIDTH);
+    expect(geometry.root.h, "tile height in stress layout").toBe(TILE_HEIGHT);
+    expect(Math.round(geometry.statusLine.h), "status line in stress layout").toBe(
+      STATUS_LINE_HEIGHT,
+    );
+    expect(geometry.opponents, "five Opponents").toHaveLength(5);
+    expect(geometry.party, "three party members").toHaveLength(3);
+    expect(
+      [...geometry.opponents, ...geometry.party],
+      "eight combatants in the stress layout",
+    ).toHaveLength(8);
     assertCombatantsFitTile([...geometry.opponents, ...geometry.party]);
 
     await tile.screenshot({ path: `${SCREENSHOTS}/05-tile-five-opponents.png` });
@@ -219,11 +267,24 @@ test.describe("rendered-output evidence seam", () => {
     const pageErrors: string[] = [];
     tile.on("pageerror", (e) => pageErrors.push(String(e)));
 
+    await installBusSpy(tile);
+
     const dock = await context.newPage();
     dock.on("pageerror", (e) => pageErrors.push(String(e)));
     await dock.setViewportSize({ width: DOCK_WIDTH, height: DOCK_HEIGHT });
     await dock.goto("/?window=dock", { waitUntil: "networkidle" });
     await dock.waitForSelector(".management-dock");
+
+    // Handshake: dock publishes dock-opened; tile answers with snapshot;
+    // dock renders populated content — across two real pages on one origin.
+    await expect
+      .poll(async () => {
+        const types = await readBusSpyTypes(tile);
+        const openedAt = types.indexOf("dock-opened");
+        if (openedAt < 0) return false;
+        return types.slice(openedAt + 1).includes("snapshot");
+      }, { timeout: 5_000 })
+      .toBe(true);
 
     await expect
       .poll(async () => {
@@ -235,6 +296,17 @@ test.describe("rendered-output evidence seam", () => {
       .toBeGreaterThan(20);
 
     await dock.screenshot({ path: `${SCREENSHOTS}/03-dock-initial.png` });
+
+    const dockGeometry = await dock.evaluate(() => {
+      const shell = document.querySelector(".dock-shell");
+      const sr = shell?.getBoundingClientRect();
+      return {
+        w: sr ? Math.round(sr.width) : 0,
+        h: sr ? Math.round(sr.height) : 0,
+      };
+    });
+    expect(dockGeometry.w, "dock width").toBe(DOCK_WIDTH);
+    expect(dockGeometry.h, "dock height").toBe(DOCK_HEIGHT);
 
     const tabs = await dock.evaluate(() =>
       [...document.querySelectorAll("[data-dock-tab]")].map((b) => (b as HTMLElement).dataset.dockTab),
@@ -256,18 +328,11 @@ test.describe("rendered-output evidence seam", () => {
     expect(tabFit.clipped, "tabs clipped at DOCK_WIDTH").toEqual([]);
     expect(tabFit.rows, "tabs on one row").toBe(1);
 
-    const shell = await dock.evaluate((dockHeight) => {
-      const s = document.querySelector(".dock-shell");
-      const sr = s?.getBoundingClientRect();
+    const surfaceOverflowY = await dock.evaluate(() => {
       const surf = document.querySelector(".dock-surface");
-      const cs = surf ? getComputedStyle(surf) : null;
-      return {
-        fillsWindow: sr ? Math.round(sr.height) >= dockHeight : false,
-        surfaceOverflowY: cs?.overflowY ?? null,
-      };
-    }, DOCK_HEIGHT);
-    expect(shell.fillsWindow).toBe(true);
-    expect(shell.surfaceOverflowY).toMatch(/auto|scroll/);
+      return surf ? getComputedStyle(surf).overflowY : null;
+    });
+    expect(surfaceOverflowY).toMatch(/auto|scroll/);
 
     for (const [i, tab] of tabs.entries()) {
       await dock.click(`[data-dock-tab="${tab}"]`);
@@ -305,7 +370,17 @@ test.describe("rendered-output evidence seam", () => {
     await dock.click(".dock-close");
     await dock.waitForTimeout(400);
     const tileAlive = await tile.evaluate(() => document.querySelectorAll(".battle-tile").length);
-    expect(tileAlive).toBe(beforeClose);
+    expect(tileAlive, "tile still mounted after dock close").toBe(beforeClose);
+
+    // Pump keeps publishing after the close crossed back.
+    const typesBefore = await readBusSpyTypes(tile);
+    const pumpCountBefore = typesBefore.filter((t) => t === "pump").length;
+    await expect
+      .poll(async () => {
+        const types = await readBusSpyTypes(tile);
+        return types.filter((t) => t === "pump").length;
+      }, { timeout: 3_000 })
+      .toBeGreaterThan(pumpCountBefore);
 
     expect(pageErrors, "page errors").toEqual([]);
     await context.close();
