@@ -1,13 +1,16 @@
 # motion — PROTOTYPE (throwaway)
 
 Phase-2 body-motion slice of [#19 — Trial ComfyUI body-motion for the Knight and
-Wizard actions](https://github.com/jsbellamy/nightglass/issues/19). Wipe when the
-trial closes; fold only the verdict and `normalize_seq.py`'s design forward.
+Wizard actions](https://github.com/jsbellamy/nightglass/issues/19), plus the #26
+Qwen-Image-Edit follow-up. Wipe when the route decision closes; fold only the
+verdicts and `normalize_seq.py`'s design forward.
 
-- **Verdict:** [NOTES.md](NOTES.md) — **NO-GO for generated body motion, both paths**
+- **Verdict (#19):** [NOTES.md](NOTES.md) — **NO-GO for generated body motion, both paths**
+- **Verdict (#26):** [NOTES_qwen.md](NOTES_qwen.md) — **NO-GO for Qwen pose-edit keyframes**
 - **Action script (frozen identity, varying pose):** [actions.py](actions.py)
 - **Path A** (schnell img2img keyframes): [gen_a.py](gen_a.py)
 - **Path B** (Wan2.2 5B image-to-video): [gen_b.py](gen_b.py)
+- **Path C** (Qwen-Image-Edit-2511 instruction edits): [gen_qwen.py](gen_qwen.py)
 - **Gate measurement:** [metrics.py](metrics.py) (source) · `postred.py` (after reduction)
 - **Sequence normalizer — the keeper:** [normalize_seq.py](normalize_seq.py)
 
