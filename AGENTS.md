@@ -9,7 +9,7 @@ here or in the docs it routes to, not in a tool-specific file.
 
 ### Issue tracker
 
-Issues are tracked as Local Markdown files under `.scratch/`. See
+Issues are tracked as GitHub issues on `jsbellamy/nightglass`. See
 `docs/agents/issue-tracker.md`.
 
 ### Triage labels
