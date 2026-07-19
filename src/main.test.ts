@@ -3,6 +3,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { mountTileShell } from "./main";
 import { BATTLEFIELD_HEIGHT, STATUS_LINE_HEIGHT, TILE_HEIGHT, TILE_WIDTH } from "./ui/battle-tile";
+import type { BusMessage, createBusEndpoint } from "./ui/bus";
 import type { DockWindowPort } from "./ui/dock-window";
 import { PUMP_INTERVAL_MS } from "./ui/pump";
 
@@ -65,6 +66,31 @@ describe("Management Dock integration", () => {
 
     expect(dockWindow.dockPositionUpdates).toBeGreaterThan(0);
     expect(dockWindow.tileMutations).toEqual([]);
+    shell.stop();
+  });
+});
+
+describe("dock handshake", () => {
+  it("sends a fresh snapshot when a dock announces it opened", () => {
+    const root = document.createElement("main");
+    const published: BusMessage[] = [];
+    let handlers: Parameters<typeof createBusEndpoint>[0] = {};
+
+    const shell = mountTileShell(root, {
+      dockWindow: createMockDockWindow(),
+      busFactory: (busHandlers) => {
+        handlers = busHandlers;
+        return {
+          publish: (message) => published.push(message),
+          close: () => {},
+        };
+      },
+    });
+
+    published.length = 0;
+    handlers["dock-opened"]?.({ type: "dock-opened" });
+
+    expect(published.some((message) => message.type === "snapshot")).toBe(true);
     shell.stop();
   });
 });
