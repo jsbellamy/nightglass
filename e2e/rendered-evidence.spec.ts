@@ -86,7 +86,7 @@ async function readBusSpyTypes(page: Page): Promise<string[]> {
 }
 
 test.describe("rendered-output evidence seam", () => {
-  test("evidence: tile-geometry / evidence: native-1x-scaling / evidence: aa-contrast — Battle Tile geometry, sprites, contrast, and combat feedback at native 1×", async ({
+  test("evidence: tile-geometry / evidence: native-1x-scaling / evidence: aa-contrast / evidence: effect-image-loading — Battle Tile geometry, sprites, contrast, effect frames, status glyphs, and combat feedback at native 1×", async ({
     browser,
   }) => {
     const { context, tile } = await openTile(browser);
@@ -181,6 +181,29 @@ test.describe("rendered-output evidence seam", () => {
       const floor = large ? 3 : 4.5;
       expect(ratio, `AA contrast ${sample.sel}`).toBeGreaterThanOrEqual(floor);
     }
+
+    await expect
+      .poll(
+        async () =>
+          tile.evaluate(() => {
+            const samples = (selector: string) =>
+              [...document.querySelectorAll<HTMLImageElement>(selector)].map((el) => ({
+                complete: el.complete && el.naturalWidth > 0 && el.naturalHeight > 0,
+              }));
+            const frames = samples("img.effect-frame");
+            const icons = samples("img.status-icon");
+            const brokenFrames = frames.filter((entry) => !entry.complete);
+            const brokenIcons = icons.filter((entry) => !entry.complete);
+            return {
+              frameSeen: frames.some((entry) => entry.complete),
+              iconSeen: icons.some((entry) => entry.complete),
+              brokenFrames,
+              brokenIcons,
+            };
+          }),
+        { timeout: 90_000, intervals: [500] },
+      )
+      .toMatchObject({ frameSeen: true, iconSeen: true, brokenFrames: [], brokenIcons: [] });
 
     // Seeded run knocks someone out by ~2.5s sim; wait for the DOM class, then
     // assert on the nodes CSS actually targets (.combatant-sprite / .combatant-stack).
