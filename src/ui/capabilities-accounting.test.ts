@@ -4,7 +4,8 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const capabilitiesDir = join(here, "../../src-tauri/capabilities");
+const tauriDir = join(here, "../../src-tauri");
+const capabilitiesDir = join(tauriDir, "capabilities");
 
 interface CapabilityManifest {
   permissions: string[];
@@ -19,8 +20,9 @@ describe("capability least-privilege accounting", () => {
     const manifest = JSON.parse(
       readFileSync(join(capabilitiesDir, "default.json"), "utf8"),
     ) as CapabilityManifest;
+    // Kept outside capabilities/: Tauri parses every JSON there as a Capability.
     const accounted = JSON.parse(
-      readFileSync(join(capabilitiesDir, "accounted.json"), "utf8"),
+      readFileSync(join(tauriDir, "accounted-permissions.json"), "utf8"),
     ) as AccountedPermissions;
 
     const inManifest = [...manifest.permissions].sort();
