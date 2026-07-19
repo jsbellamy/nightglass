@@ -16,6 +16,7 @@ import {
   shouldApplyStun,
 } from "./combat";
 import type { CombatantState } from "./snapshot";
+import { buildContent } from "../data";
 import { fixtureContent } from "./testing/fixture-content";
 import type { AbilityDef, BaseStats } from "./types";
 
@@ -140,6 +141,18 @@ describe("validWhile gates", () => {
     expect(isAbilityValid(ability, priest, [knight, priest])).toBe(false);
     knight.health = 150;
     expect(isAbilityValid(ability, priest, [knight, priest])).toBe(true);
+  });
+
+  it("requires below half health for Hold the Line", () => {
+    const ability = buildContent().abilities.find((entry) => entry.id === "hold-the-line")!;
+    const knight = partyCombatant("knight", "front", { health: 180, maxHealth: 180 });
+    expect(isAbilityValid(ability, knight, [knight])).toBe(false);
+
+    knight.health = 90;
+    expect(isAbilityValid(ability, knight, [knight])).toBe(false);
+
+    knight.health = 89;
+    expect(isAbilityValid(ability, knight, [knight])).toBe(true);
   });
 });
 

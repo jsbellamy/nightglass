@@ -57,7 +57,7 @@ export interface AbilityDef {
   windUpMs: number;
   recoveryMs: number;
   cooldownMs: number;
-  validWhile?: "status-absent" | "any-ally-missing-health";
+  validWhile?: "status-absent" | "any-ally-missing-health" | "below-half-health";
 }
 
 export interface StatTalentDef {
