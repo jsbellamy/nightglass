@@ -114,6 +114,7 @@ export interface PresentationOptions {
   battlefield: HTMLElement;
   effectLane: HTMLElement;
   feedbackLayer: HTMLElement;
+  notificationLayer: HTMLElement;
   content: Content;
   reducedMotion?: boolean;
 }
@@ -187,7 +188,7 @@ function bodyLayer(element: HTMLElement): HTMLElement | null {
 function bannerLabel(event: EngineEvent, content: Content): string | null {
   switch (event.type) {
     case "wave-started":
-      return event.boss ? "Boss Wave" : `Wave ${event.encounter}`;
+      return event.boss ? "Boss Wave" : null;
     case "stage-cleared":
       return content.stages.find((stage) => stage.id === event.stage)?.name ?? "Stage Cleared";
     case "party-defeat":
@@ -204,7 +205,7 @@ function rarityLabel(rarity: Rarity): string {
 }
 
 export function createPresentation(options: PresentationOptions): Presentation {
-  const { battlefield, effectLane, feedbackLayer, content } = options;
+  const { battlefield, effectLane, feedbackLayer, notificationLayer, content } = options;
   let reducedMotion = options.reducedMotion ?? false;
 
   const pendingDamage: DamageNumberInput[] = [];
@@ -226,7 +227,8 @@ export function createPresentation(options: PresentationOptions): Presentation {
   damageLayer.className = "damage-layer";
   damageLayer.setAttribute("aria-hidden", "true");
 
-  feedbackLayer.append(bannerEl, dropToastEl, damageLayer);
+  feedbackLayer.append(bannerEl, damageLayer);
+  notificationLayer.append(dropToastEl);
   battlefield.classList.toggle("reduced-motion", reducedMotion);
 
   function setReducedMotion(next: boolean): void {
@@ -614,6 +616,7 @@ export function createPresentation(options: PresentationOptions): Presentation {
 
   function destroy(): void {
     feedbackLayer.replaceChildren();
+    notificationLayer.replaceChildren();
     effectLane.replaceChildren();
     for (const element of battlefield.querySelectorAll(".actor-pool, .status-icons")) {
       element.remove();

@@ -67,9 +67,20 @@ body {
 }
 
 .status-drag-region {
+  position: relative;
   flex: 1;
   min-width: 0;
   height: 100%;
+}
+
+.status-notification-layer {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  overflow: hidden;
 }
 
 .stage-wave-text {
@@ -416,9 +427,8 @@ body {
 }
 
 .drop-toast {
-  position: absolute;
-  right: 8px;
-  top: 30px;
+  position: relative;
+  max-width: calc(100% - 8px);
   padding: 3px 6px;
   border-radius: 4px;
   font-size: 8px;

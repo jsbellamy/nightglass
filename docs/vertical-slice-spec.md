@@ -330,8 +330,8 @@ bands, rarity odds; content data transcribes it directly).
   Ability changes — no aggregate score, no auto-equip. Equipped and Locked
   pieces cannot be discarded; bulk Discard confirms, listing Rare/Epic
   selections explicitly.
-- Drops never pause combat or open a modal: an icon-and-Rarity toast over the
-  tile, an Armory-tab badge, and an Unseen marker. Characters start with empty
+- Drops never pause combat or open a modal: a status-line `Drop · <Rarity>`
+  notification, an Armory-tab badge, and an Unseen marker. Characters start with empty
   slots. **No** binding, sets, requirements, selling, salvage, crafting,
   upgrading, or Affix rerolling.
 
@@ -439,8 +439,9 @@ test for the Offline Progress cap only.
 brightness flash plus per-channel-tinted floating damage numbers with
 short-window merging (green `+` for Healing); up to two Status icons then a
 "+n" chip; collapse-then-desaturate Knockout readable without colour; ~1.5s
-centre-lane banners for Wave/Stage/Party Defeat; Drop toasts badging the
-Armory tab. Cooldown and Action Cycle telemetry lives only in the Dock's
+centre-lane banners for Boss Wave, Stage Attempt, Stage cleared, and Party
+Defeat (routine numbered Waves stay silent); Drop notifications in the status
+line badging the Armory tab. Cooldown and Action Cycle telemetry lives only in the Dock's
 Loadout surface. Deferred: screen shake, hit-stop, combat log, DPS meters.
 
 ---

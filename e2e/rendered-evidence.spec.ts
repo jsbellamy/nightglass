@@ -20,6 +20,15 @@ function overlaps(a: Rect, b: Rect): boolean {
   return a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
 }
 
+function rectContains(outer: Rect, inner: Rect): boolean {
+  return (
+    inner.x >= outer.x - 0.5 &&
+    inner.y >= outer.y - 0.5 &&
+    inner.x + inner.w <= outer.x + outer.w + 0.5 &&
+    inner.y + inner.h <= outer.y + outer.h + 0.5
+  );
+}
+
 function assertCombatantsFitTile(combatants: Rect[]): void {
   const collisions: string[] = [];
   for (let i = 0; i < combatants.length; i++) {
@@ -256,7 +265,58 @@ test.describe("rendered-output evidence seam", () => {
     ).toHaveLength(8);
     assertCombatantsFitTile([...geometry.opponents, ...geometry.party]);
 
+    await expect
+      .poll(
+        async () => {
+          return tile.evaluate(() => {
+            const toast = document.querySelector<HTMLElement>(
+              ".status-notification-layer .drop-toast",
+            );
+            return toast !== null && !toast.hidden && (toast.textContent?.length ?? 0) > 0;
+          });
+        },
+        { timeout: 180_000, intervals: [2_000] },
+      )
+      .toBe(true);
+
+    const dropClearance = await tile.evaluate(() => {
+      const r = (el: Element | null): Rect => {
+        if (!el) return { x: 0, y: 0, w: 0, h: 0 };
+        const b = el.getBoundingClientRect();
+        return { x: b.x, y: b.y, w: b.width, h: b.height, cls: el.className };
+      };
+      const notification = r(document.querySelector(".status-notification-layer .drop-toast"));
+      const statusLine = r(document.querySelector(".status-line"));
+      const stageWave = r(document.querySelector(".stage-wave-text"));
+      const buttons = [...document.querySelectorAll(".status-button")].map((el) => r(el));
+      const combatants = [...document.querySelectorAll(".combatant")].map((el) => r(el));
+      return { notification, statusLine, stageWave, buttons, combatants };
+    });
+
+    expect(dropClearance.notification.w, "drop notification visible width").toBeGreaterThan(0);
+    expect(
+      rectContains(dropClearance.statusLine, dropClearance.notification),
+      "drop notification inside status line",
+    ).toBe(true);
+    for (const combatant of dropClearance.combatants) {
+      expect(
+        overlaps(dropClearance.notification, combatant),
+        `drop notification must not overlap ${combatant.cls}`,
+      ).toBe(false);
+    }
+    for (const button of dropClearance.buttons) {
+      expect(
+        overlaps(dropClearance.notification, button),
+        `drop notification must not overlap ${button.cls}`,
+      ).toBe(false);
+    }
+    expect(
+      overlaps(dropClearance.notification, dropClearance.stageWave),
+      "drop notification must not overlap stage-wave text",
+    ).toBe(false);
+
     await tile.screenshot({ path: `${SCREENSHOTS}/05-tile-five-opponents.png` });
+    await tile.screenshot({ path: `${SCREENSHOTS}/06-tile-drop-notification.png` });
     await context.close();
   });
 
