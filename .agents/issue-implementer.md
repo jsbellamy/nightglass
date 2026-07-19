@@ -27,9 +27,9 @@ the runtime supports worktrees.
      finished generation prompt and its intended read: run the prompt as
      written, judge the result against the stated read, and keep the archived
      raw plus provenance sidecar so `assets:verify` proves a byte-identical
-     rebuild. Generated images, archived raws, sidecars, and scratch files all
-     land at repo-relative paths inside the worktree — write every tool's
-     output there, including any temp directory a generation step wants.
+     rebuild. Archived raws, sidecars, and scratch files land at absolute paths
+     inside the worktree; generated images arrive via the `GenerateImage` copy
+     step in the constraints below.
 5. Before publishing, make an **acceptance matrix** containing every checkbox
    from the live issue. Follow `docs/agents/acceptance-evidence.md`: for each
    row, state a disposition plus specific evidence at the seam the criterion
@@ -71,12 +71,18 @@ the runtime supports worktrees.
 
 ## Constraints
 
-- The worktree is the workspace: every file you create or edit lives under its
-  root, addressed by a repo-relative path. Run commands with the worktree root
-  as the working directory so relative paths resolve inside it, and keep scratch
-  work in a gitignored directory there rather than `/tmp` or a system temp dir.
-  A step that seems to need a path outside the worktree is a signal to stop and
-  report, not to write there.
+- The worktree root is the only writable tree. Use absolute paths under that
+  root for every Write/StrReplace/edit — a relative path like
+  `docs/research/...` resolves against the primary multi-root root, not your
+  worktree. Set shell `cwd` to the worktree root. Never write under a sibling
+  checkout (including SideScape) or the primary multi-root workspace root when
+  it is not this worktree.
+- Cursor `GenerateImage` may only emit a filename (it dumps outside the
+  worktree). Immediately copy each dump into the worktree archive path with an
+  absolute destination — step 3 of `docs/agents/asset-generation.md` owns which
+  path that is — and work from the copy. Do not leave issue artifacts in the
+  Cursor dump folder or any sibling repo. If you cannot copy into the worktree,
+  stop and report — do not invent another destination.
 - Respect the simulation boundary (`docs/vertical-slice-spec.md` §9): the
   Engine stays caller-pumped and chunk-size-neutral; time and RNG are injected;
   Presentation Events carry domain facts, never asset names.
