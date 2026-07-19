@@ -16,6 +16,7 @@ type FormationSlot = (typeof FORMATION_ORDER)[number];
 
 export interface BattleTileMountOptions {
   reducedMotion?: boolean;
+  onDockToggle?: () => void;
 }
 
 export interface BattleTile {
@@ -256,9 +257,12 @@ export function mountBattleTile(
 
   const dockToggle = document.createElement("button");
   dockToggle.type = "button";
-  dockToggle.className = "status-button dock-toggle";
+  dockToggle.className = "status-button dock-toggle focus-ring";
   dockToggle.setAttribute("aria-label", "Open Management Dock");
   dockToggle.textContent = "☰";
+  if (options.onDockToggle) {
+    dockToggle.addEventListener("click", options.onDockToggle);
+  }
 
   const mutePlaceholder = document.createElement("button");
   mutePlaceholder.type = "button";
