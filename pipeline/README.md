@@ -10,13 +10,16 @@ adding or changing raster assets.
 
 - `assets-raw/grid_raw/` — Archived Raw Bundle (`*.png` + `*.source.json`)
 - `pipeline/acquire.py` — offline normalizer, validator, and manifest writer
+- `pipeline/icons/` — Equipment icon ingest, Stage-2 build, and contract tests
 - `pipeline/palette.json` — `moonberry-16` palette definition
 - `src/assets/sprites/` — committed runtime PNGs and `manifest.json`
+- `src/assets/icon-sources/` — generated text-grid icon sources (see `docs/icon-contract.md`)
+- `src/assets/icons/` — committed 34×34 Equipment icon runtimes and manifest
 
 ## Commands
 
 ```bash
-npm run assets:build   # rebuild runtime sprites from the archived raws
+npm run assets:build   # rebuild runtime sprites + icons from committed sources
 npm run assets:verify  # contract tests + byte-identity rebuild proof
 ```
 
