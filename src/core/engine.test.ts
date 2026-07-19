@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { createEngine } from "./engine";
 import type { EngineEvent } from "./events";
-import type { Snapshot } from "./snapshot";
+import type { ProgressionState, Snapshot } from "./snapshot";
+import { defaultTalentsForClasses } from "./talents";
 import { fixtureContent } from "./testing/fixture-content";
 import type { Content } from "./types";
 
@@ -10,12 +11,144 @@ const DURATION_MS = 30_000;
 const FIXTURE_NOW_MS = 1_000;
 const fixtureNow = () => FIXTURE_NOW_MS;
 
+const fixtureTalents = defaultTalentsForClasses(fixtureContent.classes);
+
+function progressionState(
+  overrides: Omit<ProgressionState, "talents" | "pendingParty"> &
+    Partial<Pick<ProgressionState, "talents" | "pendingParty">>,
+): ProgressionState {
+  return {
+    talents: fixtureTalents,
+    pendingParty: null,
+    ...overrides,
+  };
+}
+
 const engineContent: Content = {
   ...fixtureContent,
   stages: [
     fixtureContent.stages[0]!,
     { ...fixtureContent.stages[0]!, id: 2, name: "Fixture Stage 2" },
     { ...fixtureContent.stages[0]!, id: 3, name: "Fixture Stage 3" },
+  ],
+};
+
+const progressionContent: Content = {
+  ...fixtureContent,
+  abilities: [
+    ...fixtureContent.abilities,
+    {
+      id: "hunter-basic",
+      name: "Quick Shot",
+      classId: "hunter",
+      slot: "basic",
+      targeting: { kind: "closest-opponent" },
+      effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
+      windUpMs: 350,
+      recoveryMs: 650,
+      cooldownMs: 0,
+    },
+    {
+      id: "h-snare",
+      name: "Snare",
+      classId: "hunter",
+      slot: "core",
+      targeting: { kind: "closest-opponent" },
+      effects: [{ kind: "damage", channel: "physical", coefficient: 0.9 }],
+      windUpMs: 300,
+      recoveryMs: 500,
+      cooldownMs: 7000,
+    },
+    {
+      id: "h-volley",
+      name: "Volley",
+      classId: "hunter",
+      slot: "core",
+      targeting: { kind: "all-opponents" },
+      effects: [{ kind: "damage", channel: "physical", coefficient: 0.6 }],
+      windUpMs: 500,
+      recoveryMs: 700,
+      cooldownMs: 8000,
+    },
+    {
+      id: "h-mark",
+      name: "Mark",
+      classId: "hunter",
+      slot: "core",
+      targeting: { kind: "self" },
+      effects: [{ kind: "apply-status", statusId: "braced" }],
+      windUpMs: 200,
+      recoveryMs: 400,
+      cooldownMs: 9000,
+      validWhile: "status-absent",
+    },
+    {
+      id: "h-pierce",
+      name: "Pierce",
+      classId: "hunter",
+      slot: "core",
+      targeting: { kind: "closest-opponent" },
+      effects: [{ kind: "damage", channel: "physical", coefficient: 1.3 }],
+      windUpMs: 400,
+      recoveryMs: 600,
+      cooldownMs: 9000,
+    },
+    {
+      id: "h-trap",
+      name: "Trap",
+      classId: "hunter",
+      slot: "talent",
+      targeting: { kind: "closest-opponent" },
+      effects: [{ kind: "damage", channel: "physical", coefficient: 1.1 }],
+      windUpMs: 400,
+      recoveryMs: 600,
+      cooldownMs: 12000,
+    },
+    {
+      id: "h-rain",
+      name: "Arrow Rain",
+      classId: "hunter",
+      slot: "talent",
+      targeting: { kind: "all-opponents" },
+      effects: [{ kind: "damage", channel: "physical", coefficient: 1.4 }],
+      windUpMs: 700,
+      recoveryMs: 800,
+      cooldownMs: 14000,
+    },
+  ],
+  classes: [
+    ...fixtureContent.classes,
+    {
+      id: "hunter",
+      name: "Hunter",
+      base: {
+        maxHealth: 95,
+        physical: 13,
+        elemental: 5,
+        armor: 14,
+        elementalResistance: 10,
+      },
+      basicAbilityId: "hunter-basic",
+      coreAbilityIds: ["h-snare", "h-volley", "h-mark", "h-pierce"],
+      defaultLoadout: ["h-snare", "h-mark", "h-volley"],
+      talents: {
+        statRow: [
+          {
+            id: "h-fleetness",
+            name: "Fleetness",
+            perRank: { percent: { physicalPower: 0.04 } },
+            maxRanks: 5,
+          },
+          {
+            id: "h-keen-eye",
+            name: "Keen Eye",
+            perRank: { flat: { physical: 2 } },
+            maxRanks: 5,
+          },
+        ],
+        abilityRow: ["h-trap", "h-rain"],
+      },
+    },
   ],
 };
 
@@ -145,7 +278,7 @@ describe("Party Defeat and Retry", () => {
       nextEventSeq: 10,
       nextAttemptId: 5,
       nextDropId: 1,
-      progression: {
+      progression: progressionState({
         unlockedStage: 1,
         party: ["knight", "wizard", "knight"],
         reserve: "wizard",
@@ -156,7 +289,7 @@ describe("Party Defeat and Retry", () => {
           priest: ["p-moonwell", "p-resurgence", "p-smite"],
           hunter: ["k-shield-brace", "k-rally", "k-sweep"],
         },
-      },
+      }),
       attempt: {
         id: 4,
         stage: 1,
@@ -275,7 +408,7 @@ describe("Stage 3 clear auto-retry", () => {
       nextEventSeq: 1,
       nextAttemptId: 9,
       nextDropId: 1,
-      progression: {
+      progression: progressionState({
         unlockedStage: 3,
         party: ["knight", "wizard", "knight"],
         reserve: "wizard",
@@ -286,7 +419,7 @@ describe("Stage 3 clear auto-retry", () => {
           priest: ["p-moonwell", "p-resurgence", "p-smite"],
           hunter: ["k-shield-brace", "k-rally", "k-sweep"],
         },
-      },
+      }),
       attempt: {
         id: 8,
         stage: 3,
@@ -391,7 +524,7 @@ describe("full combat rules", () => {
       nextEventSeq: 1,
       nextAttemptId: 1,
       nextDropId: 1,
-      progression: {
+      progression: progressionState({
         unlockedStage: 1,
         party: ["knight", "wizard", "priest"],
         reserve: "hunter",
@@ -402,7 +535,7 @@ describe("full combat rules", () => {
           priest: ["p-smite", "p-moonwell", "p-resurgence"],
           hunter: ["k-shield-brace", "k-rally", "k-sweep"],
         },
-      },
+      }),
       attempt: {
         id: 1,
         stage: 1,
@@ -481,7 +614,7 @@ describe("full combat rules", () => {
       nextEventSeq: 1,
       nextAttemptId: 1,
       nextDropId: 1,
-      progression: {
+      progression: progressionState({
         unlockedStage: 1,
         party: ["knight", "wizard", "priest"],
         reserve: "hunter",
@@ -492,7 +625,7 @@ describe("full combat rules", () => {
           priest: ["p-smite", "p-moonwell", "p-resurgence"],
           hunter: ["k-shield-brace", "k-rally", "k-sweep"],
         },
-      },
+      }),
       attempt: {
         id: 1,
         stage: 1,
@@ -573,7 +706,7 @@ describe("full combat rules", () => {
       nextEventSeq: 1,
       nextAttemptId: 1,
       nextDropId: 1,
-      progression: {
+      progression: progressionState({
         unlockedStage: 1,
         party: ["knight", "wizard", "priest"],
         reserve: "hunter",
@@ -584,7 +717,7 @@ describe("full combat rules", () => {
           priest: ["p-smite", "p-moonwell", "p-resurgence"],
           hunter: ["k-shield-brace", "k-rally", "k-sweep"],
         },
-      },
+      }),
       attempt: {
         id: 1,
         stage: 1,
@@ -666,7 +799,7 @@ describe("full combat rules", () => {
       nextEventSeq: 1,
       nextAttemptId: 1,
       nextDropId: 1,
-      progression: {
+      progression: progressionState({
         unlockedStage: 1,
         party: ["knight", "wizard", "priest"],
         reserve: "hunter",
@@ -677,7 +810,7 @@ describe("full combat rules", () => {
           priest: ["p-smite", "p-moonwell", "p-resurgence"],
           hunter: ["k-shield-brace", "k-rally", "k-sweep"],
         },
-      },
+      }),
       attempt: {
         id: 1,
         stage: 1,
@@ -757,7 +890,7 @@ describe("full combat rules", () => {
       nextEventSeq: 1,
       nextAttemptId: 1,
       nextDropId: 1,
-      progression: {
+      progression: progressionState({
         unlockedStage: 1,
         party: ["knight", "wizard", "priest"],
         reserve: "hunter",
@@ -768,7 +901,7 @@ describe("full combat rules", () => {
           priest: ["p-smite", "p-moonwell", "p-resurgence"],
           hunter: ["k-shield-brace", "k-rally", "k-sweep"],
         },
-      },
+      }),
       attempt: {
         id: 1,
         stage: 1,
@@ -848,7 +981,7 @@ describe("full combat rules", () => {
       nextEventSeq: 1,
       nextAttemptId: 1,
       nextDropId: 1,
-      progression: {
+      progression: progressionState({
         unlockedStage: 1,
         party: ["priest", "knight", "wizard"],
         reserve: "hunter",
@@ -859,7 +992,7 @@ describe("full combat rules", () => {
           priest: ["p-moonwell", "p-resurgence", "p-smite"],
           hunter: ["k-shield-brace", "k-rally", "k-sweep"],
         },
-      },
+      }),
       attempt: {
         id: 1,
         stage: 1,
@@ -938,7 +1071,7 @@ describe("full combat rules", () => {
       nextEventSeq: 1,
       nextAttemptId: 1,
       nextDropId: 1,
-      progression: {
+      progression: progressionState({
         unlockedStage: 1,
         party: ["knight", "wizard", "priest"],
         reserve: "hunter",
@@ -949,7 +1082,7 @@ describe("full combat rules", () => {
           priest: ["p-smite", "p-moonwell", "p-resurgence"],
           hunter: ["k-shield-brace", "k-rally", "k-sweep"],
         },
-      },
+      }),
       attempt: {
         id: 1,
         stage: 1,
@@ -1037,7 +1170,7 @@ describe("full combat rules", () => {
       nextEventSeq: 1,
       nextAttemptId: 1,
       nextDropId: 1,
-      progression: {
+      progression: progressionState({
         unlockedStage: 1,
         party: ["priest", "knight", "wizard"],
         reserve: "hunter",
@@ -1048,7 +1181,7 @@ describe("full combat rules", () => {
           priest: ["p-resurgence", "p-moonwell", "p-smite"],
           hunter: ["k-shield-brace", "k-rally", "k-sweep"],
         },
-      },
+      }),
       attempt: {
         id: 1,
         stage: 1,
@@ -1131,7 +1264,7 @@ describe("full combat rules", () => {
       nextEventSeq: 1,
       nextAttemptId: 1,
       nextDropId: 1,
-      progression: {
+      progression: progressionState({
         unlockedStage: 1,
         party: ["knight", "wizard", "priest"],
         reserve: "hunter",
@@ -1142,7 +1275,7 @@ describe("full combat rules", () => {
           priest: ["p-smite", "p-moonwell", "p-resurgence"],
           hunter: ["k-shield-brace", "k-rally", "k-sweep"],
         },
-      },
+      }),
       attempt: {
         id: 1,
         stage: 1,
@@ -1258,7 +1391,7 @@ describe("full combat rules", () => {
       nextEventSeq: 1,
       nextAttemptId: 1,
       nextDropId: 1,
-      progression: {
+      progression: progressionState({
         unlockedStage: 1,
         party: ["knight", "wizard", "priest"],
         reserve: "knight",
@@ -1269,7 +1402,7 @@ describe("full combat rules", () => {
           priest: ["p-smite", "p-moonwell", "p-resurgence"],
           hunter: ["k-shield-brace", "k-rally", "k-sweep"],
         },
-      },
+      }),
       attempt: {
         id: 1,
         stage: 1,
@@ -1400,7 +1533,7 @@ describe("full combat rules", () => {
       nextEventSeq: 1,
       nextAttemptId: 1,
       nextDropId: 1,
-      progression: {
+      progression: progressionState({
         unlockedStage: 1,
         party: ["knight", "wizard", "priest"],
         reserve: "knight",
@@ -1411,7 +1544,7 @@ describe("full combat rules", () => {
           priest: ["p-smite", "p-moonwell", "p-resurgence"],
           hunter: ["k-shield-brace", "k-rally", "k-sweep"],
         },
-      },
+      }),
       attempt: {
         id: 1,
         stage: 1,
@@ -1491,7 +1624,7 @@ describe("full combat rules", () => {
       nextEventSeq: 1,
       nextAttemptId: 1,
       nextDropId: 1,
-      progression: {
+      progression: progressionState({
         unlockedStage: 1,
         party: ["priest", "knight", "wizard"],
         reserve: "knight",
@@ -1502,7 +1635,7 @@ describe("full combat rules", () => {
           priest: ["p-moonwell", "p-resurgence", "p-smite"],
           hunter: ["k-shield-brace", "k-rally", "k-sweep"],
         },
-      },
+      }),
       attempt: {
         id: 1,
         stage: 1,
@@ -1627,7 +1760,7 @@ describe("full combat rules", () => {
       nextEventSeq: 1,
       nextAttemptId: 1,
       nextDropId: 1,
-      progression: {
+      progression: progressionState({
         unlockedStage: 1,
         party: ["knight", "wizard", "priest"],
         reserve: "knight",
@@ -1638,7 +1771,7 @@ describe("full combat rules", () => {
           priest: ["p-smite", "p-moonwell", "p-resurgence"],
           hunter: ["k-shield-brace", "k-rally", "k-sweep"],
         },
-      },
+      }),
       attempt: {
         id: 1,
         stage: 1,
@@ -1749,6 +1882,182 @@ describe("full combat rules", () => {
     const combatPath = join(new URL(".", import.meta.url).pathname, "combat.ts");
     const source = await readFile(combatPath, "utf8");
     expect(source).not.toMatch(/lootRngState/);
+  });
+});
+
+describe("progression", () => {
+  it("awards full Character XP to Party Members and floor(50%) to the Reserve on opponent defeat", () => {
+    const saved: Snapshot = {
+      schemaVersion: 1,
+      savedAtMs: 0,
+      simNowMs: 0,
+      lootRngState: LOOT_SEED,
+      nextEventSeq: 1,
+      nextAttemptId: 1,
+      nextDropId: 1,
+      progression: progressionState({
+        unlockedStage: 1,
+        party: ["knight", "wizard", "priest"],
+        reserve: "hunter",
+        characterXp: { knight: 0, wizard: 0, priest: 0, hunter: 0 },
+        talents: {
+          knight: { statRanks: { "k-fortitude": 0, "k-swordcraft": 0 }, abilityTalentId: null },
+          wizard: {
+            statRanks: { "w-elemental-practice": 0, "w-warding-lore": 0 },
+            abilityTalentId: null,
+          },
+          priest: { statRanks: { "p-devotion": 0, "p-blessing": 0 }, abilityTalentId: null },
+          hunter: { statRanks: { "h-fleetness": 0, "h-keen-eye": 0 }, abilityTalentId: null },
+        },
+        loadouts: {
+          knight: ["k-shield-brace", "k-rally", "k-sweep"],
+          wizard: ["w-prism", "w-frost", "w-cinder"],
+          priest: ["p-moonwell", "p-resurgence", "p-smite"],
+          hunter: ["k-shield-brace", "k-rally", "k-sweep"],
+        },
+        pendingParty: null,
+      }),
+      attempt: {
+        id: 1,
+        stage: 1,
+        encounter: 1,
+        phase: "fighting",
+        phaseEndsAtMs: null,
+        combatants: [
+          {
+            entityId: "party:knight:front",
+            side: "party",
+            defId: "knight",
+            health: 180,
+            maxHealth: 180,
+            knockedOut: false,
+            action: null,
+            cooldownReadyAtMs: {},
+            statuses: [],
+          },
+          {
+            entityId: "party:wizard:middle",
+            side: "party",
+            defId: "wizard",
+            health: 100,
+            maxHealth: 100,
+            knockedOut: false,
+            action: null,
+            cooldownReadyAtMs: {},
+            statuses: [],
+          },
+          {
+            entityId: "party:priest:back",
+            side: "party",
+            defId: "priest",
+            health: 110,
+            maxHealth: 110,
+            knockedOut: false,
+            action: null,
+            cooldownReadyAtMs: {},
+            statuses: [],
+          },
+          {
+            entityId: "opp:1:0",
+            side: "opponent",
+            defId: "fixture-grunt",
+            health: 1,
+            maxHealth: 40,
+            knockedOut: false,
+            action: null,
+            cooldownReadyAtMs: {},
+            statuses: [],
+          },
+        ],
+      },
+      pendingEdits: [],
+    };
+
+    const engine = createEngine(progressionContent, saved, LOOT_SEED);
+    const events = engine.advanceBy(5_000);
+    const xpEvents = events.filter((event) => event.type === "xp-awarded");
+    expect(xpEvents).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ classId: "knight", amount: 20, totalXp: 20 }),
+        expect.objectContaining({ classId: "wizard", amount: 20, totalXp: 20 }),
+        expect.objectContaining({ classId: "priest", amount: 20, totalXp: 20 }),
+        expect.objectContaining({ classId: "hunter", amount: 10, totalXp: 10 }),
+      ]),
+    );
+  });
+
+  it("keeps partial Character XP when abandoning a Wave mid-Attempt", () => {
+    const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
+    engine.advanceBy(1);
+    for (let ms = 0; ms < 120_000; ms += 1) {
+      const events = engine.advanceBy(1);
+      if (events.some((event) => event.type === "knockout" && event.entityId === "opp:1:0")) {
+        break;
+      }
+    }
+    const partialXp = engine.snapshot().progression.characterXp.knight;
+    expect(partialXp).toBeGreaterThan(0);
+    engine.selectStage(1);
+    expect(engine.snapshot().progression.characterXp.knight).toBe(partialXp);
+  });
+
+  it("reaches Level 2 after the fixture Stage 1 authored XP budget", () => {
+    const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
+    engine.advanceBy(1);
+    const events: EngineEvent[] = [];
+    for (let ms = 0; ms < 300_000; ms += 1) {
+      events.push(...engine.advanceBy(1));
+      if (events.some((event) => event.type === "stage-cleared" && event.stage === 1)) {
+        break;
+      }
+    }
+    const snap = engine.snapshot();
+    expect(snap.progression.characterXp.knight).toBeGreaterThanOrEqual(100);
+    expect(events.some((event) => event.type === "level-up" && event.classId === "knight")).toBe(
+      true,
+    );
+  });
+
+  it("queues Talent edits until the Wave boundary and applies Activation Delay to newly slotted Abilities", () => {
+    const boot = createEngine(fixtureContent, undefined, LOOT_SEED);
+    boot.advanceBy(1);
+    const saved = boot.snapshot();
+    saved.progression.characterXp.knight = 850;
+    const engine = createEngine(fixtureContent, saved, LOOT_SEED);
+    for (let rank = 0; rank < 5; rank += 1) {
+      engine.allocateTalent("knight", rank % 2 === 0 ? "k-fortitude" : "k-swordcraft");
+    }
+    engine.allocateTalent("knight", "k-hold-line");
+    engine.setLoadout("knight", ["k-hold-line", "k-sweep", "k-rally"]);
+
+    let transitionAt: number | null = null;
+    for (let ms = 0; ms < 300_000; ms += 1) {
+      const events = engine.advanceBy(1);
+      if (events.some((event) => event.type === "wave-cleared" && event.encounter === 1)) {
+        transitionAt = engine.snapshot().simNowMs;
+      }
+      if (events.some((event) => event.type === "config-applied")) {
+        const snap = engine.snapshot();
+        expect(snap.progression.talents.knight?.abilityTalentId).toBe("k-hold-line");
+        expect(snap.progression.loadouts.knight).toEqual(["k-hold-line", "k-sweep", "k-rally"]);
+        const knight = snap.attempt?.combatants.find((combatant) => combatant.defId === "knight");
+        expect(knight?.cooldownReadyAtMs["k-hold-line"]).toBe(
+          (transitionAt ?? 0) + 2_000 + 15_000,
+        );
+        return;
+      }
+    }
+    throw new Error("config-applied never emitted for talent boundary");
+  });
+
+  it("applies setParty at the next fresh Attempt", () => {
+    const engine = createEngine(progressionContent, undefined, LOOT_SEED);
+    engine.advanceBy(1);
+    engine.setParty(["priest", "wizard", "hunter"], "knight");
+    expect(engine.snapshot().progression.party).toEqual(["knight", "wizard", "priest"]);
+    engine.selectStage(1);
+    expect(engine.snapshot().progression.party).toEqual(["priest", "wizard", "hunter"]);
+    expect(engine.snapshot().progression.reserve).toBe("knight");
   });
 });
 

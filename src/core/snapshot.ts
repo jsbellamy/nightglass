@@ -1,3 +1,4 @@
+import type { ClassTalentState } from "./talents";
 import type { ClassId } from "./types";
 
 export interface ActiveStatus {
@@ -38,7 +39,12 @@ export interface AttemptState {
 export type PendingEdit =
   | { kind: "formation"; order: [ClassId, ClassId, ClassId] }
   | { kind: "loadout"; classId: ClassId; loadout: [string, string, string] }
-  | { kind: "talent" }
+  | {
+      kind: "talent";
+      classId: ClassId;
+      statRanks: Record<string, number>;
+      abilityTalentId: string | null;
+    }
   | { kind: "equipment" };
 
 export interface ProgressionState {
@@ -46,7 +52,9 @@ export interface ProgressionState {
   party: [ClassId, ClassId, ClassId];
   reserve: ClassId;
   characterXp: Record<ClassId, number>;
+  talents: Record<ClassId, ClassTalentState>;
   loadouts: Record<ClassId, [string, string, string]>;
+  pendingParty: { members: [ClassId, ClassId, ClassId]; reserve: ClassId } | null;
 }
 
 export interface Snapshot {

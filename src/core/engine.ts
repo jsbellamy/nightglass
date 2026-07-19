@@ -1,4 +1,5 @@
 import {
+  applyStatModifiers,
   chooseFirstValidAbility,
   combatantById,
   effectiveStats,
@@ -25,8 +26,18 @@ import type {
   ProgressionState,
   Snapshot,
 } from "./snapshot";
+import {
+  allocateTalentPoint,
+  deallocateTalentPoint,
+  defaultTalentsForClasses,
+  emptyTalentState,
+  stripAbilityFromLoadout,
+  talentStatModifiers,
+  type ClassTalentState,
+} from "./talents";
 import type {
   AbilityDef,
+  BaseStats,
   ClassId,
   ClassKitDef,
   Content,
@@ -34,6 +45,7 @@ import type {
   StageDef,
   StatusEffectDef,
 } from "./types";
+import { awardXp, levelFromXp, reserveXpAward } from "./xp";
 
 export const SCHEMA_VERSION = 1;
 const WAVE_TRANSITION_MS = 2_000;
@@ -48,6 +60,9 @@ export interface Engine {
   selectStage(stage: 1 | 2 | 3): EngineEvent[];
   setLoadout(classId: ClassId, loadout: [string, string, string]): void;
   setFormation(order: [ClassId, ClassId, ClassId]): void;
+  allocateTalent(classId: ClassId, talentId: string): void;
+  deallocateTalent(classId: ClassId, talentId: string): void;
+  setParty(members: [ClassId, ClassId, ClassId], reserve: ClassId): void;
 }
 
 interface EngineState {
@@ -112,7 +127,9 @@ function defaultProgression(content: Content): ProgressionState {
     party: [pick(0), pick(1), pick(2)],
     reserve: pick(3),
     characterXp,
+    talents: defaultTalentsForClasses(content.classes),
     loadouts: defaultLoadouts(content),
+    pendingParty: null,
   };
 }
 
@@ -126,22 +143,67 @@ function restoreProgression(
     party: saved.party,
     reserve: saved.reserve,
     characterXp: { ...defaults.characterXp, ...saved.characterXp },
+    talents: { ...defaults.talents, ...saved.talents },
     loadouts: { ...defaults.loadouts, ...saved.loadouts },
+    pendingParty: saved.pendingParty ?? null,
   };
+}
+
+function partyBaseStats(classKit: ClassKitDef, talentState: ClassTalentState): BaseStats {
+  return applyStatModifiers(classKit.base, talentStatModifiers(talentState, classKit));
+}
+
+function characterLevel(
+  progression: ProgressionState,
+  classId: ClassId,
+  thresholds: number[],
+): number {
+  return levelFromXp(progression.characterXp[classId] ?? 0, thresholds);
+}
+
+function effectiveTalentState(state: EngineState, classId: ClassId): ClassTalentState {
+  const pending = state.pendingEdits.find(
+    (edit) => edit.kind === "talent" && edit.classId === classId,
+  );
+  if (pending?.kind === "talent") {
+    return {
+      statRanks: { ...pending.statRanks },
+      abilityTalentId: pending.abilityTalentId,
+    };
+  }
+  const applied = state.progression.talents[classId];
+  if (!applied) {
+    throw new Error(`Missing Talent state for ${classId}`);
+  }
+  return structuredClone(applied);
+}
+
+function setTalentDraft(state: EngineState, classId: ClassId, draft: ClassTalentState): void {
+  state.pendingEdits = state.pendingEdits.filter(
+    (edit) => !(edit.kind === "talent" && edit.classId === classId),
+  );
+  state.pendingEdits.push({
+    kind: "talent",
+    classId,
+    statRanks: { ...draft.statRanks },
+    abilityTalentId: draft.abilityTalentId,
+  });
 }
 
 function makePartyCombatant(
   classId: ClassId,
   slotIndex: number,
   classKit: ClassKitDef,
+  talentState: ClassTalentState,
 ): CombatantState {
+  const stats = partyBaseStats(classKit, talentState);
   const slot = FORMATION_SLOTS[slotIndex] ?? "back";
   return {
     entityId: `party:${classId}:${slot}`,
     side: "party",
     defId: classId,
-    health: classKit.base.maxHealth,
-    maxHealth: classKit.base.maxHealth,
+    health: stats.maxHealth,
+    maxHealth: stats.maxHealth,
     knockedOut: false,
     action: null,
     cooldownReadyAtMs: {},
@@ -230,7 +292,12 @@ function createAttempt(
     if (!classKit) {
       throw new Error(`Missing Class Kit ${classId}`);
     }
-    return makePartyCombatant(classId, slotIndex, classKit);
+    return makePartyCombatant(
+      classId,
+      slotIndex,
+      classKit,
+      state.progression.talents[classId] ?? emptyTalentState(classKit),
+    );
   });
   return {
     id: state.nextAttemptId++,
@@ -256,6 +323,14 @@ function startFreshAttempt(
   stage: 1 | 2 | 3,
   events: EngineEvent[],
 ): void {
+  if (state.progression.pendingParty) {
+    state.progression.party = [...state.progression.pendingParty.members];
+    state.progression.reserve = state.progression.pendingParty.reserve;
+    state.progression.pendingParty = null;
+  }
+
+  applyPendingEdits(state, index, events, state.simNowMs);
+
   state.attempt = createAttempt(state, index, stage, 1);
   emit(state, events, {
     type: "stage-attempt-started",
@@ -273,14 +348,17 @@ function startFreshAttempt(
 function statsForCombatant(
   index: ContentIndex,
   combatant: CombatantState,
+  progression: ProgressionState,
 ): ReturnType<typeof effectiveStats> {
   let base;
   if (combatant.side === "party") {
-    const classKit = index.classesById.get(combatant.defId as ClassId);
+    const classId = combatant.defId as ClassId;
+    const classKit = index.classesById.get(classId);
     if (!classKit) {
       throw new Error(`Missing Class Kit ${combatant.defId}`);
     }
-    base = classKit.base;
+    const talentState = progression.talents[classId] ?? emptyTalentState(classKit);
+    base = partyBaseStats(classKit, talentState);
   } else {
     const opponent = index.opponentsById.get(combatant.defId);
     if (!opponent) {
@@ -478,10 +556,10 @@ function resolveImpacts(state: EngineState, index: ContentIndex, events: EngineE
     );
 
     const results: Extract<EngineEvent, { type: "impact" }>["results"] = [];
-    const actorStats = statsForCombatant(index, actor);
+    const actorStats = statsForCombatant(index, actor, state.progression);
 
     for (const target of targets) {
-      const targetStats = statsForCombatant(index, target);
+      const targetStats = statsForCombatant(index, target, state.progression);
       const preTargetHealth = preHealth.get(target.entityId) ?? target.health;
       const preTargetKnockedOut = preKnockedOut.get(target.entityId) ?? target.knockedOut;
       let projectedHealth = preTargetHealth;
@@ -614,7 +692,7 @@ function resolveImpacts(state: EngineState, index: ContentIndex, events: EngineE
   }
 
   cancelStunnedWindUps(state, index);
-  resolveKnockouts(state, events);
+  resolveKnockouts(state, index, events);
   evaluateEncounterOutcome(state, index, events);
 }
 
@@ -635,7 +713,44 @@ function cancelStunnedWindUps(state: EngineState, index: ContentIndex): void {
   }
 }
 
-function resolveKnockouts(state: EngineState, events: EngineEvent[]): void {
+function awardOpponentDefeatXp(
+  state: EngineState,
+  index: ContentIndex,
+  events: EngineEvent[],
+  opponentAward: number,
+): void {
+  if (opponentAward <= 0) {
+    return;
+  }
+
+  const recipients = new Map<ClassId, number>();
+  for (const classId of state.progression.party) {
+    recipients.set(classId, (recipients.get(classId) ?? 0) + opponentAward);
+  }
+  const reserve = state.progression.reserve;
+  recipients.set(reserve, (recipients.get(reserve) ?? 0) + reserveXpAward(opponentAward));
+
+  for (const [classId, amount] of recipients) {
+    const currentXp = state.progression.characterXp[classId] ?? 0;
+    const result = awardXp(currentXp, amount, index.content.xpThresholds);
+    state.progression.characterXp[classId] = result.totalXp;
+    emit(state, events, {
+      type: "xp-awarded",
+      classId,
+      amount,
+      totalXp: result.totalXp,
+    });
+    for (let level = result.previousLevel + 1; level <= result.newLevel; level += 1) {
+      emit(state, events, { type: "level-up", classId, level });
+    }
+  }
+}
+
+function resolveKnockouts(
+  state: EngineState,
+  index: ContentIndex,
+  events: EngineEvent[],
+): void {
   const attempt = state.attempt;
   if (!attempt) {
     return;
@@ -649,6 +764,12 @@ function resolveKnockouts(state: EngineState, events: EngineEvent[]): void {
         combatant.action = null;
       }
       emit(state, events, { type: "knockout", entityId: combatant.entityId });
+      if (combatant.side === "opponent") {
+        const opponentDef = index.opponentsById.get(combatant.defId);
+        if (opponentDef) {
+          awardOpponentDefeatXp(state, index, events, opponentDef.xpAward);
+        }
+      }
     }
   }
 }
@@ -727,12 +848,15 @@ function completeRecoveries(state: EngineState): void {
   }
 }
 
-function unlockableAbilityIds(classKit: ClassKitDef): Set<string> {
-  return new Set([
-    ...classKit.coreAbilityIds,
-    ...classKit.talents.abilityRow,
-    classKit.basicAbilityId,
-  ]);
+function unlockableAbilityIds(
+  classKit: ClassKitDef,
+  talentState: ClassTalentState,
+): Set<string> {
+  const ids = new Set<string>([classKit.basicAbilityId, ...classKit.coreAbilityIds]);
+  if (talentState.abilityTalentId) {
+    ids.add(talentState.abilityTalentId);
+  }
+  return ids;
 }
 
 function applyPendingEdits(
@@ -746,14 +870,43 @@ function applyPendingEdits(
   }
 
   const attempt = state.attempt;
-  if (!attempt) {
-    return;
-  }
-
-  const partyCombatantStates = partyCombatants(attempt.combatants);
+  const partyCombatantStates = attempt ? partyCombatants(attempt.combatants) : [];
   const byClassId = new Map(partyCombatantStates.map((combatant) => [combatant.defId, combatant]));
 
   for (const edit of state.pendingEdits) {
+    if (edit.kind === "talent") {
+      const classKit = index.classesById.get(edit.classId);
+      if (!classKit) {
+        throw new Error(`Missing Class Kit ${edit.classId}`);
+      }
+      const previousAbility = state.progression.talents[edit.classId]?.abilityTalentId ?? null;
+      state.progression.talents[edit.classId] = {
+        statRanks: { ...edit.statRanks },
+        abilityTalentId: edit.abilityTalentId,
+      };
+      if (previousAbility && previousAbility !== edit.abilityTalentId) {
+        state.progression.loadouts[edit.classId] = stripAbilityFromLoadout(
+          state.progression.loadouts[edit.classId],
+          previousAbility,
+          classKit,
+        );
+      }
+      const combatant = byClassId.get(edit.classId);
+      if (combatant) {
+        const stats = partyBaseStats(classKit, state.progression.talents[edit.classId]!);
+        combatant.maxHealth = stats.maxHealth;
+        combatant.health = Math.min(combatant.health, combatant.maxHealth);
+      }
+      continue;
+    }
+
+    if (!attempt) {
+      if (edit.kind === "loadout") {
+        state.progression.loadouts[edit.classId] = [...edit.loadout];
+      }
+      continue;
+    }
+
     if (edit.kind === "formation") {
       state.progression.party = [...edit.order];
       const reordered = edit.order.map((classId, slotIndex) => {
@@ -919,6 +1072,7 @@ function fromSnapshot(saved: Snapshot): EngineState {
 
 function validateLoadout(
   index: ContentIndex,
+  state: EngineState,
   classId: ClassId,
   loadout: [string, string, string],
 ): void {
@@ -926,7 +1080,7 @@ function validateLoadout(
   if (!classKit) {
     throw new Error(`Missing Class Kit ${classId}`);
   }
-  const unlockable = unlockableAbilityIds(classKit);
+  const unlockable = unlockableAbilityIds(classKit, effectiveTalentState(state, classId));
   const unique = new Set(loadout);
   if (unique.size !== loadout.length) {
     throw new Error(`Loadout for ${classId} must not contain duplicate Abilities`);
@@ -1011,7 +1165,7 @@ export function createEngine(
   }
 
   function setLoadout(classId: ClassId, loadout: [string, string, string]): void {
-    validateLoadout(index, classId, loadout);
+    validateLoadout(index, state, classId, loadout);
     state.pendingEdits = state.pendingEdits.filter(
       (edit) => !(edit.kind === "loadout" && edit.classId === classId),
     );
@@ -1028,11 +1182,49 @@ export function createEngine(
     state.pendingEdits.push({ kind: "formation", order: [...order] });
   }
 
+  function allocateTalent(classId: ClassId, talentId: string): void {
+    const classKit = index.classesById.get(classId);
+    if (!classKit) {
+      throw new Error(`Missing Class Kit ${classId}`);
+    }
+    const draft = effectiveTalentState(state, classId);
+    const level = characterLevel(state.progression, classId, index.content.xpThresholds);
+    allocateTalentPoint(draft, classKit, talentId, level);
+    setTalentDraft(state, classId, draft);
+  }
+
+  function deallocateTalent(classId: ClassId, talentId: string): void {
+    const classKit = index.classesById.get(classId);
+    if (!classKit) {
+      throw new Error(`Missing Class Kit ${classId}`);
+    }
+    const draft = effectiveTalentState(state, classId);
+    const level = characterLevel(state.progression, classId, index.content.xpThresholds);
+    deallocateTalentPoint(draft, classKit, talentId, level);
+    setTalentDraft(state, classId, draft);
+  }
+
+  function setParty(members: [ClassId, ClassId, ClassId], reserve: ClassId): void {
+    const roster = new Set([...members, reserve]);
+    if (roster.size !== 4) {
+      throw new Error("Party and Reserve must use four distinct Classes");
+    }
+    for (const classId of roster) {
+      if (!index.classesById.has(classId)) {
+        throw new Error(`Unknown Class ${classId}`);
+      }
+    }
+    state.progression.pendingParty = { members: [...members], reserve };
+  }
+
   return {
     advanceBy,
     snapshot: () => toSnapshot(state, now),
     selectStage,
     setLoadout,
     setFormation,
+    allocateTalent,
+    deallocateTalent,
+    setParty,
   };
 }
