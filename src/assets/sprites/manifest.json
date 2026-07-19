@@ -1,0 +1,90 @@
+{
+  "knight": {
+    "action": "still",
+    "frame_size": [
+      32,
+      48
+    ],
+    "palette": "moonberry-16",
+    "baseline_row": 47,
+    "total_ms": 1,
+    "frames": [
+      {
+        "name": "knight",
+        "duration_ms": 1,
+        "sha256": "9c688d45db8be2a8fd9c47b8811b258194a273d188411796065f8f3f8e0c8176"
+      }
+    ],
+    "cues_ms": {},
+    "source": {
+      "provider": "OpenAI built-in image generation",
+      "raw_sha256": "9dfcdd69592cec858d9ff4d53429a2a3b48815918f4b463083e7201d69546cb5"
+    }
+  },
+  "wizard": {
+    "action": "still",
+    "frame_size": [
+      32,
+      48
+    ],
+    "palette": "moonberry-16",
+    "baseline_row": 47,
+    "total_ms": 1,
+    "frames": [
+      {
+        "name": "wizard",
+        "duration_ms": 1,
+        "sha256": "4c35d3c84435b4d3651b38bb5dc90d98df0dd2b38f10120451ee9a6cce9a3dc1"
+      }
+    ],
+    "cues_ms": {},
+    "source": {
+      "provider": "OpenAI built-in image generation",
+      "raw_sha256": "cf390b253ea5b422f35ce667ae499d1a78e3d5be006552d20df740cd4c63d833"
+    }
+  },
+  "pipcap": {
+    "action": "still",
+    "frame_size": [
+      32,
+      48
+    ],
+    "palette": "moonberry-16",
+    "baseline_row": 47,
+    "total_ms": 1,
+    "frames": [
+      {
+        "name": "pipcap",
+        "duration_ms": 1,
+        "sha256": "f36ab891a5f5ab549cc2b51ceeacf99bd94949dbeb0cf1fbb28a47e4d8593966"
+      }
+    ],
+    "cues_ms": {},
+    "source": {
+      "provider": "Cursor GenerateImage",
+      "raw_sha256": "61521e221604d6106dc890e3feafec8326b704c7626e1400fa858cea429cb5a7"
+    }
+  },
+  "boss-1": {
+    "action": "still",
+    "frame_size": [
+      32,
+      48
+    ],
+    "palette": "moonberry-16",
+    "baseline_row": 47,
+    "total_ms": 1,
+    "frames": [
+      {
+        "name": "boss-1",
+        "duration_ms": 1,
+        "sha256": "04a1430ae6451f3d49c0990a2bc8b0d8e81a702735034ac4d4a93d54e93df953"
+      }
+    ],
+    "cues_ms": {},
+    "source": {
+      "provider": "Cursor GenerateImage",
+      "raw_sha256": "ae87deb3e047d6a80f2db3194f666479a89acd980141659f6a9c8178ca63829a"
+    }
+  }
+}

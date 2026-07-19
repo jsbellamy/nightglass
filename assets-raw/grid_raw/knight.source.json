@@ -1,0 +1,8 @@
+{
+  "provider": "OpenAI built-in image generation",
+  "acquisition_tool": "image_gen",
+  "raw_sha256": "9dfcdd69592cec858d9ff4d53429a2a3b48815918f4b463083e7201d69546cb5",
+  "identity_reference": "references/knight-pose-reference.png",
+  "identity_reference_sha256": "8885e9a2e6b999e7ddaabf20a4a41a00d151ad5b6b5ae39d958f9f117845e406",
+  "prompt": "Preserve the Moonberry Knight identity, palette, costume, and right-facing sword-and-shield guard, but simplify and redraw it on an exact 32x48 logical grid. The 1024x1536 output represents exactly 32 logical columns by 48 logical rows; every logical pixel is one uniform 32x32 rendered-pixel square and every boundary aligns to that grid. Draw one full-body chibi Knight in strict side profile facing right, with mint-green leaf-motif armor, berry-pink plume and scarf, cream accents, dark-plum outline, a very short sword angled up-right, and a raised shield forward-right. Keep the combined silhouette within 30x44 logical cells with at least one magenta cell clear on every edge. Use 10-12 flat colors, one-cell outlines, and a sword blade at least two cells thick. Every unused cell is flat #ff00ff. No smaller pixels, gradients, anti-aliasing, dithering, floor, shadow, glow, particles, extra characters, text, watermark, transparency, cropped equipment, or hot magenta in the Knight."
+}

@@ -1,0 +1,7 @@
+{
+  "provider": "OpenAI built-in image generation",
+  "acquisition_tool": "image_gen",
+  "raw_sha256": "cf390b253ea5b422f35ce667ae499d1a78e3d5be006552d20df740cd4c63d833",
+  "identity_reference": "../canonical/wizard-canonical.png",
+  "prompt": "Redraw the canonical Wizard identity as true chunky pixel art: one full-body chibi Moonberry Guild fantasy Wizard preserving the long berry-plum pointed hat with cream band and leaf ornament, mint-green robe and scarf, cream hair, berry ornaments, dark-plum contours, and one slender wand. Use a side-on casting-ready stance in strict profile facing RIGHT, with no magical glow or effect. Draw on an exact 32x48 logical pixel grid rendered large, each logical pixel a clean flat block, no gradients, anti-aliasing, blur, or dithering, with a selective one-logical-pixel dark outline and 10-16 clustered colors. Center the full body at 44-46 logical pixels tall on a perfectly flat solid #ff00ff background with border on every side. No floor, shadows, extra characters, text, watermark, transparency, cropped hat or wand, or hot magenta in the Wizard."
+}

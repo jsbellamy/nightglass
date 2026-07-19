@@ -1,0 +1,9 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "61521e221604d6106dc890e3feafec8326b704c7626e1400fa858cea429cb5a7",
+  "candidate": "pipcap-c.png",
+  "facing": "left",
+  "role": "ordinary_opponent",
+  "prompt": "TRUE chunky pixel art sprite ONLY. Canvas is exactly 32 logical columns by 48 logical rows rendered large \u2014 each logical pixel MUST be a perfectly uniform solid-color square block about 32 rendered pixels wide, with crisp aligned grid seams throughout. One tiny whimsical mushroom creature named Pipcap, strict side profile facing LEFT, cream-gold cap, berry-pink stem body, dark-plum eye and feet. The mushroom silhouette must be SMALL: about 24 logical columns wide and 38-40 logical rows tall, centered, with LARGE flat #ff00ff magenta margins on all four sides (at least 4 magenta cells left and right). 10 flat colors max, one-cell dark outline. No anti-aliasing, no gradients, no dithering, no soft edges, no floor, no shadow, no glow, no text. Magenta background must be perfectly flat #ff00ff."
+}
