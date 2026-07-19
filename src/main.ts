@@ -54,6 +54,12 @@ function applyTileCommand(engine: Engine, command: TileCommand): EngineEvent[] {
     case "discard":
       engine.discard(command.args[0]);
       return [];
+    case "setLocked":
+      engine.setLocked(command.args[0], command.args[1]);
+      return [];
+    case "markSeen":
+      engine.markSeen(command.args[0]);
+      return [];
     default: {
       const exhaustive: never = command;
       throw new Error(`Unhandled bus command: ${JSON.stringify(exhaustive)}`);

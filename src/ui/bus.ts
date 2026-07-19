@@ -22,7 +22,9 @@ export type TileCommand =
       args: [number, ClassId, EquipmentSlotId];
     }
   | { cmd: "unequip"; args: [ClassId, EquipmentSlotId] }
-  | { cmd: "discard"; args: [number[]] };
+  | { cmd: "discard"; args: [number[]] }
+  | { cmd: "setLocked"; args: [number, boolean] }
+  | { cmd: "markSeen"; args: [number[]] };
 
 export type BusMessage =
   | { type: "command"; command: TileCommand }
