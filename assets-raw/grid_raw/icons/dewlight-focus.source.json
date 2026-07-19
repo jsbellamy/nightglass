@@ -1,10 +1,10 @@
 {
   "provider": "Cursor GenerateImage",
   "acquisition_tool": "GenerateImage",
-  "raw_sha256": "f81f371f732093f0f2410b37b44849269d5273d316913d2e0f89c4a15b309c01",
+  "raw_sha256": "8127d59fe1b6830aa06e99196cb97a1bf85a0640acd7bbe7963e621656f790f8",
   "asset_class": "interface",
   "runtime_destination": "src/assets/icons/dewlight-focus.png",
-  "candidate": "dewlight-focus-raw-e.png",
+  "candidate": "dewlight-focus-raw-f.png",
   "style_references": [
     {
       "path": "src/assets/sprites/knight.png",
