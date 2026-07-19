@@ -3,7 +3,7 @@ import { isAbilityValid } from "../core/combat";
 import type { AbilityDef, ClassKitDef } from "../core/types";
 import type { CombatantState } from "../core/snapshot";
 import { validateContent } from "../core/validate-content";
-import { buildContent } from "./index";
+import { buildClassKitSlice, buildContent } from "./index";
 
 const content = buildContent();
 
@@ -61,9 +61,7 @@ describe("assembled Class Kit content", () => {
   });
 
   it("ships 28 Class Abilities: 4 basics, 16 Core, 8 Ability Talents", () => {
-    const classAbilities = content.abilities.filter((ability) =>
-      ["knight", "wizard", "priest", "hunter"].includes(ability.classId),
-    );
+    const classAbilities = buildClassKitSlice().abilities;
     expect(classAbilities).toHaveLength(28);
     expect(classAbilities.filter((ability) => ability.slot === "basic")).toHaveLength(4);
     expect(classAbilities.filter((ability) => ability.slot === "core")).toHaveLength(16);
