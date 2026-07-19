@@ -1,5 +1,19 @@
 import type { ClassTalentState } from "./talents";
-import type { ClassId } from "./types";
+import type { AffixId, ClassId, EquipmentSlotId, Rarity } from "./types";
+
+export interface DropInstance {
+  dropId: number;
+  baseId: string;
+  itemLevel: 1 | 2 | 3;
+  rarity: Rarity;
+  affixes: { id: AffixId; value: number }[];
+  awardedAtMs: number;
+  seen: boolean;
+  locked: boolean;
+  assignedTo: { classId: ClassId; slot: EquipmentSlotId } | null;
+}
+
+export type EquipmentLoadout = Partial<Record<EquipmentSlotId, number>>;
 
 export interface ActiveStatus {
   statusId: string;
@@ -33,6 +47,7 @@ export interface AttemptState {
   encounter: 1 | 2 | 3;
   phase: "fighting" | "wave-transition" | "defeat-hold";
   phaseEndsAtMs: number | null;
+  equipmentLoadouts: Record<ClassId, EquipmentLoadout>;
   combatants: CombatantState[];
 }
 
@@ -54,6 +69,7 @@ export interface ProgressionState {
   characterXp: Record<ClassId, number>;
   talents: Record<ClassId, ClassTalentState>;
   loadouts: Record<ClassId, [string, string, string]>;
+  armory: DropInstance[];
   pendingParty: { members: [ClassId, ClassId, ClassId]; reserve: ClassId } | null;
 }
 
