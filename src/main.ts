@@ -1,9 +1,24 @@
-export const TILE_WIDTH = 480;
-export const TILE_HEIGHT = 112;
+import { createEngine } from "./core/engine";
+import { buildContent } from "./data";
+import { mountBattleTile } from "./ui/battle-tile";
+import { startPump } from "./ui/pump";
+
+export { TILE_HEIGHT, TILE_WIDTH } from "./ui/battle-tile";
+
+/** Interim #50: fresh Engine each launch until save/boot slice lands. */
+const LOOT_SEED = 42;
 
 export function mountTileShell(root: HTMLElement): void {
-  root.classList.add("tile-shell");
-  root.setAttribute("aria-label", "Battle Tile");
+  const content = buildContent();
+  const engine = createEngine(content, undefined, LOOT_SEED);
+  const tile = mountBattleTile(root, content);
+  tile.render(engine.snapshot());
+
+  startPump({
+    advanceBy: (ms) => engine.advanceBy(ms),
+    onAdvance: (events) => tile.applyEvents(events),
+    render: () => tile.render(engine.snapshot()),
+  });
 }
 
 window.addEventListener("DOMContentLoaded", () => {
