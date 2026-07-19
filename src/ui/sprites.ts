@@ -2,6 +2,7 @@ import type { Content } from "../core/types";
 import boss1Url from "../assets/sprites/boss-1.png";
 import knightUrl from "../assets/sprites/knight.png";
 import pipcapUrl from "../assets/sprites/pipcap.png";
+import priestUrl from "../assets/sprites/priest.png";
 import wizardUrl from "../assets/sprites/wizard.png";
 
 export interface SpriteDef {
@@ -24,19 +25,20 @@ interface SpriteSource {
 export const SPRITE_SOURCES = {
   knight: { url: knightUrl, width: 32, height: 48 },
   wizard: { url: wizardUrl, width: 32, height: 48 },
+  priest: { url: priestUrl, width: 32, height: 48 },
   pipcap: { url: pipcapUrl, width: 32, height: 48 },
   "boss-1": { url: boss1Url, width: 32, height: 48 },
 } as const satisfies Record<string, SpriteSource>;
 
 const KNOWN_SPRITE_KEYS = new Set<string>(Object.keys(SPRITE_SOURCES));
 
-/** Interim #55/#56: Priest and Hunter stills reuse Knight until acquired. */
-function interimClassSprite(classId: "priest" | "hunter"): SpriteDef {
+/** Interim #56: Hunter still reuses Knight until the Hunter asset slice lands. */
+function interimHunterSprite(): SpriteDef {
   const source = SPRITE_SOURCES.knight;
   return {
     ...source,
-    interim: { issue: "#55/#56", note: `${classId} borrows knight.png until Priest/Hunter asset slices land` },
-    interimLabel: classId,
+    interim: { issue: "#56", note: "hunter borrows knight.png until Hunter asset slice lands" },
+    interimLabel: "hunter",
   };
 }
 
@@ -50,8 +52,8 @@ function interimBossSprite(spriteKey: "boss-2" | "boss-3"): SpriteDef {
 }
 
 export function resolveSprite(spriteKey: string): SpriteDef {
-  if (spriteKey === "priest" || spriteKey === "hunter") {
-    return interimClassSprite(spriteKey);
+  if (spriteKey === "hunter") {
+    return interimHunterSprite();
   }
   if (spriteKey === "boss-2" || spriteKey === "boss-3") {
     return interimBossSprite(spriteKey);
@@ -81,7 +83,7 @@ export function isRegisteredSpriteKey(spriteKey: string): boolean {
   if (KNOWN_SPRITE_KEYS.has(spriteKey)) {
     return true;
   }
-  if (spriteKey === "priest" || spriteKey === "hunter" || spriteKey === "boss-2" || spriteKey === "boss-3") {
+  if (spriteKey === "hunter" || spriteKey === "boss-2" || spriteKey === "boss-3") {
     return true;
   }
   if (spriteKey.startsWith("fixture-")) {
