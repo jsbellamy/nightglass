@@ -14,7 +14,7 @@ if __name__ == "__main__" and __package__ is None:
 
 from .constants import CANVAS
 from .paint import paint_source_icon, runtime_png_bytes, scale_nearest, sha256_bytes
-from .registry import ALL_BUILD_FAMILIES, validate_registry
+from .registry import ALL_BUILD_FAMILIES, FAMILIES, validate_registry
 from .text_source import cells_from_source, parse_text
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
@@ -22,20 +22,27 @@ ICON_SOURCES = ROOT / "src" / "assets" / "icon-sources"
 OUT_DIR = ROOT / "src" / "assets" / "icons"
 PREVIEW_DIR = OUT_DIR / "preview"
 
+# Human identification review is on the twelve Equipment Bases only — exclude
+# the synthetic verify-canary bars from the contact sheet (#131).
+_CONTACT_SHEET_KEYS = frozenset(
+    variant.icon_key for family in FAMILIES for variant in family.variants
+)
+
 
 def source_path_for(family_source_rel: str) -> pathlib.Path:
     return ICON_SOURCES / family_source_rel
 
 
 def build_contact_sheet(runtimes: dict[str, Image.Image]) -> None:
-    if not runtimes:
+    equipment = {k: v for k, v in runtimes.items() if k in _CONTACT_SHEET_KEYS}
+    if not equipment:
         return
-    keys = sorted(runtimes.keys())
+    keys = sorted(equipment.keys())
     gap = 4
     sheet_w = CANVAS * len(keys) + gap * (len(keys) - 1)
     sheet = Image.new("RGBA", (sheet_w, CANVAS), (255, 0, 255, 255))
     for i, key in enumerate(keys):
-        sheet.paste(runtimes[key], (i * (CANVAS + gap), 0), runtimes[key])
+        sheet.paste(equipment[key], (i * (CANVAS + gap), 0), equipment[key])
     sheet.save(OUT_DIR / "family-sheet.png")
     scale_nearest(sheet, 8).save(OUT_DIR / "family-sheet@8x.png")
 

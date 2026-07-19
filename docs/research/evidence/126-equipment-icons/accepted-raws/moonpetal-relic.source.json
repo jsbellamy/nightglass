@@ -1,0 +1,74 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "848f3d82db55a61eadc337acbb6ada7ef261c3513d34471439acce0339078ad2",
+  "asset_class": "interface",
+  "runtime_destination": "src/assets/icons/moonpetal-relic.png",
+  "palette_subset": [
+    "contour-plum-deepest",
+    "berry-shadow",
+    "berry-mid",
+    "berry",
+    "cream",
+    "cream-gold",
+    "mint-pale",
+    "mint-light"
+  ],
+  "style_references": [
+    {
+      "path": "src/assets/sprites/knight.png",
+      "sha256": "6ae9b30bf9157e0cb5054c72a79b3cccc115f2a9aad8b4ab417bf288c3d9d4b6",
+      "role": "style_reference"
+    },
+    {
+      "path": "src/assets/sprites/wizard.png",
+      "sha256": "a8646b1925f434c2d802d69f828d933ebbbbd5a32ef90b339ff558f3682d46d7",
+      "role": "style_reference"
+    },
+    {
+      "path": "src/assets/sprites/priest.png",
+      "sha256": "1decef54968ce8437afbf1d27c6755560542db69d89e554c8eacad1aa4ac2b2a",
+      "role": "style_reference"
+    }
+  ],
+  "prompt": "TRUE chunky pixel art inventory icon ONLY. Drawn on an exact 32x32 logical pixel grid rendered large; every logical pixel is one clean flat square block \u2014 no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered storybook night-garden fantasy item in three-quarter display angle: a rounded hand lantern of cream panels in a berry-vine frame, a pale moon-petal charm hanging inside. Subject's long side spans about 26\u201330 logical pixels, with at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel dark-plum outline. Use only mint / berry / cream / plum Moonberry colours (8\u201312 flat colors max) \u2014 no brown, tan, cyan, pure white, or pure black. Structural members at least 3 logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        183,
+        56,
+        872,
+        974
+      ],
+      "pitch_x": {
+        "pitch": 34.427777777777735,
+        "score": 0.24196160558307914
+      },
+      "pitch_y": {
+        "pitch": 35.17777777777769,
+        "score": 0.21279272222498816
+      },
+      "grid": [
+        20,
+        27
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 345,
+      "far_cells": 26,
+      "far_fraction": 0.0754,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "contour-plum-deepest": 83,
+        "berry": 77,
+        "berry-shadow": 52,
+        "berry-mid": 42,
+        "mint-light": 19,
+        "cream-gold": 25,
+        "cream": 44,
+        "mint-pale": 3
+      }
+    }
+  },
+  "note": "#131 Equipment Base icon family Tier I raw"
+}

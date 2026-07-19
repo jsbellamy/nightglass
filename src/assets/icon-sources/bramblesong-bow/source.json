@@ -1,0 +1,61 @@
+{
+  "provider": "Cursor GenerateImage",
+  "prompt": "TRUE chunky pixel art inventory icon ONLY. Drawn on an exact 32x32 logical pixel grid rendered large; every logical pixel is one clean flat square block \u2014 no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered storybook night-garden fantasy item in three-quarter display angle: a curved mint-sage stave shortbow with a taut cream string and berry-leaf fletching. CRITICAL: the cream bowstring must be a continuous unbroken vertical column of cream pixels from the top nock to the bottom nock. Subject's long side spans about 26\u201330 logical pixels, with at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel dark-plum outline. Use only mint / berry / cream / plum Moonberry colours (8\u201312 flat colors max) \u2014 no brown, tan, cyan, pure white, or pure black. Structural members at least 3 logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "raw_sha256": "85f51f5e955969893ab125fcce33c0b9ffa6fe0701411327d4027964f04d2ecc",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        259,
+        30,
+        657,
+        995
+      ],
+      "pitch_x": {
+        "pitch": 31.933333333333405,
+        "score": 0.2402549777647904
+      },
+      "pitch_y": {
+        "pitch": 32.183333333333394,
+        "score": 0.26164081443582277
+      },
+      "grid": [
+        12,
+        30
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 186,
+      "far_cells": 16,
+      "far_fraction": 0.086,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "contour-plum-deep": 60,
+        "mint-light": 8,
+        "mint": 12,
+        "twilight-slate": 11,
+        "cream": 38,
+        "berry": 28,
+        "mint-shadow": 8,
+        "berry-shadow": 9,
+        "skin-warm": 3,
+        "cream-gold": 7,
+        "sage": 2
+      }
+    }
+  },
+  "palette_subset": [
+    "contour-plum-deep",
+    "mint",
+    "mint-shadow",
+    "mint-light",
+    "mint-pale",
+    "cream",
+    "cream-gold",
+    "berry",
+    "berry-shadow",
+    "sage",
+    "twilight-slate",
+    "skin-warm"
+  ],
+  "evidence_raw": "docs/research/evidence/126-equipment-icons/accepted-raws/bramblesong-bow.png"
+}

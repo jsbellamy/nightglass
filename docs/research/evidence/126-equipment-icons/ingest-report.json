@@ -1,0 +1,149 @@
+[
+  {
+    "family": "thornquill-blade",
+    "grid": [
+      26,
+      26
+    ],
+    "long_axis": 26,
+    "off_ramp_far_fraction": 0.1849,
+    "pitch_x_score": 0.12615439549556953,
+    "pitch_y_score": 0.2537751347497544,
+    "raw_sha256": "7a693df431b7180e0608c18922fc55624ceba84542c8663ff9f0cc0bc6159665",
+    "quantize_histogram": {
+      "contour-plum-deep": 56,
+      "mint-light": 52,
+      "mint": 5,
+      "mint-shadow": 43,
+      "berry-mid": 5,
+      "berry": 33,
+      "berry-shadow": 13,
+      "skin-warm": 6,
+      "cream": 11,
+      "cream-gold": 13,
+      "sage": 1
+    }
+  },
+  {
+    "family": "dewlight-focus",
+    "grid": [
+      29,
+      30
+    ],
+    "long_axis": 30,
+    "off_ramp_far_fraction": 0.119,
+    "pitch_x_score": 0.42394706360143714,
+    "pitch_y_score": 0.41653121255267683,
+    "raw_sha256": "4cb24ecd0cc34e878bf47936abb072f3774e4a0fc5fb5b81ec07041d651c26e7",
+    "quantize_histogram": {
+      "contour-plum-deep": 183,
+      "cream": 47,
+      "cream-gold": 3,
+      "berry": 76,
+      "mint": 48,
+      "mint-pale": 5,
+      "mint-light": 49,
+      "mint-shadow": 32,
+      "sage": 57,
+      "berry-bright": 4
+    }
+  },
+  {
+    "family": "moonpetal-relic",
+    "grid": [
+      20,
+      27
+    ],
+    "long_axis": 27,
+    "off_ramp_far_fraction": 0.0754,
+    "pitch_x_score": 0.24196160558307914,
+    "pitch_y_score": 0.21279272222498816,
+    "raw_sha256": "848f3d82db55a61eadc337acbb6ada7ef261c3513d34471439acce0339078ad2",
+    "quantize_histogram": {
+      "contour-plum-deepest": 83,
+      "berry": 77,
+      "berry-shadow": 52,
+      "berry-mid": 42,
+      "mint-light": 19,
+      "cream-gold": 25,
+      "cream": 44,
+      "mint-pale": 3
+    }
+  },
+  {
+    "family": "bramblesong-bow",
+    "grid": [
+      12,
+      30
+    ],
+    "long_axis": 30,
+    "off_ramp_far_fraction": 0.086,
+    "pitch_x_score": 0.2402549777647904,
+    "pitch_y_score": 0.26164081443582277,
+    "raw_sha256": "85f51f5e955969893ab125fcce33c0b9ffa6fe0701411327d4027964f04d2ecc",
+    "quantize_histogram": {
+      "contour-plum-deep": 60,
+      "mint-light": 8,
+      "mint": 12,
+      "twilight-slate": 11,
+      "cream": 38,
+      "berry": 28,
+      "mint-shadow": 8,
+      "berry-shadow": 9,
+      "skin-warm": 3,
+      "cream-gold": 7,
+      "sage": 2
+    },
+    "note": "regenerated r6 in #131 rework; continuous cream string column"
+  },
+  {
+    "family": "leafmail-vest",
+    "grid": [
+      22,
+      24
+    ],
+    "long_axis": 24,
+    "off_ramp_far_fraction": 0.0521,
+    "pitch_x_score": 0.28609801892573106,
+    "pitch_y_score": 0.2945394530674007,
+    "raw_sha256": "45a628b1e070238c84d6d93ff094a2467df19f91e9e2e96753df1b965eff4cc6",
+    "quantize_histogram": {
+      "contour-plum-deep": 46,
+      "cream": 29,
+      "mint-shadow": 160,
+      "sage": 94,
+      "mint": 12,
+      "twilight-slate": 9,
+      "mint-light": 55,
+      "mint-pale": 3,
+      "berry-mid": 14
+    }
+  },
+  {
+    "family": "berrybright-charm",
+    "grid": [
+      20,
+      23
+    ],
+    "long_axis": 23,
+    "off_ramp_far_fraction": 0.1,
+    "pitch_x_score": 0.1725249342741987,
+    "pitch_y_score": 0.2093444015265164,
+    "raw_sha256": "186b591b9c3df538c7cf42fe5338bc6eea3147ed2e94a78ad1744acc6fae6e9d",
+    "quantize_histogram": {
+      "contour-plum-deepest": 42,
+      "contour-plum-deep": 17,
+      "cream-gold": 15,
+      "cream": 14,
+      "mint-shadow": 22,
+      "mint": 11,
+      "skin-warm": 8,
+      "mint-pale": 1,
+      "berry-mid": 32,
+      "berry-bright": 30,
+      "twilight-slate": 6,
+      "berry": 57,
+      "berry-shadow": 25
+    }
+  }
+]

@@ -54,18 +54,18 @@ outline ring, and centers the body inside the 34×34 canvas.
 
 ## Ingest gates
 
-Thresholds marked **provisional at n=2** were measured on the
+Thresholds were provisional at n=2 on the
 [`#125` evidence](research/evidence/125-equipment-icons-34/ai-gen/ingest-report.json)
-accepted icons (`dewlight-focus`, `bramblesong-bow`). **Recalibration trigger:** retune
-`MIN_LONG_AXIS`, off-ramp, and the grid-recovery floor once the remaining Equipment
-families are generated in the Icons slice ([#131](https://github.com/jsbellamy/nightglass/issues/131)).
+accepted icons (`dewlight-focus`, `bramblesong-bow`). **Recalibrated in
+[#131](https://github.com/jsbellamy/nightglass/issues/131)** after all six families
+landed — see `docs/research/evidence/126-equipment-icons/` for measurements.
 
 | Gate | Value | Status |
 | --- | --- | --- |
 | `MAX_BODY` | 30 | Structural (see geometry) |
-| `MIN_LONG_AXIS` | 20 | Provisional at n=2 |
-| Off-ramp distance | ≤15% of subject cells farther than ~40 RGB from nearest allowed swatch | Provisional at n=2 |
-| Grid-recovery score | `pipeline/acquire.py` `MIN_GRID_SCORE` (0.04 on `main`) | Provisional at n=2 |
+| `MIN_LONG_AXIS` | 20 | Held at n=6 (`#131`) |
+| Off-ramp distance | ≤20% of subject cells farther than ~40 RGB from nearest allowed swatch | Retuned in `#131` (n=2 was 15%; measured peak 16.4%) |
+| Grid-recovery score | `pipeline/acquire.py` `MIN_GRID_SCORE` (0.04 on `main`) | Held at n=6 (`#131`) |
 | Colour count cap | *dropped* | Vacuous on `moonberry-16` |
 
 Grid recovery imports `detect_pitch`, `sample_cells`, and related primitives from
@@ -85,9 +85,9 @@ A `recolor` map whose **target** already appears in the source `palette_subset` 
 ## Families
 
 Six Equipment Base families (Tier I source → Tier II `recolor` variant) are registered
-in `pipeline/icons/registry.py`. This pipeline slice ships registry + gates only;
-real family grids land in [#131](https://github.com/jsbellamy/nightglass/issues/131).
-A synthetic `verify-canary` family proves byte-identical rebuild in CI.
+in `pipeline/icons/registry.py`. Real family grids and raws land with the Icons slice
+([#131](https://github.com/jsbellamy/nightglass/issues/131)). A synthetic `verify-canary`
+family proves byte-identical rebuild in CI.
 
 ## Approval
 

@@ -57,7 +57,7 @@ def write_gate_fixtures(fixtures_dir: pathlib.Path) -> None:
     _save_raw(_logical_block_raw(20, 8), fixtures_dir / "long-axis-pass.png")
     _save_raw(_logical_block_raw(19, 8), fixtures_dir / "long-axis-fail.png")
 
-    # Off-ramp 15%: pass ~0%, fail ~20% off-palette cells
+    # Off-ramp 20% (#131 retune): pass ~0%, fail ~25% off-palette cells
     _save_raw(
         _logical_block_raw(22, 10, off_palette_fraction=0.0),
         fixtures_dir / "off-ramp-pass.png",
@@ -66,7 +66,7 @@ def write_gate_fixtures(fixtures_dir: pathlib.Path) -> None:
         _logical_block_raw(
             22,
             10,
-            off_palette_fraction=0.2,
+            off_palette_fraction=0.25,
             rng=random.Random(42),
         ),
         fixtures_dir / "off-ramp-fail.png",
