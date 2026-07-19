@@ -46,20 +46,27 @@ describe("Stage surface", () => {
 
   it("rejects locked Stage activation and confirms unlocked selection across the bus", async () => {
     const root = document.createElement("div");
+    const busChannel = `nightglass-test-${crypto.randomUUID()}`;
     const engine = createEngine(content, undefined, LOOT_SEED);
-    const tileBus = createBusEndpoint({
-      command: (message) => {
-        if (message.command.cmd === "selectStage") {
-          engine.selectStage(message.command.args[0]);
-        }
-        tileBus.publish({ type: "snapshot", snapshot: engine.snapshot() });
+    const tileBus = createBusEndpoint(
+      {
+        command: (message) => {
+          if (message.command.cmd === "selectStage") {
+            engine.selectStage(message.command.args[0]);
+          }
+          tileBus.publish({ type: "snapshot", snapshot: engine.snapshot() });
+        },
       },
-    });
-    const dockBus = createBusEndpoint({
-      snapshot: (message) => {
-        surface.render(message.snapshot);
+      busChannel,
+    );
+    const dockBus = createBusEndpoint(
+      {
+        snapshot: (message) => {
+          surface.render(message.snapshot);
+        },
       },
-    });
+      busChannel,
+    );
 
     const surface = mountStageSurface(root, {
       onCommand: (command) => {

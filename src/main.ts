@@ -65,6 +65,7 @@ export function mountDockShell(root: HTMLElement): { destroy(): void } {
   let bus: BusEndpoint;
 
   const dock = mountManagementDock(root, {
+    content: buildContent(),
     onClose: () => {
       bus.publish({ type: "dock-closed" });
     },

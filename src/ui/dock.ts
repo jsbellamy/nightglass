@@ -1,7 +1,10 @@
 import type { Snapshot } from "../core/snapshot";
+import type { Content } from "../core/types";
 import type { TileCommand } from "./bus";
+import { mountLoadoutSurface } from "./loadout-surface";
 import { mountPartySurface } from "./party-surface";
 import { mountStageSurface } from "./stage-surface";
+import { mountTalentsSurface } from "./talents-surface";
 
 export type DockTabId = "party" | "loadout" | "talents" | "armory" | "stage";
 
@@ -21,6 +24,7 @@ export interface ManagementDock {
 }
 
 export interface ManagementDockOptions {
+  content?: Content;
   initialTab?: DockTabId;
   onClose?: () => void;
   onCommand?: (command: TileCommand) => void;
@@ -70,6 +74,8 @@ export function mountManagementDock(
   const panels = new Map<DockTabId, HTMLElement>();
   const tabButtons = new Map<DockTabId, HTMLButtonElement>();
   let partyRoot: HTMLElement | null = null;
+  let loadoutRoot: HTMLElement | null = null;
+  let talentsRoot: HTMLElement | null = null;
   let stageRoot: HTMLElement | null = null;
 
   for (const tab of DOCK_TABS) {
@@ -102,6 +108,14 @@ export function mountManagementDock(
       partyRoot = document.createElement("div");
       partyRoot.className = "dock-surface-root";
       panel.append(partyRoot);
+    } else if (tab.id === "loadout") {
+      loadoutRoot = document.createElement("div");
+      loadoutRoot.className = "dock-surface-root";
+      panel.append(loadoutRoot);
+    } else if (tab.id === "talents") {
+      talentsRoot = document.createElement("div");
+      talentsRoot.className = "dock-surface-root";
+      panel.append(talentsRoot);
     } else if (tab.id === "stage") {
       stageRoot = document.createElement("div");
       stageRoot.className = "dock-surface-root";
@@ -122,11 +136,27 @@ export function mountManagementDock(
     surface.append(panel);
   }
 
-  if (!partyRoot || !stageRoot) {
-    throw new Error("Party and Stage dock panels are required");
+  if (!partyRoot || !loadoutRoot || !talentsRoot || !stageRoot) {
+    throw new Error("Party, Loadout, Talents, and Stage dock panels are required");
+  }
+
+  if (!options.content) {
+    throw new Error("Management Dock requires content for Loadout and Talents surfaces");
   }
 
   const partySurface = mountPartySurface(partyRoot, {
+    onCommand: (command) => {
+      options.onCommand?.(command);
+    },
+  });
+  const loadoutSurface = mountLoadoutSurface(loadoutRoot, {
+    content: options.content,
+    onCommand: (command) => {
+      options.onCommand?.(command);
+    },
+  });
+  const talentsSurface = mountTalentsSurface(talentsRoot, {
+    content: options.content,
     onCommand: (command) => {
       options.onCommand?.(command);
     },
@@ -231,6 +261,8 @@ export function mountManagementDock(
         : "No Attempt";
       root.dataset["stageLabel"] = stageLabel;
       partySurface.render(snapshot);
+      loadoutSurface.render(snapshot);
+      talentsSurface.render(snapshot);
       stageSurface.render(snapshot);
     },
     setArmoryBadge(visible) {
@@ -246,6 +278,8 @@ export function mountManagementDock(
     },
     destroy() {
       partySurface.destroy();
+      loadoutSurface.destroy();
+      talentsSurface.destroy();
       stageSurface.destroy();
       root.replaceChildren();
       root.classList.remove("dock-shell", "management-dock");
