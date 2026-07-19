@@ -25,20 +25,57 @@ import math
 import pathlib
 import struct
 import zlib
-from typing import Iterable
+from dataclasses import dataclass
+from typing import Iterable, Literal
 
 from PIL import Image
 
 HERE = pathlib.Path(__file__).parent
 ROOT = HERE.parent
 RAW_DIR = ROOT / "assets-raw" / "grid_raw"
+RAW_ICON_DIR = RAW_DIR / "icons"
 OUT_DIR = ROOT / "src" / "assets" / "sprites"
+OUT_ICON_DIR = ROOT / "src" / "assets" / "icons"
 FRAME_W, FRAME_H = 32, 48
 ALPHA_CUT = 128
 MAGENTA = (255, 0, 255)
 KEY_TOLERANCE = 40
 MIN_GRID_SCORE = 0.04
 MIN_LOGICAL_HEIGHT = 40
+
+
+@dataclass(frozen=True)
+class FrameSpec:
+    """Per-asset-class canvas, pitch bounds, and placement rules."""
+
+    width: int
+    height: int
+    # Lower bound for recovered height; None skips the gate (icons).
+    min_logical_height: int | None
+    # Soft lower bound used only to set the pitch-search maximum.
+    pitch_min_cells: int
+    anchor: Literal["foot", "center"]
+    # Opaque pixels must stay inside [inset, size-inset) on both axes.
+    safe_inset: int
+    palette: str = "moonberry-16"
+
+
+SPRITE_SPEC = FrameSpec(
+    width=FRAME_W,
+    height=FRAME_H,
+    min_logical_height=MIN_LOGICAL_HEIGHT,
+    pitch_min_cells=MIN_LOGICAL_HEIGHT,
+    anchor="foot",
+    safe_inset=0,
+)
+ICON_SPEC = FrameSpec(
+    width=16,
+    height=16,
+    min_logical_height=None,
+    pitch_min_cells=8,
+    anchor="center",
+    safe_inset=2,
+)
 
 OUTPUT_NAMES = {
     "knight": "knight",
@@ -48,6 +85,20 @@ OUTPUT_NAMES = {
     "boss": "boss-1",
 }
 DEFAULT_TAGS = ("knight", "wizard", "priest", "pipcap", "boss")
+ICON_KEYS = (
+    "thornquill-blade",
+    "dewlight-focus",
+    "moonpetal-relic",
+    "bramblesong-bow",
+    "leafmail-vest",
+    "berrybright-charm",
+    "duskthorn-edge",
+    "starfruit-prism",
+    "halcyon-lantern",
+    "nightvine-longbow",
+    "plumweave-aegis",
+    "gloamberry-locket",
+)
 
 PALETTE = [tuple(c["rgb"]) for c in
            json.loads((HERE / "palette.json").read_text())["colors"]]
@@ -263,14 +314,17 @@ def sample_cells(src: Image.Image, fg: list[bool], bbox: tuple[int, int, int, in
     return grid
 
 
-def recover_grid(raw_path: pathlib.Path) -> tuple[list[list[tuple[int, int, int] | None]], dict]:
+def recover_grid(
+    raw_path: pathlib.Path,
+    spec: FrameSpec = SPRITE_SPEC,
+) -> tuple[list[list[tuple[int, int, int] | None]], dict]:
     gate_errs = raw_gates(raw_path)
     if gate_errs:
         raise ValueError("; ".join(gate_errs))
     src, fg, bbox = _key(raw_path)
     x0, y0, x1, y1 = bbox
     long_side = max(x1 - x0 + 1, y1 - y0 + 1)
-    minimum, maximum = long_side / FRAME_H, long_side / MIN_LOGICAL_HEIGHT
+    minimum, maximum = long_side / spec.height, long_side / spec.pitch_min_cells
     pitch_x = detect_pitch(src, fg, "x", minimum, maximum)
     pitch_y = detect_pitch(src, fg, "y", minimum, maximum)
     if pitch_x["score"] < MIN_GRID_SCORE or pitch_y["score"] < MIN_GRID_SCORE:
@@ -281,21 +335,27 @@ def recover_grid(raw_path: pathlib.Path) -> tuple[list[list[tuple[int, int, int]
     grid_w = len(cells[0]) if cells else 0
     if not grid_w or not grid_h or any(len(row) != grid_w for row in cells):
         raise ValueError(f"{raw_path.name}: recovered an empty or irregular grid")
-    if grid_w > FRAME_W or grid_h > FRAME_H or grid_h < MIN_LOGICAL_HEIGHT:
+    if grid_w > spec.width or grid_h > spec.height:
         raise ValueError(f"{raw_path.name}: recovered grid {grid_w}x{grid_h} does not fit "
-                         f"the {FRAME_W}x{FRAME_H} contract")
+                         f"the {spec.width}x{spec.height} contract")
+    if spec.min_logical_height is not None and grid_h < spec.min_logical_height:
+        raise ValueError(f"{raw_path.name}: recovered grid {grid_w}x{grid_h} does not fit "
+                         f"the {spec.width}x{spec.height} contract")
     return cells, {"bbox": bbox, "pitch_x": pitch_x, "pitch_y": pitch_y,
                    "grid": [grid_w, grid_h]}
 
 
-def normalize(raw_path: pathlib.Path) -> Image.Image:
-    """Archived raw PNG -> deterministic 32x48 runtime frame, with no resize."""
-    cells, _ = recover_grid(raw_path)
+def normalize(raw_path: pathlib.Path, spec: FrameSpec = SPRITE_SPEC) -> Image.Image:
+    """Archived raw PNG -> deterministic runtime frame, with no resize."""
+    cells, _ = recover_grid(raw_path, spec)
     grid_h, grid_w = len(cells), len(cells[0])
 
-    # 4. bottom-center foot-anchor; recovered logical cells are placed 1:1.
-    frame = Image.new("RGBA", (FRAME_W, FRAME_H), (0, 0, 0, 0))
-    offset_x, offset_y = (FRAME_W - grid_w) // 2, FRAME_H - grid_h
+    frame = Image.new("RGBA", (spec.width, spec.height), (0, 0, 0, 0))
+    if spec.anchor == "foot":
+        offset_x, offset_y = (spec.width - grid_w) // 2, spec.height - grid_h
+    else:
+        offset_x = (spec.width - grid_w) // 2
+        offset_y = (spec.height - grid_h) // 2
     px = frame.load()
     for y, row in enumerate(cells):
         for x, rgb in enumerate(row):
@@ -306,29 +366,31 @@ def normalize(raw_path: pathlib.Path) -> Image.Image:
 
 def baseline(frame: Image.Image) -> int | None:
     """Lowest opaque row -- the foot baseline. None if the frame is empty."""
+    w, h = frame.size
     a = frame.getchannel("A").load()
-    for y in range(FRAME_H - 1, -1, -1):
-        if any(a[x, y] for x in range(FRAME_W)):
+    for y in range(h - 1, -1, -1):
+        if any(a[x, y] for x in range(w)):
             return y
     return None
 
 
 # --------------------------------------------------------------- validator
 
-def validate(frame: Image.Image, name: str = "frame") -> list[str]:
+def validate(frame: Image.Image, name: str = "frame",
+             spec: FrameSpec = SPRITE_SPEC) -> list[str]:
     """Per-frame rejection rules. Empty list == accepted."""
     errs: list[str] = []
 
-    if frame.size != (FRAME_W, FRAME_H):
+    if frame.size != (spec.width, spec.height):
         errs.append(f"{name}: wrong dimensions {frame.size}, expected "
-                    f"{(FRAME_W, FRAME_H)}")
+                    f"{(spec.width, spec.height)}")
         return errs  # every later rule assumes the canvas size
     if frame.mode != "RGBA":
         errs.append(f"{name}: non-RGBA mode {frame.mode!r}")
         return errs
 
     px = frame.load()
-    alphas = {px[x, y][3] for y in range(FRAME_H) for x in range(FRAME_W)}
+    alphas = {px[x, y][3] for y in range(spec.height) for x in range(spec.width)}
 
     # unapproved alpha -- anything between fully clear and fully opaque
     stray = sorted(a for a in alphas if a not in (0, 255))
@@ -336,11 +398,21 @@ def validate(frame: Image.Image, name: str = "frame") -> list[str]:
         errs.append(f"{name}: unapproved alpha values {stray[:6]} "
                     f"({len(stray)} distinct); runtime alpha must be 0 or 255")
 
-    opaque = [(x, y) for y in range(FRAME_H) for x in range(FRAME_W)
+    opaque = [(x, y) for y in range(spec.height) for x in range(spec.width)
               if px[x, y][3] == 255]
     if not opaque:
         errs.append(f"{name}: empty frame, no opaque pixels")
         return errs
+
+    if spec.safe_inset > 0:
+        inset = spec.safe_inset
+        outside = [(x, y) for x, y in opaque
+                   if x < inset or x >= spec.width - inset
+                   or y < inset or y >= spec.height - inset]
+        if outside:
+            errs.append(f"{name}: safe-box breach — {len(outside)} opaque pixel(s) "
+                        f"outside centered {spec.width - 2 * inset}x"
+                        f"{spec.height - 2 * inset}")
 
     # NOTE: clipping is deliberately NOT checked here. normalize() scales to
     # fit, so the subject touching the canvas edge is the expected result, not
@@ -399,7 +471,9 @@ def validate_sequence(frames: list[tuple[str, Image.Image]]) -> list[str]:
 
 def manifest(action: str, frames: list[tuple[str, Image.Image]],
              durations_ms: list[int], cues_ms: dict[str, int] | None = None,
-             source: dict | None = None) -> dict:
+             source: dict | None = None,
+             spec: FrameSpec = SPRITE_SPEC,
+             include_baseline: bool = True) -> dict:
     """Build the runtime animation manifest. All timings are integer ms."""
     if len(durations_ms) != len(frames):
         raise ValueError(f"{action}: {len(durations_ms)} durations for "
@@ -414,12 +488,10 @@ def manifest(action: str, frames: list[tuple[str, Image.Image]],
             raise ValueError(f"{action}: cue {label!r}={t!r} must be an int ms "
                              f"within 0..{total}")
 
-    base = baseline(frames[0][1])
-    return {
+    entry = {
         "action": action,
-        "frame_size": [FRAME_W, FRAME_H],
-        "palette": "moonberry-16",
-        "baseline_row": base,
+        "frame_size": [spec.width, spec.height],
+        "palette": spec.palette,
         "total_ms": total,
         "frames": [
             {"name": n, "duration_ms": d,
@@ -429,6 +501,9 @@ def manifest(action: str, frames: list[tuple[str, Image.Image]],
         "cues_ms": dict(sorted(cues.items())),
         "source": source or {},
     }
+    if include_baseline:
+        entry["baseline_row"] = baseline(frames[0][1])
+    return entry
 
 
 # --------------------------------------------------------------- cli
@@ -458,19 +533,76 @@ def _build(tags: Iterable[str]):
     return built, OUT_DIR
 
 
+def _build_icons(keys: Iterable[str]):
+    OUT_ICON_DIR.mkdir(parents=True, exist_ok=True)
+    built = []
+    manifests: dict[str, dict] = {}
+    for key in keys:
+        raw = RAW_ICON_DIR / f"{key}.png"
+        frame = normalize(raw, ICON_SPEC)
+        save_runtime_png(frame, OUT_ICON_DIR / f"{key}.png")
+        built.append((key, key, frame, raw_clipping(raw)))
+        sidecar = json.loads(raw.with_suffix(".source.json").read_text())
+        manifests[key] = manifest(
+            "still",
+            [(key, frame)],
+            [1],
+            source={
+                "provider": sidecar.get("provider"),
+                "raw_sha256": sidecar.get("raw_sha256"),
+            },
+            spec=ICON_SPEC,
+            include_baseline=False,
+        )
+    (OUT_ICON_DIR / "manifest.json").write_text(
+        json.dumps(manifests, indent=2) + "\n")
+    return built, OUT_ICON_DIR
+
+
 if __name__ == "__main__":
     import sys
 
-    tags = sys.argv[1:] or list(DEFAULT_TAGS)
-    built, out = _build(tags)
+    args = sys.argv[1:]
+    icon_only = False
+    sprite_only = False
+    if "--icons" in args:
+        icon_only = True
+        args = [a for a in args if a != "--icons"]
+    if "--sprites" in args:
+        sprite_only = True
+        args = [a for a in args if a != "--sprites"]
+
     ok = True
-    for tag, out_name, frame, raw_errs in built:
-        errs = raw_errs + validate(frame, out_name)
-        digest = hashlib.sha256(frame.tobytes()).hexdigest()[:16]
-        print(f"{out_name:<18} baseline={baseline(frame):<3} sha={digest} "
-              f"{'ACCEPT' if not errs else 'REJECT'}")
-        for e in errs:
-            ok = False
-            print(f"   - {e}")
-    print(f"\nruntime frames -> {out}")
+    if not icon_only:
+        tags = args or list(DEFAULT_TAGS)
+        built, out = _build(tags)
+        for tag, out_name, frame, raw_errs in built:
+            errs = raw_errs + validate(frame, out_name)
+            digest = hashlib.sha256(frame.tobytes()).hexdigest()[:16]
+            print(f"{out_name:<18} baseline={baseline(frame):<3} sha={digest} "
+                  f"{'ACCEPT' if not errs else 'REJECT'}")
+            for e in errs:
+                ok = False
+                print(f"   - {e}")
+        print(f"\nruntime frames -> {out}")
+
+    if not sprite_only:
+        keys = list(ICON_KEYS) if not args or icon_only else []
+        if icon_only and args:
+            keys = args
+        elif not icon_only and not args:
+            # Default build also rebuilds every registered icon when present.
+            keys = [k for k in ICON_KEYS if (RAW_ICON_DIR / f"{k}.png").exists()]
+        if keys:
+            built, out = _build_icons(keys)
+            for key, out_name, frame, raw_errs in built:
+                errs = raw_errs + validate(frame, out_name, ICON_SPEC)
+                digest = hashlib.sha256(frame.tobytes()).hexdigest()[:16]
+                print(f"{out_name:<18} icon sha={digest} "
+                      f"{'ACCEPT' if not errs else 'REJECT'}")
+                for e in errs:
+                    ok = False
+                    print(f"   - {e}")
+            print(f"\nruntime icons -> {out}")
+
     sys.exit(0 if ok else 1)

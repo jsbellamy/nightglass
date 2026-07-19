@@ -28,6 +28,11 @@ context pointer. A missing value is a decision to resolve before generation.
   [`../acquisition-contract.md`](../acquisition-contract.md). It owns the logical
   grid, conservative prompt safe box, magenta key, Archived Raw Bundle,
   bottom-center anchor, `moonberry-16`, validator, manifest, and offline rebuild.
+- For Equipment Base **interface icons** (16×16 logical grid), read
+  [`../icon-contract.md`](../icon-contract.md). It owns the 12×12 centered safe
+  box, center-anchor (no foot baseline), icon raw bundle under
+  `assets-raw/grid_raw/icons/`, runtime under `src/assets/icons/`, and the icon
+  validator gates.
 - For Character presentation and Ability effects, also read
   [`../animation-contract.md`](../animation-contract.md). It owns layer separation,
   `moonberry-glow`, effect anchors, deterministic derivation, and runtime

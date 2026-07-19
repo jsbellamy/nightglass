@@ -8,15 +8,18 @@ adding or changing raster assets.
 
 ## Layout
 
-- `assets-raw/grid_raw/` — Archived Raw Bundle (`*.png` + `*.source.json`)
+- `assets-raw/grid_raw/` — Character / opponent Archived Raw Bundle (`*.png` + `*.source.json`)
+- `assets-raw/grid_raw/icons/` — Equipment icon Archived Raw Bundle
 - `pipeline/acquire.py` — offline normalizer, validator, and manifest writer
+  (32×48 Character stills and 16×16 Equipment icons)
 - `pipeline/palette.json` — `moonberry-16` palette definition
-- `src/assets/sprites/` — committed runtime PNGs and `manifest.json`
+- `src/assets/sprites/` — committed runtime Character PNGs and `manifest.json`
+- `src/assets/icons/` — committed runtime Equipment icon PNGs and `manifest.json`
 
 ## Commands
 
 ```bash
-npm run assets:build   # rebuild runtime sprites from the archived raws
+npm run assets:build   # rebuild runtime sprites + icons from the archived raws
 npm run assets:verify  # contract tests + byte-identity rebuild proof
 ```
 
@@ -26,7 +29,9 @@ job offline after `pip install pillow`.
 ## Adding a new asset
 
 1. Declare the asset contract (see `docs/agents/asset-generation.md`).
-2. Archive the provider PNG byte-for-byte under `assets-raw/grid_raw/` with a
+   Characters use `docs/acquisition-contract.md`; Equipment icons use
+   `docs/icon-contract.md`.
+2. Archive the provider PNG byte-for-byte under the matching raw directory with a
    provenance sidecar whose `raw_sha256` matches the file.
 3. Run `npm run assets:build` and confirm `npm run assets:verify` is green.
 4. Commit the raw, sidecar, rebuilt runtime PNG, and updated `manifest.json`.

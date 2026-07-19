@@ -1,0 +1,26 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "0111da16bfa5abda66e1ef89f98d7da8cf6e579e2d9aae8822e0dcc4bb8a3e72",
+  "asset_class": "interface",
+  "runtime_destination": "src/assets/icons/berrybright-charm.png",
+  "candidate": "berrybright-charm-raw-b.png",
+  "style_references": [
+    {
+      "path": "src/assets/sprites/knight.png",
+      "sha256": "6ae9b30bf9157e0cb5054c72a79b3cccc115f2a9aad8b4ab417bf288c3d9d4b6",
+      "role": "style_reference"
+    },
+    {
+      "path": "src/assets/sprites/priest.png",
+      "sha256": "1decef54968ce8437afbf1d27c6755560542db69d89e554c8eacad1aa4ac2b2a",
+      "role": "style_reference"
+    },
+    {
+      "path": "src/assets/sprites/wizard.png",
+      "sha256": "a8646b1925f434c2d802d69f828d933ebbbbd5a32ef90b339ff558f3682d46d7",
+      "role": "style_reference"
+    }
+  ],
+  "prompt": "TRUE chunky pixel art item icon ONLY. Canvas is exactly 16 logical columns by 16 logical rows rendered large \u2014 the 1024x1024 output represents exactly 16 logical columns by 16 logical rows; every logical pixel is one uniform 64x64 rendered-pixel square and every boundary aligns to that grid. a plump berry pendant on a short stitched cord, drawn as a single centered storybook night-garden fantasy item in three-quarter display angle, dark-plum one-cell outline, mint/berry/cream flat colors. Keep the silhouette within 12x12 logical cells, centered, with at least TWO full magenta cells of clearance on every edge. 8 flat colors max. Every unused cell is flat #ff00ff. No smaller pixels, gradients, anti-aliasing, dithering, soft edges, background, floor, shadow, glow, sparkle, particles, text, watermark, or transparency."
+}

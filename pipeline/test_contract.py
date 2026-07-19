@@ -15,7 +15,9 @@ import acquire as A
 HERE = pathlib.Path(__file__).parent
 ROOT = HERE.parent
 RAW_DIR = ROOT / "assets-raw" / "grid_raw"
+RAW_ICON_DIR = RAW_DIR / "icons"
 RUNTIME_DIR = ROOT / "src" / "assets" / "sprites"
+RUNTIME_ICON_DIR = ROOT / "src" / "assets" / "icons"
 FAILURES = []
 
 RUNTIME_SPRITES = {
@@ -43,7 +45,7 @@ def png_bytes(frame):
 
 
 print("raw acquisition gates")
-bundle = sorted(RAW_DIR.glob("*.png"))
+bundle = sorted(p for p in RAW_DIR.glob("*.png") if p.parent == RAW_DIR)
 gate_errs = [e for p in bundle for e in A.raw_gates(p)]
 check("archived raws match their unmodified provider hashes", not gate_errs,
       str(gate_errs))
@@ -167,6 +169,35 @@ palette_ok = all(px[:3] in A.PALETTE_SET for px in _op)
 check("all opaque pixels are on-palette", palette_ok)
 check("alpha is strictly binary",
       {_p[x, y][3] for y in range(A.FRAME_H) for x in range(A.FRAME_W)} <= {0, 255})
+
+print("\nicon contract")
+icon_bundle = sorted(RAW_ICON_DIR.glob("*.png")) if RAW_ICON_DIR.exists() else []
+if icon_bundle:
+    icon_gate_errs = [e for p in icon_bundle for e in A.raw_gates(p)]
+    check("archived icon raws match their unmodified provider hashes",
+          not icon_gate_errs, str(icon_gate_errs))
+    icon_clip_errs = [e for p in icon_bundle for e in A.raw_clipping(p)]
+    check("archived icon raw bundle has no clipped frames", not icon_clip_errs,
+          f"{len(icon_bundle)} raws checked")
+    for raw in icon_bundle:
+        key = raw.stem
+        frame = A.normalize(raw, A.ICON_SPEC)
+        errs = A.validate(frame, key, A.ICON_SPEC)
+        check(f"{key} icon frame validates", not errs, str(errs))
+        rebuilt = png_bytes(frame)
+        committed = (RUNTIME_ICON_DIR / f"{key}.png").read_bytes()
+        check(f"offline rebuild matches committed {key}.png byte-for-byte",
+              rebuilt == committed)
+    icon_manifest = json.loads((RUNTIME_ICON_DIR / "manifest.json").read_text())
+    check("icon manifest records moonberry-16 for every icon",
+          all(entry.get("palette") == "moonberry-16" for entry in icon_manifest.values()))
+    check("icon manifest frame_size is 16x16",
+          all(entry.get("frame_size") == [16, 16] for entry in icon_manifest.values()))
+    check("every ICON_KEYS entry has an archived raw",
+          all((RAW_ICON_DIR / f"{k}.png").exists() for k in A.ICON_KEYS))
+else:
+    check("icon raw bundle present (deferred until icons acquired)", False,
+          "assets-raw/grid_raw/icons/ is empty")
 
 print("\ncommitted manifest")
 manifest = json.loads((RUNTIME_DIR / "manifest.json").read_text())
