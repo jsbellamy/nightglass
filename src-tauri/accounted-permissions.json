@@ -1,0 +1,53 @@
+{
+  "description": "Every permission in default.json must appear here with a demonstrated need. Adding a capability without an entry (or leaving a stale entry) fails the least-privilege guard.",
+  "permissions": {
+    "core:default": {
+      "need": "Baseline Tauri core IPC for the app shell",
+      "since": "#33"
+    },
+    "core:window:allow-start-dragging": {
+      "need": "Drag the undecorated Battle Tile",
+      "since": "#33"
+    },
+    "core:window:allow-set-position": {
+      "need": "Position the Management Dock via dockRect",
+      "since": "#33"
+    },
+    "core:window:allow-close": {
+      "need": "Close the undecorated windows",
+      "since": "#33"
+    },
+    "window-state:default": {
+      "need": "Persist and restore window state",
+      "since": "#33"
+    },
+    "core:event:default": {
+      "need": "Tile onMoved listener so the Dock repositions with the Tile",
+      "since": "#46"
+    },
+    "core:webview:allow-create-webview-window": {
+      "need": "Create the dock WebviewWindow on first open",
+      "since": "#46"
+    },
+    "core:window:allow-show": {
+      "need": "Show the Dock without destroying it",
+      "since": "#46"
+    },
+    "core:window:allow-hide": {
+      "need": "Hide the Dock without destroying it",
+      "since": "#46"
+    },
+    "core:window:allow-outer-position": {
+      "need": "Read Tile outer origin for dockRect input",
+      "since": "#46"
+    },
+    "core:window:allow-outer-size": {
+      "need": "Read Tile outer size for dockRect input",
+      "since": "#46"
+    },
+    "core:window:allow-current-monitor": {
+      "need": "Monitor midpoint for Dock park-side detection",
+      "since": "#46"
+    }
+  }
+}

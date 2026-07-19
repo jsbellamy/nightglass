@@ -44,6 +44,10 @@ def effect_frame_paths() -> list[pathlib.Path]:
 def main() -> int:
     fail = 0
 
+    # Capture Character sprites *before* author/derive so a pipeline write to
+    # SPRITES can fail this gate (comparing two post-rebuild digests cannot).
+    sprites_before = digest_dir(SPRITES)
+
     before = digest_dir(FRAMES_ROOT) | digest_dir(HERE / "source")
     for script in ("author.py", "derive.py"):
         subprocess.run([PY, str(HERE / script)], cwd=HERE, check=True, capture_output=True)
@@ -76,11 +80,15 @@ def main() -> int:
         print(f"     unguarded: {nm} -> {e}")
     fail += not ok
 
-    canon = digest_dir(SPRITES)
-    same = canon == digest_dir(SPRITES)
+    sprites_after = digest_dir(SPRITES)
+    drifted = sorted(
+        k for k in sprites_before if sprites_before[k] != sprites_after.get(k)
+    ) + sorted(k for k in sprites_after if k not in sprites_before)
+    same = not drifted
     print(
         f"3. body-free   : {'PASS' if same else 'FAIL'} "
-        f"({len(canon)} canonical Character files unchanged by pipeline)"
+        f"({len(sprites_before)} canonical Character files unchanged by pipeline"
+        f"{'' if same else '; drifted: ' + str(drifted)})"
     )
     fail += not same
 
