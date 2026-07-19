@@ -4,6 +4,8 @@ import { knightAbilities, knightClass } from "./classes/knight";
 import { priestAbilities, priestClass } from "./classes/priest";
 import { wizardAbilities, wizardClass } from "./classes/wizard";
 import { buildEquipmentSlice } from "./equipment";
+import { opponentAbilities } from "./opponents";
+import { buildStageSlice } from "./stages";
 import { statuses } from "./statuses";
 
 /** Cumulative Character XP thresholds from issue #5 / vertical-slice-spec §7. */
@@ -15,6 +17,8 @@ const CLASS_KIT_ABILITIES = [
   ...priestAbilities,
   ...hunterAbilities,
 ];
+
+const SHIPPED_ABILITIES = [...CLASS_KIT_ABILITIES, ...opponentAbilities];
 
 const CLASS_KITS = [knightClass, wizardClass, priestClass, hunterClass];
 
@@ -45,18 +49,15 @@ export function buildClassKitSlice(): ClassKitSlice {
   };
 }
 
-/**
- * Assembles shipped Content, composing optional sibling slices when present.
- * Issue #40 extends this by passing a stage slice; until then empty stage stubs
- * keep `validateContent` usable with `{ fixture: true }`.
- */
+/** Stage and opponent content from issue #40. */
 export function buildContent(
-  stageSlice: StageSlice = { opponents: [], stages: [] },
+  stageSlice: StageSlice = buildStageSlice(),
   equipmentSlice: EquipmentSlice = buildEquipmentSlice(),
 ): Content {
   const classKit = buildClassKitSlice();
   return {
     ...classKit,
+    abilities: SHIPPED_ABILITIES,
     opponents: stageSlice.opponents,
     stages: stageSlice.stages,
     equipmentBases: equipmentSlice.equipmentBases,
