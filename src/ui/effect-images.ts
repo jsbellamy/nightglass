@@ -23,8 +23,6 @@ export const STATUS_EFFECT_GLYPH_IDS = [
   "warded",
 ] as const;
 
-export type StatusEffectGlyphId = (typeof STATUS_EFFECT_GLYPH_IDS)[number];
-
 export function statusEffectGlyphUrl(statusId: string): string {
   return effectImageUrl(`status/${statusId}.png`);
 }
