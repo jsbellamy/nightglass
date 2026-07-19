@@ -7,6 +7,7 @@ import {
   summarizeOfflineProgress,
   type OfflineSummary,
 } from "./offline-summary";
+import { assertRegisteredEquipmentIcons } from "./icons";
 import type { TileShell } from "./tile-shell-types";
 
 export const SAVE_KEY = "nightglass-save-v1";
@@ -81,6 +82,7 @@ export function runOfflineBoot(
 }
 
 export function bootTile(root: HTMLElement, deps: BootDeps): BootResult {
+  assertRegisteredEquipmentIcons(deps.content);
   const now = deps.now ?? (() => Date.now());
   const storage = deps.storage ?? localStorage;
   const bootNow = now();

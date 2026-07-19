@@ -308,7 +308,7 @@ describe("presentation mapping", () => {
     const snapshot = structuredClone(engine.snapshot());
     snapshot.progression.armory.push({
       dropId: 99,
-      baseId: "knight-blade-1",
+      baseId: "thornquill-blade",
       itemLevel: 1,
       rarity: "rare",
       affixes: [],
@@ -325,8 +325,10 @@ describe("presentation mapping", () => {
 
     const toast = root.querySelector<HTMLElement>(".status-notification-layer .drop-toast");
     expect(toast?.hidden).toBe(false);
-    expect(toast?.textContent).toBe("Drop · Rare");
+    expect(toast?.getAttribute("aria-label")).toBe("Thornquill Blade drop");
+    expect(toast?.querySelector(".equipment-icon-img--content")).not.toBeNull();
     expect(toast?.classList.contains("rarity-rare")).toBe(true);
+    expect(toast?.classList.contains("interim-drop-toast")).toBe(false);
     expect(badge).toHaveBeenCalledTimes(1);
 
     snapshot.simNowMs = 4_000 + DROP_TOAST_MS + 1;

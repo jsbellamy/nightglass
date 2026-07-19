@@ -268,17 +268,39 @@ describe("Armory surface", () => {
     dock.destroy();
   });
 
-  it("labels interim text-chip icons for slice #58 and exposes Rarity text labels", () => {
+  it("renders 34×34 Equipment icons on cards with rarity background tint and 16×16 slot icons", () => {
     const root = document.createElement("div");
     const snapshot = armorySnapshot([
-      drop({ dropId: 1, baseId: "fixture-blade", rarity: "rare", seen: false }),
+      drop({
+        dropId: 1,
+        baseId: "fixture-blade",
+        rarity: "rare",
+        seen: false,
+        assignedTo: { classId: "knight", slot: "weapon" },
+      }),
+      drop({ dropId: 2, baseId: "fixture-armor", rarity: "epic", seen: true }),
     ]);
     const surface = mountArmorySurface(root, { content: fixtureContent });
     surface.render(snapshot);
 
-    expect(root.querySelector('[data-interim-icon-note="issue-58"]')).not.toBeNull();
-    expect(root.querySelector('[data-interim-icon="issue-58"]')?.textContent).toBe("FB");
-    expect(root.querySelector('[data-rarity-label="true"]')?.textContent).toBe("Rare");
+    const cardIcon = root.querySelector<HTMLImageElement>(
+      ".equipment-card .equipment-icon-img--content",
+    );
+    expect(cardIcon).not.toBeNull();
+    expect(cardIcon?.width).toBe(34);
+    expect(cardIcon?.height).toBe(34);
+    expect(root.querySelector('[data-rarity-label="true"]')).toBeNull();
+    expect(root.querySelector(".equipment-card.rarity-rare")).not.toBeNull();
+
+    const slotIcon = root.querySelector<HTMLImageElement>(
+      '[data-class-id="knight"] .equipment-icon-img--chrome',
+    );
+    expect(slotIcon).not.toBeNull();
+    expect(slotIcon?.width).toBe(16);
+    expect(slotIcon?.height).toBe(16);
+    expect(
+      root.querySelector('[data-class-id="knight"] .armory-slot-label')?.textContent,
+    ).toBe("Weapon");
 
     surface.destroy();
   });
