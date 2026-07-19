@@ -34,14 +34,14 @@ run. Representative frames are committed here so the judgement stays citable:
 | Tile initial | [`01-tile-initial.png`](./01-tile-initial.png) |
 | Tile combat / knockout | [`02-tile-combat.png`](./02-tile-combat.png) |
 | Five-opponent stress | [`05-tile-five-opponents.png`](./05-tile-five-opponents.png) |
-| Dock Party | [`03-dock-initial.png`](./03-dock-initial.png) |
+| Dock Party (initial) | [`03-dock-initial.png`](./03-dock-initial.png) |
+| Dock Party (cycled) | [`04-dock-1-party.png`](./04-dock-1-party.png) |
 | Dock Loadout | [`04-dock-2-loadout.png`](./04-dock-2-loadout.png) |
+| Dock Talents | [`04-dock-3-talents.png`](./04-dock-3-talents.png) |
+| Dock Armory | [`04-dock-4-armory.png`](./04-dock-4-armory.png) |
 | Dock Stage | [`04-dock-5-stage.png`](./04-dock-5-stage.png) |
 | Knockout judgement artifact | [`../knockout-readability/tile-combat.png`](../knockout-readability/tile-combat.png) |
 | Native Dock (prior #102) | [`../102-native-dock-lifecycle/`](../102-native-dock-lifecycle/) |
-
-Also inspected (not re-copied; same run): `04-dock-1-party.png`,
-`04-dock-3-talents.png`, `04-dock-4-armory.png`.
 
 ### Artifact correction
 
@@ -125,12 +125,11 @@ stale-prototype work landed in #108. **Proven** at deterministic seams.
 
 ### #100 — Ability number contract fixture
 
-Not a rendered seam. Mechanical comparison is in the green unit suite.
-Transcription diligence remains a human read of
-`src/data/fixtures/class-kit-number-contract.ts` vs issue #7 (as #109 stated) —
-this pass does not re-litigate that read. **Proven** as the wave ticket's
-mechanical gate; transcription correctness stays a one-time human act already
-called out on #109.
+Not a rendered seam. **Proven at the mechanical gate only** — the field-by-field
+comparison is in the green unit suite. This pass does **not** re-read
+`src/data/fixtures/class-kit-number-contract.ts` against issue #7; that
+transcription diligence remains the one-time human act called out on #109, not
+something a scene review can re-discharge.
 
 ### #101 — Editorial retirements / discharge pointers / audit correction
 
@@ -139,11 +138,13 @@ a scene.
 
 ### #102 — Native Dock lifecycle
 
+Checklist item names from `docs/agents/native-observation.md`:
+
 | Row | Disposition |
 | --- | --- |
 | Ran `npm run tauri dev` vs #96 checklist | **Proven** — note committed |
-| Native lifecycle at **true geometry** | **Not proven** — window + handshake yes; geometry **fail** (bottom-right) |
-| Close semantics (tile pump undisturbed) | **Adapted proven** — in-UI close only; OS chrome N/A (`decorations: false`) |
+| Dock window lifecycle (+ true geometry via Native positioning) | **Not proven** — second window + handshake yes; **Native positioning fail** (bottom-right, not `dockRect`) |
+| OS close semantics | **Adapted proven** — in-UI `.dock-close` / toggle only; OS chrome N/A (`decorations: false`) |
 | Committed note + screenshots + platform/Tauri versions | **Proven** |
 
 ## Wave close posture
