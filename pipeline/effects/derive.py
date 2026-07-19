@@ -9,13 +9,14 @@ import hashlib
 import json
 import math
 import pathlib
-import struct
-import zlib
+import sys
 from typing import Callable
 
 from PIL import Image
 
 HERE = pathlib.Path(__file__).parent
+sys.path.insert(0, str(HERE.parent))
+import acquire  # noqa: E402
 ROOT = HERE.parent.parent
 SRC = HERE / "source"
 OUT = ROOT / "src" / "assets" / "effects"
@@ -52,35 +53,6 @@ ELEMENT_REMAP: dict[str, dict[str, str]] = {
         "glow-violet-deep": "glow-cream",
     },
 }
-
-PNG_ZLIB_LEVEL = 9
-
-
-def _png_chunk(tag: bytes, data: bytes) -> bytes:
-    checksum = zlib.crc32(tag + data) & 0xFFFFFFFF
-    return struct.pack(">I", len(data)) + tag + data + struct.pack(">I", checksum)
-
-
-def runtime_png_bytes(frame: Image.Image) -> bytes:
-    if frame.mode != "RGBA":
-        frame = frame.convert("RGBA")
-    w, h = frame.size
-    row_bytes = w * 4
-    pixels = frame.tobytes()
-    raw = bytearray()
-    for y in range(h):
-        raw.append(0)
-        start = y * row_bytes
-        raw.extend(pixels[start : start + row_bytes])
-    compressed = zlib.compress(bytes(raw), level=PNG_ZLIB_LEVEL)
-    ihdr = struct.pack(">IIBBBBB", w, h, 8, 6, 0, 0, 0)
-    return (
-        b"\x89PNG\r\n\x1a\n"
-        + _png_chunk(b"IHDR", ihdr)
-        + _png_chunk(b"IDAT", compressed)
-        + _png_chunk(b"IEND", b"")
-    )
-
 
 def quantize(rgb: tuple[int, int, int]) -> tuple[str, tuple[int, int, int]]:
     return min(COLORS, key=lambda c: sum((a - b) ** 2 for a, b in zip(c[1], rgb)))
@@ -360,7 +332,7 @@ def derive_one(name: str, spec: dict) -> dict:
             im = post(im)
             im = requantize(im)
         path = out_dir / f"{name}_{i}.png"
-        path.write_bytes(runtime_png_bytes(im))
+        acquire.save_runtime_png(im, path)
         frames.append(
             {
                 "file": f"{name}/{name}_{i}.png",

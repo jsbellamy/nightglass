@@ -9,10 +9,13 @@ from __future__ import annotations
 import json
 import math
 import pathlib
+import sys
 
 from PIL import Image
 
 HERE = pathlib.Path(__file__).parent
+sys.path.insert(0, str(HERE.parent))
+import acquire  # noqa: E402
 ROOT = HERE.parent.parent
 SRC = HERE / "source"
 STATUS_OUT = ROOT / "src" / "assets" / "effects" / "status"
@@ -227,14 +230,14 @@ def main() -> None:
     SRC.mkdir(parents=True, exist_ok=True)
     for name, fn in SOURCES.items():
         im = fn()
-        im.save(SRC / f"{name}.png")
+        acquire.save_runtime_png(im, SRC / f"{name}.png")
         opaque = sum(1 for p in im.getdata() if p[3])
         print(f"{name:14s} {im.width}x{im.height}  {opaque} opaque px")
 
     STATUS_OUT.mkdir(parents=True, exist_ok=True)
     for name, points in STATUS_GLYPHS.items():
         im = render_status_glyph(points)
-        im.save(STATUS_OUT / f"{name}.png")
+        acquire.save_runtime_png(im, STATUS_OUT / f"{name}.png")
         print(f"status/{name:10s} 7x7  {len(points)} px")
 
 
