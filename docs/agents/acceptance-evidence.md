@@ -58,7 +58,7 @@ here.
 
 | Named check | Cite as | Automated / review evidence |
 | --- | --- | --- |
-| Tile geometry (480×112, status line, combatant fit / no overlap, five-opponent stress) | `evidence: tile-geometry` | `e2e/rendered-evidence.spec.ts` via `npm run test:evidence`; review screenshots `e2e-screenshots/01-tile-initial.png`, `02-tile-combat.png`, `05-tile-five-opponents.png` |
+| Tile geometry (480×112, status line, combatant fit / no overlap, five-opponent stress, status-line Drop notification clearance) | `evidence: tile-geometry` | `e2e/rendered-evidence.spec.ts` via `npm run test:evidence`; review screenshots `e2e-screenshots/01-tile-initial.png`, `02-tile-combat.png`, `05-tile-five-opponents.png`, `06-tile-drop-notification.png` |
 | Cross-webview delivery (`dock-opened` → snapshot → populated Dock; in-UI close without disturbing the tile) | `evidence: cross-webview-delivery` | Same suite: two pages in one context (`/` and `/?window=dock`) sharing `BroadcastChannel` |
 | AA contrast (status, dock toggle, health text) | `evidence: aa-contrast` | Same suite: computed-style contrast ≥ WCAG AA floor |
 | Dock surfaces (five tabs, one row, scroll not clip, each surface populated) | `evidence: dock-surfaces` | Same suite; review screenshots `e2e-screenshots/03-dock-initial.png`, `04-dock-*-*.png` |

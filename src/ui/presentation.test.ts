@@ -11,6 +11,7 @@ import {
   ARMORY_BADGE_EVENT,
   BANNER_DURATION_MS,
   DOWNED,
+  DROP_TOAST_MS,
   HURT,
   LUNGE,
   createPresentation,
@@ -235,7 +236,7 @@ describe("presentation mapping", () => {
     expect(body?.style.transform).toBe(`translate(0px, ${DOWNED.dropPx}px)`);
   });
 
-  it("shows and clears centre-lane banners over ~1.5s", () => {
+  it("suppresses centre-lane banners for non-Boss wave-started events", () => {
     const tile = mountBattleTile(root, buildContent());
     const engine = createEngine(buildContent(), undefined, LOOT_SEED);
     const snapshot = engine.snapshot();
@@ -247,8 +248,37 @@ describe("presentation mapping", () => {
       snapshot,
     );
     const banner = root.querySelector<HTMLElement>(".lane-banner");
+    expect(banner?.hidden).toBe(true);
+    expect(banner?.classList.contains("lane-banner-visible")).toBe(false);
+  });
+
+  it("shows a Boss Wave centre-lane banner", () => {
+    const tile = mountBattleTile(root, buildContent());
+    const engine = createEngine(buildContent(), undefined, LOOT_SEED);
+    const snapshot = engine.snapshot();
+    snapshot.simNowMs = 3_000;
+    tile.render(snapshot);
+
+    tile.applyEvents(
+      [{ seq: 3, atMs: 3_000, type: "wave-started", stage: 1, encounter: 3, boss: true }],
+      snapshot,
+    );
+    const banner = root.querySelector<HTMLElement>(".lane-banner");
     expect(banner?.hidden).toBe(false);
-    expect(banner?.textContent).toBe("Wave 2");
+    expect(banner?.textContent).toBe("Boss Wave");
+  });
+
+  it("shows and clears centre-lane banners over ~1.5s", () => {
+    const tile = mountBattleTile(root, buildContent());
+    const engine = createEngine(buildContent(), undefined, LOOT_SEED);
+    const snapshot = engine.snapshot();
+    snapshot.simNowMs = 3_000;
+    tile.render(snapshot);
+
+    tile.applyEvents([{ seq: 3, atMs: 3_000, type: "party-defeat", stage: 1 }], snapshot);
+    const banner = root.querySelector<HTMLElement>(".lane-banner");
+    expect(banner?.hidden).toBe(false);
+    expect(banner?.textContent).toBe("Party Defeat");
 
     snapshot.simNowMs = 3_000 + BANNER_DURATION_MS + 1;
     tile.render(snapshot);
@@ -276,10 +306,17 @@ describe("presentation mapping", () => {
     root.addEventListener(ARMORY_BADGE_EVENT, badge);
     tile.applyEvents([{ seq: 4, atMs: 4_000, type: "drop-awarded", dropId: 99 }], snapshot);
 
-    const toast = root.querySelector<HTMLElement>(".drop-toast");
+    const toast = root.querySelector<HTMLElement>(".status-notification-layer .drop-toast");
     expect(toast?.hidden).toBe(false);
+    expect(toast?.textContent).toBe("Drop · Rare");
     expect(toast?.classList.contains("rarity-rare")).toBe(true);
     expect(badge).toHaveBeenCalledTimes(1);
+
+    snapshot.simNowMs = 4_000 + DROP_TOAST_MS + 1;
+    tile.render(snapshot);
+    expect(root.querySelector<HTMLElement>(".status-notification-layer .drop-toast")?.hidden).toBe(
+      true,
+    );
   });
 
   it("places strike-target effects at the computed strike point", () => {
@@ -289,6 +326,8 @@ describe("presentation mapping", () => {
     effectLane.className = "effect-lane";
     const feedbackLayer = document.createElement("div");
     feedbackLayer.className = "feedback-layer";
+    const notificationLayer = document.createElement("div");
+    notificationLayer.className = "status-notification-layer";
     battlefield.append(effectLane, feedbackLayer);
 
     const combatant = document.createElement("div");
@@ -304,6 +343,7 @@ describe("presentation mapping", () => {
       battlefield,
       effectLane,
       feedbackLayer,
+      notificationLayer,
       content: buildContent(),
     });
 

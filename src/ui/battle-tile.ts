@@ -277,6 +277,11 @@ export function mountBattleTile(
   dragRegion.className = "status-drag-region";
   dragRegion.dataset["tauriDragRegion"] = "";
 
+  const notificationLayer = document.createElement("div");
+  notificationLayer.className = "status-notification-layer";
+  notificationLayer.setAttribute("aria-hidden", "true");
+  dragRegion.append(notificationLayer);
+
   const stageWaveText = document.createElement("span");
   stageWaveText.className = "stage-wave-text";
 
@@ -319,6 +324,7 @@ export function mountBattleTile(
     battlefield,
     effectLane,
     feedbackLayer,
+    notificationLayer,
     content,
     reducedMotion: options.reducedMotion ?? false,
   });
