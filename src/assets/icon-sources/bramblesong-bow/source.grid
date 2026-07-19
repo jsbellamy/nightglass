@@ -4,47 +4,46 @@ palette_subset: contour-plum-deep, mint, mint-shadow, mint-light, mint-pale, cre
 
 legend
 . .
-A mint-pale
-B contour-plum-deep
+A contour-plum-deep
+B mint-light
 C mint
-D cream
-E cream-gold
+D twilight-slate
+E cream
 F berry
 G mint-shadow
-H skin-warm
-I twilight-slate
-J mint-light
-K berry-shadow
-L sage
+H berry-shadow
+I skin-warm
+J cream-gold
+K sage
 
 grid
-.......AB..
-.......CA..
-.......BAB.
-...CBDECFD.
-...BGEHIBD.
-....DDDB.D.
-..JKKGB....
-..BFAC.....
-..IFIB....D
-..JAIBJ...D
-..GACFB...D
-..CLBF....D
-BKFIIB....D
-.FBKBK.....
-FFBKDKD....
-..BDDHH....
-...EDEE....
-..KIDBGJ...
-..FGCIB....
-.BFFFF....D
-..CCBB....D
-..AACJG...D
-..BCCI....D
-...CLFIC...
-...FFCDB.D.
-.....DDE.D.
-.....DEEB..
-......BBF..
-........CB.
-.......BC..
+.........AA.
+.........ABA
+.........CBD
+....AAAECBFF
+.....GFEFHAE
+.....AEIEA.E
+...CAFJFA..E
+...GFHCD...E
+...AFACA...E
+...DHFA.D..E
+..ACBHFAG..E
+..ACBGAF...E
+..ADAAAA...E
+.ABFFHFA...E
+.AFAAAAAA..E
+AFH.FEIFE..E
+...HEJJEF..E
+...AJFFEK..E
+....AEEJGD.E
+...FADGAA..E
+...AFHHF...E
+...ACAA....E
+...ABCGCA..E
+....CBGAAA.E
+.....ADFKA.E
+....AAFDEJ.E
+......AEEFDE
+......AEIJAF
+.......A.ACA
+.........AD.

@@ -36,8 +36,8 @@ Production ingest of twelve Equipment Base icons (six Tier I sources + six
 | --- | --- | --- | --- |
 | blade | new GenerateImage r2 (r1 underfill; r3–r5 worse off-ramp/overshoot) | Knight/Wizard/Priest + #125 cohort @8× + bow raw | Short mint blade, berry thorn quillons, cream grip; diagonal three-quarter |
 | focus | **regenerated** r3 (not #125 17×25) | same + dewlight/starfruit @8× | Large mint orb on berry-vine stand; cream dew drop; recovered **29×30** |
-| relic | new GenerateImage r3 (r1 underfill/off-ramp; r2 overshoot) | same + bow raw | Cream-panel lantern in berry frame; moon-petal charm inside |
-| bow | **reused** `#125` accepted raw | same (identity reference) | Mint-sage stave shortbow, cream string, berry accents; **11×30** |
+| relic | new GenerateImage r3 (r1 underfill/off-ramp; r2 overshoot) | same + bow raw | Cream-panel lantern in berry frame; moon-petal charm inside. Tier II `RELIC_TO_LANTERN` maps berry→slate/mint (not cream→berry-bright) so `halcyon-lantern` stays cream/teal, not a red wash |
+| bow | **regenerated** r6 (#131 rework; #125 raw lost string at Stage-2) | same + Knight/Wizard/Priest | Continuous cream string column recovered at right edge (**12×30**, far 8.6%); Tier II leaves cream unmapped so string survives `nightvine-longbow` |
 | armor | new GenerateImage r5 (r1–r4 off-ramp/overshoot) | same + bow raw | Overlapping mint leaf scales, cream trim, berry stitch; plum outline |
 | charm | new GenerateImage r3 (r1 sparkle/off-ramp; r2 soft) | same + bow raw | Plump berry pendant on cream cord; no sparkles; soft long-axis 23 |
 
@@ -48,7 +48,7 @@ Production ingest of twelve Equipment Base icons (six Tier I sources + six
 | thornquill-blade | 26 | 18.5% | 0.126 / 0.254 |
 | dewlight-focus | 30 | 11.9% | 0.424 / 0.417 |
 | moonpetal-relic | 27 | 7.5% | 0.242 / 0.213 |
-| bramblesong-bow | 30 | 14.6% | 0.191 / 0.171 |
+| bramblesong-bow | 30 | 8.6% | 0.240 / 0.262 |
 | leafmail-vest | 24 | 5.2% | 0.286 / 0.295 |
 | berrybright-charm | 23 | 10.0% | 0.173 / 0.209 |
 
@@ -64,3 +64,8 @@ Production ingest of twelve Equipment Base icons (six Tier I sources + six
 - Runtime + contact sheet: `src/assets/icons/` (built by `npm run assets:build`)
 
 Provider raws are evidence only — **nothing added to `assets-raw/`**.
+
+## #131 human-rejection rework
+
+1. **`halcyon-lantern`** — `RELIC_TO_LANTERN` no longer maps cream→berry-bright (or berry→brighter berry). Frame shifts to twilight-slate / sage / mint-shadow; cream glow stays; cream-gold → skin-warm.
+2. **`bramblesong-bow`** — regenerated (r6 accepted; r7 rejected: string did not survive grid recovery). Cream column at recovered x=11 (23 cells). `BOW_TO_LONGBOW` leaves cream unmapped so Tier II keeps the string.

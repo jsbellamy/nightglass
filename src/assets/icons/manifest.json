@@ -57,7 +57,7 @@
     "palette": "moonberry-16",
     "outline": "contour-plum-deepest",
     "source_family": "moonpetal-relic",
-    "sha256": "d34a193fe5ba87b77b5063bc77cc74012c3b661d53065489019a8bbcc0c271dc"
+    "sha256": "da00ae318d92b23d8f661103e95ddd77fc545e4971bef5f04eb6aa0f5038bc43"
   },
   "bramblesong-bow": {
     "canvas": [
@@ -67,7 +67,7 @@
     "palette": "moonberry-16",
     "outline": "contour-plum-deepest",
     "source_family": "bramblesong-bow",
-    "sha256": "04de3dd4887f744f66ebbfc6e8bf55fe75d2969d32c00644703f10acbeaa561b"
+    "sha256": "3ef1801ec00688a8ceff675cb74f3cfaaf3ceafe6f0cd0918411fca25a19e3bb"
   },
   "nightvine-longbow": {
     "canvas": [
@@ -77,7 +77,7 @@
     "palette": "moonberry-16",
     "outline": "contour-plum-deepest",
     "source_family": "bramblesong-bow",
-    "sha256": "a0cdfb5251395df48995ed0f16ebc404622a7d2858918eb50dfe41ba87e000d0"
+    "sha256": "08489c826f2f8beae0475e2aadb300a81955d4a378b27ee5d9a1016d20dd8ad3"
   },
   "leafmail-vest": {
     "canvas": [

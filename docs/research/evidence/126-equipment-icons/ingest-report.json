@@ -73,28 +73,28 @@
   {
     "family": "bramblesong-bow",
     "grid": [
-      11,
+      12,
       30
     ],
     "long_axis": 30,
-    "off_ramp_far_fraction": 0.1458,
-    "pitch_x_score": 0.19051602123091063,
-    "pitch_y_score": 0.17124406666123249,
-    "raw_sha256": "30be21b3170f8516fb5df9e2b66fa98130d84ddade0077eb5b18d0bf3185f11e",
+    "off_ramp_far_fraction": 0.086,
+    "pitch_x_score": 0.2402549777647904,
+    "pitch_y_score": 0.26164081443582277,
+    "raw_sha256": "85f51f5e955969893ab125fcce33c0b9ffa6fe0701411327d4027964f04d2ecc",
     "quantize_histogram": {
-      "mint-pale": 8,
-      "contour-plum-deep": 31,
-      "mint": 17,
-      "cream": 28,
-      "cream-gold": 8,
-      "berry": 18,
-      "mint-shadow": 6,
+      "contour-plum-deep": 60,
+      "mint-light": 8,
+      "mint": 12,
+      "twilight-slate": 11,
+      "cream": 38,
+      "berry": 28,
+      "mint-shadow": 8,
+      "berry-shadow": 9,
       "skin-warm": 3,
-      "twilight-slate": 10,
-      "mint-light": 5,
-      "berry-shadow": 8,
+      "cream-gold": 7,
       "sage": 2
-    }
+    },
+    "note": "regenerated r6 in #131 rework; continuous cream string column"
   },
   {
     "family": "leafmail-vest",

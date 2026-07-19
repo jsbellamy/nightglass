@@ -24,20 +24,27 @@ FOCUS_TO_PRISM: dict[str, str] = {
     "cream-gold": "contour-plum",
 }
 
+# Halcyon read: berry frame → cool slate/mint (not brighter red); cream glow
+# stays luminous (cream unmapped + cream-gold → skin-warm). Never
+# cream→berry-bright — that washed Tier II into a flat red lantern.
 RELIC_TO_LANTERN: dict[str, str] = {
-    "berry": "berry-bright",
-    "berry-mid": "berry-bright",
-    "berry-shadow": "contour-plum",
-    "cream-gold": "contour-plum",
-    "cream": "berry-bright",
+    "berry": "twilight-slate",
+    "berry-mid": "sage",
+    "berry-shadow": "mint-shadow",
+    "cream-gold": "skin-warm",
+    "mint-pale": "mint",
+    "mint-light": "mint",
 }
 
+# Stave/vine shift richer; do NOT recolor cream — the bowstring must stay cream
+# through nightvine-longbow (cream→berry-bright made the string vanish into pink).
 BOW_TO_LONGBOW: dict[str, str] = {
     "mint": "berry-mid",
     "mint-shadow": "contour-plum-deepest",
     "mint-light": "berry-bright",
-    "cream": "berry-bright",
+    "mint-pale": "contour-plum",
     "sage": "contour-plum",
+    "skin-warm": "berry-bright",
 }
 
 VEST_TO_AEGIS: dict[str, str] = {
