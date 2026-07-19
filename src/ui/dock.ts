@@ -1,5 +1,7 @@
 import type { Snapshot } from "../core/snapshot";
 import type { TileCommand } from "./bus";
+import { mountPartySurface } from "./party-surface";
+import { mountStageSurface } from "./stage-surface";
 
 export type DockTabId = "party" | "loadout" | "talents" | "armory" | "stage";
 
@@ -67,6 +69,8 @@ export function mountManagementDock(
 
   const panels = new Map<DockTabId, HTMLElement>();
   const tabButtons = new Map<DockTabId, HTMLButtonElement>();
+  let partyRoot: HTMLElement | null = null;
+  let stageRoot: HTMLElement | null = null;
 
   for (const tab of DOCK_TABS) {
     const tabButton = document.createElement("button");
@@ -94,18 +98,44 @@ export function mountManagementDock(
     panel.setAttribute("role", "tabpanel");
     panel.setAttribute("aria-labelledby", tabButton.id);
 
-    const title = document.createElement("h2");
-    title.className = "dock-placeholder-title";
-    title.textContent = tab.label;
+    if (tab.id === "party") {
+      partyRoot = document.createElement("div");
+      partyRoot.className = "dock-surface-root";
+      panel.append(partyRoot);
+    } else if (tab.id === "stage") {
+      stageRoot = document.createElement("div");
+      stageRoot.className = "dock-surface-root";
+      panel.append(stageRoot);
+    } else {
+      const title = document.createElement("h2");
+      title.className = "dock-placeholder-title";
+      title.textContent = tab.label;
 
-    const copy = document.createElement("p");
-    copy.className = "dock-placeholder-copy";
-    copy.textContent = `${tab.label} management surface — interim placeholder until a later slice.`;
+      const copy = document.createElement("p");
+      copy.className = "dock-placeholder-copy";
+      copy.textContent = `${tab.label} management surface — interim placeholder until a later slice.`;
 
-    panel.append(title, copy);
+      panel.append(title, copy);
+    }
+
     panels.set(tab.id, panel);
     surface.append(panel);
   }
+
+  if (!partyRoot || !stageRoot) {
+    throw new Error("Party and Stage dock panels are required");
+  }
+
+  const partySurface = mountPartySurface(partyRoot, {
+    onCommand: (command) => {
+      options.onCommand?.(command);
+    },
+  });
+  const stageSurface = mountStageSurface(stageRoot, {
+    onCommand: (command) => {
+      options.onCommand?.(command);
+    },
+  });
 
   root.append(header, surface);
 
@@ -200,6 +230,8 @@ export function mountManagementDock(
         ? `Stage ${snapshot.attempt.stage} · Wave ${snapshot.attempt.encounter}`
         : "No Attempt";
       root.dataset["stageLabel"] = stageLabel;
+      partySurface.render(snapshot);
+      stageSurface.render(snapshot);
     },
     setArmoryBadge(visible) {
       armoryBadge = visible;
@@ -213,6 +245,8 @@ export function mountManagementDock(
       root.setAttribute("aria-hidden", open ? "false" : "true");
     },
     destroy() {
+      partySurface.destroy();
+      stageSurface.destroy();
       root.replaceChildren();
       root.classList.remove("dock-shell", "management-dock");
       root.removeAttribute("role");
