@@ -2,6 +2,7 @@ import { opponentCombatants, partyCombatants } from "../core/combat";
 import type { EngineEvent } from "../core/events";
 import type { CombatantState, Snapshot } from "../core/snapshot";
 import type { Content, StageDef } from "../core/types";
+import { createPresentation, type Presentation } from "./presentation";
 import { resolveSprite } from "./sprites";
 
 export const STATUS_LINE_HEIGHT = 24;
@@ -13,9 +14,13 @@ const FORMATION_ORDER = ["back", "middle", "front"] as const;
 
 type FormationSlot = (typeof FORMATION_ORDER)[number];
 
+export interface BattleTileMountOptions {
+  reducedMotion?: boolean;
+}
+
 export interface BattleTile {
   render(snapshot: Snapshot): void;
-  applyEvents(events: EngineEvent[]): void;
+  applyEvents(events: EngineEvent[], snapshot?: Snapshot): void;
   destroy(): void;
 }
 
@@ -236,7 +241,11 @@ function updateBossBar(root: HTMLElement, boss: CombatantState | undefined): voi
   }
 }
 
-export function mountBattleTile(root: HTMLElement, content: Content): BattleTile {
+export function mountBattleTile(
+  root: HTMLElement,
+  content: Content,
+  options: BattleTileMountOptions = {},
+): BattleTile {
   const lookup = createCombatantLookup(content);
 
   root.classList.add("battle-tile", "tile-shell");
@@ -293,8 +302,20 @@ export function mountBattleTile(root: HTMLElement, content: Content): BattleTile
   bossText.className = "boss-health-text";
   bossHealthBar.append(bossFill, bossText);
 
-  battlefield.append(backdrop, partyZone, effectLane, opponentZone, bossHealthBar);
+  const feedbackLayer = document.createElement("div");
+  feedbackLayer.className = "feedback-layer";
+  feedbackLayer.setAttribute("aria-hidden", "true");
+
+  battlefield.append(backdrop, partyZone, effectLane, opponentZone, bossHealthBar, feedbackLayer);
   root.append(statusLine, battlefield);
+
+  const presentation: Presentation = createPresentation({
+    battlefield,
+    effectLane,
+    feedbackLayer,
+    content,
+    reducedMotion: options.reducedMotion ?? false,
+  });
 
   let lastSnapshot: Snapshot | null = null;
 
@@ -327,46 +348,51 @@ export function mountBattleTile(root: HTMLElement, content: Content): BattleTile
     syncCombatants(opponentZone, opponents, lookup);
     updateBossBar(battlefield, boss);
     battlefield.classList.toggle("opponent-stress-layout", opponents.length >= 5);
+    presentation.render(snapshot.simNowMs, snapshot);
   }
 
-  function applyEvents(events: EngineEvent[]): void {
-    if (!lastSnapshot) {
+  function applyEvents(events: EngineEvent[], snapshot?: Snapshot): void {
+    const activeSnapshot = snapshot ?? lastSnapshot;
+    if (!activeSnapshot) {
       return;
     }
+    lastSnapshot = activeSnapshot;
     for (const event of events) {
-      if (event.type !== "impact") {
-        continue;
-      }
-      for (const result of event.results) {
-        const selector = `[data-entity-id="${result.targetId}"] .health-fill`;
-        const fill = root.querySelector<HTMLElement>(selector);
-        if (!fill || !lastSnapshot.attempt) {
-          continue;
-        }
-        const combatant = lastSnapshot.attempt.combatants.find(
-          (entry) => entry.entityId === result.targetId,
-        );
-        if (!combatant) {
-          continue;
-        }
-        combatant.health = result.healthAfter;
-        const percent = healthFillPercent(combatant.health, combatant.maxHealth);
-        fill.style.width = `${percent}%`;
-        fill.dataset["healthPercent"] = String(percent);
-        const text = root.querySelector<HTMLElement>(
-          `[data-entity-id="${result.targetId}"] .health-text`,
-        );
-        if (text) {
-          text.textContent = `${combatant.health}/${combatant.maxHealth}`;
+      if (event.type === "impact") {
+        for (const result of event.results) {
+          const selector = `[data-entity-id="${result.targetId}"] .health-fill`;
+          const fill = root.querySelector<HTMLElement>(selector);
+          if (!fill || !activeSnapshot.attempt) {
+            continue;
+          }
+          const combatant = activeSnapshot.attempt.combatants.find(
+            (entry) => entry.entityId === result.targetId,
+          );
+          if (!combatant) {
+            continue;
+          }
+          combatant.health = result.healthAfter;
+          const percent = healthFillPercent(combatant.health, combatant.maxHealth);
+          fill.style.width = `${percent}%`;
+          fill.dataset["healthPercent"] = String(percent);
+          const text = root.querySelector<HTMLElement>(
+            `[data-entity-id="${result.targetId}"] .health-text`,
+          );
+          if (text) {
+            text.textContent = `${combatant.health}/${combatant.maxHealth}`;
+          }
         }
       }
     }
+    presentation.applyEvents(events, activeSnapshot);
+    presentation.render(activeSnapshot.simNowMs, activeSnapshot);
   }
 
   return {
     render,
     applyEvents,
     destroy() {
+      presentation.destroy();
       root.replaceChildren();
       root.classList.remove("battle-tile", "tile-shell");
       lastSnapshot = null;
