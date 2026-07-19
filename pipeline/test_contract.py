@@ -3,7 +3,6 @@
 Every rejection rule must actually fire, and the normalizer must reproduce
 byte-identical runtime frames from the archived raw bundle with no provider.
 """
-import io
 import hashlib
 import json
 import pathlib
@@ -39,9 +38,7 @@ def good_frame():
 
 
 def png_bytes(frame):
-    output = io.BytesIO()
-    frame.save(output, format="PNG")
-    return output.getvalue()
+    return A.runtime_png_bytes(frame)
 
 
 print("raw acquisition gates")

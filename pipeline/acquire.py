@@ -20,6 +20,7 @@ Determinism guarantees:
 from __future__ import annotations
 
 import hashlib
+import io
 import json
 import math
 import pathlib
@@ -49,6 +50,20 @@ DEFAULT_TAGS = ("knight", "wizard", "pipcap", "boss")
 PALETTE = [tuple(c["rgb"]) for c in
            json.loads((HERE / "palette.json").read_text())["colors"]]
 PALETTE_SET = set(PALETTE)
+
+# Fixed PNG encoder settings so offline rebuilds are byte-identical across OSes.
+RUNTIME_PNG_KWARGS = {"format": "PNG", "compress_level": 9, "optimize": False}
+
+
+def runtime_png_bytes(frame: Image.Image) -> bytes:
+    """Encode a runtime frame to PNG with platform-independent settings."""
+    output = io.BytesIO()
+    frame.save(output, **RUNTIME_PNG_KWARGS)
+    return output.getvalue()
+
+
+def save_runtime_png(frame: Image.Image, path: pathlib.Path) -> None:
+    path.write_bytes(runtime_png_bytes(frame))
 
 
 # --------------------------------------------------------------- normalizer
@@ -402,7 +417,7 @@ def _build(tags: Iterable[str]):
         raw = RAW_DIR / f"{tag}.png"
         frame = normalize(raw)
         out_name = OUTPUT_NAMES.get(tag, tag)
-        frame.save(OUT_DIR / f"{out_name}.png")
+        save_runtime_png(frame, OUT_DIR / f"{out_name}.png")
         built.append((tag, out_name, frame, raw_clipping(raw)))
         sidecar = json.loads(raw.with_suffix(".source.json").read_text())
         manifests[out_name] = manifest(
