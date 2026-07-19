@@ -16,7 +16,7 @@ export function mountTileShell(root: HTMLElement): void {
 
   startPump({
     advanceBy: (ms) => engine.advanceBy(ms),
-    onAdvance: (events) => tile.applyEvents(events),
+    onAdvance: (events) => tile.applyEvents(events, engine.snapshot()),
     render: () => tile.render(engine.snapshot()),
   });
 }
