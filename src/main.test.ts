@@ -34,7 +34,7 @@ describe("Management Dock integration", () => {
     vi.useRealTimers();
   });
 
-  it("keeps the tile pump running while opening, switching, and closing the dock", () => {
+  it("manual-check: dock-pump-continuity — keeps the tile pump running while opening, switching, and closing the dock", () => {
     const root = document.createElement("main");
     const dockWindow = createMockDockWindow();
     const shell = mountTileShell(root, { dockWindow });
@@ -52,7 +52,7 @@ describe("Management Dock integration", () => {
     shell.stop();
   });
 
-  it("positions only the dock window, never the tile window APIs", async () => {
+  it("manual-check: dock-position-only — positions only the dock window, never the tile window APIs", async () => {
     const root = document.createElement("main");
     const dockWindow = createMockDockWindow();
     const shell = mountTileShell(root, { dockWindow });

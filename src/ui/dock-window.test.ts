@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 describe("dock window port", () => {
-  it("reads tile geometry without calling tile resize or move APIs", () => {
+  it("manual-check: dock-no-tile-resize — reads tile geometry without calling tile resize or move APIs", () => {
     const source = readFileSync(
       join(dirname(fileURLToPath(import.meta.url)), "dock-window.ts"),
       "utf8",

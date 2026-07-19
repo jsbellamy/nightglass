@@ -41,8 +41,10 @@ Test at these public boundaries, nowhere internal:
   fresh Wave 1 Attempt; unreadable saves reset without crashing.
 - **UI seam** — DOM integration tests (Vitest + happy-dom) mount a renderer,
   feed it Snapshots and recorded Presentation Events, and assert on the DOM.
-  The Playwright e2e suite owns the accessibility floor (keyboard, contrast,
-  reduced-motion); ordinary UI slices do not duplicate it.
+  The rendered-evidence harness (`npm run test:evidence`, under `e2e/`) owns
+  the accessibility floor (keyboard, contrast) and other browser-seam
+  criteria named in `docs/agents/acceptance-evidence.md`; ordinary UI slices
+  do not duplicate it.
 
 ## Style rules
 
@@ -58,7 +60,9 @@ Test at these public boundaries, nowhere internal:
   timestamps, not ranges.
 - Test names read as behavior specifications in `CONTEXT.md` vocabulary
   ("Knockout at zero health emits `knockout` and starts recovery"), not
-  implementation descriptions.
+  implementation descriptions. Registered `evidence:` / `manual-check:`
+  citation slugs from `docs/agents/acceptance-evidence.md` may prefix a
+  title; the remainder of the name stays a behavior specification.
 - Every abstraction, parameter, and hook is needed by the implementing issue's
   acceptance criteria (promoted from the Speculative Generality smell —
   a hard standard here, not a judgement call, because wave issues are precise

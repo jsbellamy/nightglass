@@ -50,7 +50,7 @@ async function openTile(browser: Browser): Promise<{ context: Awaited<ReturnType
 }
 
 test.describe("rendered-output evidence seam", () => {
-  test("Battle Tile geometry, sprites, contrast, and combat feedback at native 1×", async ({
+  test("evidence: tile-geometry / evidence: native-1x-scaling / evidence: aa-contrast — Battle Tile geometry, sprites, contrast, and combat feedback at native 1×", async ({
     browser,
   }) => {
     const { context, tile } = await openTile(browser);
@@ -170,7 +170,7 @@ test.describe("rendered-output evidence seam", () => {
     await context.close();
   });
 
-  test("five Opponents fit the Battle Tile at 1× on a Stage 2 Wave without overlap", async ({
+  test("evidence: tile-geometry — five Opponents fit the Battle Tile at 1× on a Stage 2 Wave without overlap", async ({
     browser,
   }) => {
     test.setTimeout(240_000);
@@ -212,7 +212,7 @@ test.describe("rendered-output evidence seam", () => {
     await context.close();
   });
 
-  test("Management Dock populates from the Battle Tile over a shared bus and cycles its five surfaces", async ({
+  test("evidence: cross-webview-delivery / evidence: dock-surfaces — Management Dock populates from the Battle Tile over a shared bus and cycles its five surfaces", async ({
     browser,
   }) => {
     const { context, tile } = await openTile(browser);
