@@ -7,6 +7,8 @@ import type { Content } from "./types";
 
 const LOOT_SEED = 0x5090;
 const DURATION_MS = 30_000;
+const FIXTURE_NOW_MS = 1_000;
+const fixtureNow = () => FIXTURE_NOW_MS;
 
 const engineContent: Content = {
   ...fixtureContent,
@@ -38,7 +40,7 @@ function stable(value: unknown): string {
 
 describe("createEngine boot", () => {
   it("starts a fresh Stage 1 Attempt with full Party restore", () => {
-    const engine = createEngine(fixtureContent, undefined, LOOT_SEED, () => 1_000);
+    const engine = createEngine(fixtureContent, undefined, LOOT_SEED, fixtureNow);
     const snap = engine.snapshot();
 
     expect(snap.attempt).toMatchObject({
@@ -57,13 +59,13 @@ describe("createEngine boot", () => {
 
 describe("chunk-equivalence advancement", () => {
   it("produces identical events and byte-equal Snapshots for 1ms, 7ms, and single-call chunking", () => {
-    const oneMs = createEngine(engineContent, undefined, LOOT_SEED);
+    const oneMs = createEngine(engineContent, undefined, LOOT_SEED, fixtureNow);
     const oneMsEvents = collectEvents(oneMs, DURATION_MS, 1);
 
-    const sevenMs = createEngine(engineContent, undefined, LOOT_SEED);
+    const sevenMs = createEngine(engineContent, undefined, LOOT_SEED, fixtureNow);
     const sevenMsEvents = collectEvents(sevenMs, DURATION_MS, 7);
 
-    const single = createEngine(engineContent, undefined, LOOT_SEED);
+    const single = createEngine(engineContent, undefined, LOOT_SEED, fixtureNow);
     const singleEvents = single.advanceBy(DURATION_MS);
 
     expect(stable(oneMsEvents)).toBe(stable(sevenMsEvents));
@@ -75,14 +77,14 @@ describe("chunk-equivalence advancement", () => {
 
 describe("save/reload equivalence", () => {
   it("continues with identical events after restoring a mid-Attempt Snapshot", () => {
-    const continuous = createEngine(engineContent, undefined, LOOT_SEED);
+    const continuous = createEngine(engineContent, undefined, LOOT_SEED, fixtureNow);
     const continuousEvents = collectEvents(continuous, 13_700, 7);
     continuousEvents.push(...collectEvents(continuous, DURATION_MS - 13_700, 7));
 
-    const reloaded = createEngine(engineContent, undefined, LOOT_SEED);
+    const reloaded = createEngine(engineContent, undefined, LOOT_SEED, fixtureNow);
     const reloadEvents = collectEvents(reloaded, 13_700, 7);
     const midFight = structuredClone(reloaded.snapshot());
-    const restored = createEngine(engineContent, midFight, LOOT_SEED);
+    const restored = createEngine(engineContent, midFight, LOOT_SEED, fixtureNow);
     reloadEvents.push(...collectEvents(restored, DURATION_MS - 13_700, 7));
 
     expect(stable(reloadEvents)).toBe(stable(continuousEvents));
