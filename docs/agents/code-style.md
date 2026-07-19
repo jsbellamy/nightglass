@@ -59,3 +59,9 @@ Test at these public boundaries, nowhere internal:
 - Test names read as behavior specifications in `CONTEXT.md` vocabulary
   ("Knockout at zero health emits `knockout` and starts recovery"), not
   implementation descriptions.
+- Every abstraction, parameter, and hook is needed by the implementing issue's
+  acceptance criteria (promoted from the Speculative Generality smell —
+  a hard standard here, not a judgement call, because wave issues are precise
+  enough to check against). An **interim** named by the issue body is the
+  sanctioned form of building ahead; anything else built for an imagined
+  future need is a violation.
