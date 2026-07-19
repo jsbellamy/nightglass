@@ -1,0 +1,22 @@
+{
+  "name": "moonberry-glow",
+  "version": 1,
+  "applies_to": "separate Ability effect assets only — never Character body frames",
+  "method": "hand-authored luminous ramp; two families (mint/cream for weapon arcs, violet/berry for spell blooms) sharing one cream core",
+  "note": "Deliberately DISJOINT from moonberry-16 except where noted. That disjointness is load-bearing: the acquisition contract's embedded-effects validator rejects a Character frame containing any colour off moonberry-16, so effects drawn in this ramp are automatically caught if they are ever baked into Character pixels. Effect frames use binary alpha like Character frames; luminosity is carried by the ramp, not by translucency, so composition stays deterministic.",
+  "families": {
+    "arc": ["glow-core", "glow-cream", "glow-mint-bright", "glow-mint", "glow-mint-deep"],
+    "bloom": ["glow-core", "glow-berry-bright", "glow-berry", "glow-violet", "glow-violet-deep"]
+  },
+  "colors": [
+    { "name": "glow-core",        "hex": "#fffbe8", "rgb": [255, 251, 232] },
+    { "name": "glow-cream",       "hex": "#ffe9a8", "rgb": [255, 233, 168] },
+    { "name": "glow-mint-bright", "hex": "#baffd9", "rgb": [186, 255, 217] },
+    { "name": "glow-mint",        "hex": "#6fe3ad", "rgb": [111, 227, 173] },
+    { "name": "glow-mint-deep",   "hex": "#2f9e78", "rgb": [47, 158, 120] },
+    { "name": "glow-berry-bright","hex": "#ff7fa8", "rgb": [255, 127, 168] },
+    { "name": "glow-berry",       "hex": "#f04a70", "rgb": [240, 74, 112] },
+    { "name": "glow-violet",      "hex": "#b58ce0", "rgb": [181, 140, 224] },
+    { "name": "glow-violet-deep", "hex": "#6b4a9e", "rgb": [107, 74, 158] }
+  ]
+}
