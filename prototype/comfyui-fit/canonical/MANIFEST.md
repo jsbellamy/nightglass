@@ -1,5 +1,9 @@
 # Canonical reference provenance — Phase 1 static trial (#15)
 
+> Historical/reference-only after #22 and #29. These ComfyUI outputs may inform
+> look exploration but may not enter the shipped raw bundle. The active external-
+> provider anchors and provenance are in [`../grid_raw/`](../grid_raw/).
+
 Project-owned identity anchors for reference-conditioned generation. Raw exports
 preserved; only normalized 32×48 RGBA enters the game. No generator is called at
 build or runtime.

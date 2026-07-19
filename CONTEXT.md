@@ -271,3 +271,11 @@ _Avoid_: save file (which is the encoded storage artifact), state dump
 **Presentation Event**:
 A discrete, timestamped fact emitted by the Simulation Engine for audiovisual projection, such as an Action beginning, an Impact occurring, a Drop being awarded, or a Wave ending. It reports what happened but does not name sprite files, effects, or DOM elements.
 _Avoid_: animation event (too asset-specific), UI event
+
+**Archived Raw Bundle**:
+The acquisition boundary for generated art: each external provider PNG is stored byte-for-byte beside a provenance sidecar containing its exact prompt and SHA-256. Builds consume this bundle offline; a provider, model, GPU, or network is never present at build or runtime.
+_Avoid_: source art (too broad), generated assets (does not name the reproducibility boundary)
+
+**Logical-Grid Recovery**:
+The deterministic acquisition step that detects the large-rendered logical-pixel pitch in an Archived Raw Bundle PNG and majority-votes each cell into a native-scale Character frame without resizing the raw image.
+_Avoid_: downscaling, resizing, pixelation

@@ -1,7 +1,7 @@
 # The animation asset contract
 
 Frozen by [#4](https://github.com/jsbellamy/nightglass/issues/4). Sits on top of
-[the 32×48 acquisition contract](acquisition-contract.md) (#21), which owns
+[the 32×48 acquisition contract](acquisition-contract.md) (#21, amended by #29), which owns
 anchors, timings, validation, provenance, and deterministic build outputs — this
 document does not restate or re-decide any of that.
 
@@ -206,8 +206,8 @@ assets/
   They describe how the renderer treats any Character, so they live with the
   renderer and are versioned with it. Only the `align_to` cue name crosses the
   boundary, and it is already carried in the effect manifest.
-- **Raw bundles** (`raw_rgba/`, `*.workflow.json`) stay archived per #21 and are
-  never shipped.
+- **Raw bundles** (`grid_raw/*.png`, `*.source.json`) stay archived per #29 and
+  are never shipped.
 - Manifest timing format, provenance block, and validation gates are #21's
   unchanged.
 

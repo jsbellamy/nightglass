@@ -1,62 +1,95 @@
 # The 32×48 acquisition contract
 
-Frozen by [#21](https://github.com/jsbellamy/nightglass/issues/21). Reference
+Frozen by [#21](https://github.com/jsbellamy/nightglass/issues/21) and amended
+by [#29](https://github.com/jsbellamy/nightglass/issues/29) after the provider
+decision in [#22](https://github.com/jsbellamy/nightglass/issues/22). Reference
 implementation: [`prototype/comfyui-fit/acquire.py`](../prototype/comfyui-fit/acquire.py),
 tests: [`test_contract.py`](../prototype/comfyui-fit/test_contract.py).
 
 ## Shape of the pipeline
 
 ```
-  provider (ComfyUI / AutoSprite / hand-authored)
-      |  ACQUISITION TIME -- online, GPU, non-deterministic, never at build/runtime
-      |  alpha is baked here
+  external image model (Grok / GPT)
+      |  ACQUISITION TIME -- online, non-deterministic, never at build/runtime
+      |  exact prompt: 32×48 logical grid rendered large on flat #ff00ff
       v
-  raw_rgba/*.png  +  *.workflow.json     <-- the archived raw bundle
-      |  OFFLINE -- no provider, no model, no network
+  grid_raw/*.png + *.source.json          <-- archived raw bundle
+      |  OFFLINE -- no provider, model, GPU, or network
       v
-  normalize -> validate -> manifest
+  fixed-key alpha -> detect grid -> sample cells -> anchor -> quantize
       v
-  runtime/*.png (32x48 RGBA) + manifest.json
+  runtime/*.png (32×48 RGBA) + manifest.json
 ```
 
-The boundary is the archived raw bundle. Everything above it is provider-specific
-and disposable; everything below it is provider-neutral and reproducible.
+The boundary is the archived raw bundle. The provider's PNG is copied there
+byte-for-byte and its SHA-256 is frozen in the adjacent provenance sidecar.
+Everything below that boundary is provider-neutral and reproducible.
 
-## The alpha path
+Local ComfyUI is reference-only per #22. Its output may inform look exploration
+but may not enter `grid_raw/` or any shipped asset.
 
-**BiRefNet at acquisition time**, decided in #21 over per-image chroma keying.
+## Prompt contract
 
-BiRefNet is a **core** ComfyUI node (`comfy/background_removal/`, MIT-licensed,
-weights recorded in [#18](https://github.com/jsbellamy/nightglass/issues/18)) — no
-custom node, so the custom-node security gate stays clean. It writes RGBA into
-the raw bundle; the offline normalizer then consumes ordinary RGBA and never
-knows a matting model existed.
+Use the following fixed shell around a Class-specific subject description:
 
-Measured over the 10 archived Moonberry frames, BiRefNet beat per-image chroma on
-detached debris (35 vs 48 px) and interior holes (128 vs 138 px), with zero
-background rectangles in either arm. The decisive argument is not those margins
-but robustness: chroma keying requires a controlled background, and the Moonberry
-mint sits only ~71 RGB units from the cerulean backdrop — uncomfortably close to
-the keyer's tolerance of 60, so it risks eating the character's own palette.
-BiRefNet has no such coupling, and generalizes to the motion and effect frames
-where the background is not controlled.
+> A full-body game Character sprite of **<SUBJECT>**, strict side profile facing
+> right, chunky pixel art. Drawn on an **exact 32×48 logical pixel grid rendered
+> large**; every logical pixel is one clean flat square block, with no smaller
+> detail, smooth gradient, anti-aliasing, blur, or dithering. Keep the complete
+> silhouette, including equipment, within **30 logical columns and 44–46 logical
+> rows**, with at least one logical cell of clearance on every edge. Flat solid
+> magenta **`#ff00ff`** background, nothing else in frame. Selective one-logical-
+> pixel dark warm outline, 10–16 clustered Moonberry colours, no shadow, glow,
+> particles, text, or watermark.
 
-BiRefNet's soft matte is **binarized at 128** by the normalizer, so it confers no
-halo on the runtime frame.
+The grid and silhouette clauses are gates, not aesthetic advice. Render
+resolution does not fix a figure authored on too many logical cells. During the
+#29 proof, the first two otherwise-good right-facing Knight renders recovered as
+42×48 and 37×48 and were rejected. Tightening the prompt to an explicit 32×48
+canvas produced the accepted 32×45 Knight. The accepted Wizard recovered as
+29×45. There is no resolution-side rescue and no reduction fallback.
+
+Class prompts must name the identity-bearing silhouette, equipment, facing, and
+palette. The exact accepted prompts and raw hashes live beside the raws in
+[`grid_raw/`](../prototype/comfyui-fit/grid_raw/).
+
+## Chroma-key alpha
+
+BiRefNet is replaced by a fixed `#ff00ff` chroma key. `moonberry-16` contains no
+hot magenta, so the key is disjoint from valid Character pigment. The raw must
+have a controlled magenta background and nothing else in frame.
+
+Image providers can introduce small RGB variation even in a visually flat PNG.
+The operational gate is therefore fixed and bounded rather than sampled from the
+subject: at least 95% of the two-pixel border must be within 40 of `#ff00ff` in
+every RGB channel. Pixels within that same fixed tolerance are background.
+Existing alpha is binarized at 128; the resulting runtime alpha is only 0 or
+255. A raw with an uncontrolled background fails before grid recovery.
+
+This path deliberately does not generalize to uncontrolled backgrounds. That is
+the cost accepted in #22 in exchange for removing BiRefNet and ComfyUI from the
+shipped pipeline.
 
 ## Normalizer
 
 Deterministic, in order:
 
-1. **Binarize alpha** at 128 — before reduction, so no soft matte survives.
-2. **Crop** to the subject's alpha bounding box.
-3. **Reduce** nearest-neighbor, aspect preserved, to fit 32×48. No resampling
-   filter, no gamma correction.
-4. **Bottom-center foot-anchor** onto the 32×48 canvas.
-5. **Quantize** opaque pixels nearest-in-RGB to
-   [`palette.json`](../prototype/comfyui-fit/palette.json) (`moonberry-16`).
-   **No dithering** — neither stochastic nor ordered — so output is a pure
-   function of input.
+1. **Verify the raw gates**: PNG, matching archived SHA-256, and flat magenta
+   border. A resize, re-export, or hand edit changes the hash and is rejected.
+2. **Key and binarize alpha** against fixed `#ff00ff` at the rules above.
+3. **Recover the logical grid** using the SideScape `detectPitch` / `sampleCells`
+   method: comb-fit fractional X/Y pitch from foreground edge energy, then
+   majority-vote the central 60% of each cell. Both pitch scores must be at least
+   0.04. A grid wider than 32, taller than 48, or shorter than 40 is rejected.
+   **The raw is never resized.**
+4. **Bottom-center foot-anchor** the recovered cells 1:1 on the 32×48 canvas.
+5. **Quantize** opaque cells nearest-in-RGB to
+   [`palette.json`](../prototype/comfyui-fit/palette.json) (`moonberry-16`). No
+   dithering—stochastic or ordered—is permitted.
+
+Step 3 is ported from SideScape's
+`scripts/art/trace-core.mjs`; its fractional pitch avoids requiring the provider
+render to be an exact integer multiple of the logical canvas.
 
 ## Validator
 
@@ -67,53 +100,53 @@ A frame is **rejected** for any of:
 | wrong dimensions | frame | not exactly 32×48 |
 | non-RGBA | frame | mode is not RGBA |
 | unapproved alpha | frame | any alpha value other than 0 or 255 |
-| embedded effects | frame | any opaque colour off `moonberry-16`; Ability effects are separate assets and must not be baked into a Character frame |
+| embedded effects | frame | any opaque colour off `moonberry-16`; Ability effects remain separate assets |
 | empty frame | frame | no opaque pixels |
-| clipping | **raw** | the generator cut the subject off at the raw canvas edge |
-| unstable baseline | sequence | the foot baseline row differs between frames of one animation, which would make the Character slide vertically in the Battle Tile |
+| clipping | **raw** | the provider cut the subject off at the raw canvas edge |
+| unstable baseline | sequence | the foot baseline differs between frames |
 
-**Clipping is checked against the raw, not the frame.** `normalize` scales to fit,
-so a subject touching the 32×48 canvas edge is the expected result rather than
-damage — and once reduced, a cut-off character is indistinguishable from a whole
-one. The evidence only exists upstream.
+The new acquisition gates—recoverable logical grid, flat magenta background, and
+unchanged raw bytes—run before these surviving frame and sequence rules.
+Clipping remains a raw-level rule because cell recovery discards the evidence
+that a provider cut off the source.
 
 ## Manifest
 
-All timings are **integer milliseconds**; floats, zero, and negatives are
-rejected, as are cues outside `0..total_ms`. Each manifest records the action,
-frame size, palette id, `baseline_row`, per-frame `duration_ms` and pixel
-`sha256`, named `cues_ms` (e.g. `impact`), and the `source` provenance block.
+The #21 schema is unchanged. Timings are integer milliseconds; floats, zero, and
+negatives are rejected, as are cues outside `0..total_ms`. Each manifest records
+the action, frame size, palette id, `baseline_row`, per-frame `duration_ms` and
+pixel `sha256`, named `cues_ms`, and the `source` provenance block. The source
+block identifies the external provider and archived raw SHA-256 rather than a
+ComfyUI workflow and seed.
 
-## Reproducibility
+## Reproducibility and identity proof
 
-Verified in #21: rebuilding the canonical frames in a clean venv containing only
-Pillow — no `torch`, no `comfy`, network unused — produces **byte-identical PNG
-files** to the build made inside the ComfyUI venv, across two different Pillow
-versions (12.2 and 12.3).
+The #29 proof archived one Knight and one Wizard provider PNG with their exact
+prompts and hashes. With no provider client, model, GPU library, socket, or
+network imported, the Pillow-only pipeline:
 
-Quantization measurably earns its place. A FLUX render reduced to 32×48 is not
-cel-flat — before quantization the canonical Knight frame holds **716 distinct
-colours across 835 opaque pixels**, with 91% of pixels differing from all four
-neighbours. Quantizing to `moonberry-16` collapses that to **15 colours and 30%
-isolated pixels**, without any dithering.
+- recovers the Knight as 32×45 and the Wizard as 29×45;
+- clears both X/Y pitch-score gates;
+- produces valid 32×48 RGBA, binary-alpha, `moonberry-16` frames with baseline
+  row 47; and
+- rebuilds the committed Wizard PNG byte-for-byte, not merely pixel-equivalent.
+
+The accepted Knight keeps the mint leaf armour, berry plume/scarf, cream accents,
+shield device, and dark-plum contour language while fixing the old canonical
+source's weak pose: it is a right-facing compact guard with sword and shield both
+deployed. The Wizard keeps the pointed berry hat, mint robe/scarf, cream hair,
+berry ornaments, wand, and right-facing Class silhouette. Their evidence and
+raw/runtime hashes are recorded in
+[`grid_raw/MANIFEST.md`](../prototype/comfyui-fit/grid_raw/MANIFEST.md).
 
 ## Known limits
 
-- The **embedded-effects rule is a palette check**, so it catches off-palette
-  glows but would not catch an effect drawn entirely in approved colours. That is
-  acceptable while effects are authored separately (per
-  [#20](https://github.com/jsbellamy/nightglass/issues/20)) and should be
-  revisited if that changes.
-- **Interior holes (~128 px across 10 frames) and detached debris (~35 px) are
-  reduction artifacts, not alpha artifacts** — they appear near-identically in
-  both alpha arms. Thin features such as a sword blade drop out under
-  nearest-neighbor reduction. No alpha path fixes this; it needs deliberate
-  authoring at native scale, consistent with the readability caveat already
-  recorded in #15.
-- **~30% of opaque pixels remain isolated after quantization** — a residue of
-  reducing a detailed 512×768 render to 32×48, not a palette defect. It is the
-  same root cause as the readability caveat in #15 and wants authoring at native
-  scale rather than a contract change.
-- `moonberry-16` is derived from two static references. It will likely need
-  extending once motion and a fuller cast exist; the palette is versioned
-  (`"version": 1`) for that reason.
+- Grid detection rejects rather than repairs smooth art, anti-aliased art, or a
+  subject authored on too many logical cells. Prompt iteration is the remedy.
+- The key tolerance assumes hot magenta never enters a Character palette. If
+  `moonberry-16` ever gains a nearby colour, the alpha route must be re-decided.
+- The embedded-effects rule remains a palette check. It catches the disjoint
+  `moonberry-glow` ramp but cannot identify an effect drawn entirely in
+  `moonberry-16`.
+- `moonberry-16` still derives from two Class identities. Extending it for the
+  Priest, Hunter, and opponents remains future work.

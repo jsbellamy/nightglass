@@ -1,8 +1,9 @@
-"""Negative + determinism tests for the frozen acquisition contract (#21).
+"""Negative + determinism tests for the acquisition contract (#21, #29).
 
 Every rejection rule must actually fire, and the normalizer must reproduce
-byte-identical runtime frames from the archived raw bundle with no ComfyUI.
+byte-identical runtime frames from the archived raw bundle with no provider.
 """
+import io
 import hashlib
 import json
 import pathlib
@@ -24,7 +25,35 @@ def check(label, condition, detail=""):
 
 
 def good_frame():
-    return A.normalize(HERE / "raw_rgba" / "knight_seed103.png")
+    return A.normalize(HERE / "grid_raw" / "knight.png")
+
+
+def png_bytes(frame):
+    output = io.BytesIO()
+    frame.save(output, format="PNG")
+    return output.getvalue()
+
+
+print("raw acquisition gates")
+bundle = sorted((HERE / "grid_raw").glob("*.png"))
+gate_errs = [e for p in bundle for e in A.raw_gates(p)]
+check("archived raws match their unmodified provider hashes", not gate_errs,
+      str(gate_errs))
+
+reports = {p.stem: A.recover_grid(p)[1] for p in bundle}
+check("Knight grid is recoverable without reduction",
+      reports["knight"]["grid"] == [32, 45], str(reports["knight"]))
+check("Wizard grid is recoverable without reduction",
+      reports["wizard"]["grid"] == [29, 45], str(reports["wizard"]))
+check("both pitch fits clear the confidence gate",
+      all(report[axis]["score"] >= A.MIN_GRID_SCORE
+          for report in reports.values() for axis in ("pitch_x", "pitch_y")))
+
+bad_key = HERE / "_bad_key_test.png"
+Image.new("RGBA", (64, 96), (0, 0, 255, 255)).save(bad_key)
+errs = A.raw_gates(bad_key)
+check("non-magenta background rejected", any("flat" in e and "chroma key" in e for e in errs))
+bad_key.unlink()
 
 
 print("rejection rules")
@@ -65,7 +94,6 @@ check("generator-clipped raw rejected", any("clipped by generator" in e for e in
 tmp.unlink()
 
 # whole raw bundle is clean
-bundle = [p for p in sorted((HERE / "raw_rgba").glob("*.png"))]
 clip_errs = [e for p in bundle for e in A.raw_clipping(p)]
 check("archived raw bundle has no clipped frames", not clip_errs,
       f"{len(bundle)} raws checked")
@@ -99,17 +127,19 @@ except ValueError:
     check("manifest rejects out-of-range cue", True)
 
 m = A.manifest("attack", frames, [120, 80], {"impact": 120},
-               source={"provider": "comfyui-flux1-schnell", "seed": 103})
+               source={"provider": "openai-imagegen", "raw_sha256": "example"})
 check("manifest total_ms is integer", isinstance(m["total_ms"], int) and m["total_ms"] == 200)
 check("manifest records integer cues", m["cues_ms"] == {"impact": 120})
 check("manifest records baseline row", m["baseline_row"] == 47, str(m["baseline_row"]))
 
 print("\ndeterminism")
-one = A.normalize(HERE / "raw_rgba" / "wizard_seed201.png")
-two = A.normalize(HERE / "raw_rgba" / "wizard_seed201.png")
-check("repeated normalize is byte-identical",
-      hashlib.sha256(one.tobytes()).hexdigest() ==
-      hashlib.sha256(two.tobytes()).hexdigest())
+one = A.normalize(HERE / "grid_raw" / "wizard.png")
+two = A.normalize(HERE / "grid_raw" / "wizard.png")
+one_png, two_png = png_bytes(one), png_bytes(two)
+check("repeated offline rebuild is byte-identical PNG",
+      hashlib.sha256(one_png).hexdigest() == hashlib.sha256(two_png).hexdigest())
+check("offline rebuild matches the committed runtime PNG byte-for-byte",
+      one_png == (HERE / "runtime" / "wizard.png").read_bytes())
 
 _p = one.load()
 _op = [_p[x, y] for y in range(A.FRAME_H) for x in range(A.FRAME_W)
@@ -123,7 +153,7 @@ check("alpha is strictly binary",
 print("\nprovider neutrality")
 loaded = {m for m in sys.modules
           if "comfy" in m.lower() or "torch" in m.lower()}
-check("no generator/model modules imported", not loaded, str(loaded))
+check("no provider/model modules imported", not loaded, str(loaded))
 check("acquire.py opens no socket",
       "socket" not in A.__dict__ and "urllib" not in A.__dict__)
 
