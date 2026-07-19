@@ -59,6 +59,14 @@ The important structural finding: the same body-free verifier weakness recorded
 against #43 in the application audit also underwrites #42's determinism claim.
 See the note under #42 below.
 
+**Companion-audit correction ([#90](https://github.com/jsbellamy/nightglass/issues/90)):**
+the application audit's #44 integer-scale row is **Insufficient evidence**, not
+a regression. Declared, intrinsic, and CSS dimensions agree at 32×48;
+[`src/ui/sprites.ts`](../../src/ui/sprites.ts) is unchanged since #78. The
+original “Pipcap 29×40 / Boss 1 32×41” failure reading was an audit error.
+Recorded here so a reader of either audit sees the same correction; the
+foundation table itself is unchanged.
+
 ## #33 — Scaffold the Tauri/TypeScript app shell
 
 Issue state: **closed**. Source: [live issue](https://github.com/jsbellamy/nightglass/issues/33).

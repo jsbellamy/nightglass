@@ -27,10 +27,20 @@ screenshot, Playwright result, or native Tauri observation covers those claims.
 | Verdict | Rows |
 | --- | ---: |
 | Proven on current main | 30 |
-| Regressed / current failure | 2 |
-| Insufficient evidence | 7 |
+| Regressed / current failure | 1 |
+| Insufficient evidence | 8 |
 | Correctly incomplete | 11 |
 | **Total** | **50** |
+
+**Audit correction ([#90](https://github.com/jsbellamy/nightglass/issues/90)):**
+#44's integer-scale row was originally marked **Regressed / current failure**
+here, citing Pipcap as 29×40 and Boss 1 as 32×41 against a 32×48 CSS box. That
+was wrong. Declared, intrinsic, and CSS dimensions agree at 32×48;
+[`src/ui/sprites.ts`](../../src/ui/sprites.ts) is unchanged since #78. The row
+is **Insufficient evidence** (nothing at a seam proved integer-scale), not a
+regression. This does not change the seven-blind-spot headline in spirit — it
+moves one row out of the failure bucket; the remaining regression is #44's
+three-layer “only body populated” row.
 
 The broad automated baseline is healthy: 27 Vitest files / 199 tests pass,
 TypeScript passes, the production Vite build passes, and the acquisition plus
@@ -39,9 +49,9 @@ effects validators report green. The important exceptions are:
 1. The effect verifier's body-free check is vacuous: it captures the sprite
    digest only after authoring/derivation and immediately compares it with a
    second digest. A pipeline mutation would already be part of both values.
-2. The Battle Tile forces every `.combatant-sprite` to 32×48 CSS pixels. That is
-   correct for 32×48 Party sprites but scales the 29×40 Pipcap and 32×41 Boss,
-   contradicting the native-1× requirement.
+2. No automated seam relates `SPRITE_SOURCES` / PNG IHDR dimensions to the
+   `.combatant-sprite` CSS rule, so #44's integer-scale claim is unproved
+   (corrected from “regressed” — see the note above).
 3. No rendered seam proves the five-opponent layout/readability or the
    non-colour Knockout read.
 4. No native Tauri seam proves the second-window lifecycle, positioning,
@@ -68,7 +78,7 @@ Issue state: **closed**. Source: [live issue](https://github.com/jsbellamy/night
 | Live criterion | Verdict | Current-main evidence |
 | --- | --- | --- |
 | 480×112, 24px status line, specified thirds/facings, five opponents fit at 1× without overlap. | **Insufficient evidence** | Constants, classes, facings, and five slot names are tested in [`src/ui/battle-tile.test.ts`](../../src/ui/battle-tile.test.ts), while positions live in [`src/styles.css`](../../src/styles.css). The test never performs layout or measures rectangles; happy-dom cannot prove physical non-overlap, native 1× fit, or readability. No browser/native render evidence was available. |
-| Integer-scale rendering only; pixelated; no runtime downscale path. | **Regressed / current failure** | Pixelation is set, but `.combatant-sprite { width: 32px; height: 48px; }` overrides each image's native dimensions. [`src/ui/sprites.ts`](../../src/ui/sprites.ts) declares Pipcap as 29×40 and Boss 1 as 32×41, so both are non-integer-scaled/distorted to 32×48. The existing test checks only the inline `imageRendering` value and misses computed CSS dimensions. |
+| Integer-scale rendering only; pixelated; no runtime downscale path. | **Insufficient evidence** | Pixelation is set. Declared, intrinsic, and CSS dimensions agree at 32×48 for the four Character stills ([`src/ui/sprites.ts`](../../src/ui/sprites.ts) and PNG IHDR; unchanged since #78). The existing test checks only the inline `imageRendering` value and never relates `SPRITE_SOURCES` to the `.combatant-sprite` rule in [`src/styles.css`](../../src/styles.css), so nothing proves integer-scale. **Correction ([#90](https://github.com/jsbellamy/nightglass/issues/90)):** an earlier pass of this audit marked the row **Regressed** on wrong declared sizes (29×40 / 32×41); that was an audit error, not a later fix. |
 | Three-layer per-combatant structure present, only body populated. | **Regressed / current failure** | The three layers remain. “Only body populated” is now false during actions because #45 intentionally inserts actor pools and effect frames into mark/effect layers via [`src/ui/presentation.ts`](../../src/ui/presentation.ts). The old test passes only on an idle initial Snapshot. This is an expected successor change, but the literal live row no longer describes current `main`. |
 | Pump at 250ms, render at no more than 30fps, hidden means no rendering plus heartbeat pumping. | **Proven on current main** | [`src/ui/pump.test.ts`](../../src/ui/pump.test.ts) uses fake timers to prove the 250ms pump, 33ms render gate, hidden render stop, and 5s heartbeat. Full suite passes. |
 | Health bars update from events; Boss gets the wide top-edge bar. | **Proven on current main** | UI integration tests apply an Impact result and assert the new health percentage; a Boss Snapshot gets the wide bar and no per-combatant bar. |
