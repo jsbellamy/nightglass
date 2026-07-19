@@ -13,10 +13,13 @@ import { mountStageSurface } from "./stage-surface";
 const LOOT_SEED = 42;
 const content = buildContent();
 
+/** Drain BroadcastChannel delivery (command hop + snapshot hop). */
 async function flushBus(): Promise<void> {
-  await new Promise((resolve) => {
-    setTimeout(resolve, 0);
-  });
+  for (let i = 0; i < 2; i += 1) {
+    await new Promise((resolve) => {
+      setTimeout(resolve, 0);
+    });
+  }
 }
 
 function activateFocused(): void {
