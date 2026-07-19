@@ -1,0 +1,1 @@
+{"default":{"identifier":"default","description":"Capability for the Battle Tile window","local":true,"windows":["tile"],"permissions":["core:default","core:window:allow-start-dragging","core:window:allow-set-position","core:window:allow-close","window-state:default"]}}
