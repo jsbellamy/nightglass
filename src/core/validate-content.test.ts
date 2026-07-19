@@ -62,7 +62,11 @@ describe("validateContent", () => {
   });
 
   it("requires twelve Equipment Bases outside fixture mode", () => {
-    expect(validateContent(fixtureContent)).toContain(
+    const sparseEquipment = {
+      ...fixtureContent,
+      equipmentBases: fixtureContent.equipmentBases.slice(0, 2),
+    };
+    expect(validateContent(sparseEquipment)).toContain(
       "equipmentBases defines 2 entries, expected exactly 12",
     );
   });

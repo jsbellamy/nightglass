@@ -18,11 +18,23 @@ import {
   resolveTargets,
   shouldApplyStun,
 } from "./combat";
+import {
+  assignDrop,
+  discardDrops,
+  equipmentModifiersForLoadout,
+  findDrop,
+  rollDrop,
+  snapshotEquipmentLoadouts,
+  unequipSlot,
+  validateEquip,
+} from "./equipment";
 import type { EngineEvent, EngineEventInput } from "./events";
 import { initialLootRngState } from "./rng";
 import type {
   AttemptState,
   CombatantState,
+  DropInstance,
+  EquipmentLoadout,
   ProgressionState,
   Snapshot,
 } from "./snapshot";
@@ -41,9 +53,11 @@ import type {
   ClassId,
   ClassKitDef,
   Content,
+  EquipmentSlotId,
   OpponentDef,
   StageDef,
   StatusEffectDef,
+  StatModifiers,
 } from "./types";
 import { awardXp, levelFromXp, reserveXpAward } from "./xp";
 
@@ -63,6 +77,11 @@ export interface Engine {
   allocateTalent(classId: ClassId, talentId: string): void;
   deallocateTalent(classId: ClassId, talentId: string): void;
   setParty(members: [ClassId, ClassId, ClassId], reserve: ClassId): void;
+  equip(dropId: number, classId: ClassId, slot: EquipmentSlotId): void;
+  unequip(classId: ClassId, slot: EquipmentSlotId): void;
+  setLocked(dropId: number, locked: boolean): void;
+  markSeen(dropIds: number[]): void;
+  discard(dropIds: number[]): void;
 }
 
 interface EngineState {
@@ -129,6 +148,7 @@ function defaultProgression(content: Content): ProgressionState {
     characterXp,
     talents: defaultTalentsForClasses(content.classes),
     loadouts: defaultLoadouts(content),
+    armory: [],
     pendingParty: null,
   };
 }
@@ -145,12 +165,21 @@ function restoreProgression(
     characterXp: { ...defaults.characterXp, ...saved.characterXp },
     talents: { ...defaults.talents, ...saved.talents },
     loadouts: { ...defaults.loadouts, ...saved.loadouts },
+    armory: saved.armory ? structuredClone(saved.armory) : [],
     pendingParty: saved.pendingParty ?? null,
   };
 }
 
-function partyBaseStats(classKit: ClassKitDef, talentState: ClassTalentState): BaseStats {
-  return applyStatModifiers(classKit.base, talentStatModifiers(talentState, classKit));
+function partyBaseStats(
+  classKit: ClassKitDef,
+  talentState: ClassTalentState,
+  equipmentMods: StatModifiers[] = [],
+): BaseStats {
+  const modifiers: StatModifiers[] = [
+    ...talentStatModifiers(talentState, classKit),
+    ...equipmentMods,
+  ];
+  return applyStatModifiers(classKit.base, modifiers);
 }
 
 function characterLevel(
@@ -195,8 +224,12 @@ function makePartyCombatant(
   slotIndex: number,
   classKit: ClassKitDef,
   talentState: ClassTalentState,
+  equipmentLoadout: EquipmentLoadout,
+  armory: DropInstance[],
+  content: Content,
 ): CombatantState {
-  const stats = partyBaseStats(classKit, talentState);
+  const equipmentMods = equipmentModifiersForLoadout(equipmentLoadout, armory, content);
+  const stats = partyBaseStats(classKit, talentState, equipmentMods);
   const slot = FORMATION_SLOTS[slotIndex] ?? "back";
   return {
     entityId: `party:${classId}:${slot}`,
@@ -278,7 +311,13 @@ function createAttempt(
   stage: 1 | 2 | 3,
   encounter: 1 | 2 | 3 = 1,
   preserveParty?: CombatantState[],
+  preserveEquipmentLoadouts?: Record<ClassId, EquipmentLoadout>,
 ): AttemptState {
+  const roster = index.content.classes.map((entry) => entry.id);
+  const equipmentLoadouts =
+    preserveEquipmentLoadouts ??
+    snapshotEquipmentLoadouts(state.progression.armory, roster);
+
   const partyMembers = state.progression.party.map((classId, slotIndex) => {
     const preserved = preserveParty?.find((combatant) => combatant.defId === classId);
     if (preserved) {
@@ -297,6 +336,9 @@ function createAttempt(
       slotIndex,
       classKit,
       state.progression.talents[classId] ?? emptyTalentState(classKit),
+      equipmentLoadouts[classId] ?? {},
+      state.progression.armory,
+      index.content,
     );
   });
   return {
@@ -305,6 +347,7 @@ function createAttempt(
     encounter,
     phase: "fighting",
     phaseEndsAtMs: null,
+    equipmentLoadouts,
     combatants: [...partyMembers, ...spawnOpponents(index, stage, encounter)],
   };
 }
@@ -349,6 +392,7 @@ function statsForCombatant(
   index: ContentIndex,
   combatant: CombatantState,
   progression: ProgressionState,
+  attempt: AttemptState | null,
 ): ReturnType<typeof effectiveStats> {
   let base;
   if (combatant.side === "party") {
@@ -358,7 +402,13 @@ function statsForCombatant(
       throw new Error(`Missing Class Kit ${combatant.defId}`);
     }
     const talentState = progression.talents[classId] ?? emptyTalentState(classKit);
-    base = partyBaseStats(classKit, talentState);
+    const equipmentLoadout = attempt?.equipmentLoadouts[classId] ?? {};
+    const equipmentMods = equipmentModifiersForLoadout(
+      equipmentLoadout,
+      progression.armory,
+      index.content,
+    );
+    base = partyBaseStats(classKit, talentState, equipmentMods);
   } else {
     const opponent = index.opponentsById.get(combatant.defId);
     if (!opponent) {
@@ -556,10 +606,10 @@ function resolveImpacts(state: EngineState, index: ContentIndex, events: EngineE
     );
 
     const results: Extract<EngineEvent, { type: "impact" }>["results"] = [];
-    const actorStats = statsForCombatant(index, actor, state.progression);
+    const actorStats = statsForCombatant(index, actor, state.progression, attempt);
 
     for (const target of targets) {
-      const targetStats = statsForCombatant(index, target, state.progression);
+      const targetStats = statsForCombatant(index, target, state.progression, attempt);
       const preTargetHealth = preHealth.get(target.entityId) ?? target.health;
       const preTargetKnockedOut = preKnockedOut.get(target.entityId) ?? target.knockedOut;
       let projectedHealth = preTargetHealth;
@@ -774,6 +824,33 @@ function resolveKnockouts(
   }
 }
 
+function awardEncounterDrops(
+  state: EngineState,
+  index: ContentIndex,
+  events: EngineEvent[],
+  stage: 1 | 2 | 3,
+  encounter: 1 | 2 | 3,
+): void {
+  const stageDef = stageDefFor(index, stage);
+  const dropCount = encounter === 3 ? 2 : 1;
+
+  for (let awardIndex = 0; awardIndex < dropCount; awardIndex += 1) {
+    const rolled = rollDrop({
+      content: index.content,
+      stage: stageDef,
+      itemLevel: stage,
+      lootRng: { state: state.lootRngState },
+      dropId: state.nextDropId,
+      awardedAtMs: state.simNowMs,
+      uncommonFloor: encounter === 3 && awardIndex === 1,
+    });
+    state.lootRngState = rolled.lootRng.state;
+    state.nextDropId += 1;
+    state.progression.armory.push(rolled.drop);
+    emit(state, events, { type: "drop-awarded", dropId: rolled.drop.dropId });
+  }
+}
+
 function evaluateEncounterOutcome(
   state: EngineState,
   index: ContentIndex,
@@ -788,6 +865,7 @@ function evaluateEncounterOutcome(
   const livingOpponents = livingCombatants(opponentCombatants(attempt.combatants));
 
   if (livingOpponents.length === 0) {
+    awardEncounterDrops(state, index, events, attempt.stage, attempt.encounter);
     emit(state, events, {
       type: "wave-cleared",
       stage: attempt.stage,
@@ -893,7 +971,17 @@ function applyPendingEdits(
       }
       const combatant = byClassId.get(edit.classId);
       if (combatant) {
-        const stats = partyBaseStats(classKit, state.progression.talents[edit.classId]!);
+        const equipmentLoadout = attempt?.equipmentLoadouts[edit.classId] ?? {};
+        const equipmentMods = equipmentModifiersForLoadout(
+          equipmentLoadout,
+          state.progression.armory,
+          index.content,
+        );
+        const stats = partyBaseStats(
+          classKit,
+          state.progression.talents[edit.classId]!,
+          equipmentMods,
+        );
         combatant.maxHealth = stats.maxHealth;
         combatant.health = Math.min(combatant.health, combatant.maxHealth);
       }
@@ -1217,6 +1305,44 @@ export function createEngine(
     state.progression.pendingParty = { members: [...members], reserve };
   }
 
+  function equip(dropId: number, classId: ClassId, slot: EquipmentSlotId): void {
+    const drop = findDrop(state.progression.armory, dropId);
+    if (!drop) {
+      throw new Error(`Unknown Drop ${dropId}`);
+    }
+    validateEquip(drop, index.content, classId, slot);
+    assignDrop(state.progression.armory, dropId, classId, slot);
+  }
+
+  function unequip(classId: ClassId, slot: EquipmentSlotId): void {
+    if (!index.classesById.has(classId)) {
+      throw new Error(`Unknown Class ${classId}`);
+    }
+    unequipSlot(state.progression.armory, classId, slot);
+  }
+
+  function setLocked(dropId: number, locked: boolean): void {
+    const drop = findDrop(state.progression.armory, dropId);
+    if (!drop) {
+      throw new Error(`Unknown Drop ${dropId}`);
+    }
+    drop.locked = locked;
+  }
+
+  function markSeen(dropIds: number[]): void {
+    for (const dropId of dropIds) {
+      const drop = findDrop(state.progression.armory, dropId);
+      if (!drop) {
+        throw new Error(`Unknown Drop ${dropId}`);
+      }
+      drop.seen = true;
+    }
+  }
+
+  function discard(dropIds: number[]): void {
+    state.progression.armory = discardDrops(state.progression.armory, dropIds);
+  }
+
   return {
     advanceBy,
     snapshot: () => toSnapshot(state, now),
@@ -1226,5 +1352,10 @@ export function createEngine(
     allocateTalent,
     deallocateTalent,
     setParty,
+    equip,
+    unequip,
+    setLocked,
+    markSeen,
+    discard,
   };
 }

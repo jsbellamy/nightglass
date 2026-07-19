@@ -14,12 +14,20 @@ const fixtureNow = () => FIXTURE_NOW_MS;
 const fixtureTalents = defaultTalentsForClasses(fixtureContent.classes);
 
 function progressionState(
-  overrides: Omit<ProgressionState, "talents" | "pendingParty"> &
-    Partial<Pick<ProgressionState, "talents" | "pendingParty">>,
+  overrides: Partial<ProgressionState> & Pick<ProgressionState, "party" | "reserve">,
 ): ProgressionState {
   return {
+    unlockedStage: 1,
+    characterXp: { knight: 0, wizard: 0, priest: 0, hunter: 0 },
+    loadouts: {
+      knight: ["k-shield-brace", "k-rally", "k-sweep"],
+      wizard: ["w-prism", "w-frost", "w-cinder"],
+      priest: ["p-moonwell", "p-resurgence", "p-smite"],
+      hunter: ["h-snare", "h-mark", "h-volley"],
+    },
     talents: fixtureTalents,
     pendingParty: null,
+    armory: [],
     ...overrides,
   };
 }
@@ -296,6 +304,7 @@ describe("Party Defeat and Retry", () => {
         encounter: 1,
         phase: "fighting",
         phaseEndsAtMs: null,
+        equipmentLoadouts: { knight: {}, wizard: {}, priest: {}, hunter: {} },
         combatants: [
           {
             entityId: "party:knight:front",
@@ -426,6 +435,7 @@ describe("Stage 3 clear auto-retry", () => {
         encounter: 3,
         phase: "fighting",
         phaseEndsAtMs: null,
+        equipmentLoadouts: { knight: {}, wizard: {}, priest: {}, hunter: {} },
         combatants: [
           {
             entityId: "party:knight:front",
@@ -503,14 +513,17 @@ describe("Stage 3 clear auto-retry", () => {
 });
 
 describe("loot RNG persistence", () => {
-  it("keeps lootRngState unchanged across snapshot round-trip and advancement", () => {
+  it("keeps lootRngState unchanged during combat and across snapshot round-trip before Drops", () => {
     const engine = createEngine(engineContent, undefined, LOOT_SEED);
-    engine.advanceBy(10_000);
-    const before = engine.snapshot().lootRngState;
+    engine.advanceBy(1);
+    const initial = engine.snapshot().lootRngState;
+    engine.advanceBy(100);
+    expect(engine.snapshot().lootRngState).toBe(initial);
 
     const reloaded = createEngine(engineContent, engine.snapshot(), LOOT_SEED);
-    reloaded.advanceBy(5_000);
-    expect(reloaded.snapshot().lootRngState).toBe(before);
+    expect(reloaded.snapshot().lootRngState).toBe(initial);
+    reloaded.advanceBy(100);
+    expect(reloaded.snapshot().lootRngState).toBe(initial);
   });
 });
 
@@ -542,6 +555,7 @@ describe("full combat rules", () => {
         encounter: 1,
         phase: "fighting",
         phaseEndsAtMs: null,
+        equipmentLoadouts: { knight: {}, wizard: {}, priest: {}, hunter: {} },
         combatants: [
           {
             entityId: "party:knight:front",
@@ -632,6 +646,7 @@ describe("full combat rules", () => {
         encounter: 1,
         phase: "fighting",
         phaseEndsAtMs: null,
+        equipmentLoadouts: { knight: {}, wizard: {}, priest: {}, hunter: {} },
         combatants: [
           {
             entityId: "party:knight:front",
@@ -724,6 +739,7 @@ describe("full combat rules", () => {
         encounter: 3,
         phase: "fighting",
         phaseEndsAtMs: null,
+        equipmentLoadouts: { knight: {}, wizard: {}, priest: {}, hunter: {} },
         combatants: [
           {
             entityId: "party:knight:front",
@@ -817,6 +833,7 @@ describe("full combat rules", () => {
         encounter: 1,
         phase: "fighting",
         phaseEndsAtMs: null,
+        equipmentLoadouts: { knight: {}, wizard: {}, priest: {}, hunter: {} },
         combatants: [
           {
             entityId: "party:knight:front",
@@ -908,6 +925,7 @@ describe("full combat rules", () => {
         encounter: 1,
         phase: "fighting",
         phaseEndsAtMs: null,
+        equipmentLoadouts: { knight: {}, wizard: {}, priest: {}, hunter: {} },
         combatants: [
           {
             entityId: "party:knight:front",
@@ -999,6 +1017,7 @@ describe("full combat rules", () => {
         encounter: 1,
         phase: "fighting",
         phaseEndsAtMs: null,
+        equipmentLoadouts: { knight: {}, wizard: {}, priest: {}, hunter: {} },
         combatants: [
           {
             entityId: "party:priest:front",
@@ -1089,6 +1108,7 @@ describe("full combat rules", () => {
         encounter: 1,
         phase: "fighting",
         phaseEndsAtMs: null,
+        equipmentLoadouts: { knight: {}, wizard: {}, priest: {}, hunter: {} },
         combatants: [
           {
             entityId: "party:knight:front",
@@ -1188,6 +1208,7 @@ describe("full combat rules", () => {
         encounter: 1,
         phase: "fighting",
         phaseEndsAtMs: null,
+        equipmentLoadouts: { knight: {}, wizard: {}, priest: {}, hunter: {} },
         combatants: [
           {
             entityId: "party:priest:front",
@@ -1282,6 +1303,7 @@ describe("full combat rules", () => {
         encounter: 1,
         phase: "fighting",
         phaseEndsAtMs: null,
+        equipmentLoadouts: { knight: {}, wizard: {}, priest: {}, hunter: {} },
         combatants: [
           {
             entityId: "party:knight:front",
@@ -1409,6 +1431,7 @@ describe("full combat rules", () => {
         encounter: 1,
         phase: "fighting",
         phaseEndsAtMs: null,
+        equipmentLoadouts: { knight: {}, wizard: {}, priest: {}, hunter: {} },
         combatants: [
           {
             entityId: "party:knight:front",
@@ -1551,6 +1574,7 @@ describe("full combat rules", () => {
         encounter: 1,
         phase: "fighting",
         phaseEndsAtMs: null,
+        equipmentLoadouts: { knight: {}, wizard: {}, priest: {}, hunter: {} },
         combatants: [
           {
             entityId: "party:knight:front",
@@ -1642,6 +1666,7 @@ describe("full combat rules", () => {
         encounter: 1,
         phase: "fighting",
         phaseEndsAtMs: null,
+        equipmentLoadouts: { knight: {}, wizard: {}, priest: {}, hunter: {} },
         combatants: [
           {
             entityId: "party:priest:front",
@@ -1778,6 +1803,7 @@ describe("full combat rules", () => {
         encounter: 1,
         phase: "fighting",
         phaseEndsAtMs: null,
+        equipmentLoadouts: { knight: {}, wizard: {}, priest: {}, hunter: {} },
         combatants: [
           {
             entityId: "party:knight:front",
@@ -1923,6 +1949,7 @@ describe("progression", () => {
         encounter: 1,
         phase: "fighting",
         phaseEndsAtMs: null,
+        equipmentLoadouts: { knight: {}, wizard: {}, priest: {}, hunter: {} },
         combatants: [
           {
             entityId: "party:knight:front",
@@ -2058,6 +2085,247 @@ describe("progression", () => {
     engine.selectStage(1);
     expect(engine.snapshot().progression.party).toEqual(["priest", "wizard", "hunter"]);
     expect(engine.snapshot().progression.reserve).toBe("knight");
+  });
+});
+
+describe("Equipment and Drops", () => {
+  it("awards one Drop per ordinary Wave clear and two sequential Boss Drops", () => {
+    const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
+    engine.advanceBy(1);
+
+    const drops: number[] = [];
+    for (let ms = 0; ms < 300_000; ms += 1) {
+      const events = engine.advanceBy(1);
+      for (const event of events) {
+        if (event.type === "drop-awarded") {
+          drops.push(event.dropId);
+        }
+      }
+      const snap = engine.snapshot();
+      if (snap.attempt?.encounter === 3 && snap.attempt.phase === "fighting") {
+        break;
+      }
+    }
+
+    for (let ms = 0; ms < 300_000; ms += 1) {
+      const events = engine.advanceBy(1);
+      for (const event of events) {
+        if (event.type === "drop-awarded") {
+          drops.push(event.dropId);
+        }
+      }
+      if (drops.length >= 4) {
+        break;
+      }
+    }
+
+    expect(drops).toEqual([1, 2, 3, 4]);
+    expect(engine.snapshot().progression.armory).toHaveLength(4);
+  });
+
+  it("keeps committed Drops through Party Defeat", () => {
+    const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
+    engine.advanceBy(1);
+
+    let firstDropId: number | null = null;
+    for (let ms = 0; ms < 300_000; ms += 1) {
+      const events = engine.advanceBy(1);
+      const awarded = events.find((event) => event.type === "drop-awarded");
+      if (awarded) {
+        firstDropId = awarded.dropId;
+        break;
+      }
+    }
+    expect(firstDropId).toBe(1);
+
+    const saved = engine.snapshot();
+    const attempt = saved.attempt;
+    if (!attempt) {
+      throw new Error("missing Attempt");
+    }
+    for (const combatant of attempt.combatants) {
+      if (combatant.side === "party") {
+        combatant.health = 0;
+        combatant.knockedOut = true;
+      }
+    }
+    saved.attempt = attempt;
+
+    const defeated = createEngine(fixtureContent, saved, LOOT_SEED);
+    for (let ms = 0; ms < 10_000; ms += 1) {
+      const events = defeated.advanceBy(1);
+      if (events.some((event) => event.type === "party-defeat")) {
+        break;
+      }
+    }
+
+    expect(defeated.snapshot().progression.armory).toHaveLength(1);
+    expect(defeated.snapshot().progression.armory[0]?.dropId).toBe(1);
+  });
+
+  it("applies Equipment stats only from the next Stage Attempt", () => {
+    const saved: Snapshot = {
+      schemaVersion: 1,
+      savedAtMs: 0,
+      simNowMs: 0,
+      lootRngState: LOOT_SEED,
+      nextEventSeq: 1,
+      nextAttemptId: 1,
+      nextDropId: 2,
+      progression: progressionState({
+        party: ["knight", "wizard", "priest"],
+        reserve: "hunter",
+        armory: [
+          {
+            dropId: 1,
+            baseId: "fixture-blade",
+            itemLevel: 1,
+            rarity: "common",
+            affixes: [],
+            awardedAtMs: 1,
+            seen: false,
+            locked: false,
+            assignedTo: null,
+          },
+        ],
+      }),
+      attempt: {
+        id: 1,
+        stage: 1,
+        encounter: 1,
+        phase: "fighting",
+        phaseEndsAtMs: null,
+        equipmentLoadouts: { knight: {}, wizard: {}, priest: {}, hunter: {} },
+        combatants: [
+          {
+            entityId: "party:knight:front",
+            side: "party",
+            defId: "knight",
+            health: 180,
+            maxHealth: 180,
+            knockedOut: false,
+            action: {
+              abilityId: "knight-basic",
+              startedAtMs: 0,
+              impactAtMs: 1,
+              endsAtMs: 1001,
+              targetIds: ["opp:1:0"],
+              impactResolved: false,
+            },
+            cooldownReadyAtMs: {},
+            statuses: [],
+          },
+          {
+            entityId: "party:wizard:middle",
+            side: "party",
+            defId: "wizard",
+            health: 100,
+            maxHealth: 100,
+            knockedOut: false,
+            action: null,
+            cooldownReadyAtMs: {},
+            statuses: [],
+          },
+          {
+            entityId: "party:priest:back",
+            side: "party",
+            defId: "priest",
+            health: 110,
+            maxHealth: 110,
+            knockedOut: false,
+            action: null,
+            cooldownReadyAtMs: {},
+            statuses: [],
+          },
+          {
+            entityId: "opp:1:0",
+            side: "opponent",
+            defId: "fixture-grunt",
+            health: 40,
+            maxHealth: 40,
+            knockedOut: false,
+            action: null,
+            cooldownReadyAtMs: {},
+            statuses: [],
+          },
+        ],
+      },
+      pendingEdits: [],
+    };
+
+    const engine = createEngine(fixtureContent, saved, LOOT_SEED);
+    const beforeEquip = engine.advanceBy(1);
+    const beforeDamage = beforeEquip.find((event) => event.type === "impact")?.results[0]?.amount;
+    expect(beforeDamage).toBe(13);
+
+    engine.equip(1, "knight", "weapon");
+    const duringAttempt = engine.advanceBy(5_000);
+    const duringDamage = duringAttempt.find((event) => event.type === "impact")?.results[0]?.amount;
+    expect(duringDamage ?? beforeDamage).toBe(13);
+
+    engine.selectStage(1);
+    const snap = engine.snapshot();
+    expect(snap.attempt?.equipmentLoadouts.knight?.weapon).toBe(1);
+
+    for (let ms = 0; ms < 5_000; ms += 1) {
+      const events = engine.advanceBy(1);
+      const impact = events.find(
+        (event): event is Extract<EngineEvent, { type: "impact" }> =>
+          event.type === "impact" &&
+          event.entityId === "party:knight:front" &&
+          event.abilityId === "knight-basic",
+      );
+      if (impact?.results[0]?.kind === "damage") {
+        expect(impact.results[0].amount).toBe(15);
+        return;
+      }
+    }
+    throw new Error("expected post-equip knight impact");
+  });
+
+  it("shares the loot stream between chunked advancement and reload", () => {
+    const continuous = createEngine(fixtureContent, undefined, LOOT_SEED);
+    continuous.advanceBy(1);
+    let continuousDrop: number | null = null;
+    for (let ms = 0; ms < 300_000; ms += 7) {
+      const events = continuous.advanceBy(7);
+      const awarded = events.find((event) => event.type === "drop-awarded");
+      if (awarded) {
+        continuousDrop = awarded.dropId;
+        break;
+      }
+    }
+
+    const reloaded = createEngine(fixtureContent, undefined, LOOT_SEED);
+    reloaded.advanceBy(1);
+    const mid = structuredClone(reloaded.snapshot());
+    let reloadedDrop: number | null = null;
+    for (let ms = mid.simNowMs; ms < 300_000; ms += 1) {
+      const events = reloaded.advanceBy(1);
+      const awarded = events.find((event) => event.type === "drop-awarded");
+      if (awarded) {
+        reloadedDrop = awarded.dropId;
+        break;
+      }
+    }
+
+    const restored = createEngine(fixtureContent, mid, LOOT_SEED);
+    let restoredDrop: number | null = null;
+    for (let ms = mid.simNowMs; ms < 300_000; ms += 7) {
+      const events = restored.advanceBy(7);
+      const awarded = events.find((event) => event.type === "drop-awarded");
+      if (awarded) {
+        restoredDrop = awarded.dropId;
+        break;
+      }
+    }
+
+    expect(continuousDrop).toBe(1);
+    expect(reloadedDrop).toBe(1);
+    expect(restoredDrop).toBe(1);
+    expect(restored.snapshot().progression.armory[0]).toEqual(
+      reloaded.snapshot().progression.armory[0],
+    );
   });
 });
 
