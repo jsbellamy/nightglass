@@ -204,7 +204,7 @@ describe("presentation mapping", () => {
     expect(row?.querySelector(".status-overflow-chip")?.textContent).toBe("+1");
   });
 
-  it("keeps Knockout collapse classes across a wave transition", () => {
+  it("keeps Knockout collapse classes and downed position across a wave transition", () => {
     const tile = mountBattleTile(root, fixtureContent);
     const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
     const snapshot = structuredClone(engine.snapshot());
@@ -218,8 +218,11 @@ describe("presentation mapping", () => {
     tile.render(snapshot);
 
     const element = root.querySelector<HTMLElement>('[data-entity-id="party:knight:front"]');
+    const body = element?.querySelector<HTMLElement>(".layer-body");
     expect(element?.classList.contains("knockout-collapse")).toBe(true);
     expect(element?.classList.contains("knockout-desaturate")).toBe(true);
+    expect(element?.dataset["bodyOffsetY"]).toBe(String(DOWNED.dropPx));
+    expect(body?.style.transform).toBe(`translate(0px, ${DOWNED.dropPx}px)`);
 
     tile.applyEvents(
       [{ seq: 9, atMs: 10_000, type: "wave-started", stage: 1, encounter: 2, boss: false }],
@@ -228,6 +231,8 @@ describe("presentation mapping", () => {
     tile.render(snapshot);
     expect(element?.classList.contains("knockout-collapse")).toBe(true);
     expect(element?.classList.contains("knockout-desaturate")).toBe(true);
+    expect(element?.dataset["bodyOffsetY"]).toBe(String(DOWNED.dropPx));
+    expect(body?.style.transform).toBe(`translate(0px, ${DOWNED.dropPx}px)`);
   });
 
   it("shows and clears centre-lane banners over ~1.5s", () => {
