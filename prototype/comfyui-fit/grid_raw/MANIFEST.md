@@ -29,3 +29,17 @@ the historical canonical image recorded by #15.
 Both runtime frames validate at 32×48 with baseline row 47, binary alpha, and
 only `moonberry-16` colours. `test_contract.py` proves the Wizard rebuild matches
 the committed runtime PNG byte-for-byte with no provider or network present.
+
+## Opponent proof — #30
+
+Left-facing botanical opponents acquired through the same external-provider /
+logical-grid path. Ordinary budget ~28×40; Boss fuller on the shared 32×48
+canvas. Both stay on `moonberry-16`.
+
+| Subject | Recovered grid | Raw SHA-256 | Runtime SHA-256 |
+| --- | --- | --- | --- |
+| Pipcap (ordinary) | 29×40 | `61521e221604d6106dc890e3feafec8326b704c7626e1400fa858cea429cb5a7` | `0977d7793f8e9ee756119bb2bdd0256655732630503d2a735a2b86fd47274418` |
+| Boss | 32×41 | `ae87deb3e047d6a80f2db3194f666479a89acd980141659f6a9c8178ca63829a` | `138a6c500e2e41cba3e7828257432f8965e22968602dae1e90f67b75f26d0007` |
+
+HITL verdict and review sheets:
+[`opponents/NOTES.md`](../opponents/NOTES.md).

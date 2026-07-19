@@ -36,18 +36,21 @@ Use the following fixed shell around a Class-specific subject description:
 > right, chunky pixel art. Drawn on an **exact 32×48 logical pixel grid rendered
 > large**; every logical pixel is one clean flat square block, with no smaller
 > detail, smooth gradient, anti-aliasing, blur, or dithering. Keep the complete
-> silhouette, including equipment, within **30 logical columns and 44–46 logical
-> rows**, with at least one logical cell of clearance on every edge. Flat solid
+> silhouette, including equipment, within a conservative **26×40 logical-cell
+> safe box**, with at least one logical cell of clearance on every edge. Flat solid
 > magenta **`#ff00ff`** background, nothing else in frame. Selective one-logical-
 > pixel dark warm outline, 10–16 clustered Moonberry colours, no shadow, glow,
 > particles, text, or watermark.
 
-The grid and silhouette clauses are gates, not aesthetic advice. Render
+The 26×40 safe box is a prompt target, deliberately smaller than the 32×48
+acceptance canvas because image models routinely overshoot requested logical
+bounds. The grid detector—not the prompt—decides whether the result fits. Render
 resolution does not fix a figure authored on too many logical cells. During the
 #29 proof, the first two otherwise-good right-facing Knight renders recovered as
 42×48 and 37×48 and were rejected. Tightening the prompt to an explicit 32×48
 canvas produced the accepted 32×45 Knight. The accepted Wizard recovered as
-29×45. There is no resolution-side rescue and no reduction fallback.
+29×45. Future tasks start from the conservative safe box and retry from measured
+grid reports. There is no resolution-side rescue and no reduction fallback.
 
 Class prompts must name the identity-bearing silhouette, equipment, facing, and
 palette. The exact accepted prompts and raw hashes live beside the raws in
@@ -148,5 +151,6 @@ raw/runtime hashes are recorded in
 - The embedded-effects rule remains a palette check. It catches the disjoint
   `moonberry-glow` ramp but cannot identify an effect drawn entirely in
   `moonberry-16`.
-- `moonberry-16` still derives from two Class identities. Extending it for the
-  Priest, Hunter, and opponents remains future work.
+- `moonberry-16` still derives from two Class identities. [#30](https://github.com/jsbellamy/nightglass/issues/30)
+  confirmed ordinary opponents and Bosses can stay on the same palette; extending
+  it for the Priest and Hunter remains future work.
