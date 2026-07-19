@@ -35,15 +35,18 @@ export interface AttemptState {
   combatants: CombatantState[];
 }
 
-export interface PendingEdit {
-  kind: "formation" | "loadout" | "talent" | "equipment";
-}
+export type PendingEdit =
+  | { kind: "formation"; order: [ClassId, ClassId, ClassId] }
+  | { kind: "loadout"; classId: ClassId; loadout: [string, string, string] }
+  | { kind: "talent" }
+  | { kind: "equipment" };
 
 export interface ProgressionState {
   unlockedStage: 1 | 2 | 3;
   party: [ClassId, ClassId, ClassId];
   reserve: ClassId;
   characterXp: Record<ClassId, number>;
+  loadouts: Record<ClassId, [string, string, string]>;
 }
 
 export interface Snapshot {
