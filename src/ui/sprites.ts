@@ -20,7 +20,8 @@ interface SpriteSource {
   height: number;
 }
 
-const SPRITE_SOURCES = {
+/** Declared native-1× dimensions for every committed Character still. */
+export const SPRITE_SOURCES = {
   knight: { url: knightUrl, width: 32, height: 48 },
   wizard: { url: wizardUrl, width: 32, height: 48 },
   pipcap: { url: pipcapUrl, width: 32, height: 48 },
