@@ -1,6 +1,4 @@
-import { readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import effectManifest from "../assets/effects/manifest.json";
 import type { EngineEvent } from "../core/events";
 import type { Snapshot } from "../core/snapshot";
 import type { Content, Rarity } from "../core/types";
@@ -55,12 +53,7 @@ interface EffectManifestEntry {
   frames: { file: string; duration_ms: number }[];
 }
 
-const EFFECT_MANIFEST = JSON.parse(
-  readFileSync(
-    join(dirname(fileURLToPath(import.meta.url)), "../assets/effects/manifest.json"),
-    "utf8",
-  ),
-) as Record<string, EffectManifestEntry>;
+const EFFECT_MANIFEST = effectManifest as unknown as Record<string, EffectManifestEntry>;
 
 const STATUS_GLYPH_URLS = Object.fromEntries(
   [

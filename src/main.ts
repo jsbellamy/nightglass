@@ -99,6 +99,9 @@ export function mountDockShell(root: HTMLElement): { destroy(): void } {
     },
   });
 
+  // Announce ourselves so the tile answers with a snapshot to render.
+  bus.publish({ type: "dock-opened" });
+
   return {
     destroy() {
       bus.close();
@@ -146,6 +149,9 @@ export function mountTileShell(root: HTMLElement, options: TileShellOptions = {}
     },
     "dock-opened"() {
       void dockWindow.open();
+      // A dock that just mounted has no state yet; the pump only publishes on
+      // events, so without this it renders blank until combat next ticks.
+      publishSnapshot();
     },
   });
 
