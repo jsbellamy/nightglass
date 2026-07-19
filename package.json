@@ -14,6 +14,8 @@
     "assets:build": "python3 pipeline/acquire.py",
     "assets:effects": "python3 pipeline/effects/author.py && python3 pipeline/effects/derive.py",
     "assets:verify": "python3 pipeline/test_contract.py && python3 pipeline/effects/verify.py",
+    "prototype:equipment-icons-34": "python3 prototype/equipment-icons-34/build.py",
+    "prototype:equipment-icons-34:ingest": "python3 prototype/equipment-icons-34/ingest.py",
     "tauri": "tauri"
   },
   "dependencies": {
