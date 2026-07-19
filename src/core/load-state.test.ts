@@ -54,4 +54,20 @@ describe("parseStoredSave", () => {
     const restored = createEngine(testContent, parsed.snapshot, LOOT_SEED);
     expect(restored.snapshot().attempt?.encounter).toBe(2);
   });
+
+  it("structurally damaged exact-version save recovers durable fields only", () => {
+    const engine = createEngine(testContent, undefined, LOOT_SEED);
+    engine.advanceBy(1);
+    const saved = engine.snapshot();
+    const raw = JSON.parse(JSON.stringify(saved)) as Record<string, unknown>;
+    raw["pendingEdits"] = "not-an-array";
+
+    const parsed = parseStoredSave(JSON.stringify(raw), testContent);
+    expect(parsed.kind).toBe("tolerant");
+    if (parsed.kind !== "tolerant") {
+      return;
+    }
+    expect(parsed.snapshot.attempt).toBeNull();
+    expect(parsed.snapshot.progression.unlockedStage).toBe(saved.progression.unlockedStage);
+  });
 });

@@ -15,7 +15,27 @@ import {
   runOfflineBoot,
   SAVE_KEY,
 } from "./boot";
+import type { Snapshot } from "../core/snapshot";
+
 import { mountTileShell } from "../main";
+
+const SNAPSHOT_KEYS: (keyof Snapshot)[] = [
+  "schemaVersion",
+  "savedAtMs",
+  "simNowMs",
+  "lootRngState",
+  "nextEventSeq",
+  "nextAttemptId",
+  "nextDropId",
+  "progression",
+  "attempt",
+  "pendingEdits",
+];
+
+function assertSnapshotOnlyPayload(parsed: Record<string, unknown>): void {
+  const keys = Object.keys(parsed).sort();
+  expect(keys).toEqual([...SNAPSHOT_KEYS].sort());
+}
 
 describe("computeOfflineMs", () => {
   it("clamps offline duration to the 8h cap", () => {
@@ -76,6 +96,7 @@ describe("bootTile", () => {
       content: fixtureContent,
       now: () => nowMs,
       storage,
+      mountTile: (tileRoot, options) => mountTileShell(tileRoot, options),
     });
     booted.shell.stop();
 
@@ -97,9 +118,7 @@ describe("bootTile", () => {
     const raw = storage.getItem(SAVE_KEY);
     expect(raw).not.toBeNull();
     const parsed = JSON.parse(raw!) as Record<string, unknown>;
-    expect(parsed).not.toHaveProperty("mute");
-    expect(parsed).not.toHaveProperty("volume");
-    expect(parsed).toHaveProperty("progression");
+    assertSnapshotOnlyPayload(parsed);
     booted.dispose();
   });
 });

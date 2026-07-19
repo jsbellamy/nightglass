@@ -1,14 +1,13 @@
 import { createEngine, type Engine } from "../core/engine";
-import type { EngineEvent } from "../core/events";
-import { parseStoredSave, type ParsedSave } from "../core/load-state";
+import { parseStoredSave } from "../core/load-state";
 import type { Snapshot } from "../core/snapshot";
 import type { Content } from "../core/types";
-import { mountTileShell, type TileShell, type TileShellOptions } from "../main";
 import {
   mountOfflineSummary,
   summarizeOfflineProgress,
   type OfflineSummary,
 } from "./offline-summary";
+import type { TileShell } from "./tile-shell-types";
 
 export const SAVE_KEY = "nightglass-save-v1";
 export const AUTOSAVE_MS = 10_000;
@@ -16,22 +15,26 @@ export const OFFLINE_CAP_MS = 8 * 60 * 60 * 1000;
 export const MIN_OFFLINE_MS = 60_000;
 export const DEFAULT_LOOT_SEED = 42;
 
+export interface BootTileMountOptions {
+  engine?: Engine;
+  content?: Content;
+  onBeforeUnload?: () => void;
+  deferPump?: boolean;
+}
+
 export interface BootDeps {
   content: Content;
   now?: () => number;
   storage?: Pick<Storage, "getItem" | "setItem">;
-  mountTile?: (root: HTMLElement, options: TileShellOptions) => TileShell;
+  mountTile: (root: HTMLElement, options: BootTileMountOptions) => TileShell;
 }
 
 export interface BootResult {
-  engine: Engine;
   shell: TileShell;
-  offlineSummary: OfflineSummary | null;
-  parsedSave: ParsedSave;
   dispose(): void;
 }
 
-export function readSave(storage: Pick<Storage, "getItem"> = localStorage): string | null {
+function readSave(storage: Pick<Storage, "getItem">): string | null {
   return storage.getItem(SAVE_KEY);
 }
 
@@ -47,7 +50,6 @@ export function computeOfflineMs(savedAtMs: number | undefined, nowMs: number): 
 }
 
 export interface OfflineBootResult {
-  events: EngineEvent[];
   summary: OfflineSummary | null;
 }
 
@@ -59,7 +61,7 @@ export function runOfflineBoot(
 ): OfflineBootResult {
   const offlineMs = computeOfflineMs(savedAtMs, nowMs);
   if (offlineMs < MIN_OFFLINE_MS) {
-    return { events: [], summary: null };
+    return { summary: null };
   }
 
   const before = engine.snapshot();
@@ -75,13 +77,12 @@ export function runOfflineBoot(
     capped,
   );
   engine.beginFreshAttempt();
-  return { events, summary };
+  return { summary };
 }
 
 export function bootTile(root: HTMLElement, deps: BootDeps): BootResult {
   const now = deps.now ?? (() => Date.now());
   const storage = deps.storage ?? localStorage;
-  const mountTile = deps.mountTile ?? mountTileShell;
   const bootNow = now();
 
   const parsedSave = parseStoredSave(readSave(storage), deps.content);
@@ -98,23 +99,23 @@ export function bootTile(root: HTMLElement, deps: BootDeps): BootResult {
   const savedAtMs = savedSnapshot?.savedAtMs;
   const { summary: offlineSummary } = runOfflineBoot(engine, deps.content, savedAtMs, bootNow);
 
-  const shell = mountTile(root, {
+  const shell = deps.mountTile(root, {
     engine,
     content: deps.content,
+    deferPump: true,
     onBeforeUnload: () => persistSave(engine, storage),
   });
 
   let summaryMount = offlineSummary ? mountOfflineSummary(root, offlineSummary) : null;
+
+  shell.startPump();
 
   const autosaveTimer = setInterval(() => {
     persistSave(engine, storage);
   }, AUTOSAVE_MS);
 
   return {
-    engine,
     shell,
-    offlineSummary,
-    parsedSave,
     dispose() {
       clearInterval(autosaveTimer);
       summaryMount?.dismiss();

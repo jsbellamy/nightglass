@@ -36,8 +36,11 @@ function isStageId(value: unknown): value is 1 | 2 | 3 {
   return typeof value === "number" && STAGE_IDS.has(value as 1 | 2 | 3);
 }
 
-function defaultProgression(content: Content): ProgressionState {
+export function createDefaultProgression(content: Content): ProgressionState {
   const roster = content.classes.map((entry) => entry.id);
+  if (roster.length === 0) {
+    throw new Error("Content must define at least one Class Kit");
+  }
   const pick = (index: number): ClassId => roster[index % roster.length]!;
   const characterXp = Object.fromEntries(roster.map((classId) => [classId, 0])) as Record<
     ClassId,
@@ -246,7 +249,7 @@ export function recoverDurableProgression(
   if (!isRecord(raw)) {
     return null;
   }
-  const defaults = defaultProgression(content);
+  const defaults = createDefaultProgression(content);
   const party = loadPartyTriple(field(raw, "party"), defaults.party);
   const reserveRaw = field(raw, "reserve");
   const reserve = isClassId(reserveRaw) ? reserveRaw : defaults.reserve;

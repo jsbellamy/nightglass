@@ -7,6 +7,7 @@ import { mountBattleTile } from "./ui/battle-tile";
 import { createProductionDockWindowPort, type DockWindowPort } from "./ui/dock-window";
 import { mountManagementDock } from "./ui/dock";
 import { startPump, type PumpController } from "./ui/pump";
+import type { TileShell } from "./ui/tile-shell-types";
 import { ARMORY_BADGE_EVENT } from "./ui/presentation";
 import type { EngineEvent } from "./core/events";
 
@@ -18,11 +19,10 @@ export interface TileShellOptions {
   engine?: Engine;
   content?: Content;
   onBeforeUnload?: () => void;
+  deferPump?: boolean;
 }
 
-export interface TileShell extends PumpController {
-  destroy(): void;
-}
+export type { TileShell } from "./ui/tile-shell-types";
 
 function isDockWindow(): boolean {
   return new URLSearchParams(window.location.search).get("window") === "dock";
@@ -161,14 +161,26 @@ export function mountTileShell(root: HTMLElement, options: TileShellOptions = {}
     bus?.publish({ type: "armory-badge" });
   });
 
-  const pump = startPump({
-    advanceBy: (ms) => engine.advanceBy(ms),
-    onAdvance: (events) => {
+  const pumpDeps = {
+    advanceBy: (ms: number) => engine.advanceBy(ms),
+    onAdvance: (events: EngineEvent[]) => {
       tile.applyEvents(events, engine.snapshot());
       bus?.publish({ type: "pump", events, snapshot: engine.snapshot() });
     },
     render: () => tile.render(engine.snapshot()),
-  });
+  };
+
+  let pump: PumpController | null = null;
+  function startLivePump(): void {
+    if (pump) {
+      return;
+    }
+    pump = startPump(pumpDeps);
+  }
+
+  if (!options.deferPump) {
+    startLivePump();
+  }
 
   publishSnapshot();
 
@@ -178,11 +190,14 @@ export function mountTileShell(root: HTMLElement, options: TileShellOptions = {}
   }
 
   return {
+    startPump: startLivePump,
     stop() {
-      pump.stop();
+      pump?.stop();
+      pump = null;
     },
     destroy() {
-      pump.stop();
+      pump?.stop();
+      pump = null;
       if (onBeforeUnload) {
         window.removeEventListener("pagehide", onBeforeUnload);
       }
@@ -211,5 +226,8 @@ window.addEventListener("DOMContentLoaded", () => {
 
   dockRoot.hidden = true;
   tileRoot.hidden = false;
-  bootTile(tileRoot, { content: buildContent() });
+  bootTile(tileRoot, {
+    content: buildContent(),
+    mountTile: mountTileShell,
+  });
 });

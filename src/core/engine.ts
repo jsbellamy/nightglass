@@ -38,10 +38,10 @@ import type {
   ProgressionState,
   Snapshot,
 } from "./snapshot";
+import { createDefaultProgression } from "./load-state";
 import {
   allocateTalentPoint,
   deallocateTalentPoint,
-  defaultTalentsForClasses,
   emptyTalentState,
   stripAbilityFromLoadout,
   talentStatModifiers,
@@ -127,38 +127,11 @@ function indexContent(content: Content): ContentIndex {
   };
 }
 
-function defaultLoadouts(content: Content): Record<ClassId, [string, string, string]> {
-  return Object.fromEntries(
-    content.classes.map((entry) => [entry.id, [...entry.defaultLoadout] as [string, string, string]]),
-  ) as Record<ClassId, [string, string, string]>;
-}
-
-function defaultProgression(content: Content): ProgressionState {
-  const roster = content.classes.map((entry) => entry.id);
-  if (roster.length === 0) {
-    throw new Error("Content must define at least one Class Kit");
-  }
-  const pick = (index: number): ClassId => roster[index % roster.length]!;
-  const characterXp = Object.fromEntries(
-    roster.map((classId) => [classId, 0]),
-  ) as Record<ClassId, number>;
-  return {
-    unlockedStage: 1,
-    party: [pick(0), pick(1), pick(2)],
-    reserve: pick(3),
-    characterXp,
-    talents: defaultTalentsForClasses(content.classes),
-    loadouts: defaultLoadouts(content),
-    armory: [],
-    pendingParty: null,
-  };
-}
-
 function restoreProgression(
   saved: Snapshot["progression"],
   content: Content,
 ): ProgressionState {
-  const defaults = defaultProgression(content);
+  const defaults = createDefaultProgression(content);
   return {
     unlockedStage: saved.unlockedStage,
     party: saved.party,
@@ -1203,7 +1176,7 @@ export function createEngine(
         nextEventSeq: 1,
         nextAttemptId: 1,
         nextDropId: 1,
-        progression: defaultProgression(content),
+        progression: createDefaultProgression(content),
         attempt: null,
         pendingEdits: [],
       };
