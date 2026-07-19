@@ -43,6 +43,28 @@
       "raw_sha256": "cf390b253ea5b422f35ce667ae499d1a78e3d5be006552d20df740cd4c63d833"
     }
   },
+  "priest": {
+    "action": "still",
+    "frame_size": [
+      32,
+      48
+    ],
+    "palette": "moonberry-16",
+    "baseline_row": 47,
+    "total_ms": 1,
+    "frames": [
+      {
+        "name": "priest",
+        "duration_ms": 1,
+        "sha256": "8b6da0ea8b74aea52e20d9a493409300f76fac9e2606265c2c53430c6892b065"
+      }
+    ],
+    "cues_ms": {},
+    "source": {
+      "provider": "Cursor GenerateImage",
+      "raw_sha256": "34712fbd19213319951ec00330e88242de4a6ba7b5b0822a43eb90a80478d635"
+    }
+  },
   "pipcap": {
     "action": "still",
     "frame_size": [

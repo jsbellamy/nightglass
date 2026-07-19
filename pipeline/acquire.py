@@ -43,10 +43,11 @@ MIN_LOGICAL_HEIGHT = 40
 OUTPUT_NAMES = {
     "knight": "knight",
     "wizard": "wizard",
+    "priest": "priest",
     "pipcap": "pipcap",
     "boss": "boss-1",
 }
-DEFAULT_TAGS = ("knight", "wizard", "pipcap", "boss")
+DEFAULT_TAGS = ("knight", "wizard", "priest", "pipcap", "boss")
 
 PALETTE = [tuple(c["rgb"]) for c in
            json.loads((HERE / "palette.json").read_text())["colors"]]

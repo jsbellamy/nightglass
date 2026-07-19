@@ -19,14 +19,19 @@ describe("sprite registry", () => {
     }
   });
 
-  it("labels priest and hunter interim fallbacks for asset slices #55/#56", () => {
+  it("resolves the acquired Priest still without an interim label", () => {
     const priest = resolveSprite("priest");
-    expect(priest.interimLabel).toBe("priest");
-    expect(priest.interim?.issue).toBe("#55/#56");
+    expect(priest.interim).toBeUndefined();
+    expect(priest.interimLabel).toBeUndefined();
+    expect(priest.width).toBe(32);
+    expect(priest.height).toBe(48);
+    expect(priest.url).toContain("priest");
+  });
 
+  it("labels hunter interim fallback for asset slice #56", () => {
     const hunter = resolveSprite("hunter");
     expect(hunter.interimLabel).toBe("hunter");
-    expect(hunter.interim?.issue).toBe("#55/#56");
+    expect(hunter.interim?.issue).toBe("#56");
   });
 
   it("maps boss-2 and boss-3 to boss-1 interim fallbacks for asset slice #57", () => {

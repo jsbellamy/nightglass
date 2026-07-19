@@ -1,0 +1,9 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "34712fbd19213319951ec00330e88242de4a6ba7b5b0822a43eb90a80478d635",
+  "candidate": "priest-c.png",
+  "facing": "right",
+  "role": "party_class",
+  "prompt": "TRUE chunky pixel art sprite ONLY. Canvas is exactly 32 logical columns by 48 logical rows rendered large — the 1024x1536 output represents exactly 32 logical columns by 48 logical rows; every logical pixel is one uniform 32x32 rendered-pixel square and every boundary aligns to that grid. The previous candidate recovered as 33x48 — still one column too wide. Preserve the Priest identity (cream-gold layered robe, mint leaf stole/cuffs, berry-pink sash and small round cap, lantern-staff with moonpetal charm, calm right-facing profile) but SIMPLIFY and SHRINK the complete silhouette into a STRICT 24x38 logical-cell box, centered, with at least THREE full magenta #ff00ff cells of clearance on LEFT, RIGHT, TOP, and BOTTOM. Match the chunky block style of the attached Knight grid raw: flat uniform squares, aligned seams, one-cell dark-plum outlines, no anti-aliasing. Staff short and thick (at least two cells). Use 10-12 flat colors. Every unused cell is flat #ff00ff. No smaller pixels, gradients, anti-aliasing, dithering, floor, shadow, glow, particles, extra characters, text, watermark, transparency, cropped equipment, or hot magenta in the Priest."
+}
