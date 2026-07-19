@@ -6,26 +6,6 @@ from dataclasses import dataclass
 
 from .paint import validate_recolor_map
 
-# Tier II recolor maps for the two prototype-evidence families; others are placeholders
-# until the Icons slice generates sources.
-FOCUS_TO_PRISM = {
-    "mint-light": "berry-bright",
-    "mint-pale": "cream",
-    "cream": "cream-gold",
-    "cream-gold": "berry",
-    "mint": "berry-mid",
-    "mint-shadow": "berry-shadow",
-    "sage": "twilight-slate",
-}
-
-BOW_TO_LONGBOW = {
-    "mint": "berry-mid",
-    "mint-shadow": "contour-plum-deep",
-    "mint-light": "berry",
-    "cream": "berry-bright",
-    "sage": "twilight-slate",
-}
-
 BLADE_TO_EDGE: dict[str, str] = {}
 RELIC_TO_LANTERN: dict[str, str] = {}
 VEST_TO_AEGIS: dict[str, str] = {}

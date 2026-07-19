@@ -159,12 +159,9 @@ def paint_source_icon(
     cells: list[list[Swatch | None]],
     *,
     recolor: dict[str, str] | None = None,
-    allowed: dict[str, Swatch] | None = None,
 ) -> Image.Image:
-    pool = allowed or PALETTE
     quantized = [
-        [None if cell is None else nearest(cell.rgb, pool) for cell in row]
-        for row in cells
+        [None if cell is None else nearest(cell.rgb) for cell in row] for row in cells
     ]
     peeled = strip_exterior_ink(quantized)
     recolored = apply_recolor(peeled, recolor or {})

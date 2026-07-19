@@ -13,6 +13,8 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 HERE = pathlib.Path(__file__).parent
 sys.path.insert(0, str(ROOT / "pipeline"))
 
+import ast
+
 import acquire  # noqa: E402
 
 from icons import build as icon_build  # noqa: E402
@@ -39,30 +41,38 @@ def check(label: str, condition: bool, detail: str = "") -> None:
     print(f"  [{status}] {label}{suffix}")
 
 
-print("icon pipeline imports acquire primitives")
-check(
-    "ingest imports detect_pitch from acquire",
-    hasattr(acquire, "detect_pitch"),
-)
-check(
-    "ingest imports sample_cells from acquire",
-    hasattr(acquire, "sample_cells"),
-)
-check(
-    "ingest imports recover_grid from acquire",
-    hasattr(acquire, "recover_grid"),
-)
-check(
-    "paint uses runtime_png_bytes from acquire",
-    "runtime_png_bytes" in (ROOT / "pipeline" / "icons" / "paint.py").read_text(),
-)
+def _acquire_names_imported(module_path: pathlib.Path) -> set[str]:
+    tree = ast.parse(module_path.read_text())
+    names: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ImportFrom) and node.module == "acquire":
+            names.update(alias.name for alias in node.names)
+    return names
 
-ingest_mod = importlib.import_module("icons.ingest")
-for name in ("detect_pitch", "sample_cells", "recover_grid", "runtime_png_bytes"):
+
+print("icon pipeline imports acquire primitives")
+ingest_imports = _acquire_names_imported(HERE / "ingest.py")
+init_imports = _acquire_names_imported(HERE / "__init__.py")
+for name in ("detect_pitch", "sample_cells", "recover_grid"):
     check(
-        f"icons.ingest or icons.paint wires acquire.{name}",
-        name in dir(acquire),
+        f"icons.ingest imports acquire.{name}",
+        name in ingest_imports,
+        str(sorted(ingest_imports)),
     )
+check(
+    "icons.paint delegates runtime_png_bytes to acquire",
+    "acquire.runtime_png_bytes" in (HERE / "paint.py").read_text(),
+)
+check(
+    "icons package re-exports acquire primitives",
+    {"detect_pitch", "sample_cells", "recover_grid", "runtime_png_bytes"} <= init_imports,
+    str(sorted(init_imports)),
+)
+check(
+    "ingest binds shared recover_grid primitive",
+    hasattr(importlib.import_module("icons.ingest"), "_ICON_SHARED_RECOVER")
+    and importlib.import_module("icons.ingest")._ICON_SHARED_RECOVER is acquire.recover_grid,
+)
 
 print("\ntext source parse errors")
 bad_source = HERE / "_bad_palette.grid"

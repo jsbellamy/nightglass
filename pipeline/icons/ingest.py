@@ -14,13 +14,7 @@ PIPELINE = ROOT / "pipeline"
 sys.path.insert(0, str(PIPELINE))
 
 import acquire  # noqa: E402
-from acquire import (  # noqa: E402
-    _nearest,
-    detect_pitch,
-    recover_grid,
-    runtime_png_bytes,
-    sample_cells,
-)
+from acquire import detect_pitch, recover_grid, sample_cells  # noqa: E402
 
 from .constants import (  # noqa: E402
     MAX_BODY,
@@ -32,8 +26,12 @@ from .constants import (  # noqa: E402
     PITCH_MIN_DIVISOR,
 )
 from .palette import PALETTE, Swatch  # noqa: E402
-from .paint import nearest  # noqa: E402 — subset-scoped quantize; acquire._nearest is global
+from .paint import nearest  # noqa: E402
 from .text_source import TextSource, cells_to_source, write_text  # noqa: E402
+
+# Character stills use recover_grid end-to-end; icons share the same primitives
+# with icon pitch bounds in recover_icon_grid below.
+_ICON_SHARED_RECOVER = recover_grid
 
 
 def recover_icon_grid(
