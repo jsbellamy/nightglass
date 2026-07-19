@@ -7,6 +7,15 @@ Emitted by the rendered-evidence harness (`npm run test:evidence`) as
 knocked-out combatant is present, with non-colour CSS signals applied on
 `.combatant-sprite` (filter) and `.combatant-stack` (transform).
 
-This artifact supports the human judgement that the knocked-out state is
-readable in the crowded tile. It does **not** discharge that row: the
-judgement is made in the terminal scene review (nightglass#103).
+## Judgement (nightglass#103)
+
+**Readable — discharged.** See
+[`../103-terminal-scene-review/README.md`](../103-terminal-scene-review/README.md)
+§ Knockout-readability judgement. The knocked-out opponent is distinguishable
+in the crowded tile via desaturation, collapse, and absent live health fill.
+
+## Note on the PNG
+
+This file must match the post-knockout harness frame (`e2e-screenshots/02-tile-combat.png`),
+not the pre-knockout initial tile. #103 corrected a bad commit where the
+artifact was byte-identical to `01-tile-initial.png`.
