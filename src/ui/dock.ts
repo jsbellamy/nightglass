@@ -1,0 +1,222 @@
+import type { Snapshot } from "../core/snapshot";
+import type { TileCommand } from "./bus";
+
+export type DockTabId = "party" | "loadout" | "talents" | "armory" | "stage";
+
+export const DOCK_TABS: { id: DockTabId; label: string }[] = [
+  { id: "party", label: "Party" },
+  { id: "loadout", label: "Loadout" },
+  { id: "talents", label: "Talents" },
+  { id: "armory", label: "Armory" },
+  { id: "stage", label: "Stage" },
+];
+
+export interface ManagementDock {
+  render(snapshot: Snapshot | null): void;
+  setArmoryBadge(visible: boolean): void;
+  setOpen(open: boolean): void;
+  destroy(): void;
+}
+
+export interface ManagementDockOptions {
+  initialTab?: DockTabId;
+  onClose?: () => void;
+  onCommand?: (command: TileCommand) => void;
+}
+
+function tabIndex(tab: DockTabId): number {
+  return DOCK_TABS.findIndex((entry) => entry.id === tab);
+}
+
+function cycleTab(current: DockTabId, delta: number): DockTabId {
+  const index = tabIndex(current);
+  const next = (index + delta + DOCK_TABS.length) % DOCK_TABS.length;
+  return DOCK_TABS[next]!.id;
+}
+
+export function mountManagementDock(
+  root: HTMLElement,
+  options: ManagementDockOptions = {},
+): ManagementDock {
+  let activeTab: DockTabId = options.initialTab ?? "party";
+  let armoryBadge = false;
+
+  root.classList.add("dock-shell", "management-dock");
+  root.setAttribute("role", "dialog");
+  root.setAttribute("aria-label", "Management Dock");
+
+  const header = document.createElement("header");
+  header.className = "dock-header";
+
+  const tabList = document.createElement("div");
+  tabList.className = "dock-tabs";
+  tabList.setAttribute("role", "tablist");
+  tabList.setAttribute("aria-label", "Management surfaces");
+
+  const closeButton = document.createElement("button");
+  closeButton.type = "button";
+  closeButton.className = "dock-close focus-ring";
+  closeButton.setAttribute("aria-label", "Close Management Dock");
+  closeButton.textContent = "✕";
+
+  header.append(tabList, closeButton);
+
+  const surface = document.createElement("section");
+  surface.className = "dock-surface";
+  surface.setAttribute("role", "tabpanel");
+
+  const panels = new Map<DockTabId, HTMLElement>();
+  const tabButtons = new Map<DockTabId, HTMLButtonElement>();
+
+  for (const tab of DOCK_TABS) {
+    const tabButton = document.createElement("button");
+    tabButton.type = "button";
+    tabButton.className = "dock-tab focus-ring";
+    tabButton.dataset["dockTab"] = tab.id;
+    tabButton.setAttribute("role", "tab");
+    tabButton.setAttribute("aria-controls", `dock-panel-${tab.id}`);
+    tabButton.id = `dock-tab-${tab.id}`;
+    tabButton.textContent = tab.label;
+
+    const badge = document.createElement("span");
+    badge.className = "dock-tab-badge";
+    badge.hidden = true;
+    badge.setAttribute("aria-label", "New equipment");
+    tabButton.append(badge);
+
+    tabList.append(tabButton);
+    tabButtons.set(tab.id, tabButton);
+
+    const panel = document.createElement("div");
+    panel.className = "dock-panel";
+    panel.dataset["dockPanel"] = tab.id;
+    panel.id = `dock-panel-${tab.id}`;
+    panel.setAttribute("role", "tabpanel");
+    panel.setAttribute("aria-labelledby", tabButton.id);
+
+    const title = document.createElement("h2");
+    title.className = "dock-placeholder-title";
+    title.textContent = tab.label;
+
+    const copy = document.createElement("p");
+    copy.className = "dock-placeholder-copy";
+    copy.textContent = `${tab.label} management surface — interim placeholder until a later slice.`;
+
+    panel.append(title, copy);
+    panels.set(tab.id, panel);
+    surface.append(panel);
+  }
+
+  root.append(header, surface);
+
+  function setActiveTab(next: DockTabId): void {
+    activeTab = next;
+    for (const tab of DOCK_TABS) {
+      const selected = tab.id === activeTab;
+      const button = tabButtons.get(tab.id);
+      const panel = panels.get(tab.id);
+      if (button) {
+        button.classList.toggle("active", selected);
+        button.setAttribute("aria-selected", selected ? "true" : "false");
+        button.tabIndex = selected ? 0 : -1;
+      }
+      if (panel) {
+        panel.hidden = !selected;
+      }
+    }
+    surface.setAttribute("aria-labelledby", `dock-tab-${activeTab}`);
+  }
+
+  function requestClose(): void {
+    options.onClose?.();
+  }
+
+  function onTabActivate(tab: DockTabId): void {
+    if (tab === activeTab) {
+      requestClose();
+      return;
+    }
+    setActiveTab(tab);
+  }
+
+  function onTabKeydown(event: KeyboardEvent, tab: DockTabId): void {
+    if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+      event.preventDefault();
+      const next = cycleTab(tab, 1);
+      setActiveTab(next);
+      tabButtons.get(next)?.focus();
+      return;
+    }
+    if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+      event.preventDefault();
+      const next = cycleTab(tab, -1);
+      setActiveTab(next);
+      tabButtons.get(next)?.focus();
+      return;
+    }
+    if (event.key === "Home") {
+      event.preventDefault();
+      setActiveTab(DOCK_TABS[0]!.id);
+      tabButtons.get(DOCK_TABS[0]!.id)?.focus();
+      return;
+    }
+    if (event.key === "End") {
+      event.preventDefault();
+      const last = DOCK_TABS[DOCK_TABS.length - 1]!.id;
+      setActiveTab(last);
+      tabButtons.get(last)?.focus();
+    }
+  }
+
+  for (const tab of DOCK_TABS) {
+    const button = tabButtons.get(tab.id);
+    if (!button) {
+      continue;
+    }
+    button.addEventListener("click", () => {
+      onTabActivate(tab.id);
+    });
+    button.addEventListener("keydown", (event) => {
+      onTabKeydown(event, tab.id);
+    });
+  }
+
+  closeButton.addEventListener("click", () => {
+    requestClose();
+  });
+
+  root.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      requestClose();
+    }
+  });
+
+  setActiveTab(activeTab);
+
+  return {
+    render(snapshot) {
+      const stageLabel = snapshot?.attempt
+        ? `Stage ${snapshot.attempt.stage} · Wave ${snapshot.attempt.encounter}`
+        : "No Attempt";
+      root.dataset["stageLabel"] = stageLabel;
+    },
+    setArmoryBadge(visible) {
+      armoryBadge = visible;
+      const badge = tabButtons.get("armory")?.querySelector<HTMLElement>(".dock-tab-badge");
+      if (badge) {
+        badge.hidden = !armoryBadge;
+      }
+    },
+    setOpen(open) {
+      root.hidden = !open;
+      root.setAttribute("aria-hidden", open ? "false" : "true");
+    },
+    destroy() {
+      root.replaceChildren();
+      root.classList.remove("dock-shell", "management-dock");
+      root.removeAttribute("role");
+      root.removeAttribute("aria-label");
+    },
+  };
+}
