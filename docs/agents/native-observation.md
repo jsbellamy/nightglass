@@ -14,6 +14,9 @@ touches:
 - the `app.windows` block in `src-tauri/tauri.conf.json` (transparency,
   decorations, shadow, always-on-top, sizing minima/maxima)
 - macOS-specific window visuals
+- packaged presentation-effect URL resolution (`src/ui/effect-images.ts` or
+  wiring that resolves Ability effect frames and Status Effect glyphs for the
+  Tauri webview bundle)
 
 Every other rendered criterion — tile/dock geometry, AA contrast, keyboard
 floor, five-opponent fit, sprite native-1× sizing, in-UI Dock close over the
@@ -35,6 +38,12 @@ creates a Tauri `WebviewWindow` or exercises OS window chrome.
 3. **Native positioning** — The Dock window opens at the geometry implied by
    `dockRect` relative to the tile's outer position on the monitor (above or
    below with the configured gap), not at an arbitrary OS default.
+4. **Native effect-image loading** — In the packaged Tauri webview (not
+   `vite preview` alone), at least one visible Ability effect frame
+   (`img.effect-frame`) and one Status Effect glyph (`img.status-icon`) load
+   with real pixels — not broken-image placeholders. Browser
+   `evidence: effect-image-loading` proves Vite bundling; this check proves the
+   production webview outcome that dynamic `import.meta.url` resolution missed.
 
 ## Explicitly out of scope here
 
@@ -48,3 +57,5 @@ Do **not** re-check in Tauri anything the Playwright suite already covers under
 - Dock tab row fit, surface scroll, five surfaces, ArrowRight tab cycle
 - in-UI `.dock-close` crossing the channel without disturbing the tile
 - `dock-opened` → snapshot → populated Dock over a shared `BroadcastChannel`
+- Ability effect frames and Status Effect glyphs under Vite (`evidence:
+  effect-image-loading`)

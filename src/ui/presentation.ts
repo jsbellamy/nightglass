@@ -9,6 +9,7 @@ import {
   mergeDamageNumbers,
   type DamageNumberInput,
 } from "./damage-numbers";
+import { effectImageUrl, statusEffectGlyphUrl } from "./effect-images";
 
 /** Contract constants — source: prototype/presentation-contract/present.py */
 export const LUNGE = {
@@ -54,22 +55,6 @@ interface EffectManifestEntry {
 }
 
 const EFFECT_MANIFEST = effectManifest as unknown as Record<string, EffectManifestEntry>;
-
-const STATUS_GLYPH_URLS = Object.fromEntries(
-  [
-    "braced",
-    "exposed",
-    "guarded",
-    "inspired",
-    "riven",
-    "sheltered",
-    "stun",
-    "warded",
-  ].map((statusId) => [
-    statusId,
-    new URL(`../assets/effects/status/${statusId}.png`, import.meta.url).href,
-  ]),
-);
 
 type BannerKind =
   | "wave-started"
@@ -150,16 +135,12 @@ function facingForEntity(entityId: string): 1 | -1 {
   return entityId.startsWith("party:") ? 1 : -1;
 }
 
-function effectFrameUrl(file: string): string {
-  return new URL(`../assets/effects/${file}`, import.meta.url).href;
-}
-
 function frameAtTime(entry: EffectManifestEntry, elapsedMs: number): string | null {
   let cursor = 0;
   for (const frame of entry.frames) {
     cursor += frame.duration_ms;
     if (elapsedMs < cursor) {
-      return effectFrameUrl(frame.file);
+      return effectImageUrl(frame.file);
     }
   }
   return null;
@@ -432,7 +413,7 @@ export function createPresentation(options: PresentationOptions): Presentation {
     for (const statusId of visible) {
       const icon = document.createElement("img");
       icon.className = "status-icon";
-      icon.src = STATUS_GLYPH_URLS[statusId] ?? "";
+      icon.src = statusEffectGlyphUrl(statusId);
       icon.alt = "";
       icon.width = 7;
       icon.height = 7;
