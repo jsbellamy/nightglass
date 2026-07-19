@@ -299,6 +299,9 @@ export function isAbilityValid(
       (ally) => !ally.knockedOut && ally.health < ally.maxHealth,
     );
   }
+  if (ability.validWhile === "below-half-health") {
+    return actor.maxHealth > 0 && actor.health / actor.maxHealth < 0.5;
+  }
   return true;
 }
 

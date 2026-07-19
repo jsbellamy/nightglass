@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { isAbilityValid } from "../core/combat";
 import type { AbilityDef, ClassKitDef } from "../core/types";
+import type { CombatantState } from "../core/snapshot";
 import { validateContent } from "../core/validate-content";
 import { buildContent } from "./index";
 
@@ -177,5 +179,30 @@ describe("spot-check Ability transcription", () => {
       recoveryMs: 800,
       cooldownMs: 20000,
     });
+  });
+
+  it("pins Hold the Line validWhile below half health", () => {
+    expect(abilityById("hold-the-line").validWhile).toBe("below-half-health");
+  });
+});
+
+describe("Hold the Line validity gate", () => {
+  it("is invalid at full health and valid below 50%", () => {
+    const ability = abilityById("hold-the-line");
+    const knight: CombatantState = {
+      entityId: "party:knight:front",
+      side: "party",
+      defId: "knight",
+      health: 180,
+      maxHealth: 180,
+      knockedOut: false,
+      action: null,
+      cooldownReadyAtMs: {},
+      statuses: [],
+    };
+    expect(isAbilityValid(ability, knight, [knight])).toBe(false);
+
+    knight.health = 89;
+    expect(isAbilityValid(ability, knight, [knight])).toBe(true);
   });
 });

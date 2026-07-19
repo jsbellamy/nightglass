@@ -71,6 +71,7 @@ export const knightAbilities: AbilityDef[] = [
     windUpMs: 200,
     recoveryMs: 500,
     cooldownMs: 15000,
+    validWhile: "below-half-health",
   },
   {
     id: "falling-star",
