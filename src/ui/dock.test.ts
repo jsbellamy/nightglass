@@ -61,7 +61,7 @@ describe("Management Dock shell", () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it("renders Loadout and Talents surfaces while Armory remains interim", () => {
+  it("renders all management surfaces without interim placeholders", () => {
     const root = document.createElement("main");
     const dock = mountDock(root);
     const engine = createEngine(fixtureContent, undefined, 3);
@@ -69,16 +69,12 @@ describe("Management Dock shell", () => {
 
     for (const tab of DOCK_TABS) {
       const panel = root.querySelector<HTMLElement>(`[data-dock-panel="${tab.id}"]`);
-      if (tab.id === "party" || tab.id === "stage" || tab.id === "loadout" || tab.id === "talents") {
-        expect(panel?.querySelector(".dock-placeholder-copy")).toBeNull();
-        continue;
-      }
-      expect(panel?.querySelector(".dock-placeholder-title")?.textContent).toBe(tab.label);
-      expect(panel?.textContent).toMatch(/interim/i);
+      expect(panel?.querySelector(".dock-placeholder-copy")).toBeNull();
     }
 
     expect(root.querySelector(".loadout-surface")).not.toBeNull();
     expect(root.querySelector(".talents-surface")).not.toBeNull();
+    expect(root.querySelector(".armory-surface")).not.toBeNull();
 
     dock.destroy();
   });

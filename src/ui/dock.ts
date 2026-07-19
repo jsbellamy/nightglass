@@ -1,6 +1,7 @@
 import type { Snapshot } from "../core/snapshot";
 import type { Content } from "../core/types";
 import type { TileCommand } from "./bus";
+import { mountArmorySurface } from "./armory-surface";
 import { mountLoadoutSurface } from "./loadout-surface";
 import { mountPartySurface } from "./party-surface";
 import { mountStageSurface } from "./stage-surface";
@@ -76,6 +77,7 @@ export function mountManagementDock(
   let partyRoot: HTMLElement | null = null;
   let loadoutRoot: HTMLElement | null = null;
   let talentsRoot: HTMLElement | null = null;
+  let armoryRoot: HTMLElement | null = null;
   let stageRoot: HTMLElement | null = null;
 
   for (const tab of DOCK_TABS) {
@@ -116,28 +118,22 @@ export function mountManagementDock(
       talentsRoot = document.createElement("div");
       talentsRoot.className = "dock-surface-root";
       panel.append(talentsRoot);
+    } else if (tab.id === "armory") {
+      armoryRoot = document.createElement("div");
+      armoryRoot.className = "dock-surface-root";
+      panel.append(armoryRoot);
     } else if (tab.id === "stage") {
       stageRoot = document.createElement("div");
       stageRoot.className = "dock-surface-root";
       panel.append(stageRoot);
-    } else {
-      const title = document.createElement("h2");
-      title.className = "dock-placeholder-title";
-      title.textContent = tab.label;
-
-      const copy = document.createElement("p");
-      copy.className = "dock-placeholder-copy";
-      copy.textContent = `${tab.label} management surface — interim placeholder until a later slice.`;
-
-      panel.append(title, copy);
     }
 
     panels.set(tab.id, panel);
     surface.append(panel);
   }
 
-  if (!partyRoot || !loadoutRoot || !talentsRoot || !stageRoot) {
-    throw new Error("Party, Loadout, Talents, and Stage dock panels are required");
+  if (!partyRoot || !loadoutRoot || !talentsRoot || !armoryRoot || !stageRoot) {
+    throw new Error("Party, Loadout, Talents, Armory, and Stage dock panels are required");
   }
 
   if (!options.content) {
@@ -159,6 +155,19 @@ export function mountManagementDock(
     content: options.content,
     onCommand: (command) => {
       options.onCommand?.(command);
+    },
+  });
+  const armorySurface = mountArmorySurface(armoryRoot, {
+    content: options.content,
+    onCommand: (command) => {
+      options.onCommand?.(command);
+    },
+    onBadgeChange: (visible) => {
+      armoryBadge = visible;
+      const badge = tabButtons.get("armory")?.querySelector<HTMLElement>(".dock-tab-badge");
+      if (badge) {
+        badge.hidden = !armoryBadge;
+      }
     },
   });
   const stageSurface = mountStageSurface(stageRoot, {
@@ -263,6 +272,7 @@ export function mountManagementDock(
       partySurface.render(snapshot);
       loadoutSurface.render(snapshot);
       talentsSurface.render(snapshot);
+      armorySurface.render(snapshot);
       stageSurface.render(snapshot);
     },
     setArmoryBadge(visible) {
@@ -280,6 +290,7 @@ export function mountManagementDock(
       partySurface.destroy();
       loadoutSurface.destroy();
       talentsSurface.destroy();
+      armorySurface.destroy();
       stageSurface.destroy();
       root.replaceChildren();
       root.classList.remove("dock-shell", "management-dock");
