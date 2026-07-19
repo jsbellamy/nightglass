@@ -244,10 +244,12 @@ Decision: [Automatic Combat rules](https://github.com/jsbellamy/nightglass/issue
 
 ## 6. Class Kits
 
-Decision: [four Class kits](https://github.com/jsbellamy/nightglass/issues/7)
-(its Answer holds every authored number: Level 1 base statistics, all sixteen
-Core Abilities, four basic attacks, eight Ability Talents, coefficients,
-timings, and cooldowns; content data transcribes it directly).
+Decision: [four Class kits](https://github.com/jsbellamy/nightglass/issues/7).
+The reviewed Ability-number contract is committed as
+[`src/data/fixtures/issue-7-ability-contract.ts`](../src/data/fixtures/issue-7-ability-contract.ts)
+(Level 1 bases, default loadouts, all 28 Abilities with coefficients /
+Wind-up / Recovery / cooldowns, and Status durations); `src/data` is compared
+to that fixture field-by-field.
 
 - Shared structure: one fixed basic attack (outside the loadout, its fallback),
   **four Core Abilities** available immediately, a three-slot Ability Loadout

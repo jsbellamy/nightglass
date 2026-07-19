@@ -1,0 +1,491 @@
+import type {
+  AbilityDef,
+  BaseStats,
+  ClassId,
+  StatusEffectDef,
+} from "../../core/types";
+
+/**
+ * Reviewed Ability-number contract transcribed from issue #7's Answer.
+ *
+ * This file is the reviewable artifact: one deliberate pass from the GitHub
+ * comment into the repo. Do not regenerate it from `src/data/classes/*` —
+ * the mechanical comparison test guards drift between this fixture and
+ * shipped content, not the original transcription's correctness.
+ *
+ * Source: https://github.com/jsbellamy/nightglass/issues/7
+ */
+
+export interface Issue7ClassBases {
+  id: ClassId;
+  base: BaseStats;
+  defaultLoadout: [string, string, string];
+}
+
+/** Cumulative XP thresholds pinned alongside the Class Kit contract. */
+export const ISSUE_7_XP_THRESHOLDS = [0, 100, 250, 450, 650, 850] as const;
+
+/** Level 1 bases and default Ability Loadouts from issue #7. */
+export const ISSUE_7_CLASS_BASES: Issue7ClassBases[] = [
+  {
+    id: "knight",
+    base: {
+      maxHealth: 180,
+      physical: 14,
+      elemental: 4,
+      armor: 30,
+      elementalResistance: 12,
+    },
+    defaultLoadout: ["shield-brace", "rallying-guard", "sweeping-arc"],
+  },
+  {
+    id: "wizard",
+    base: {
+      maxHealth: 100,
+      physical: 4,
+      elemental: 16,
+      armor: 10,
+      elementalResistance: 24,
+    },
+    defaultLoadout: ["prism-ward", "frost-lance", "cinder-bloom"],
+  },
+  {
+    id: "priest",
+    base: {
+      maxHealth: 125,
+      physical: 5,
+      elemental: 13,
+      armor: 15,
+      elementalResistance: 20,
+    },
+    defaultLoadout: ["dawn-recall", "mending-light", "war-hymn"],
+  },
+  {
+    id: "hunter",
+    base: {
+      maxHealth: 120,
+      physical: 15,
+      elemental: 6,
+      armor: 16,
+      elementalResistance: 14,
+    },
+    defaultLoadout: ["barbed-arrow", "pinpoint-shot", "split-volley"],
+  },
+];
+
+/**
+ * Status durations and modifiers from issue #7.
+ * Stun duration is authored per Ability via `stunMs`; the shared stun entry
+ * is the fallback Status definition referenced by those effects.
+ */
+export const ISSUE_7_STATUSES: StatusEffectDef[] = [
+  {
+    id: "braced",
+    name: "Braced",
+    kind: "buff",
+    durationMs: 5000,
+    modifiers: { flat: { armor: 50 } },
+  },
+  {
+    id: "guarded",
+    name: "Guarded",
+    kind: "buff",
+    durationMs: 6000,
+    modifiers: { flat: { armor: 15, elementalResistance: 15 } },
+  },
+  {
+    id: "warded",
+    name: "Warded",
+    kind: "buff",
+    durationMs: 6000,
+    modifiers: { flat: { elementalResistance: 20 } },
+  },
+  {
+    id: "inspired",
+    name: "Inspired",
+    kind: "buff",
+    durationMs: 8000,
+    modifiers: { percent: { physicalPower: 0.2, elementalPower: 0.2 } },
+  },
+  {
+    id: "sheltered",
+    name: "Sheltered",
+    kind: "buff",
+    durationMs: 6000,
+    modifiers: { flat: { armor: 25, elementalResistance: 30 } },
+  },
+  {
+    id: "hold-the-line",
+    name: "Hold the Line",
+    kind: "buff",
+    durationMs: 6000,
+    modifiers: { flat: { armor: 60, elementalResistance: 30 } },
+  },
+  {
+    id: "exposed",
+    name: "Exposed",
+    kind: "debuff",
+    durationMs: 6000,
+    modifiers: { flat: { armor: -20, elementalResistance: -20 } },
+  },
+  {
+    id: "riven",
+    name: "Riven",
+    kind: "debuff",
+    durationMs: 6000,
+    modifiers: { flat: { armor: -20 } },
+  },
+  {
+    id: "stun",
+    name: "Stun",
+    kind: "stun",
+    durationMs: 1000,
+  },
+];
+
+/** All 28 Class Kit Abilities: coefficients, Wind-up, Recovery, cooldowns, Status links. */
+export const ISSUE_7_ABILITIES: AbilityDef[] = [
+  // Knight — basic + four Core + two Ability Talents
+  {
+    id: "steel-cut",
+    name: "Steel Cut",
+    classId: "knight",
+    slot: "basic",
+    targeting: { kind: "closest-opponent" },
+    effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
+    windUpMs: 350,
+    recoveryMs: 650,
+    cooldownMs: 0,
+  },
+  {
+    id: "sweeping-arc",
+    name: "Sweeping Arc",
+    classId: "knight",
+    slot: "core",
+    targeting: { kind: "all-opponents" },
+    effects: [{ kind: "damage", channel: "physical", coefficient: 0.7 }],
+    windUpMs: 500,
+    recoveryMs: 700,
+    cooldownMs: 6000,
+  },
+  {
+    id: "shield-brace",
+    name: "Shield Brace",
+    classId: "knight",
+    slot: "core",
+    targeting: { kind: "self" },
+    effects: [{ kind: "apply-status", statusId: "braced" }],
+    windUpMs: 100,
+    recoveryMs: 400,
+    cooldownMs: 9000,
+    validWhile: "status-absent",
+  },
+  {
+    id: "rallying-guard",
+    name: "Rallying Guard",
+    classId: "knight",
+    slot: "core",
+    targeting: { kind: "party" },
+    effects: [{ kind: "apply-status", statusId: "guarded" }],
+    windUpMs: 300,
+    recoveryMs: 500,
+    cooldownMs: 12000,
+    validWhile: "status-absent",
+  },
+  {
+    id: "pommel-break",
+    name: "Pommel Break",
+    classId: "knight",
+    slot: "core",
+    targeting: { kind: "closest-opponent" },
+    effects: [
+      { kind: "damage", channel: "physical", coefficient: 0.9 },
+      { kind: "apply-status", statusId: "stun", stunMs: 1200 },
+    ],
+    windUpMs: 250,
+    recoveryMs: 650,
+    cooldownMs: 9000,
+  },
+  {
+    id: "hold-the-line",
+    name: "Hold the Line",
+    classId: "knight",
+    slot: "talent",
+    targeting: { kind: "self" },
+    effects: [{ kind: "apply-status", statusId: "hold-the-line" }],
+    windUpMs: 200,
+    recoveryMs: 500,
+    cooldownMs: 15000,
+    validWhile: "below-half-health",
+  },
+  {
+    id: "falling-star",
+    name: "Falling Star",
+    classId: "knight",
+    slot: "talent",
+    targeting: { kind: "all-opponents" },
+    effects: [
+      { kind: "damage", channel: "physical", coefficient: 1.5 },
+      { kind: "apply-status", statusId: "stun", stunMs: 1000 },
+    ],
+    windUpMs: 700,
+    recoveryMs: 800,
+    cooldownMs: 12000,
+  },
+
+  // Wizard
+  {
+    id: "arc-spark",
+    name: "Arc Spark",
+    classId: "wizard",
+    slot: "basic",
+    targeting: { kind: "closest-opponent" },
+    effects: [{ kind: "damage", channel: "elemental", element: "lightning", coefficient: 1 }],
+    windUpMs: 450,
+    recoveryMs: 750,
+    cooldownMs: 0,
+  },
+  {
+    id: "cinder-bloom",
+    name: "Cinder Bloom",
+    classId: "wizard",
+    slot: "core",
+    targeting: { kind: "all-opponents" },
+    effects: [{ kind: "damage", channel: "elemental", element: "fire", coefficient: 0.8 }],
+    windUpMs: 600,
+    recoveryMs: 700,
+    cooldownMs: 7000,
+  },
+  {
+    id: "frost-lance",
+    name: "Frost Lance",
+    classId: "wizard",
+    slot: "core",
+    targeting: { kind: "closest-opponent" },
+    effects: [{ kind: "damage", channel: "elemental", element: "frost", coefficient: 1.8 }],
+    windUpMs: 800,
+    recoveryMs: 600,
+    cooldownMs: 8000,
+  },
+  {
+    id: "prism-ward",
+    name: "Prism Ward",
+    classId: "wizard",
+    slot: "core",
+    targeting: { kind: "party" },
+    effects: [{ kind: "apply-status", statusId: "warded" }],
+    windUpMs: 300,
+    recoveryMs: 500,
+    cooldownMs: 12000,
+    validWhile: "status-absent",
+  },
+  {
+    id: "thunder-ring",
+    name: "Thunder Ring",
+    classId: "wizard",
+    slot: "core",
+    targeting: { kind: "all-opponents" },
+    effects: [
+      { kind: "damage", channel: "elemental", element: "lightning", coefficient: 0.6 },
+      { kind: "apply-status", statusId: "stun", stunMs: 1000 },
+    ],
+    windUpMs: 500,
+    recoveryMs: 800,
+    cooldownMs: 11000,
+  },
+  {
+    id: "starfall",
+    name: "Starfall",
+    classId: "wizard",
+    slot: "talent",
+    targeting: { kind: "all-opponents" },
+    effects: [{ kind: "damage", channel: "elemental", element: "fire", coefficient: 1.6 }],
+    windUpMs: 900,
+    recoveryMs: 800,
+    cooldownMs: 14000,
+  },
+  {
+    id: "prismatic-shelter",
+    name: "Prismatic Shelter",
+    classId: "wizard",
+    slot: "talent",
+    targeting: { kind: "party" },
+    effects: [{ kind: "apply-status", statusId: "sheltered" }],
+    windUpMs: 400,
+    recoveryMs: 600,
+    cooldownMs: 15000,
+  },
+
+  // Priest
+  {
+    id: "sun-mote",
+    name: "Sun Mote",
+    classId: "priest",
+    slot: "basic",
+    targeting: { kind: "closest-opponent" },
+    effects: [{ kind: "damage", channel: "elemental", element: "light", coefficient: 1 }],
+    windUpMs: 500,
+    recoveryMs: 800,
+    cooldownMs: 0,
+  },
+  {
+    id: "mending-light",
+    name: "Mending Light",
+    classId: "priest",
+    slot: "core",
+    targeting: { kind: "lowest-health-ally" },
+    effects: [{ kind: "heal", coefficient: 1.4 }],
+    windUpMs: 450,
+    recoveryMs: 550,
+    cooldownMs: 5000,
+  },
+  {
+    id: "dawn-recall",
+    name: "Dawn Recall",
+    classId: "priest",
+    slot: "core",
+    targeting: { kind: "first-knocked-out-ally" },
+    effects: [{ kind: "revive", coefficient: 2 }],
+    windUpMs: 1200,
+    recoveryMs: 800,
+    cooldownMs: 20000,
+  },
+  {
+    id: "war-hymn",
+    name: "War Hymn",
+    classId: "priest",
+    slot: "core",
+    targeting: { kind: "party" },
+    effects: [{ kind: "apply-status", statusId: "inspired" }],
+    windUpMs: 400,
+    recoveryMs: 600,
+    cooldownMs: 14000,
+    validWhile: "status-absent",
+  },
+  {
+    id: "judgment",
+    name: "Judgment",
+    classId: "priest",
+    slot: "core",
+    targeting: { kind: "closest-opponent" },
+    effects: [{ kind: "damage", channel: "elemental", element: "light", coefficient: 1.7 }],
+    windUpMs: 700,
+    recoveryMs: 600,
+    cooldownMs: 7000,
+  },
+  {
+    id: "moonwell",
+    name: "Moonwell",
+    classId: "priest",
+    slot: "talent",
+    targeting: { kind: "party" },
+    effects: [{ kind: "heal", coefficient: 1 }],
+    windUpMs: 800,
+    recoveryMs: 700,
+    cooldownMs: 12000,
+    validWhile: "any-ally-missing-health",
+  },
+  {
+    id: "sunlance",
+    name: "Sunlance",
+    classId: "priest",
+    slot: "talent",
+    targeting: { kind: "closest-opponent" },
+    effects: [
+      { kind: "damage", channel: "elemental", element: "light", coefficient: 2.5 },
+      { kind: "apply-status", statusId: "exposed" },
+    ],
+    windUpMs: 800,
+    recoveryMs: 700,
+    cooldownMs: 12000,
+  },
+
+  // Hunter
+  {
+    id: "quickshot",
+    name: "Quickshot",
+    classId: "hunter",
+    slot: "basic",
+    targeting: { kind: "closest-opponent" },
+    effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
+    windUpMs: 300,
+    recoveryMs: 550,
+    cooldownMs: 0,
+  },
+  {
+    id: "pinpoint-shot",
+    name: "Pinpoint Shot",
+    classId: "hunter",
+    slot: "core",
+    targeting: { kind: "closest-opponent" },
+    effects: [{ kind: "damage", channel: "physical", coefficient: 1.9 }],
+    windUpMs: 650,
+    recoveryMs: 550,
+    cooldownMs: 7000,
+  },
+  {
+    id: "barbed-arrow",
+    name: "Barbed Arrow",
+    classId: "hunter",
+    slot: "core",
+    targeting: { kind: "closest-opponent" },
+    effects: [
+      { kind: "damage", channel: "physical", coefficient: 0.9 },
+      { kind: "apply-status", statusId: "riven" },
+    ],
+    windUpMs: 400,
+    recoveryMs: 550,
+    cooldownMs: 10000,
+    validWhile: "status-absent",
+  },
+  {
+    id: "split-volley",
+    name: "Split Volley",
+    classId: "hunter",
+    slot: "core",
+    targeting: { kind: "all-opponents" },
+    effects: [{ kind: "damage", channel: "physical", coefficient: 0.75 }],
+    windUpMs: 550,
+    recoveryMs: 650,
+    cooldownMs: 7000,
+  },
+  {
+    id: "snareburst",
+    name: "Snareburst",
+    classId: "hunter",
+    slot: "core",
+    targeting: { kind: "all-opponents" },
+    effects: [
+      { kind: "damage", channel: "physical", coefficient: 0.55 },
+      { kind: "apply-status", statusId: "stun", stunMs: 1200 },
+    ],
+    windUpMs: 450,
+    recoveryMs: 700,
+    cooldownMs: 12000,
+  },
+  {
+    id: "heartseeker",
+    name: "Heartseeker",
+    classId: "hunter",
+    slot: "talent",
+    targeting: { kind: "closest-opponent" },
+    effects: [{ kind: "damage", channel: "physical", coefficient: 2.8 }],
+    windUpMs: 850,
+    recoveryMs: 650,
+    cooldownMs: 13000,
+  },
+  {
+    id: "moonwire-trap",
+    name: "Moonwire Trap",
+    classId: "hunter",
+    slot: "talent",
+    targeting: { kind: "all-opponents" },
+    effects: [
+      { kind: "damage", channel: "physical", coefficient: 0.8 },
+      { kind: "apply-status", statusId: "stun", stunMs: 2000 },
+    ],
+    windUpMs: 650,
+    recoveryMs: 750,
+    cooldownMs: 15000,
+  },
+];
