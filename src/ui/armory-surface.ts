@@ -25,6 +25,10 @@ import {
 } from "./equipment-format";
 import { bindPressable } from "./keyboard";
 import { effectiveLoadout, effectiveTalentState } from "./loadout-surface";
+import {
+  isEquipmentIcons34Prototype,
+  prototypeIconUrl,
+} from "./prototype-equipment-icons-34";
 
 const ROSTER: ClassId[] = ["knight", "wizard", "priest", "hunter"];
 const SLOTS: EquipmentSlotId[] = ["weapon", "armor", "charm"];
@@ -38,6 +42,8 @@ export interface ArmorySurfaceOptions {
   content: Content;
   onCommand?: (command: TileCommand) => void;
   onBadgeChange?: (visible: boolean) => void;
+  /** PROTOTYPE #125 — when true, render native 34×34 Equipment Base icons. */
+  equipmentIcons34Prototype?: boolean;
 }
 
 type ArmoryView = "collection" | "detail" | "compare";
@@ -105,8 +111,26 @@ export function mountArmorySurface(
     publish({ cmd: "markSeen", args: [[dropId]] });
   }
 
+  const useIcons34 = options.equipmentIcons34Prototype === true || isEquipmentIcons34Prototype();
+
   function renderDropIconChip(container: HTMLElement, drop: DropInstance): void {
     const base = equipmentBaseForDrop(drop, content);
+    if (useIcons34) {
+      const chip = document.createElement("span");
+      chip.className = "equipment-icon-chip equipment-icon-chip--native-34";
+      chip.dataset["prototypeIcon"] = "equipment-icons-34";
+      chip.setAttribute("aria-label", `${base.name} icon (34×34 prototype)`);
+      const img = document.createElement("img");
+      img.className = "equipment-icon-img";
+      img.src = prototypeIconUrl(base.iconKey);
+      img.alt = "";
+      img.width = 34;
+      img.height = 34;
+      img.decoding = "async";
+      chip.append(img);
+      container.append(chip);
+      return;
+    }
     const chip = document.createElement("span");
     chip.className = "equipment-icon-chip interim-equipment-icon";
     chip.dataset["interimIcon"] = "issue-58";
@@ -766,8 +790,14 @@ export function mountArmorySurface(
 
     const interimNote = document.createElement("p");
     interimNote.className = "armory-interim-icon-note";
-    interimNote.dataset["interimIconNote"] = "issue-58";
-    interimNote.textContent = "Interim text-chip icons stand in for equipment art until slice #58.";
+    if (useIcons34) {
+      interimNote.dataset["prototypeIconNote"] = "equipment-icons-34";
+      interimNote.textContent =
+        "PROTOTYPE #125 — native 34×34 Equipment Base icons (compact source → Stage-2 build).";
+    } else {
+      interimNote.dataset["interimIconNote"] = "issue-58";
+      interimNote.textContent = "Interim text-chip icons stand in for equipment art until slice #58.";
+    }
     root.append(interimNote);
 
     renderSlotStrip(snapshot, root);

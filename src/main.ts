@@ -1,6 +1,7 @@
 import { createEngine, type Engine } from "./core/engine";
 import { buildContent } from "./data";
 import type { Content } from "./core/types";
+import { cloneSnapshot } from "./core/snapshot";
 import { bootTile } from "./ui/boot";
 import { createBusEndpoint, type BusEndpoint, type TileCommand } from "./ui/bus";
 import { mountBattleTile } from "./ui/battle-tile";
@@ -10,6 +11,10 @@ import { startPump, type PumpController } from "./ui/pump";
 import type { TileShell } from "./ui/tile-shell-types";
 import { ARMORY_BADGE_EVENT } from "./ui/presentation";
 import type { EngineEvent } from "./core/events";
+import {
+  isEquipmentIcons34Prototype,
+  prototypeEquipmentIconDrops,
+} from "./ui/prototype-equipment-icons-34";
 
 export { TILE_HEIGHT, TILE_WIDTH } from "./ui/battle-tile";
 
@@ -71,9 +76,12 @@ function applyTileCommand(engine: Engine, command: TileCommand): EngineEvent[] {
 
 export function mountDockShell(root: HTMLElement): { destroy(): void } {
   let bus: BusEndpoint;
+  const content = buildContent();
+  const icons34 = isEquipmentIcons34Prototype();
 
   const dock = mountManagementDock(root, {
-    content: buildContent(),
+    content,
+    ...(icons34 ? { initialTab: "armory" as const, equipmentIcons34Prototype: true } : {}),
     onClose: () => {
       bus.publish({ type: "dock-closed" });
     },
@@ -103,6 +111,13 @@ export function mountDockShell(root: HTMLElement): { destroy(): void } {
 
   // Announce ourselves so the tile answers with a snapshot to render.
   bus.publish({ type: "dock-opened" });
+
+  // PROTOTYPE #125 — standalone dock review without a live tile bus.
+  if (icons34) {
+    const seeded = cloneSnapshot(createEngine(content, undefined, 42).snapshot());
+    seeded.progression.armory = prototypeEquipmentIconDrops();
+    dock.render(seeded);
+  }
 
   return {
     destroy() {

@@ -29,6 +29,8 @@ export interface ManagementDockOptions {
   initialTab?: DockTabId;
   onClose?: () => void;
   onCommand?: (command: TileCommand) => void;
+  /** PROTOTYPE #125 */
+  equipmentIcons34Prototype?: boolean;
 }
 
 function tabIndex(tab: DockTabId): number {
@@ -159,6 +161,9 @@ export function mountManagementDock(
   });
   const armorySurface = mountArmorySurface(armoryRoot, {
     content: options.content,
+    ...(options.equipmentIcons34Prototype === true
+      ? { equipmentIcons34Prototype: true as const }
+      : {}),
     onCommand: (command) => {
       options.onCommand?.(command);
     },
