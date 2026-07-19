@@ -1,0 +1,172 @@
+{
+  "knight_slash": {
+    "frame_size": [
+      30,
+      30
+    ],
+    "palette": "moonberry-glow@1",
+    "anchor": "strike_target",
+    "anchor_dx": -15,
+    "strike_dy": -26,
+    "align_to": "impact_expected",
+    "cues_ms": {
+      "impact_expected": 120
+    },
+    "total_ms": 250,
+    "frames": [
+      {
+        "file": "knight_slash_0.png",
+        "duration_ms": 60,
+        "sha256": "6e049611adb67c7010a3ad7a806d173c0fe124deb3b385125f709ad843aea7cd",
+        "opaque_px": 86
+      },
+      {
+        "file": "knight_slash_1.png",
+        "duration_ms": 60,
+        "sha256": "6a450247c30c60e5c8430145d876c03499ec333463038f887f2a525459ab0151",
+        "opaque_px": 97
+      },
+      {
+        "file": "knight_slash_2.png",
+        "duration_ms": 60,
+        "sha256": "bdfcb08b547116d0e2b0d73988021de41f023a9f446ad1d7444c99c33d88b68b",
+        "opaque_px": 116
+      },
+      {
+        "file": "knight_slash_3.png",
+        "duration_ms": 70,
+        "sha256": "5f0e9ccb51ffe762e65e927569fd452edbc7b4b6f32e477d660237c3b196ae1f",
+        "opaque_px": 93
+      }
+    ],
+    "source": {
+      "still": "knight_slash.png",
+      "sha256": "143bd46ee0b38c5a4b29b511ec2d429f6a7fd4b697213ee63cab5fbe45aab74e",
+      "authored_by": "effects/author.py",
+      "generator": null
+    }
+  },
+  "knight_impact": {
+    "frame_size": [
+      23,
+      23
+    ],
+    "palette": "moonberry-glow@1",
+    "anchor": "strike_target",
+    "anchor_dx": 0,
+    "strike_dy": -26,
+    "align_to": "impact_expected",
+    "cues_ms": {
+      "impact_expected": 0
+    },
+    "total_ms": 180,
+    "frames": [
+      {
+        "file": "knight_impact_0.png",
+        "duration_ms": 50,
+        "sha256": "0c9a84e4521c7b1f53ae35c4e192037d28878f153961b8142095f118acbc33bf",
+        "opaque_px": 39
+      },
+      {
+        "file": "knight_impact_1.png",
+        "duration_ms": 70,
+        "sha256": "82ba274fa5f1604db914b699f7f45d21194ef6f722149d7c6e4dabbb75e01f10",
+        "opaque_px": 128
+      },
+      {
+        "file": "knight_impact_2.png",
+        "duration_ms": 60,
+        "sha256": "a508187a0f19d1e0171b9fa9380f6bbe3b0948a74134a384d18f95f3a56a823e",
+        "opaque_px": 85
+      }
+    ],
+    "source": {
+      "still": "knight_impact.png",
+      "sha256": "82ba274fa5f1604db914b699f7f45d21194ef6f722149d7c6e4dabbb75e01f10",
+      "authored_by": "effects/author.py",
+      "generator": null
+    }
+  },
+  "wizard_bolt": {
+    "frame_size": [
+      11,
+      11
+    ],
+    "palette": "moonberry-glow@1",
+    "anchor": "lane_travel",
+    "anchor_dx": 0,
+    "strike_dy": -26,
+    "align_to": "release_projectile",
+    "cues_ms": {
+      "release_projectile": 0
+    },
+    "total_ms": 100,
+    "frames": [
+      {
+        "file": "wizard_bolt_0.png",
+        "duration_ms": 50,
+        "sha256": "6363da7b77c841c26b88dceb3969da0a30a2c8242dc7c8a81abacf525a6570e8",
+        "opaque_px": 47
+      },
+      {
+        "file": "wizard_bolt_1.png",
+        "duration_ms": 50,
+        "sha256": "92dcca598c2159a68ce90973e6b716e5d32caaf7d532ce0c8f742c632d53d843",
+        "opaque_px": 46
+      }
+    ],
+    "source": {
+      "still": "wizard_bolt.png",
+      "sha256": "6363da7b77c841c26b88dceb3969da0a30a2c8242dc7c8a81abacf525a6570e8",
+      "authored_by": "effects/author.py",
+      "generator": null
+    }
+  },
+  "wizard_impact": {
+    "frame_size": [
+      27,
+      27
+    ],
+    "palette": "moonberry-glow@1",
+    "anchor": "strike_target",
+    "anchor_dx": 0,
+    "strike_dy": -26,
+    "align_to": "impact_expected",
+    "cues_ms": {
+      "impact_expected": 0
+    },
+    "total_ms": 220,
+    "frames": [
+      {
+        "file": "wizard_impact_0.png",
+        "duration_ms": 50,
+        "sha256": "16170f3cefbdaa388bba7eb311e79a5a0eb68958fa95cc28be8845c70c8894d2",
+        "opaque_px": 52
+      },
+      {
+        "file": "wizard_impact_1.png",
+        "duration_ms": 60,
+        "sha256": "ae5845d8b5633cf0e87d69448e1decdeecdbd22aecb1d4734d3317a77431cf93",
+        "opaque_px": 156
+      },
+      {
+        "file": "wizard_impact_2.png",
+        "duration_ms": 60,
+        "sha256": "cb53759c523f3e05d6f9de3ea084e09135358f5c169b8ad291fb9acc3ee4aab3",
+        "opaque_px": 205
+      },
+      {
+        "file": "wizard_impact_3.png",
+        "duration_ms": 50,
+        "sha256": "9a703101e274b827e2df65d6c4807b69514b2c9436776d4ad8f8caa10259942c",
+        "opaque_px": 100
+      }
+    ],
+    "source": {
+      "still": "wizard_impact.png",
+      "sha256": "cb53759c523f3e05d6f9de3ea084e09135358f5c169b8ad291fb9acc3ee4aab3",
+      "authored_by": "effects/author.py",
+      "generator": null
+    }
+  }
+}
