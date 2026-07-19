@@ -15,7 +15,7 @@ import { validateContent } from "./validate-content";
 describe("domain content types", () => {
   it("fixture Content satisfies the Content interface at compile time", () => {
     const content: Content = fixtureContent;
-    expect(content.classes).toHaveLength(2);
+    expect(content.classes).toHaveLength(3);
   });
 
   it("carries load-bearing field names from the content contract", () => {

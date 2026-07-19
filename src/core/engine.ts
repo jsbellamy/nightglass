@@ -1,15 +1,21 @@
 import {
+  chooseFirstValidAbility,
+  combatantById,
+  effectiveStats,
+  healAmount,
+  isCombatantStunned,
   livingCombatants,
   mitigateDamage,
   mitigationForChannel,
-  opponentBasicAbility,
+  opponentAbilityCandidates,
   opponentCombatants,
-  partyBasicAbility,
+  partyAbilityCandidates,
   partyCombatants,
   powerForStats,
   rawDamageFromEffect,
-  revalidateTarget,
-  selectTarget,
+  revalidateTargets,
+  resolveTargets,
+  shouldApplyStun,
 } from "./combat";
 import type { EngineEvent, EngineEventInput } from "./events";
 import { initialLootRngState } from "./rng";
@@ -26,11 +32,13 @@ import type {
   Content,
   OpponentDef,
   StageDef,
+  StatusEffectDef,
 } from "./types";
 
 export const SCHEMA_VERSION = 1;
 const WAVE_TRANSITION_MS = 2_000;
 const DEFEAT_HOLD_MS = 2_000;
+const REVIVAL_RECOVERY_MS = 1_000;
 
 const FORMATION_SLOTS = ["front", "middle", "back"] as const;
 
@@ -38,6 +46,8 @@ export interface Engine {
   advanceBy(ms: number): EngineEvent[];
   snapshot(): Snapshot;
   selectStage(stage: 1 | 2 | 3): EngineEvent[];
+  setLoadout(classId: ClassId, loadout: [string, string, string]): void;
+  setFormation(order: [ClassId, ClassId, ClassId]): void;
 }
 
 interface EngineState {
@@ -58,6 +68,17 @@ interface ContentIndex {
   opponentsById: Map<string, OpponentDef>;
   stagesById: Map<1 | 2 | 3, StageDef>;
   abilitiesById: Map<string, AbilityDef>;
+  statusesById: Map<string, StatusEffectDef>;
+}
+
+interface PendingImpactChange {
+  targetId: string;
+  healthDelta: number;
+  knockedOut: boolean;
+  revived: boolean;
+  revivedHealth?: number;
+  statusesToApply: Array<{ statusId: string; expiresAtMs: number }>;
+  statusesToRefresh: Array<{ statusId: string; expiresAtMs: number }>;
 }
 
 function indexContent(content: Content): ContentIndex {
@@ -67,7 +88,14 @@ function indexContent(content: Content): ContentIndex {
     opponentsById: new Map(content.opponents.map((entry) => [entry.id, entry])),
     stagesById: new Map(content.stages.map((entry) => [entry.id, entry])),
     abilitiesById: new Map(content.abilities.map((entry) => [entry.id, entry])),
+    statusesById: new Map(content.statuses.map((entry) => [entry.id, entry])),
   };
+}
+
+function defaultLoadouts(content: Content): Record<ClassId, [string, string, string]> {
+  return Object.fromEntries(
+    content.classes.map((entry) => [entry.id, [...entry.defaultLoadout] as [string, string, string]]),
+  ) as Record<ClassId, [string, string, string]>;
 }
 
 function defaultProgression(content: Content): ProgressionState {
@@ -84,6 +112,7 @@ function defaultProgression(content: Content): ProgressionState {
     party: [pick(0), pick(1), pick(2)],
     reserve: pick(3),
     characterXp,
+    loadouts: defaultLoadouts(content),
   };
 }
 
@@ -97,6 +126,7 @@ function restoreProgression(
     party: saved.party,
     reserve: saved.reserve,
     characterXp: { ...defaults.characterXp, ...saved.characterXp },
+    loadouts: { ...defaults.loadouts, ...saved.loadouts },
   };
 }
 
@@ -185,8 +215,17 @@ function createAttempt(
   index: ContentIndex,
   stage: 1 | 2 | 3,
   encounter: 1 | 2 | 3 = 1,
+  preserveParty?: CombatantState[],
 ): AttemptState {
   const partyMembers = state.progression.party.map((classId, slotIndex) => {
+    const preserved = preserveParty?.find((combatant) => combatant.defId === classId);
+    if (preserved) {
+      const slot = FORMATION_SLOTS[slotIndex] ?? "back";
+      return {
+        ...structuredClone(preserved),
+        entityId: `party:${classId}:${slot}`,
+      };
+    }
     const classKit = index.classesById.get(classId);
     if (!classKit) {
       throw new Error(`Missing Class Kit ${classId}`);
@@ -231,34 +270,53 @@ function startFreshAttempt(
   });
 }
 
-function abilityForCombatant(index: ContentIndex, combatant: CombatantState): AbilityDef {
+function statsForCombatant(
+  index: ContentIndex,
+  combatant: CombatantState,
+): ReturnType<typeof effectiveStats> {
+  let base;
   if (combatant.side === "party") {
     const classKit = index.classesById.get(combatant.defId as ClassId);
     if (!classKit) {
       throw new Error(`Missing Class Kit ${combatant.defId}`);
     }
-    return partyBasicAbility(index.content, classKit);
+    base = classKit.base;
+  } else {
+    const opponent = index.opponentsById.get(combatant.defId);
+    if (!opponent) {
+      throw new Error(`Missing opponent ${combatant.defId}`);
+    }
+    base = opponent.base;
   }
-  const opponent = index.opponentsById.get(combatant.defId);
-  if (!opponent) {
-    throw new Error(`Missing opponent ${combatant.defId}`);
-  }
-  return opponentBasicAbility(index.content, opponent);
+  return effectiveStats(base, combatant.statuses, index.statusesById);
 }
 
-function statsForCombatant(index: ContentIndex, combatant: CombatantState) {
+function chooseAbilityForCombatant(
+  index: ContentIndex,
+  state: EngineState,
+  combatant: CombatantState,
+): AbilityDef | null {
   if (combatant.side === "party") {
     const classKit = index.classesById.get(combatant.defId as ClassId);
     if (!classKit) {
       throw new Error(`Missing Class Kit ${combatant.defId}`);
     }
-    return classKit.base;
+    const loadout = state.progression.loadouts[combatant.defId as ClassId];
+    const candidates = partyAbilityCandidates(
+      index.content,
+      classKit,
+      loadout,
+      index.abilitiesById,
+    );
+    return chooseFirstValidAbility(candidates, combatant, state.attempt!.combatants, state.simNowMs);
   }
+
   const opponent = index.opponentsById.get(combatant.defId);
   if (!opponent) {
     throw new Error(`Missing opponent ${combatant.defId}`);
   }
-  return opponent.base;
+  const candidates = opponentAbilityCandidates(index.content, opponent, index.abilitiesById);
+  return chooseFirstValidAbility(candidates, combatant, state.attempt!.combatants, state.simNowMs);
 }
 
 function chooseActions(
@@ -275,15 +333,17 @@ function chooseActions(
     if (combatant.knockedOut || combatant.action) {
       continue;
     }
-
-    const ability = abilityForCombatant(index, combatant);
-    const readyAt = combatant.cooldownReadyAtMs[ability.id] ?? 0;
-    if (readyAt > state.simNowMs) {
+    if (isCombatantStunned(combatant, index.statusesById)) {
       continue;
     }
 
-    const target = selectTarget(ability.targeting, combatant, attempt.combatants);
-    if (!target) {
+    const ability = chooseAbilityForCombatant(index, state, combatant);
+    if (!ability) {
+      continue;
+    }
+
+    const targets = resolveTargets(ability.targeting, combatant, attempt.combatants);
+    if (targets.length === 0) {
       continue;
     }
 
@@ -294,7 +354,7 @@ function chooseActions(
       startedAtMs: state.simNowMs,
       impactAtMs,
       endsAtMs,
-      targetIds: [target.entityId],
+      targetIds: targets.map((target) => target.entityId),
       impactResolved: false,
     };
     emit(state, events, {
@@ -302,13 +362,56 @@ function chooseActions(
       entityId: combatant.entityId,
       abilityId: ability.id,
       impactAtMs,
-      targetIds: [target.entityId],
+      targetIds: targets.map((target) => target.entityId),
     });
   }
 }
 
-function resolveStatusExpiries(_state: EngineState, _events: EngineEvent[]): void {
-  // Interim slice: no active Status Effects (#36).
+function startCooldown(
+  actor: CombatantState,
+  ability: AbilityDef,
+  nowMs: number,
+): void {
+  if (ability.cooldownMs > 0) {
+    actor.cooldownReadyAtMs[ability.id] = nowMs + ability.cooldownMs;
+  }
+}
+
+function resolveStatusExpiries(state: EngineState, events: EngineEvent[]): void {
+  const attempt = state.attempt;
+  if (!attempt) {
+    return;
+  }
+
+  for (const combatant of attempt.combatants) {
+    const remaining: typeof combatant.statuses = [];
+    for (const status of combatant.statuses) {
+      if (status.expiresAtMs === state.simNowMs) {
+        emit(state, events, {
+          type: "status-expired",
+          entityId: combatant.entityId,
+          statusId: status.statusId,
+        });
+      } else {
+        remaining.push(status);
+      }
+    }
+    combatant.statuses = remaining;
+  }
+}
+
+function applyStatus(
+  combatant: CombatantState,
+  statusId: string,
+  expiresAtMs: number,
+): "applied" | "refreshed" {
+  const existing = combatant.statuses.find((status) => status.statusId === statusId);
+  if (existing) {
+    existing.expiresAtMs = expiresAtMs;
+    return "refreshed";
+  }
+  combatant.statuses.push({ statusId, expiresAtMs });
+  return "applied";
 }
 
 function resolveImpacts(state: EngineState, index: ContentIndex, events: EngineEvent[]): void {
@@ -325,7 +428,31 @@ function resolveImpacts(state: EngineState, index: ContentIndex, events: EngineE
     return;
   }
 
-  const pendingDamage: Array<{ target: CombatantState; amount: number }> = [];
+  const preHealth = new Map(
+    attempt.combatants.map((combatant) => [combatant.entityId, combatant.health]),
+  );
+  const preKnockedOut = new Map(
+    attempt.combatants.map((combatant) => [combatant.entityId, combatant.knockedOut]),
+  );
+
+  const pendingByTarget = new Map<string, PendingImpactChange>();
+
+  function ensurePending(targetId: string): PendingImpactChange {
+    const existing = pendingByTarget.get(targetId);
+    if (existing) {
+      return existing;
+    }
+    const created: PendingImpactChange = {
+      targetId,
+      healthDelta: 0,
+      knockedOut: false,
+      revived: false,
+      statusesToApply: [],
+      statusesToRefresh: [],
+    };
+    pendingByTarget.set(targetId, created);
+    return created;
+  }
 
   for (const actor of due) {
     const action = actor.action;
@@ -335,49 +462,101 @@ function resolveImpacts(state: EngineState, index: ContentIndex, events: EngineE
     action.impactResolved = true;
 
     const ability =
-      index.abilitiesById.get(action.abilityId) ?? abilityForCombatant(index, actor);
-    const readyAt = actor.cooldownReadyAtMs[ability.id] ?? 0;
-    if (readyAt <= state.simNowMs && ability.cooldownMs > 0) {
-      actor.cooldownReadyAtMs[ability.id] = state.simNowMs + ability.cooldownMs;
-    }
-
-    const target = revalidateTarget(
-      ability.targeting,
-      actor,
-      attempt.combatants,
-      action.targetIds[0],
-    );
-
-    const results: Extract<EngineEvent, { type: "impact" }>["results"] = [];
-    if (!target) {
-      emit(state, events, {
-        type: "impact",
-        entityId: actor.entityId,
-        abilityId: action.abilityId,
-        results,
-      });
+      index.abilitiesById.get(action.abilityId) ??
+      chooseAbilityForCombatant(index, state, actor);
+    if (!ability) {
       continue;
     }
 
-    const actorStats = statsForCombatant(index, actor);
-    const targetStats = statsForCombatant(index, target);
+    startCooldown(actor, ability, state.simNowMs);
 
-    for (const effect of ability.effects) {
-      if (effect.kind !== "damage") {
-        continue;
+    const targets = revalidateTargets(
+      ability.targeting,
+      actor,
+      attempt.combatants,
+      action.targetIds,
+    );
+
+    const results: Extract<EngineEvent, { type: "impact" }>["results"] = [];
+    const actorStats = statsForCombatant(index, actor);
+
+    for (const target of targets) {
+      const targetStats = statsForCombatant(index, target);
+      const preTargetHealth = preHealth.get(target.entityId) ?? target.health;
+      const preTargetKnockedOut = preKnockedOut.get(target.entityId) ?? target.knockedOut;
+      let projectedHealth = preTargetHealth;
+
+      for (const effect of ability.effects) {
+        if (effect.kind === "damage") {
+          const channel = effect.channel ?? "physical";
+          const raw = rawDamageFromEffect(powerForStats(actorStats, channel), effect);
+          const amount = mitigateDamage(raw, mitigationForChannel(targetStats, channel));
+          projectedHealth = Math.max(0, projectedHealth - amount);
+          results.push({
+            targetId: target.entityId,
+            kind: "damage",
+            channel,
+            ...(effect.element ? { element: effect.element } : {}),
+            amount,
+            healthAfter: projectedHealth,
+          });
+          const pending = ensurePending(target.entityId);
+          pending.healthDelta -= amount;
+        }
+
+        if (effect.kind === "heal" && !preTargetKnockedOut) {
+          const amount = healAmount(powerForStats(actorStats, "elemental"), effect);
+          const capped = Math.min(target.maxHealth, projectedHealth + amount);
+          const applied = capped - projectedHealth;
+          projectedHealth = capped;
+          results.push({
+            targetId: target.entityId,
+            kind: "heal",
+            amount: applied,
+            healthAfter: projectedHealth,
+          });
+          const pending = ensurePending(target.entityId);
+          pending.healthDelta += applied;
+        }
+
+        if (effect.kind === "revive" && preTargetKnockedOut) {
+          const amount = healAmount(powerForStats(actorStats, "elemental"), effect);
+          projectedHealth = amount;
+          results.push({
+            targetId: target.entityId,
+            kind: "heal",
+            amount,
+            healthAfter: projectedHealth,
+          });
+          const pending = ensurePending(target.entityId);
+          pending.revived = true;
+          pending.revivedHealth = amount;
+          pending.knockedOut = false;
+        }
+
+        if (effect.kind === "apply-status") {
+          const statusId = effect.statusId;
+          if (!statusId) {
+            continue;
+          }
+          const statusDef = index.statusesById.get(statusId);
+          if (!statusDef) {
+            continue;
+          }
+          if (statusDef.kind === "stun" && !shouldApplyStun(target, index.opponentsById)) {
+            continue;
+          }
+          const durationMs = effect.stunMs ?? statusDef.durationMs;
+          const expiresAtMs = state.simNowMs + durationMs;
+          const pending = ensurePending(target.entityId);
+          const existing = target.statuses.find((status) => status.statusId === statusId);
+          if (existing) {
+            pending.statusesToRefresh.push({ statusId, expiresAtMs });
+          } else {
+            pending.statusesToApply.push({ statusId, expiresAtMs });
+          }
+        }
       }
-      const channel = effect.channel ?? "physical";
-      const raw = rawDamageFromEffect(powerForStats(actorStats, channel), effect);
-      const amount = mitigateDamage(raw, mitigationForChannel(targetStats, channel));
-      pendingDamage.push({ target, amount });
-      results.push({
-        targetId: target.entityId,
-        kind: "damage",
-        channel,
-        ...(effect.element ? { element: effect.element } : {}),
-        amount,
-        healthAfter: Math.max(0, target.health - amount),
-      });
     }
 
     emit(state, events, {
@@ -388,21 +567,90 @@ function resolveImpacts(state: EngineState, index: ContentIndex, events: EngineE
     });
   }
 
-  for (const change of pendingDamage) {
-    change.target.health = Math.max(0, change.target.health - change.amount);
+  for (const [targetId, pending] of pendingByTarget) {
+    const target = combatantById(attempt.combatants, targetId);
+    if (!target) {
+      continue;
+    }
+
+    if (pending.revived) {
+      target.knockedOut = false;
+      target.health = pending.revivedHealth ?? target.health;
+      target.action = {
+        abilityId: "revival-recovery",
+        startedAtMs: state.simNowMs,
+        impactAtMs: state.simNowMs,
+        endsAtMs: state.simNowMs + REVIVAL_RECOVERY_MS,
+        targetIds: [],
+        impactResolved: true,
+      };
+      emit(state, events, {
+        type: "revived",
+        entityId: target.entityId,
+        health: target.health,
+      });
+    } else if (pending.healthDelta !== 0) {
+      target.health = Math.max(0, target.health + pending.healthDelta);
+    }
+
+    for (const status of pending.statusesToApply) {
+      applyStatus(target, status.statusId, status.expiresAtMs);
+      emit(state, events, {
+        type: "status-applied",
+        entityId: target.entityId,
+        statusId: status.statusId,
+        expiresAtMs: status.expiresAtMs,
+      });
+    }
+    for (const status of pending.statusesToRefresh) {
+      applyStatus(target, status.statusId, status.expiresAtMs);
+      emit(state, events, {
+        type: "status-applied",
+        entityId: target.entityId,
+        statusId: status.statusId,
+        expiresAtMs: status.expiresAtMs,
+      });
+    }
+  }
+
+  cancelStunnedWindUps(state, index);
+  resolveKnockouts(state, events);
+  evaluateEncounterOutcome(state, index, events);
+}
+
+function cancelStunnedWindUps(state: EngineState, index: ContentIndex): void {
+  const attempt = state.attempt;
+  if (!attempt) {
+    return;
   }
 
   for (const combatant of attempt.combatants) {
-    if (!combatant.knockedOut && combatant.health === 0) {
+    if (
+      combatant.action &&
+      !combatant.action.impactResolved &&
+      isCombatantStunned(combatant, index.statusesById)
+    ) {
+      combatant.action = null;
+    }
+  }
+}
+
+function resolveKnockouts(state: EngineState, events: EngineEvent[]): void {
+  const attempt = state.attempt;
+  if (!attempt) {
+    return;
+  }
+
+  for (const combatant of attempt.combatants) {
+    if (!combatant.knockedOut && combatant.health <= 0) {
       combatant.knockedOut = true;
+      combatant.health = 0;
       if (combatant.action && !combatant.action.impactResolved) {
         combatant.action = null;
       }
       emit(state, events, { type: "knockout", entityId: combatant.entityId });
     }
   }
-
-  evaluateEncounterOutcome(state, index, events);
 }
 
 function evaluateEncounterOutcome(
@@ -479,6 +727,82 @@ function completeRecoveries(state: EngineState): void {
   }
 }
 
+function unlockableAbilityIds(classKit: ClassKitDef): Set<string> {
+  return new Set([
+    ...classKit.coreAbilityIds,
+    ...classKit.talents.abilityRow,
+    classKit.basicAbilityId,
+  ]);
+}
+
+function applyPendingEdits(
+  state: EngineState,
+  index: ContentIndex,
+  events: EngineEvent[],
+  boundaryMs: number,
+): void {
+  if (state.pendingEdits.length === 0) {
+    return;
+  }
+
+  const attempt = state.attempt;
+  if (!attempt) {
+    return;
+  }
+
+  const partyCombatantStates = partyCombatants(attempt.combatants);
+  const byClassId = new Map(partyCombatantStates.map((combatant) => [combatant.defId, combatant]));
+
+  for (const edit of state.pendingEdits) {
+    if (edit.kind === "formation") {
+      state.progression.party = [...edit.order];
+      const reordered = edit.order.map((classId, slotIndex) => {
+        const existing = byClassId.get(classId);
+        if (!existing) {
+          throw new Error(`Formation edit references missing Party Member ${classId}`);
+        }
+        const slot = FORMATION_SLOTS[slotIndex] ?? "back";
+        return {
+          ...existing,
+          entityId: `party:${classId}:${slot}`,
+        };
+      });
+      attempt.combatants = [...reordered, ...opponentCombatants(attempt.combatants)];
+    }
+
+    if (edit.kind === "loadout") {
+      const classKit = index.classesById.get(edit.classId);
+      if (!classKit) {
+        throw new Error(`Missing Class Kit ${edit.classId}`);
+      }
+      const previous = state.progression.loadouts[edit.classId];
+      state.progression.loadouts[edit.classId] = [...edit.loadout];
+      const combatant = byClassId.get(edit.classId);
+      if (!combatant) {
+        continue;
+      }
+      const previousSet = new Set(previous);
+      for (const abilityId of edit.loadout) {
+        if (previousSet.has(abilityId)) {
+          continue;
+        }
+        const ability = index.abilitiesById.get(abilityId);
+        if (!ability) {
+          continue;
+        }
+        const existingReady = combatant.cooldownReadyAtMs[abilityId] ?? 0;
+        combatant.cooldownReadyAtMs[abilityId] = Math.max(
+          existingReady,
+          boundaryMs + ability.cooldownMs,
+        );
+      }
+    }
+  }
+
+  state.pendingEdits = [];
+  emit(state, events, { type: "config-applied" });
+}
+
 function finishWaveTransition(
   state: EngineState,
   index: ContentIndex,
@@ -492,6 +816,8 @@ function finishWaveTransition(
   ) {
     return;
   }
+
+  applyPendingEdits(state, index, events, state.simNowMs);
 
   const nextEncounter = (attempt.encounter + 1) as 1 | 2 | 3;
   const party = partyCombatants(attempt.combatants);
@@ -535,6 +861,9 @@ function nextBoundaryMs(state: EngineState): number | null {
   }
 
   for (const combatant of attempt.combatants) {
+    for (const status of combatant.statuses) {
+      boundaries.push(status.expiresAtMs);
+    }
     const action = combatant.action;
     if (!action) {
       continue;
@@ -586,6 +915,30 @@ function fromSnapshot(saved: Snapshot): EngineState {
     attempt: saved.attempt ? structuredClone(saved.attempt) : null,
     pendingEdits: structuredClone(saved.pendingEdits),
   };
+}
+
+function validateLoadout(
+  index: ContentIndex,
+  classId: ClassId,
+  loadout: [string, string, string],
+): void {
+  const classKit = index.classesById.get(classId);
+  if (!classKit) {
+    throw new Error(`Missing Class Kit ${classId}`);
+  }
+  const unlockable = unlockableAbilityIds(classKit);
+  const unique = new Set(loadout);
+  if (unique.size !== loadout.length) {
+    throw new Error(`Loadout for ${classId} must not contain duplicate Abilities`);
+  }
+  for (const abilityId of loadout) {
+    if (!unlockable.has(abilityId)) {
+      throw new Error(`Ability ${abilityId} is not unlocked for ${classId}`);
+    }
+    if (!index.abilitiesById.has(abilityId)) {
+      throw new Error(`Unknown Ability ${abilityId}`);
+    }
+  }
 }
 
 export function createEngine(
@@ -657,9 +1010,29 @@ export function createEngine(
     return events;
   }
 
+  function setLoadout(classId: ClassId, loadout: [string, string, string]): void {
+    validateLoadout(index, classId, loadout);
+    state.pendingEdits = state.pendingEdits.filter(
+      (edit) => !(edit.kind === "loadout" && edit.classId === classId),
+    );
+    state.pendingEdits.push({ kind: "loadout", classId, loadout });
+  }
+
+  function setFormation(order: [ClassId, ClassId, ClassId]): void {
+    const current = new Set(state.progression.party);
+    const next = new Set(order);
+    if (current.size !== next.size || [...current].some((classId) => !next.has(classId))) {
+      throw new Error("Formation edit must keep the same three Party Members");
+    }
+    state.pendingEdits = state.pendingEdits.filter((edit) => edit.kind !== "formation");
+    state.pendingEdits.push({ kind: "formation", order: [...order] });
+  }
+
   return {
     advanceBy,
     snapshot: () => toSnapshot(state, now),
     selectStage,
+    setLoadout,
+    setFormation,
   };
 }
