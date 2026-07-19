@@ -88,23 +88,30 @@ describe("Party surface", () => {
 
   it("queues party swap with a next-Attempt pending marker and applies on a fresh Attempt", async () => {
     const root = document.createElement("div");
+    const busChannel = `nightglass-test-${crypto.randomUUID()}`;
     const engine = createEngine(content, undefined, LOOT_SEED);
-    const tileBus = createBusEndpoint({
-      command: (message) => {
-        if (message.command.cmd === "setParty") {
-          engine.setParty(message.command.args[0].members, message.command.args[0].reserve);
-        }
-        if (message.command.cmd === "selectStage") {
-          engine.selectStage(message.command.args[0]);
-        }
-        tileBus.publish({ type: "snapshot", snapshot: engine.snapshot() });
+    const tileBus = createBusEndpoint(
+      {
+        command: (message) => {
+          if (message.command.cmd === "setParty") {
+            engine.setParty(message.command.args[0].members, message.command.args[0].reserve);
+          }
+          if (message.command.cmd === "selectStage") {
+            engine.selectStage(message.command.args[0]);
+          }
+          tileBus.publish({ type: "snapshot", snapshot: engine.snapshot() });
+        },
       },
-    });
-    const dockBus = createBusEndpoint({
-      snapshot: (message) => {
-        surface.render(message.snapshot);
+      busChannel,
+    );
+    const dockBus = createBusEndpoint(
+      {
+        snapshot: (message) => {
+          surface.render(message.snapshot);
+        },
       },
-    });
+      busChannel,
+    );
 
     const surface = mountPartySurface(root, {
       onCommand: (command) => {

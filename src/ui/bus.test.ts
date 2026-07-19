@@ -13,23 +13,30 @@ async function flushBus(): Promise<void> {
 
 describe("nightglass BroadcastChannel bus", () => {
   it("round-trips a dock command into a tile Snapshot broadcast", async () => {
+    const busChannel = `nightglass-test-${crypto.randomUUID()}`;
     const engine = createEngine(fixtureContent, undefined, 7);
     const tileSnapshot = vi.fn();
 
-    const tileBus = createBusEndpoint({
-      command: (message) => {
-        if (message.command.cmd === "selectStage") {
-          engine.selectStage(message.command.args[0]);
-          tileBus.publish({ type: "snapshot", snapshot: engine.snapshot() });
-        }
+    const tileBus = createBusEndpoint(
+      {
+        command: (message) => {
+          if (message.command.cmd === "selectStage") {
+            engine.selectStage(message.command.args[0]);
+            tileBus.publish({ type: "snapshot", snapshot: engine.snapshot() });
+          }
+        },
       },
-    });
+      busChannel,
+    );
 
-    const dockBus = createBusEndpoint({
-      snapshot: (message) => {
-        tileSnapshot(message.snapshot);
+    const dockBus = createBusEndpoint(
+      {
+        snapshot: (message) => {
+          tileSnapshot(message.snapshot);
+        },
       },
-    });
+      busChannel,
+    );
 
     dockBus.publish({ type: "command", command: { cmd: "selectStage", args: [1] } });
     await flushBus();
@@ -42,15 +49,19 @@ describe("nightglass BroadcastChannel bus", () => {
   });
 
   it("delivers pump batches with Snapshots to dock listeners", async () => {
+    const busChannel = `nightglass-test-${crypto.randomUUID()}`;
     const engine = createEngine(fixtureContent, undefined, 11);
     const received: BusMessage[] = [];
-    const dockBus = createBusEndpoint({
-      pump: (message) => {
-        received.push(message);
+    const dockBus = createBusEndpoint(
+      {
+        pump: (message) => {
+          received.push(message);
+        },
       },
-    });
+      busChannel,
+    );
 
-    const tileBus = createBusEndpoint({});
+    const tileBus = createBusEndpoint({}, busChannel);
     tileBus.publish({
       type: "pump",
       events: [],
