@@ -170,6 +170,7 @@ export function mountTileShell(root: HTMLElement, options: TileShellOptions = {}
   const busFactory = options.busFactory ?? createBusEndpoint;
 
   let bus: BusEndpoint | null = null;
+  let dockSubscribed = false;
 
   const tile = mountBattleTile(root, content, {
     onDockToggle: () => {
@@ -204,9 +205,11 @@ export function mountTileShell(root: HTMLElement, options: TileShellOptions = {}
       publishSnapshot();
     },
     "dock-closed"() {
+      dockSubscribed = false;
       void dockWindow.close();
     },
     "dock-opened"() {
+      dockSubscribed = true;
       void dockWindow.open();
       // A dock that just mounted has no state yet; the pump only publishes on
       // events, so without this it renders blank until combat next ticks.
@@ -249,12 +252,14 @@ export function mountTileShell(root: HTMLElement, options: TileShellOptions = {}
       frameMetrics.time("applyEvents", () =>
         tile.applyEvents(events, lastSnapshot!),
       );
-      const legality = frameMetrics.time("legality", () =>
-        serializeEngineLegality(engine, lastSnapshot!, content),
-      );
-      frameMetrics.time("publish", () =>
-        bus?.publish({ type: "pump", events, snapshot: lastSnapshot!, legality }),
-      );
+      if (dockSubscribed) {
+        const legality = frameMetrics.time("legality", () =>
+          serializeEngineLegality(engine, lastSnapshot!, content),
+        );
+        frameMetrics.time("publish", () =>
+          bus?.publish({ type: "pump", events, snapshot: lastSnapshot!, legality }),
+        );
+      }
     },
     render: () => {
       if (!lastSnapshot) {

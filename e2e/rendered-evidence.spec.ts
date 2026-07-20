@@ -6,6 +6,7 @@ import type { ClassId, EquipmentSlotId } from "../src/core/types";
 import { buildContent } from "../src/data";
 import { NIGHTGLASS_BUS_CHANNEL } from "../src/ui/bus";
 import { DOCK_HEIGHT, DOCK_WIDTH } from "../src/ui/dock-geometry";
+import { PUMP_INTERVAL_MS } from "../src/ui/pump";
 import {
   STATUS_LINE_HEIGHT,
   TILE_HEIGHT,
@@ -534,15 +535,19 @@ test.describe("rendered-output evidence seam", () => {
     const tileAlive = await tile.evaluate(() => document.querySelectorAll(".battle-tile").length);
     expect(tileAlive, "tile still mounted after dock close").toBe(beforeClose);
 
-    // Pump keeps publishing after the close crossed back.
+    // Tile sim keeps advancing after dock close; pump stops once dock-closed crosses back.
     const typesBefore = await readBusSpyTypes(tile);
     const pumpCountBefore = typesBefore.filter((t) => t === "pump").length;
     await expect
       .poll(async () => {
         const types = await readBusSpyTypes(tile);
-        return types.filter((t) => t === "pump").length;
+        return types.includes("dock-closed");
       }, { timeout: 3_000 })
-      .toBeGreaterThan(pumpCountBefore);
+      .toBe(true);
+    await tile.waitForTimeout(PUMP_INTERVAL_MS * 2);
+    const typesAfter = await readBusSpyTypes(tile);
+    const pumpCountAfter = typesAfter.filter((t) => t === "pump").length;
+    expect(pumpCountAfter, "no further pump after dock-closed").toBe(pumpCountBefore);
 
     expect(pageErrors, "page errors").toEqual([]);
     await context.close();
