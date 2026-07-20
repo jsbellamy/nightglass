@@ -236,7 +236,7 @@ export function mountPartySurface(
         const swapped = swapPartyMember(members, reserve, classId);
         options.onCommand?.({
           cmd: "setParty",
-          args: [{ members: swapped.members, reserve: swapped.reserve }],
+          args: [swapped.members, swapped.reserve],
         });
       });
       reserveSection.append(swapButton);

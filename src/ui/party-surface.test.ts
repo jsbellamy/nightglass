@@ -8,6 +8,7 @@ import { createEngine } from "../core/engine";
 import { fixtureContent } from "../core/testing/fixture-content";
 import type { Content } from "../core/types";
 import { buildContent } from "../data";
+import { applyTileCommand } from "../main";
 import { createBusEndpoint } from "./bus";
 import { mountPartySurface } from "./party-surface";
 import { levelFor } from "./snapshot-view";
@@ -104,12 +105,7 @@ describe("Party surface", () => {
     const tileBus = createBusEndpoint(
       {
         command: (message) => {
-          if (message.command.cmd === "setParty") {
-            engine.setParty(message.command.args[0].members, message.command.args[0].reserve);
-          }
-          if (message.command.cmd === "selectStage") {
-            engine.selectStage(message.command.args[0]);
-          }
+          applyTileCommand(engine, message.command);
           tileBus.publish({ type: "snapshot", snapshot: engine.snapshot() });
         },
       },
@@ -173,7 +169,7 @@ describe("Party surface", () => {
           engine.setFormation(command.args[0]);
         }
         if (command.cmd === "setParty") {
-          engine.setParty(command.args[0].members, command.args[0].reserve);
+          engine.setParty(command.args[0], command.args[1]);
         }
       },
     });
