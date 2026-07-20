@@ -246,13 +246,15 @@ export function mountTileShell(root: HTMLElement, options: TileShellOptions = {}
     onAdvance: (events: EngineEvent[]) => {
       lastSnapshot = engine.snapshot();
       lastSnapshotAtMs = clockNow();
-      tile.applyEvents(events, lastSnapshot);
-      bus?.publish({
-        type: "pump",
-        events,
-        snapshot: lastSnapshot,
-        legality: serializeEngineLegality(engine, lastSnapshot, content),
-      });
+      frameMetrics.time("applyEvents", () =>
+        tile.applyEvents(events, lastSnapshot!),
+      );
+      const legality = frameMetrics.time("legality", () =>
+        serializeEngineLegality(engine, lastSnapshot!, content),
+      );
+      frameMetrics.time("publish", () =>
+        bus?.publish({ type: "pump", events, snapshot: lastSnapshot!, legality }),
+      );
     },
     render: () => {
       if (!lastSnapshot) {
@@ -297,8 +299,11 @@ export function mountTileShell(root: HTMLElement, options: TileShellOptions = {}
   }
 
   if (import.meta.env.DEV) {
-    (window as unknown as Record<string, unknown>)["__nightglassFrameMetrics"] = () =>
-      pump?.frameMetrics() ?? null;
+    const devWindow = window as unknown as Record<string, unknown>;
+    devWindow["__nightglassFrameMetrics"] = () => pump?.frameMetrics() ?? null;
+    devWindow["__nightglassFrameMetricsReset"] = () => {
+      frameMetrics.reset();
+    };
   }
 
   publishSnapshot();

@@ -1,5 +1,13 @@
 export const FRAME_METRICS_WINDOW = 120;
 
+export type TickPhase = "advance" | "applyEvents" | "legality" | "publish";
+
+export interface DurationStats {
+  p50Ms: number;
+  p95Ms: number;
+  maxMs: number;
+}
+
 export interface FrameSample {
   /** Wall-clock ms since the previous render started. */
   intervalMs: number;
@@ -15,11 +23,18 @@ export interface FrameMetricsReport {
   durationP50Ms: number;
   durationP95Ms: number;
   durationMaxMs: number;
+  tickSampleCount: number;
+  tickTotal: DurationStats;
+  tickPhases: Record<TickPhase, DurationStats>;
 }
 
 export interface FrameMetrics {
   /** Wraps `render`; records interval since last call and the call's duration. */
   measure(render: () => void): void;
+  /** Wraps one whole sim tick; records total tick duration. */
+  measureTick(tick: () => void): void;
+  /** Times `fn` under `phase` and returns its result. Call inside `measureTick`. */
+  time<T>(phase: TickPhase, fn: () => T): T;
   report(): FrameMetricsReport;
   reset(): void;
 }
@@ -37,6 +52,14 @@ function percentile(values: number[], p: number): number {
   return sorted[Math.min(len - 1, Math.ceil(p * len) - 1)]!;
 }
 
+function durationStats(samples: number[]): DurationStats {
+  return {
+    p50Ms: percentile(samples, 0.5),
+    p95Ms: percentile(samples, 0.95),
+    maxMs: samples.length === 0 ? 0 : Math.max(...samples),
+  };
+}
+
 function pushRolling(samples: number[], value: number): void {
   samples.push(value);
   if (samples.length > FRAME_METRICS_WINDOW) {
@@ -44,10 +67,24 @@ function pushRolling(samples: number[], value: number): void {
   }
 }
 
+const TICK_PHASES: TickPhase[] = [
+  "advance",
+  "applyEvents",
+  "legality",
+  "publish",
+];
+
 export function createFrameMetrics(deps?: FrameMetricsDeps): FrameMetrics {
   const now = deps?.now ?? performance.now.bind(performance);
   const durationSamples: number[] = [];
   const intervalSamples: number[] = [];
+  const tickTotalSamples: number[] = [];
+  const phaseSamples: Record<TickPhase, number[]> = {
+    advance: [],
+    applyEvents: [],
+    legality: [],
+    publish: [],
+  };
   let lastRenderStartMs: number | null = null;
 
   function measure(render: () => void): void {
@@ -63,7 +100,29 @@ export function createFrameMetrics(deps?: FrameMetricsDeps): FrameMetrics {
     }
   }
 
+  function measureTick(tick: () => void): void {
+    const startMs = now();
+    try {
+      tick();
+    } finally {
+      pushRolling(tickTotalSamples, now() - startMs);
+    }
+  }
+
+  function time<T>(phase: TickPhase, fn: () => T): T {
+    const startMs = now();
+    try {
+      return fn();
+    } finally {
+      pushRolling(phaseSamples[phase], now() - startMs);
+    }
+  }
+
   function report(): FrameMetricsReport {
+    const tickPhases = {} as Record<TickPhase, DurationStats>;
+    for (const phase of TICK_PHASES) {
+      tickPhases[phase] = durationStats(phaseSamples[phase]);
+    }
     return {
       sampleCount: durationSamples.length,
       intervalP50Ms: percentile(intervalSamples, 0.5),
@@ -74,14 +133,21 @@ export function createFrameMetrics(deps?: FrameMetricsDeps): FrameMetrics {
       durationP95Ms: percentile(durationSamples, 0.95),
       durationMaxMs:
         durationSamples.length === 0 ? 0 : Math.max(...durationSamples),
+      tickSampleCount: tickTotalSamples.length,
+      tickTotal: durationStats(tickTotalSamples),
+      tickPhases,
     };
   }
 
   function reset(): void {
     durationSamples.length = 0;
     intervalSamples.length = 0;
+    tickTotalSamples.length = 0;
+    for (const phase of TICK_PHASES) {
+      phaseSamples[phase].length = 0;
+    }
     lastRenderStartMs = null;
   }
 
-  return { measure, report, reset };
+  return { measure, measureTick, time, report, reset };
 }

@@ -50,11 +50,20 @@ export function startPump(deps: PumpDeps): PumpController {
   }
 
   function pump(elapsedMs: number): void {
-    const events = deps.advanceBy(elapsedMs);
-    if (events.length > 0) {
-      deps.onAdvance(events);
+    const run = () => {
+      const events = deps.frameMetrics
+        ? deps.frameMetrics.time("advance", () => deps.advanceBy(elapsedMs))
+        : deps.advanceBy(elapsedMs);
+      if (events.length > 0) {
+        deps.onAdvance(events);
+      }
+      scheduleRender();
+    };
+    if (deps.frameMetrics) {
+      deps.frameMetrics.measureTick(run);
+    } else {
+      run();
     }
-    scheduleRender();
   }
 
   function maybeRender(): void {

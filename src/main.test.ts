@@ -443,6 +443,72 @@ describe("tick snapshot cache", () => {
     shell.stop();
   });
 
+  it("records applyEvents, legality, and publish phase durations when a tick produces events", async () => {
+    const content = buildContent();
+    const engine = createEngine(content, undefined, 42);
+    const clock = { ms: 0 };
+    const pump = createControlledPumpSchedule(clock);
+
+    vi.spyOn(engine, "advanceBy").mockImplementation(() => {
+      clock.ms += 2;
+      return [{ seq: 1, atMs: 250, type: "config-applied" }] satisfies EngineEvent[];
+    });
+
+    const { mountBattleTile: realMount } =
+      await vi.importActual<typeof battleTile>("./ui/battle-tile");
+    vi.spyOn(battleTile, "mountBattleTile").mockImplementation((root, battleContent, options) => {
+      const tile = realMount(root, battleContent, options);
+      const originalApply = tile.applyEvents.bind(tile);
+      tile.applyEvents = (events, snapshot) => {
+        clock.ms += 5;
+        return originalApply(events, snapshot);
+      };
+      return tile;
+    });
+
+    const legalityModule = await import("./ui/engine-legality");
+    const realSerialize = legalityModule.serializeEngineLegality;
+    vi.spyOn(legalityModule, "serializeEngineLegality").mockImplementation(
+      (eng, snapshot, cnt) => {
+        clock.ms += 10;
+        return realSerialize(eng, snapshot, cnt);
+      },
+    );
+
+    const root = document.createElement("main");
+    const shell = mountTileShell(root, {
+      engine,
+      content,
+      dockWindow: createMockDockWindow(),
+      deferPump: true,
+      now: () => clock.ms,
+      pumpSchedule: pump.schedule,
+      busFactory: (handlers) => ({
+        publish: (message) => {
+          clock.ms += 20;
+          if (message.type === "pump") {
+            handlers.pump?.(message);
+          }
+        },
+        close: () => {},
+      }),
+    });
+
+    shell.startPump();
+    pump.advancePumpMs(PUMP_INTERVAL_MS);
+
+    const report = shell.frameMetrics();
+    expect(report?.tickSampleCount).toBe(1);
+    expect(report?.tickPhases.advance.p50Ms).toBe(2);
+    expect(report?.tickPhases.applyEvents.p50Ms).toBe(5);
+    expect(report?.tickPhases.legality.p50Ms).toBe(10);
+    expect(report?.tickPhases.publish.p50Ms).toBe(20);
+
+    shell.stop();
+    vi.mocked(battleTile.mountBattleTile).mockRestore();
+    vi.mocked(legalityModule.serializeEngineLegality).mockRestore();
+  });
+
   it("renders on demand before the first sim tick", () => {
     const root = document.createElement("main");
     const shell = mountTileShell(root, {
@@ -657,6 +723,36 @@ describe("presentation clock", () => {
     for (const nowMs of presentationNowMs) {
       expect(Number.isInteger(nowMs)).toBe(true);
     }
+    shell.stop();
+  });
+});
+
+describe("frame metrics dev hooks", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    Object.defineProperty(document, "hidden", { configurable: true, value: false });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("DEV instrumentation reset clears tick and frame samples", () => {
+    const root = document.createElement("main");
+    const shell = mountTileShell(root, { dockWindow: createMockDockWindow() });
+    const devWindow = window as unknown as Record<string, unknown>;
+    expect(typeof devWindow["__nightglassFrameMetrics"]).toBe("function");
+    expect(typeof devWindow["__nightglassFrameMetricsReset"]).toBe("function");
+
+    vi.advanceTimersByTime(PUMP_INTERVAL_MS);
+    const before = shell.frameMetrics();
+    expect(before?.tickSampleCount ?? 0).toBeGreaterThanOrEqual(0);
+
+    (devWindow["__nightglassFrameMetricsReset"] as () => void)();
+    const after = shell.frameMetrics();
+    expect(after?.tickSampleCount).toBe(0);
+    expect(after?.sampleCount).toBe(0);
+
     shell.stop();
   });
 });
