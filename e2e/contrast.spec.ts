@@ -5,7 +5,7 @@ import {
   readTextContrastSample,
 } from "./helpers/contrast";
 import { attachDockPage, focusDockTab, openTilePage } from "./helpers/dock-context";
-import { armoryColourSnapshot, stabilizeArmoryColourFixture } from "./helpers/snapshots";
+import { armoryColourSnapshot } from "./helpers/snapshots";
 
 const DOCK_PRIMARY_TEXT: { tab: string; selector: string }[] = [
   { tab: "party", selector: ".party-formation .character-name" },
@@ -68,9 +68,12 @@ test.describe("accessibility contrast floor", () => {
         knockout.stackTransform !== "none",
     ).toBe(true);
 
+    await postBusSnapshot(dock, armoryColourSnapshot());
+    await tile.close();
+
     await focusDockTab(dock, "armory");
-    await stabilizeArmoryColourFixture(dock);
     const epicCard = dock.locator(".armory-collection .equipment-card.rarity-epic");
+    await expect(epicCard).toBeVisible({ timeout: 5_000 });
     const raritySignals = await epicCard.evaluate((card) => {
       const name = card.querySelector(".equipment-name")?.textContent?.trim();
       const meta = card.querySelector(".equipment-meta")?.textContent?.trim();
