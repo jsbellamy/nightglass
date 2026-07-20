@@ -1,5 +1,13 @@
 # Vertical-slice foundation acceptance audit
 
+> **Historical.** Point-in-time record from 2026-07-19. Superseded by
+> [`docs/vertical-slice-spec.md`](../vertical-slice-spec.md) §§12–13 and
+> [`docs/agents/acceptance-evidence.md`](../agents/acceptance-evidence.md).
+> Findings here may describe a state that no longer exists; do not action them
+> without re-verifying against the current tree. Resolved since this audit:
+> `prototype/comfyui-fit/canonical/` was deleted; all four Character references
+> and three Boss stills ship at 32×48.
+
 Audited on 2026-07-19 against `main` at `3528abf` (`Audit rendered application
 acceptance evidence (#93)`) and the live GitHub issue bodies for
 [#33](https://github.com/jsbellamy/nightglass/issues/33) through

@@ -16,6 +16,7 @@ in the crowded tile via desaturation, collapse, and absent live health fill.
 
 ## Note on the PNG
 
-This file must match the post-knockout harness frame (`e2e-screenshots/02-tile-combat.png`),
+This file must match the post-knockout harness frame emitted as `02-tile-combat.png` under
+gitignored `e2e-screenshots/` after `npm run test:evidence`,
 not the pre-knockout initial tile. #103 corrected a bad commit where the
 artifact was byte-identical to `01-tile-initial.png`.

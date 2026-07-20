@@ -1,5 +1,10 @@
 # Audit: SideScape's icon pipeline and Nightglass's 16×16 experiment
 
+> **Historical.** Point-in-time record from 2026-07-19. Superseded by the shipped
+> 34×34 Equipment Base workflow in [`docs/acquisition-contract.md`](../acquisition-contract.md)
+> and `src/assets/icon-sources/`. Findings here may describe a state that no longer
+> exists; do not action them without re-verifying against the current tree.
+
 Research asset for [#122](https://github.com/jsbellamy/nightglass/issues/122), a ticket on the
 [#121](https://github.com/jsbellamy/nightglass/issues/121) map *Choose a reliable native-grid
 workflow for Equipment Base icons*.
@@ -108,7 +113,8 @@ twelve acquisitions to six.
 `SOURCE_PALETTES` in `icons.mjs` restricts which ramps a given source may quantize into, because
 `quantizeGrid` picks the *globally* nearest entry — so merely adding a ramp silently recolored
 unrelated shipped icons (`adamant` put a green patch on mithril-chainbody). SideScape guards this
-with a regression test (`src/ui/art-ramp-isolation.test.ts`).
+with a regression test in the SideScape repo (`src/ui/art-ramp-isolation.test.ts`); Nightglass
+has no equivalent UI test — palette scoping is enforced in the icon build pipeline instead.
 
 **Applicability is conditional.** This matters when the palette is large and grouped into ramps.
 `moonberry-16` is flat and small, so the failure mode is weaker — but it becomes relevant the moment
