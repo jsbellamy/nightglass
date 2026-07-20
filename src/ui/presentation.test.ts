@@ -17,6 +17,7 @@ import {
   createPresentation,
   hurtOffset,
   lungeOffset,
+  readAnchorGeometry,
   strikePointOffset,
 } from "./presentation";
 
@@ -419,6 +420,239 @@ describe("presentation mapping", () => {
     expect(effect?.dataset["strikeY"]).toBe("-26");
     presentation.destroy();
     battlefield.remove();
+  });
+});
+
+function mountPresentationHarness(): {
+  battlefield: HTMLElement;
+  effectLane: HTMLElement;
+  feedbackLayer: HTMLElement;
+  notificationLayer: HTMLElement;
+  presentation: ReturnType<typeof createPresentation>;
+  addCombatant: (entityId: string, leftPx: string, bottomPx?: string) => HTMLElement;
+} {
+  const battlefield = document.createElement("section");
+  battlefield.className = "battlefield";
+  const effectLane = document.createElement("div");
+  effectLane.className = "effect-lane";
+  const feedbackLayer = document.createElement("div");
+  feedbackLayer.className = "feedback-layer";
+  const notificationLayer = document.createElement("div");
+  notificationLayer.className = "status-notification-layer";
+  battlefield.append(effectLane, feedbackLayer);
+  document.body.append(battlefield, notificationLayer);
+
+  const addCombatant = (entityId: string, leftPx: string, bottomPx = "6px") => {
+    const combatant = document.createElement("div");
+    combatant.className = "combatant";
+    combatant.dataset["entityId"] = entityId;
+    combatant.style.position = "absolute";
+    combatant.style.left = leftPx;
+    combatant.style.bottom = bottomPx;
+    combatant.style.width = "32px";
+    combatant.style.height = "40px";
+    combatant.innerHTML =
+      '<div class="combatant-stack"><div class="layer layer-mark"></div><div class="layer layer-body"></div><div class="layer layer-effect"></div></div>';
+    battlefield.append(combatant);
+    return combatant;
+  };
+
+  const presentation = createPresentation({
+    battlefield,
+    effectLane,
+    feedbackLayer,
+    notificationLayer,
+    content: buildContent(),
+  });
+
+  return { battlefield, effectLane, feedbackLayer, notificationLayer, presentation, addCombatant };
+}
+
+describe("batched anchor geometry reads", () => {
+  afterEach(() => {
+    document.body.replaceChildren();
+  });
+
+  it("resolves bottomPx to 6 when computed bottom is empty", () => {
+    const battlefield = document.createElement("section");
+    const combatant = document.createElement("div");
+    combatant.dataset["entityId"] = "opp:1:0";
+    combatant.style.position = "absolute";
+    battlefield.append(combatant);
+    document.body.append(battlefield);
+
+    const geometry = readAnchorGeometry(battlefield, new Set(["opp:1:0"]));
+    expect(geometry.get("opp:1:0")?.bottomPx).toBe(6);
+
+    battlefield.remove();
+  });
+
+  it("skips an effect when its target is absent from the battlefield", () => {
+    const { effectLane, presentation, addCombatant } = mountPresentationHarness();
+    addCombatant("opp:1:0", "100px");
+    const snapshot = createEngine(buildContent(), undefined, LOOT_SEED).snapshot();
+    snapshot.simNowMs = 1_000;
+    presentation.applyEvents(
+      [
+        {
+          seq: 1,
+          atMs: 900,
+          type: "action-started",
+          entityId: "party:knight:front",
+          abilityId: "steel-cut",
+          impactAtMs: 1_000,
+          targetIds: ["opp:missing"],
+        },
+      ],
+      snapshot,
+    );
+    presentation.render(950, snapshot);
+    expect(effectLane.querySelector(".effect-host")).toBeNull();
+    presentation.destroy();
+  });
+
+  it("places two concurrent strike-target hosts at the same pixels as direct anchor reads", () => {
+    const { effectLane, presentation, addCombatant } = mountPresentationHarness();
+    const targetA = addCombatant("opp:1:0", "120px", "8px");
+    const targetB = addCombatant("opp:1:1", "280px", "10px");
+    const expectedA = {
+      left: `${targetA.offsetLeft}px`,
+      bottom: `${parseInt(getComputedStyle(targetA).bottom || "6", 10)}px`,
+    };
+    const expectedB = {
+      left: `${targetB.offsetLeft}px`,
+      bottom: `${parseInt(getComputedStyle(targetB).bottom || "6", 10)}px`,
+    };
+
+    const snapshot = createEngine(buildContent(), undefined, LOOT_SEED).snapshot();
+    snapshot.simNowMs = 1_000;
+    presentation.applyEvents(
+      [
+        {
+          seq: 1,
+          atMs: 900,
+          type: "action-started",
+          entityId: "party:knight:front",
+          abilityId: "steel-cut",
+          impactAtMs: 1_000,
+          targetIds: ["opp:1:0"],
+        },
+        {
+          seq: 2,
+          atMs: 900,
+          type: "action-started",
+          entityId: "party:knight:front",
+          abilityId: "steel-cut",
+          impactAtMs: 1_000,
+          targetIds: ["opp:1:1"],
+        },
+      ],
+      snapshot,
+    );
+    presentation.render(950, snapshot);
+
+    const hosts = [...effectLane.querySelectorAll<HTMLElement>(".effect-host")];
+    expect(hosts).toHaveLength(2);
+    expect(hosts.map((host) => host.style.left).sort()).toEqual([expectedA.left, expectedB.left].sort());
+    expect(hosts.map((host) => host.style.bottom).sort()).toEqual(
+      [expectedA.bottom, expectedB.bottom].sort(),
+    );
+    presentation.destroy();
+  });
+
+  it("updates effect host position when a combatant moves between renders", () => {
+    const { effectLane, presentation, addCombatant } = mountPresentationHarness();
+    const target = addCombatant("opp:1:0", "100px");
+    let layoutLeft = 100;
+    Object.defineProperty(target, "offsetLeft", {
+      configurable: true,
+      get: () => layoutLeft,
+    });
+    const snapshot = createEngine(buildContent(), undefined, LOOT_SEED).snapshot();
+    snapshot.simNowMs = 1_000;
+    presentation.applyEvents(
+      [
+        {
+          seq: 1,
+          atMs: 900,
+          type: "action-started",
+          entityId: "party:knight:front",
+          abilityId: "steel-cut",
+          impactAtMs: 1_000,
+          targetIds: ["opp:1:0"],
+        },
+      ],
+      snapshot,
+    );
+    presentation.render(950, snapshot);
+    const firstLeft = effectLane.querySelector<HTMLElement>(".effect-host")?.style.left;
+
+    layoutLeft = 220;
+    presentation.render(960, snapshot);
+    const secondLeft = effectLane.querySelector<HTMLElement>(".effect-host")?.style.left;
+    expect(secondLeft).not.toBe(firstLeft);
+    expect(secondLeft).toBe("220px");
+    presentation.destroy();
+  });
+
+  it("performs zero geometry reads when there are no effects or damage numbers", () => {
+    const { presentation, addCombatant } = mountPresentationHarness();
+    addCombatant("opp:1:0", "50px");
+    const snapshot = createEngine(buildContent(), undefined, LOOT_SEED).snapshot();
+    snapshot.simNowMs = 500;
+
+    const offsetLeftSpy = vi.spyOn(HTMLElement.prototype, "offsetLeft", "get").mockReturnValue(0);
+    const getComputedStyleSpy = vi.spyOn(window, "getComputedStyle");
+
+    presentation.render(500, snapshot);
+
+    expect(offsetLeftSpy).not.toHaveBeenCalled();
+    expect(getComputedStyleSpy).not.toHaveBeenCalled();
+    offsetLeftSpy.mockRestore();
+    getComputedStyleSpy.mockRestore();
+    presentation.destroy();
+  });
+
+  it("reads anchor geometry before the first effect-lane replaceChildren of the frame", () => {
+    const { effectLane, presentation, addCombatant } = mountPresentationHarness();
+    addCombatant("opp:1:0", "140px");
+    const snapshot = createEngine(buildContent(), undefined, LOOT_SEED).snapshot();
+    snapshot.simNowMs = 1_000;
+    presentation.applyEvents(
+      [
+        {
+          seq: 1,
+          atMs: 900,
+          type: "action-started",
+          entityId: "party:knight:front",
+          abilityId: "steel-cut",
+          impactAtMs: 1_000,
+          targetIds: ["opp:1:0"],
+        },
+      ],
+      snapshot,
+    );
+
+    let readsBeforeReplace = 0;
+    const replaceSpy = vi.spyOn(effectLane, "replaceChildren");
+    const offsetLeftDescriptor = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "offsetLeft")!;
+    const offsetLeftSpy = vi.spyOn(HTMLElement.prototype, "offsetLeft", "get").mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      if (replaceSpy.mock.calls.length === 0) {
+        readsBeforeReplace += 1;
+      }
+      return offsetLeftDescriptor.get!.call(this);
+    });
+
+    presentation.render(950, snapshot);
+
+    expect(readsBeforeReplace).toBeGreaterThan(0);
+    const lastReadOrder = Math.max(...offsetLeftSpy.mock.invocationCallOrder);
+    expect(lastReadOrder).toBeLessThan(replaceSpy.mock.invocationCallOrder[0]!);
+    offsetLeftSpy.mockRestore();
+    replaceSpy.mockRestore();
+    presentation.destroy();
   });
 });
 

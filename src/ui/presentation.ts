@@ -161,6 +161,80 @@ function combatantElement(root: HTMLElement, entityId: string): HTMLElement | nu
   return root.querySelector<HTMLElement>(`[data-entity-id="${entityId}"]`);
 }
 
+export interface AnchorGeometry {
+  offsetLeft: number;
+  offsetHeight: number;
+  /** Resolved `bottom` in px, defaulting to 6 when unset — preserves today's `|| "6"` fallback. */
+  bottomPx: number;
+}
+
+function readAnchorFromElement(element: HTMLElement): AnchorGeometry {
+  return {
+    offsetLeft: element.offsetLeft,
+    offsetHeight: element.offsetHeight,
+    bottomPx: parseInt(getComputedStyle(element).bottom || "6", 10),
+  };
+}
+
+export function readAnchorGeometry(
+  battlefield: HTMLElement,
+  entityIds: ReadonlySet<string>,
+): Map<string, AnchorGeometry> {
+  const geometry = new Map<string, AnchorGeometry>();
+  for (const entityId of entityIds) {
+    const element = combatantElement(battlefield, entityId);
+    if (!element) {
+      continue;
+    }
+    geometry.set(entityId, readAnchorFromElement(element));
+  }
+  return geometry;
+}
+
+function collectAnchorEntityIds(
+  activeEffects: ActiveEffect[],
+  pendingDamage: DamageNumberInput[],
+  nowMs: number,
+): Set<string> {
+  const ids = new Set<string>();
+  for (const effect of activeEffects) {
+    if (nowMs >= effect.impactAtMs + 400) {
+      continue;
+    }
+    const recipe = recipeForAbility(effect.abilityId);
+    if (!recipe) {
+      continue;
+    }
+    const manifest = manifestForRecipe(recipe.frames);
+    if (!manifest) {
+      continue;
+    }
+    const elapsed = Math.max(0, nowMs - effect.startedAtMs);
+    if (!frameAtTime(manifest, elapsed)) {
+      continue;
+    }
+    if (recipe.anchor === "strike_target") {
+      for (const targetId of effect.targetIds) {
+        ids.add(targetId);
+      }
+    } else if (recipe.anchor === "lane_travel") {
+      ids.add(effect.actorId);
+      const targetId = effect.targetIds[0];
+      if (targetId) {
+        ids.add(targetId);
+      }
+    } else if (recipe.anchor === "band") {
+      ids.add(effect.targetIds[0] ?? effect.actorId);
+    }
+  }
+  for (const entry of pendingDamage) {
+    if (nowMs - entry.atMs <= DAMAGE_FLOAT_MS) {
+      ids.add(entry.targetId);
+    }
+  }
+  return ids;
+}
+
 function markLayer(element: HTMLElement): HTMLElement | null {
   return element.querySelector<HTMLElement>(".layer-mark");
 }
@@ -430,7 +504,7 @@ export function createPresentation(options: PresentationOptions): Presentation {
     }
   }
 
-  function renderEffects(nowMs: number): void {
+  function renderEffects(nowMs: number, anchorGeometry: Map<string, AnchorGeometry>): void {
     effectLane.replaceChildren();
     for (const effect of activeEffects) {
       if (nowMs >= effect.impactAtMs + 400) {
@@ -457,8 +531,8 @@ export function createPresentation(options: PresentationOptions): Presentation {
 
       if (recipe.anchor === "strike_target") {
         for (const targetId of effect.targetIds) {
-          const target = combatantElement(battlefield, targetId);
-          if (!target) {
+          const anchor = anchorGeometry.get(targetId);
+          if (!anchor) {
             continue;
           }
           const img = document.createElement("img");
@@ -474,22 +548,22 @@ export function createPresentation(options: PresentationOptions): Presentation {
           img.style.top = `calc(100% + ${strike.y - frameH}px)`;
           const host = document.createElement("div");
           host.className = "effect-host";
-          host.style.left = `${target.offsetLeft}px`;
-          host.style.bottom = `${parseInt(getComputedStyle(target).bottom || "6", 10)}px`;
+          host.style.left = `${anchor.offsetLeft}px`;
+          host.style.bottom = `${anchor.bottomPx}px`;
           host.append(img);
           effectLane.append(host);
         }
       } else if (recipe.anchor === "lane_travel") {
-        const actor = combatantElement(battlefield, effect.actorId);
-        const target = combatantElement(battlefield, effect.targetIds[0] ?? "");
-        if (!actor || !target) {
+        const actorAnchor = anchorGeometry.get(effect.actorId);
+        const targetAnchor = anchorGeometry.get(effect.targetIds[0] ?? "");
+        if (!actorAnchor || !targetAnchor) {
           continue;
         }
         const progress = reducedMotion
           ? 1
           : Math.min(1, Math.max(0, (nowMs - effect.startedAtMs) / recipe.durationMs));
-        const startX = actor.offsetLeft + 16;
-        const endX = target.offsetLeft + 16;
+        const startX = actorAnchor.offsetLeft + 16;
+        const endX = targetAnchor.offsetLeft + 16;
         const x = startX + (endX - startX) * progress;
         const img = document.createElement("img");
         img.className = "effect-frame lane-travel";
@@ -502,8 +576,9 @@ export function createPresentation(options: PresentationOptions): Presentation {
         img.style.bottom = `${30 - frameH / 2}px`;
         effectLane.append(img);
       } else if (recipe.anchor === "band") {
-        const target = combatantElement(battlefield, effect.targetIds[0] ?? effect.actorId);
-        if (!target) {
+        const bandTargetId = effect.targetIds[0] ?? effect.actorId;
+        const anchor = anchorGeometry.get(bandTargetId);
+        if (!anchor) {
           continue;
         }
         const reveal = reducedMotion
@@ -522,8 +597,8 @@ export function createPresentation(options: PresentationOptions): Presentation {
         img.style.bottom = `${24 - frameH}px`;
         const host = document.createElement("div");
         host.className = "effect-host";
-        host.style.left = `${target.offsetLeft}px`;
-        host.style.bottom = `${parseInt(getComputedStyle(target).bottom || "6", 10)}px`;
+        host.style.left = `${anchor.offsetLeft}px`;
+        host.style.bottom = `${anchor.bottomPx}px`;
         host.append(img);
         effectLane.append(host);
       }
@@ -535,19 +610,19 @@ export function createPresentation(options: PresentationOptions): Presentation {
     }
   }
 
-  function renderDamageNumbers(nowMs: number): void {
+  function renderDamageNumbers(nowMs: number, anchorGeometry: Map<string, AnchorGeometry>): void {
     damageLayer.replaceChildren();
     const merged = mergeDamageNumbers(pendingDamage.filter((entry) => nowMs - entry.atMs <= DAMAGE_FLOAT_MS));
     for (const entry of merged) {
-      const target = combatantElement(battlefield, entry.targetId);
-      if (!target) {
+      const anchor = anchorGeometry.get(entry.targetId);
+      if (!anchor) {
         continue;
       }
       const float = document.createElement("span");
       float.className = `${damageNumberClass(entry)} floating`;
       float.textContent = formatDamageNumber(entry.amount, entry.kind);
-      float.style.left = `${target.offsetLeft + 8}px`;
-      float.style.bottom = `${target.offsetHeight + 18}px`;
+      float.style.left = `${anchor.offsetLeft + 8}px`;
+      float.style.bottom = `${anchor.offsetHeight + 18}px`;
       damageLayer.append(float);
     }
     while (pendingDamage.length > 0 && pendingDamage[0]!.atMs < nowMs - DAMAGE_FLOAT_MS) {
@@ -590,14 +665,17 @@ export function createPresentation(options: PresentationOptions): Presentation {
   }
 
   function render(nowMs: number, snapshot: Snapshot): void {
+    const anchorEntityIds = collectAnchorEntityIds(activeEffects, pendingDamage, nowMs);
+    const anchorGeometry = readAnchorGeometry(battlefield, anchorEntityIds);
+
     const combatants = snapshot.attempt?.combatants ?? [];
     for (const combatant of combatants) {
       renderActorPool(combatant.entityId, nowMs, snapshot);
       renderBodyTransforms(combatant.entityId, nowMs, snapshot);
       renderStatusIcons(combatant.entityId, snapshot);
     }
-    renderEffects(nowMs);
-    renderDamageNumbers(nowMs);
+    renderEffects(nowMs, anchorGeometry);
+    renderDamageNumbers(nowMs, anchorGeometry);
     renderBanner(nowMs);
     renderDropToast(nowMs);
   }
