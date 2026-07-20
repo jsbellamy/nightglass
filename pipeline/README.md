@@ -12,18 +12,21 @@ adding or changing raster assets.
 - `assets-raw/backdrops/` — Stage backdrop Archived Raw Bundle (see `docs/backdrop-contract.md`)
 - `pipeline/acquire.py` — offline normalizer, validator, and manifest writer
 - `pipeline/icons/` — Equipment icon ingest, Stage-2 build, and contract tests
+- `pipeline/effects/` — Ability effect author, derive, and verify (`author.py`, `derive.py`, `verify.py`)
 - `pipeline/backdrops.py` — Stage backdrop nearest reduce + byte-identity verify
 - `pipeline/palette.json` — `moonberry-16` palette definition
 - `src/assets/sprites/` — committed runtime PNGs and `manifest.json`
 - `src/assets/backdrops/` — committed 480×86 Stage backdrop runtimes
 - `src/assets/icon-sources/` — generated text-grid icon sources (see `docs/icon-contract.md`)
 - `src/assets/icons/` — committed 34×34 Equipment icon runtimes and manifest
+- `src/assets/effects/` — committed Ability effect frames and manifests
 
 ## Commands
 
 ```bash
 npm run assets:build   # rebuild runtime sprites + icons + backdrops from committed sources
-npm run assets:verify  # contract tests + byte-identity rebuild proof
+npm run assets:effects # author and derive Ability effect frames (when sources change)
+npm run assets:verify  # contract tests + effects + icons + backdrops byte-identity proof
 ```
 
 `assets:verify` runs with no provider, model, GPU, or network. CI runs the same

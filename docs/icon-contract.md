@@ -85,9 +85,10 @@ A `recolor` map whose **target** already appears in the source `palette_subset` 
 ## Families
 
 Six Equipment Base families (Tier I source → Tier II `recolor` variant) are registered
-in `pipeline/icons/registry.py`. Real family grids and raws land with the Icons slice
-([#131](https://github.com/jsbellamy/nightglass/issues/131)). A synthetic `verify-canary`
-family proves byte-identical rebuild in CI.
+in `pipeline/icons/registry.py`. Family text-grid sources live under
+`src/assets/icon-sources/`; twelve runtime PNGs (six families × two tiers) ship under
+`src/assets/icons/` ([#131](https://github.com/jsbellamy/nightglass/issues/131)).
+A synthetic `verify-canary` family proves byte-identical rebuild in CI.
 
 ## Approval
 

@@ -37,8 +37,6 @@ context pointer. A missing value is a decision to resolve before generation.
   `npm run assets:build`. Prompting lessons from
   [`../research/evidence/125-equipment-icons-34/`](../research/evidence/125-equipment-icons-34/)
   still apply; do **not** resume the unmerged `issue-58-equipment-icons` 16×16 premise.
-  The `#125` prototype under `prototype/equipment-icons-34/` remains for in-situ
-  review until the Consumers slice removes it.
 - For Character presentation and Ability effects, also read
   [`../animation-contract.md`](../animation-contract.md). It owns layer separation,
   `moonberry-glow`, effect anchors, deterministic derivation, and runtime
@@ -70,7 +68,7 @@ around the subject description — do not paraphrase the shell into softer art
 direction. Request the safe box; never ask the subject to fill the runtime
 canvas.
 
-For Equipment Base icons (while #121 is open), use this **icon grid shell**
+For Equipment Base icons, use this **icon grid shell**
 around a concrete subject noun — same discipline as the Character shell, resized
 for icons. Attach Knight / Wizard / Priest stills as style references:
 
@@ -131,7 +129,7 @@ into an accepted raw.
 | Failure | Signal | Retry move |
 | --- | --- | --- |
 | **Overshoot** | Recovered grid wider/taller than the acceptance canvas, or above the declared safe box | Preserve identity; shrink silhouette into the safe box; restate magenta clearance on every edge. Template: *"The previous candidate recovered as `<W>×<H>`. Preserve its identity and pose, simplify its detail, and redraw the complete silhouette inside the contract's safe box with clearance on every edge."* |
-| **Underfill** | Recovered long axis below the icon minimum (prototype gate: 22 of ~32; prefer 26–30) | Regenerate larger in frame, or exaggerate the identity feature. Do not nearest-neighbour upscale a soft generation into an accepted raw. |
+| **Underfill** | Recovered long axis below the icon gate (`MIN_LONG_AXIS = 20` in `pipeline/icons/constants.py`; **preference** 26–30 on a ~32-cell grid) | Regenerate larger in frame, or exaggerate the identity feature. Do not nearest-neighbour upscale a soft generation into an accepted raw. |
 | **Pitch-fail** | X or Y pitch confidence below the acquisition contract gate (soft/anti-aliased blocks, uneven cell size) | Strengthen the grid shell; attach an already-accepted grid-faithful raw as **style reference**; demand uniform square blocks and aligned seams. Do not only ask for "chunkier" art. |
 | **Clip-fail** | Subject touches a raw canvas edge (clipping gate) | Preserve identity; add at least two magenta cells of clearance on the clipped side(s); keep the safe box. |
 | **Off-ramp** | More than ~20% of opaque subject cells are far from every `moonberry-16` swatch (RGB distance), or the Stage-2 preview shows a whole material plane silently recolored. Authoritative Equipment icon threshold: `OFF_RAMP_REJECT` in `pipeline/icons/constants.py` / `docs/icon-contract.md` (retuned in #131 from the provisional 15%). | Keep geometry fixed; retry with **exact on-palette material names** (mint/sage stave, berry vine, cream string — never "brown wood"). The on-palette check after quantize cannot catch this by construction. |
@@ -161,17 +159,13 @@ runtime form. Exercise every declared gate, including provenance, dimensions,
 colour mode, alpha, palette, clipping, anchors, layer separation, and manifest
 fields where applicable.
 
-For Equipment icons in the #125 prototype shape, the transform is **two-stage**:
-ingest recovers a compact 1px/cell source (human-approved via the Stage-2 @8×
-preview), then Stage-2 paints `moonberry-16` + a derived outline onto 34×34.
-Approve the **preview**, not the provider PNG. Family Tier II is a `recolor` of
-the same compact source — rebuild both variants after any source edit.
-
-```bash
-# Prototype commands (throwaway path under prototype/equipment-icons-34/)
-npm run prototype:equipment-icons-34          # hand-authored Stage-2 rebuild
-python3 prototype/equipment-icons-34/ingest.py  # AI inbox → compact → Stage-2
-```
+For Equipment icons, the transform is **two-stage** via `pipeline/icons/`:
+`ingest.py` recovers a compact 1px/cell source (human-approved via the Stage-2 @8×
+preview), then `build.py` / `paint.py` paint `moonberry-16` plus a derived outline
+onto 34×34. Approve the **preview**, not the provider PNG. Family Tier II is a
+`recolor` of the same compact source — rebuild both variants after any source edit.
+`npm run assets:build` runs `pipeline/icons/build.py`; `npm run assets:verify` runs
+`pipeline/icons/verify.py` with the acquisition and effects gates.
 
 Rebuild once more from the archived raw with the provider absent. Compare the
 encoded runtime file byte-for-byte with the accepted output.
