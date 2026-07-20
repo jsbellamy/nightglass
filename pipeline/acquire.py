@@ -7,7 +7,7 @@ socket, and loads no model. Its only input is the archived raw bundle
 (`assets-raw/grid_raw/*.png` plus provenance sidecars). Running it with the
 provider absent and the network down reproduces byte-identical runtime frames.
 
-    normalize  raw PNG  -> key magenta -> recover logical grid -> 32x48 frame
+    normalize  raw PNG  -> key magenta -> recover logical grid -> tier runtime frame
     validate   frame(s)  -> [] or a list of rejection reasons
     manifest   frames    -> integer-ms animation manifest
 
@@ -25,6 +25,7 @@ import math
 import pathlib
 import struct
 import zlib
+from dataclasses import dataclass
 from typing import Iterable
 
 from PIL import Image
@@ -33,12 +34,28 @@ HERE = pathlib.Path(__file__).parent
 ROOT = HERE.parent
 RAW_DIR = ROOT / "assets-raw" / "grid_raw"
 OUT_DIR = ROOT / "src" / "assets" / "sprites"
-FRAME_W, FRAME_H = 32, 48
 ALPHA_CUT = 128
 MAGENTA = (255, 0, 255)
 KEY_TOLERANCE = 40
 MIN_GRID_SCORE = 0.04
-MIN_LOGICAL_HEIGHT = 40
+
+
+@dataclass(frozen=True)
+class Frame:
+    """Acquisition geometry for one monster size tier."""
+
+    w: int
+    h: int
+    min_logical_height: int
+
+
+FRAMES = {
+    "small": Frame(w=24, h=32, min_logical_height=26),
+    "medium": Frame(w=32, h=48, min_logical_height=40),
+    "large": Frame(w=48, h=72, min_logical_height=60),
+}
+
+MEDIUM = FRAMES["medium"]
 
 OUTPUT_NAMES = {
     "knight": "knight",
@@ -269,14 +286,17 @@ def sample_cells(src: Image.Image, fg: list[bool], bbox: tuple[int, int, int, in
     return grid
 
 
-def recover_grid(raw_path: pathlib.Path) -> tuple[list[list[tuple[int, int, int] | None]], dict]:
+def recover_grid(
+    raw_path: pathlib.Path,
+    frame: Frame = MEDIUM,
+) -> tuple[list[list[tuple[int, int, int] | None]], dict]:
     gate_errs = raw_gates(raw_path)
     if gate_errs:
         raise ValueError("; ".join(gate_errs))
     src, fg, bbox = _key(raw_path)
     x0, y0, x1, y1 = bbox
     long_side = max(x1 - x0 + 1, y1 - y0 + 1)
-    minimum, maximum = long_side / FRAME_H, long_side / MIN_LOGICAL_HEIGHT
+    minimum, maximum = long_side / frame.h, long_side / frame.min_logical_height
     pitch_x = detect_pitch(src, fg, "x", minimum, maximum)
     pitch_y = detect_pitch(src, fg, "y", minimum, maximum)
     if pitch_x["score"] < MIN_GRID_SCORE or pitch_y["score"] < MIN_GRID_SCORE:
@@ -287,54 +307,56 @@ def recover_grid(raw_path: pathlib.Path) -> tuple[list[list[tuple[int, int, int]
     grid_w = len(cells[0]) if cells else 0
     if not grid_w or not grid_h or any(len(row) != grid_w for row in cells):
         raise ValueError(f"{raw_path.name}: recovered an empty or irregular grid")
-    if grid_w > FRAME_W or grid_h > FRAME_H or grid_h < MIN_LOGICAL_HEIGHT:
+    if (grid_w > frame.w or grid_h > frame.h
+            or grid_h < frame.min_logical_height):
         raise ValueError(f"{raw_path.name}: recovered grid {grid_w}x{grid_h} does not fit "
-                         f"the {FRAME_W}x{FRAME_H} contract")
+                         f"the {frame.w}x{frame.h} contract")
     return cells, {"bbox": bbox, "pitch_x": pitch_x, "pitch_y": pitch_y,
                    "grid": [grid_w, grid_h]}
 
 
-def normalize(raw_path: pathlib.Path) -> Image.Image:
-    """Archived raw PNG -> deterministic 32x48 runtime frame, with no resize."""
-    cells, _ = recover_grid(raw_path)
+def normalize(raw_path: pathlib.Path, frame: Frame = MEDIUM) -> Image.Image:
+    """Archived raw PNG -> deterministic tier runtime frame, with no resize."""
+    cells, _ = recover_grid(raw_path, frame=frame)
     grid_h, grid_w = len(cells), len(cells[0])
 
     # 4. bottom-center foot-anchor; recovered logical cells are placed 1:1.
-    frame = Image.new("RGBA", (FRAME_W, FRAME_H), (0, 0, 0, 0))
-    offset_x, offset_y = (FRAME_W - grid_w) // 2, FRAME_H - grid_h
-    px = frame.load()
+    canvas = Image.new("RGBA", (frame.w, frame.h), (0, 0, 0, 0))
+    offset_x, offset_y = (frame.w - grid_w) // 2, frame.h - grid_h
+    px = canvas.load()
     for y, row in enumerate(cells):
         for x, rgb in enumerate(row):
             if rgb is not None:
                 px[offset_x + x, offset_y + y] = (*_nearest(rgb), 255)
-    return frame
+    return canvas
 
 
-def baseline(frame: Image.Image) -> int | None:
+def baseline(image: Image.Image, frame: Frame = MEDIUM) -> int | None:
     """Lowest opaque row -- the foot baseline. None if the frame is empty."""
-    a = frame.getchannel("A").load()
-    for y in range(FRAME_H - 1, -1, -1):
-        if any(a[x, y] for x in range(FRAME_W)):
+    a = image.getchannel("A").load()
+    for y in range(frame.h - 1, -1, -1):
+        if any(a[x, y] for x in range(frame.w)):
             return y
     return None
 
 
 # --------------------------------------------------------------- validator
 
-def validate(frame: Image.Image, name: str = "frame") -> list[str]:
+def validate(image: Image.Image, name: str = "frame",
+             frame: Frame = MEDIUM) -> list[str]:
     """Per-frame rejection rules. Empty list == accepted."""
     errs: list[str] = []
 
-    if frame.size != (FRAME_W, FRAME_H):
-        errs.append(f"{name}: wrong dimensions {frame.size}, expected "
-                    f"{(FRAME_W, FRAME_H)}")
+    if image.size != (frame.w, frame.h):
+        errs.append(f"{name}: wrong dimensions {image.size}, expected "
+                    f"{(frame.w, frame.h)}")
         return errs  # every later rule assumes the canvas size
-    if frame.mode != "RGBA":
-        errs.append(f"{name}: non-RGBA mode {frame.mode!r}")
+    if image.mode != "RGBA":
+        errs.append(f"{name}: non-RGBA mode {image.mode!r}")
         return errs
 
-    px = frame.load()
-    alphas = {px[x, y][3] for y in range(FRAME_H) for x in range(FRAME_W)}
+    px = image.load()
+    alphas = {px[x, y][3] for y in range(frame.h) for x in range(frame.w)}
 
     # unapproved alpha -- anything between fully clear and fully opaque
     stray = sorted(a for a in alphas if a not in (0, 255))
@@ -342,7 +364,7 @@ def validate(frame: Image.Image, name: str = "frame") -> list[str]:
         errs.append(f"{name}: unapproved alpha values {stray[:6]} "
                     f"({len(stray)} distinct); runtime alpha must be 0 or 255")
 
-    opaque = [(x, y) for y in range(FRAME_H) for x in range(FRAME_W)
+    opaque = [(x, y) for y in range(frame.h) for x in range(frame.w)
               if px[x, y][3] == 255]
     if not opaque:
         errs.append(f"{name}: empty frame, no opaque pixels")
@@ -386,15 +408,16 @@ def raw_clipping(raw_path: pathlib.Path) -> list[str]:
     return []
 
 
-def validate_sequence(frames: list[tuple[str, Image.Image]]) -> list[str]:
+def validate_sequence(frames: list[tuple[str, Image.Image]],
+                      frame: Frame = MEDIUM) -> list[str]:
     """Whole-animation rules layered on top of the per-frame ones."""
     errs: list[str] = []
     for name, f in frames:
-        errs += validate(f, name)
+        errs += validate(f, name, frame=frame)
 
     # unstable baseline -- feet must not bob between frames of one animation,
     # or the Character appears to slide vertically in the Battle Tile.
-    bases = {name: baseline(f) for name, f in frames}
+    bases = {name: baseline(f, frame=frame) for name, f in frames}
     distinct = set(bases.values())
     if len(distinct) > 1:
         errs.append(f"unstable baseline across sequence: {bases}")
@@ -405,7 +428,8 @@ def validate_sequence(frames: list[tuple[str, Image.Image]]) -> list[str]:
 
 def manifest(action: str, frames: list[tuple[str, Image.Image]],
              durations_ms: list[int], cues_ms: dict[str, int] | None = None,
-             source: dict | None = None) -> dict:
+             source: dict | None = None,
+             frame: Frame = MEDIUM) -> dict:
     """Build the runtime animation manifest. All timings are integer ms."""
     if len(durations_ms) != len(frames):
         raise ValueError(f"{action}: {len(durations_ms)} durations for "
@@ -420,10 +444,10 @@ def manifest(action: str, frames: list[tuple[str, Image.Image]],
             raise ValueError(f"{action}: cue {label!r}={t!r} must be an int ms "
                              f"within 0..{total}")
 
-    base = baseline(frames[0][1])
+    base = baseline(frames[0][1], frame=frame)
     return {
         "action": action,
-        "frame_size": [FRAME_W, FRAME_H],
+        "frame_size": [frame.w, frame.h],
         "palette": "moonberry-16",
         "baseline_row": base,
         "total_ms": total,

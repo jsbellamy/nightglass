@@ -7,6 +7,7 @@ import hashlib
 import json
 import pathlib
 import sys
+from unittest import mock
 
 from PIL import Image
 
@@ -41,6 +42,22 @@ def good_frame():
     return A.normalize(RAW_DIR / "knight.png")
 
 
+MONSTER_FRAMES = {
+    "small": (24, 32),
+    "medium": (32, 48),
+    "large": (48, 72),
+}
+
+
+print("frame tiers")
+for tier, (w, h) in MONSTER_FRAMES.items():
+    spec = A.FRAMES[tier]
+    check(f"FRAMES[{tier!r}] matches MONSTER_FRAMES",
+          (spec.w, spec.h) == (w, h) and spec.min_logical_height > 0,
+          f"w={spec.w} h={spec.h} min_h={spec.min_logical_height}")
+check("MEDIUM is the default medium tier", A.MEDIUM is A.FRAMES["medium"])
+
+
 def png_bytes(frame):
     return A.runtime_png_bytes(frame)
 
@@ -71,6 +88,18 @@ check("Hunter grid is recoverable without reduction",
 check("both pitch fits clear the confidence gate",
       all(report[axis]["score"] >= A.MIN_GRID_SCORE
           for report in reports.values() for axis in ("pitch_x", "pitch_y")))
+
+_stub_oversize = [[(200, 200, 200) for _ in range(22)] for _ in range(35)]
+with mock.patch.object(A, "sample_cells", return_value=_stub_oversize):
+    try:
+        A.recover_grid(RAW_DIR / "knight.png", frame=A.FRAMES["small"])
+        small_fit_err = ""
+    except ValueError as error:
+        small_fit_err = str(error)
+check("grid too large for small tier names 24x32 contract",
+      "24x32" in small_fit_err and "does not fit" in small_fit_err
+      and "32x48" not in small_fit_err,
+      small_fit_err)
 
 bad_key = HERE / "_bad_key_test.png"
 Image.new("RGBA", (64, 96), (0, 0, 255, 255)).save(bad_key)
@@ -154,6 +183,30 @@ m = A.manifest("attack", frames, [120, 80], {"impact": 120},
 check("manifest total_ms is integer", isinstance(m["total_ms"], int) and m["total_ms"] == 200)
 check("manifest records integer cues", m["cues_ms"] == {"impact": 120})
 check("manifest records baseline row", m["baseline_row"] == 47, str(m["baseline_row"]))
+check("manifest default frame_size is medium", m["frame_size"] == [32, 48])
+_tier_frame = Image.new("RGBA", (48, 72), (0, 0, 0, 0))
+_tier_frame.load()[24, 71] = (*A.PALETTE[0], 255)
+m_large = A.manifest("still", [("f0", _tier_frame)], [1], frame=A.FRAMES["large"])
+check("manifest large tier frame_size", m_large["frame_size"] == [48, 72])
+_tier_frame = Image.new("RGBA", (24, 32), (0, 0, 0, 0))
+_tier_frame.load()[12, 31] = (*A.PALETTE[0], 255)
+m_small = A.manifest("still", [("f0", _tier_frame)], [1], frame=A.FRAMES["small"])
+check("manifest small tier frame_size", m_small["frame_size"] == [24, 32])
+
+print("\ntier normalization anchors")
+_stub_cells = [[(200, 200, 200) if x < 10 else None for x in range(10)]
+               for _ in range(20)]
+with mock.patch.object(A, "recover_grid", return_value=(_stub_cells, {})):
+    small_frame = A.normalize(RAW_DIR / "knight.png", frame=A.FRAMES["small"])
+    large_frame = A.normalize(RAW_DIR / "knight.png", frame=A.FRAMES["large"])
+check("small normalize canvas is 24x32", small_frame.size == (24, 32))
+check("large normalize canvas is 48x72", large_frame.size == (48, 72))
+_spx = small_frame.load()
+check("small normalize bottom-centre anchor",
+      _spx[7, 12][3] == 255 and _spx[6, 12][3] == 0 and _spx[17, 12][3] == 0)
+_lpx = large_frame.load()
+check("large normalize bottom-centre anchor",
+      _lpx[19, 52][3] == 255 and _lpx[18, 52][3] == 0 and _lpx[29, 52][3] == 0)
 
 print("\ndeterminism")
 one = A.normalize(RAW_DIR / "wizard.png")
@@ -168,17 +221,27 @@ for raw_tag, runtime_name in RUNTIME_SPRITES.items():
     check(f"offline rebuild matches committed {runtime_name} byte-for-byte",
           rebuilt == committed)
 
+manifest_data = json.loads((RUNTIME_DIR / "manifest.json").read_text())
+for raw_tag, runtime_name in RUNTIME_SPRITES.items():
+    sprite_key = pathlib.Path(runtime_name).stem
+    entry = manifest_data[sprite_key]
+    rebuilt_image = A.normalize(RAW_DIR / f"{raw_tag}.png")
+    recorded = entry["frames"][0]["sha256"]
+    actual = hashlib.sha256(rebuilt_image.tobytes()).hexdigest()
+    check(f"medium re-acquire sha256 matches manifest for {sprite_key}",
+          actual == recorded, f"got {actual[:16]}… expected {recorded[:16]}…")
+
 _p = one.load()
-_op = [_p[x, y] for y in range(A.FRAME_H) for x in range(A.FRAME_W)
+_op = [_p[x, y] for y in range(A.MEDIUM.h) for x in range(A.MEDIUM.w)
        if _p[x, y][3] == 255]
 check("frame has a real opaque population", len(_op) > 300, f"{len(_op)} px")
 palette_ok = all(px[:3] in A.PALETTE_SET for px in _op)
 check("all opaque pixels are on-palette", palette_ok)
 check("alpha is strictly binary",
-      {_p[x, y][3] for y in range(A.FRAME_H) for x in range(A.FRAME_W)} <= {0, 255})
+      {_p[x, y][3] for y in range(A.MEDIUM.h) for x in range(A.MEDIUM.w)} <= {0, 255})
 
 print("\ncommitted manifest")
-manifest = json.loads((RUNTIME_DIR / "manifest.json").read_text())
+manifest = manifest_data
 check("manifest records moonberry-16 palette for every sprite",
       all(entry.get("palette") == "moonberry-16" for entry in manifest.values()),
       str({k: v.get("palette") for k, v in manifest.items()}))
