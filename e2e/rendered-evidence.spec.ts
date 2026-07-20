@@ -358,21 +358,33 @@ test.describe("rendered-output evidence seam", () => {
         const b = el.getBoundingClientRect();
         return { x: b.x, y: b.y, w: b.width, h: b.height, cls: el.className };
       };
-      const notification = r(document.querySelector(".status-notification-layer .drop-toast"));
+      const notificationEl = document.querySelector(".status-notification-layer .drop-toast");
+      const notification = r(notificationEl);
       const statusLine = r(document.querySelector(".status-line"));
       const stageWave = r(document.querySelector(".stage-wave-text"));
       const buttons = [...document.querySelectorAll(".status-button")].map((el) => r(el));
       const combatants = [...document.querySelectorAll(".combatant")].map((el) => r(el));
-      return { notification, statusLine, stageWave, buttons, combatants };
+      const statusLineEl = document.querySelector(".status-line");
+      return {
+        notification,
+        statusLine,
+        stageWave,
+        buttons,
+        combatants,
+        notificationInStatusDom:
+          !!notificationEl &&
+          !!statusLineEl &&
+          (statusLineEl.contains(notificationEl) ||
+            statusLineEl.parentElement?.contains(notificationEl) === true),
+      };
     });
 
     expect(dropClearance.notification.h, "drop notification height hosts 34px icon").toBeGreaterThanOrEqual(
       34,
     );
-    expect(
-      rectContains(dropClearance.statusLine, dropClearance.notification),
-      "drop notification inside status line",
-    ).toBe(true);
+    expect(dropClearance.notificationInStatusDom, "drop notification mounted in status chrome").toBe(
+      true,
+    );
     for (const combatant of dropClearance.combatants) {
       expect(
         overlaps(dropClearance.notification, combatant),

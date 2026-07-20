@@ -6,7 +6,7 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: 0,
   workers: 1,
-  reporter: [["list"]],
+  reporter: process.env.CI ? [["list"], ["html", { open: "never" }]] : [["list"]],
   projects: [{ name: "chromium", use: { browserName: "chromium" } }],
   use: {
     baseURL: "http://127.0.0.1:4173",

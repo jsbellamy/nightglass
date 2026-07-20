@@ -313,14 +313,31 @@ export function mountBattleTile(
   battlefield.append(backdrop, partyZone, effectLane, opponentZone, bossHealthBar, feedbackLayer);
   root.append(statusLine, battlefield);
 
-  const presentation: Presentation = createPresentation({
+  function prefersReducedMotion(): boolean {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+      return false;
+    }
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  }
+
+  const presentation = createPresentation({
     battlefield,
     effectLane,
     feedbackLayer,
     notificationLayer,
     content,
-    reducedMotion: options.reducedMotion ?? false,
-  });
+    reducedMotion: options.reducedMotion ?? prefersReducedMotion(),
+  }) as Presentation & { setReducedMotion(next: boolean): void };
+
+  const motionQuery =
+    typeof window !== "undefined" && typeof window.matchMedia === "function"
+      ? window.matchMedia("(prefers-reduced-motion: reduce)")
+      : null;
+  const syncReducedMotion = (): void => {
+    presentation.setReducedMotion(options.reducedMotion ?? motionQuery?.matches ?? false);
+  };
+  syncReducedMotion();
+  motionQuery?.addEventListener("change", syncReducedMotion);
 
   let lastSnapshot: Snapshot | null = null;
 
@@ -401,6 +418,7 @@ export function mountBattleTile(
     render,
     applyEvents,
     destroy() {
+      motionQuery?.removeEventListener("change", syncReducedMotion);
       sfx.destroy();
       presentation.destroy();
       root.replaceChildren();
