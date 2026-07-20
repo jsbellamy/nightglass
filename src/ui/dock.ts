@@ -60,6 +60,9 @@ export function mountManagementDock(
 ): ManagementDock {
   let activeTab: DockTabId = options.initialTab ?? "party";
   let armoryBadge = false;
+  let heldSnapshot: ReadonlySnapshot | null = null;
+  let heldLegality: EngineLegalityView = EMPTY_ENGINE_LEGALITY;
+  let hasHeldState = false;
 
   root.classList.add("dock-shell", "management-dock");
   root.setAttribute("role", "dialog");
@@ -146,7 +149,29 @@ export function mountManagementDock(
 
   root.append(header, surface);
 
+  function syncStageLabel(): void {
+    const stageLabel = heldSnapshot?.attempt
+      ? `Stage ${heldSnapshot.attempt.stage} · ${
+          heldSnapshot.attempt.encounter === 3 ? "Boss" : `Wave ${heldSnapshot.attempt.encounter}`
+        }`
+      : "No Attempt";
+    root.dataset["stageLabel"] = stageLabel;
+  }
+
+  function renderSurface(id: DockTabId): void {
+    const mounted = mountedSurfaces.get(id)!;
+    if (id === "talents" || id === "armory") {
+      (mounted as { render(s: typeof heldSnapshot, l: typeof heldLegality): void }).render(
+        heldSnapshot,
+        heldLegality,
+      );
+    } else {
+      mounted.render(heldSnapshot);
+    }
+  }
+
   function setActiveTab(next: DockTabId): void {
+    const tabChanged = next !== activeTab;
     activeTab = next;
     for (const { id } of DOCK_SURFACES) {
       const selected = id === activeTab;
@@ -162,6 +187,9 @@ export function mountManagementDock(
       }
     }
     surface.setAttribute("aria-labelledby", `dock-tab-${activeTab}`);
+    if (tabChanged && hasHeldState) {
+      renderSurface(activeTab);
+    }
   }
 
   function requestClose(): void {
@@ -227,23 +255,11 @@ export function mountManagementDock(
 
   return {
     render(snapshot, legality = EMPTY_ENGINE_LEGALITY) {
-      const stageLabel = snapshot?.attempt
-        ? `Stage ${snapshot.attempt.stage} · ${
-            snapshot.attempt.encounter === 3 ? "Boss" : `Wave ${snapshot.attempt.encounter}`
-          }`
-        : "No Attempt";
-      root.dataset["stageLabel"] = stageLabel;
-      for (const { id } of DOCK_SURFACES) {
-        const mounted = mountedSurfaces.get(id)!;
-        if (id === "talents" || id === "armory") {
-          (mounted as { render(s: typeof snapshot, l: typeof legality): void }).render(
-            snapshot,
-            legality,
-          );
-        } else {
-          mounted.render(snapshot);
-        }
-      }
+      heldSnapshot = snapshot;
+      heldLegality = legality;
+      hasHeldState = true;
+      syncStageLabel();
+      renderSurface(activeTab);
     },
     setArmoryBadge(visible) {
       armoryBadge = visible;

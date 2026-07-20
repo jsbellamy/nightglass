@@ -10,6 +10,7 @@ import { mountManagementDock } from "./ui/dock";
 import {
   legalityViewFromSerialized,
   serializeEngineLegality,
+  type SerializedEngineLegality,
 } from "./ui/engine-legality";
 import { PUMP_INTERVAL_MS, startPump, type PumpController, type PumpDeps } from "./ui/pump";
 import { createFrameMetrics } from "./ui/frame-metrics";
@@ -57,10 +58,68 @@ export function applyTileCommand(engine: Engine, command: TileCommand): EngineEv
   return Array.isArray(result) ? result : [];
 }
 
-export function mountDockShell(root: HTMLElement): { destroy(): void } {
+export interface DockShellSchedule {
+  requestAnimationFrame(callback: FrameRequestCallback): number;
+  cancelAnimationFrame(handle: number): void;
+}
+
+export interface DockShellOptions {
+  schedule?: DockShellSchedule;
+  busFactory?: typeof createBusEndpoint;
+}
+
+export function mountDockShell(
+  root: HTMLElement,
+  options: DockShellOptions = {},
+): { destroy(): void } {
   let bus: BusEndpoint;
   const content = buildContent();
   assertRegisteredEquipmentIcons(content);
+
+  const schedule: DockShellSchedule = options.schedule ?? {
+    requestAnimationFrame: (callback) => window.requestAnimationFrame(callback),
+    cancelAnimationFrame: (handle) => window.cancelAnimationFrame(handle),
+  };
+
+  let pumpRenderScheduled = false;
+  let pumpRafId: number | null = null;
+  let pendingPumpSnapshot: Snapshot | null = null;
+  let pendingPumpLegality: SerializedEngineLegality | null = null;
+
+  function cancelPendingPumpRender(): void {
+    if (pumpRafId !== null) {
+      schedule.cancelAnimationFrame(pumpRafId);
+      pumpRafId = null;
+    }
+    pumpRenderScheduled = false;
+  }
+
+  function flushCoalescedPumpRender(): void {
+    pumpRafId = null;
+    pumpRenderScheduled = false;
+    if (!pendingPumpSnapshot || !pendingPumpLegality) {
+      return;
+    }
+    dock.render(
+      pendingPumpSnapshot,
+      legalityViewFromSerialized(pendingPumpLegality),
+    );
+  }
+
+  function scheduleCoalescedPumpRender(
+    snapshot: Snapshot,
+    legality: SerializedEngineLegality,
+  ): void {
+    pendingPumpSnapshot = snapshot;
+    pendingPumpLegality = legality;
+    if (pumpRenderScheduled) {
+      return;
+    }
+    pumpRenderScheduled = true;
+    pumpRafId = schedule.requestAnimationFrame(() => {
+      flushCoalescedPumpRender();
+    });
+  }
 
   const dock = mountManagementDock(root, {
     content,
@@ -73,12 +132,13 @@ export function mountDockShell(root: HTMLElement): { destroy(): void } {
   });
   dock.setOpen(true);
 
-  bus = createBusEndpoint({
+  bus = (options.busFactory ?? createBusEndpoint)({
     snapshot(message) {
+      cancelPendingPumpRender();
       dock.render(message.snapshot, legalityViewFromSerialized(message.legality));
     },
     pump(message) {
-      dock.render(message.snapshot, legalityViewFromSerialized(message.legality));
+      scheduleCoalescedPumpRender(message.snapshot, message.legality);
     },
     "armory-badge"() {
       dock.setArmoryBadge(true);
@@ -96,6 +156,7 @@ export function mountDockShell(root: HTMLElement): { destroy(): void } {
 
   return {
     destroy() {
+      cancelPendingPumpRender();
       bus.close();
       dock.destroy();
     },
