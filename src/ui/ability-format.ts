@@ -1,8 +1,4 @@
-import {
-  healAmount,
-  powerForStats,
-  rawDamageFromEffect,
-} from "../core/combat";
+import { previewEffectRaw } from "../core/combat";
 import type { CombatActionState } from "../core/snapshot";
 import type {
   AbilityDef,
@@ -24,16 +20,24 @@ export function abilityRawDisplay(
   for (const effect of ability.effects) {
     if (effect.kind === "damage") {
       const channel = effect.channel ?? "physical";
+      const value = previewEffectRaw(effect, stats);
+      if (value === null) {
+        continue;
+      }
       return {
         kind: "damage",
-        value: rawDamageFromEffect(powerForStats(stats, channel), effect),
+        value,
         channel,
       };
     }
     if (effect.kind === "heal") {
+      const value = previewEffectRaw(effect, stats);
+      if (value === null) {
+        continue;
+      }
       return {
         kind: "heal",
-        value: healAmount(powerForStats(stats, "elemental"), effect),
+        value,
       };
     }
   }

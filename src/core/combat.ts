@@ -62,24 +62,144 @@ export function effectiveStats(
   return applyStatModifiers(base, modifiers);
 }
 
-export function powerForStats(stats: BaseStats, channel: DamageChannel): number {
+export interface EffectOutcome {
+  healthDelta: number;
+  revived: boolean;
+  revivedHealth?: number;
+  statusToApply?: { statusId: string; durationMs: number };
+  statusToRefresh?: { statusId: string; durationMs: number };
+  stunMs?: number;
+  damageDetail?: {
+    amount: number;
+    channel: DamageChannel;
+    element?: AbilityEffect["element"];
+  };
+  healDetail?: { amount: number };
+}
+
+export interface EffectTargetContext {
+  stats: BaseStats;
+  health: number;
+  maxHealth: number;
+  knockedOut: boolean;
+  statuses: ReadonlyArray<{ statusId: string }>;
+}
+
+/**
+ * Resolve one AbilityEffect against one target. Owns channel selection: the
+ * attacker's Power and the defender's mitigation are chosen from the same
+ * channel, so they cannot be mismatched by a caller.
+ */
+export function resolveEffect(
+  effect: AbilityEffect,
+  actorStats: BaseStats,
+  target: EffectTargetContext,
+  statusesById: Map<string, StatusEffectDef>,
+): EffectOutcome {
+  const empty: EffectOutcome = { healthDelta: 0, revived: false };
+
+  switch (effect.kind) {
+    case "damage": {
+      const channel = effect.channel ?? "physical";
+      const power = powerForStats(actorStats, channel);
+      const raw = rawDamageFromEffect(power, effect);
+      const amount = mitigateDamage(raw, mitigationForChannel(target.stats, channel));
+      return {
+        healthDelta: -amount,
+        revived: false,
+        damageDetail: {
+          amount,
+          channel,
+          ...(effect.element ? { element: effect.element } : {}),
+        },
+      };
+    }
+    case "heal": {
+      if (target.knockedOut) {
+        return empty;
+      }
+      const amount = healAmount(powerForStats(actorStats, "elemental"), effect);
+      const capped = Math.min(target.maxHealth, target.health + amount);
+      const applied = capped - target.health;
+      return {
+        healthDelta: applied,
+        revived: false,
+        healDetail: { amount: applied },
+      };
+    }
+    case "revive": {
+      if (!target.knockedOut) {
+        return empty;
+      }
+      const amount = healAmount(powerForStats(actorStats, "elemental"), effect);
+      return {
+        healthDelta: amount,
+        revived: true,
+        revivedHealth: amount,
+        healDetail: { amount },
+      };
+    }
+    case "apply-status": {
+      const statusId = effect.statusId;
+      if (!statusId) {
+        return empty;
+      }
+      const statusDef = statusesById.get(statusId);
+      if (!statusDef) {
+        return empty;
+      }
+      const durationMs = effect.stunMs ?? statusDef.durationMs;
+      const existing = target.statuses.some((status) => status.statusId === statusId);
+      if (existing) {
+        return {
+          healthDelta: 0,
+          revived: false,
+          statusToRefresh: { statusId, durationMs },
+          ...(effect.stunMs !== undefined ? { stunMs: effect.stunMs } : {}),
+        };
+      }
+      return {
+        healthDelta: 0,
+        revived: false,
+        statusToApply: { statusId, durationMs },
+        ...(effect.stunMs !== undefined ? { stunMs: effect.stunMs } : {}),
+      };
+    }
+    default:
+      return empty;
+  }
+}
+
+/** Pre-mitigation damage or heal amount for UI tooltips (actor Power only). */
+export function previewEffectRaw(effect: AbilityEffect, actorStats: BaseStats): number | null {
+  if (effect.kind === "damage") {
+    const channel = effect.channel ?? "physical";
+    return rawDamageFromEffect(powerForStats(actorStats, channel), effect);
+  }
+  if (effect.kind === "heal" || effect.kind === "revive") {
+    return healAmount(powerForStats(actorStats, "elemental"), effect);
+  }
+  return null;
+}
+
+function powerForStats(stats: BaseStats, channel: DamageChannel): number {
   return channel === "physical" ? stats.physical : stats.elemental;
 }
 
-export function mitigateDamage(raw: number, mitigation: number): number {
+function mitigateDamage(raw: number, mitigation: number): number {
   const clamped = Math.max(0, mitigation);
   return Math.max(1, Math.floor((raw * 100) / (100 + clamped)));
 }
 
-export function mitigationForChannel(stats: BaseStats, channel: DamageChannel): number {
+function mitigationForChannel(stats: BaseStats, channel: DamageChannel): number {
   return channel === "physical" ? stats.armor : stats.elementalResistance;
 }
 
-export function rawFromCoefficient(power: number, coefficient: number): number {
+function rawFromCoefficient(power: number, coefficient: number): number {
   return Math.floor(power * coefficient);
 }
 
-export function rawDamageFromEffect(power: number, effect: AbilityEffect): number {
+function rawDamageFromEffect(power: number, effect: AbilityEffect): number {
   return rawFromCoefficient(power, effect.coefficient ?? 1);
 }
 
@@ -362,12 +482,8 @@ export function opponentAbilityCandidates(
   return authored;
 }
 
-export function healAmount(power: number, effect: AbilityEffect): number {
+function healAmount(power: number, effect: AbilityEffect): number {
   return rawFromCoefficient(power, effect.coefficient ?? 1);
-}
-
-export function clampHeal(currentHealth: number, maxHealth: number, amount: number): number {
-  return Math.min(maxHealth, currentHealth + amount);
 }
 
 export function shouldApplyStun(
