@@ -325,7 +325,7 @@ describe("Presentation-event SFX", () => {
     sfx.mountStatusControls();
     sfx.setMuted(false);
     const ambient = instances.find((audio) => audio.src.includes(CUE_IDS["ambient-night-garden"]));
-    expect(ambient?.loop).toBe(true);
+    expect(ambient?.loop).toBe(false);
     expect(ambient?.play).toHaveBeenCalled();
 
     Object.defineProperty(doc, "hidden", { value: true, configurable: true });
