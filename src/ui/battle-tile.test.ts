@@ -17,6 +17,29 @@ import {
 
 const LOOT_SEED = 42;
 
+async function capturePresentationRenderNowMs(
+  run: (tile: ReturnType<typeof mountBattleTile>) => void,
+): Promise<number[]> {
+  const renderNowMs: number[] = [];
+  const { createPresentation: realCreate } =
+    await vi.importActual<typeof presentationModule>("./presentation");
+  const createSpy = vi.spyOn(presentationModule, "createPresentation").mockImplementation((opts) => {
+    const pres = realCreate(opts);
+    const originalRender = pres.render.bind(pres);
+    pres.render = (nowMs, snapshot) => {
+      renderNowMs.push(nowMs);
+      return originalRender(nowMs, snapshot);
+    };
+    return pres;
+  });
+
+  const root = document.createElement("main");
+  const tile = mountBattleTile(root, fixtureContent);
+  run(tile);
+  createSpy.mockRestore();
+  return renderNowMs;
+}
+
 function snapshotWithFiveOpponents(base: Snapshot): Snapshot {
   const attempt = base.attempt;
   if (!attempt) {
@@ -233,50 +256,22 @@ describe("Battle Tile renderer", () => {
   });
 
   it("forwards an explicit nowMs to presentation.render", async () => {
-    const renderNowMs: number[] = [];
-    const { createPresentation: realCreate } =
-      await vi.importActual<typeof presentationModule>("./presentation");
-    const createSpy = vi.spyOn(presentationModule, "createPresentation").mockImplementation((opts) => {
-      const pres = realCreate(opts);
-      const originalRender = pres.render.bind(pres);
-      pres.render = (nowMs, snapshot) => {
-        renderNowMs.push(nowMs);
-        return originalRender(nowMs, snapshot);
-      };
-      return pres;
-    });
-
-    const root = document.createElement("main");
-    const tile = mountBattleTile(root, fixtureContent);
     const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
     const snapshot = engine.snapshot();
-    tile.render(snapshot, 4_321);
+    const renderNowMs = await capturePresentationRenderNowMs((tile) => {
+      tile.render(snapshot, 4_321);
+    });
 
     expect(renderNowMs[renderNowMs.length - 1]).toBe(4_321);
-    createSpy.mockRestore();
   });
 
   it("defaults nowMs to snapshot.simNowMs when render omits it", async () => {
-    const renderNowMs: number[] = [];
-    const { createPresentation: realCreate } =
-      await vi.importActual<typeof presentationModule>("./presentation");
-    const createSpy = vi.spyOn(presentationModule, "createPresentation").mockImplementation((opts) => {
-      const pres = realCreate(opts);
-      const originalRender = pres.render.bind(pres);
-      pres.render = (nowMs, snapshot) => {
-        renderNowMs.push(nowMs);
-        return originalRender(nowMs, snapshot);
-      };
-      return pres;
-    });
-
-    const root = document.createElement("main");
-    const tile = mountBattleTile(root, fixtureContent);
     const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
     const snapshot = engine.snapshot();
-    tile.render(snapshot);
+    const renderNowMs = await capturePresentationRenderNowMs((tile) => {
+      tile.render(snapshot);
+    });
 
     expect(renderNowMs[renderNowMs.length - 1]).toBe(snapshot.simNowMs);
-    createSpy.mockRestore();
   });
 });
