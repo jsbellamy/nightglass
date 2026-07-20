@@ -1,5 +1,11 @@
 # Acceptance evidence seams
 
+> **Historical.** Point-in-time record from 2026-07-19. Superseded by
+> [`docs/agents/acceptance-evidence.md`](../agents/acceptance-evidence.md) and
+> Nightglass [`.agents/issue-implementer.md`](../../.agents/issue-implementer.md)
+> step 5. Findings here may describe a state that no longer exists; do not action
+> them without re-verifying against the current tree.
+
 Researched on 2026-07-19 against `main` at `3528abf` (`Audit rendered
 application acceptance evidence (#93)`), for Wayfinder ticket
 [#90](https://github.com/jsbellamy/nightglass/issues/90) on map

@@ -76,9 +76,13 @@ Decisions: [Battlefield workspace](https://github.com/jsbellamy/nightglass/issue
   occupy the left third in Front/Middle/Back order facing right; opponents
   occupy the right third facing left; the open centre is the effect lane for
   projectiles, movement, and impacts.
-- Sprite budgets: Party Member **32×48** screen pixels rendered at 1×; ordinary
-  opponent roughly **28×40**. Runtime downscaling is prohibited; only integer
-  display scale is allowed.
+- Sprite budgets: every combat still ships on a **32×48** canvas (contract —
+  `src/assets/sprites/manifest.json` `frame_size` and `pipeline/test_contract.py`);
+  Party Members and opponents use the same canvas. Grid-recovery **measurements**
+  of ink extent within that canvas (not separate contracts): Pipcap-class ordinary
+  ~**29×40**, Boss silhouettes ~**32×41** (the former §3 “~28×40” opponent guess
+  is retired). Runtime downscaling is prohibited; only integer display scale is
+  allowed.
 - **Five ordinary opponents** is the compact-layout stress case (readability
   gate, not a promise every Wave contains five).
 - Nothing may resize, replace, or implicitly pause the Battle Tile. The fight
@@ -454,8 +458,8 @@ What content data and assets the slice must author, derived from §§3–8:
 | --- | --- | --- |
 | Class Kits (bases, basic attacks, 4 Core Abilities, Talent Tier each) | 4 | [#7](https://github.com/jsbellamy/nightglass/issues/7) |
 | Stages (2 Waves + Boss, opponent rosters, XP allocation) | 3 | [#5](https://github.com/jsbellamy/nightglass/issues/5) |
-| Opponent stills: one ordinary family (Pipcap-class, reused across Waves) + one distinct Boss silhouette per Stage | 1 + 3 (Pipcap and one Boss accepted) | [#30](https://github.com/jsbellamy/nightglass/issues/30) |
-| Canonical Character references | 4 (Knight, Wizard, Priest, Hunter accepted at 32×48) | [#29](https://github.com/jsbellamy/nightglass/issues/29), [#55](https://github.com/jsbellamy/nightglass/issues/55), [#56](https://github.com/jsbellamy/nightglass/issues/56) |
+| Opponent stills: one ordinary family (Pipcap-class, reused across Waves) + one distinct Boss silhouette per Stage | 1 + 3 (all acquired at 32×48) | [#30](https://github.com/jsbellamy/nightglass/issues/30) |
+| Canonical Character references | 4 (Knight, Wizard, Priest, Hunter at 32×48) | [#29](https://github.com/jsbellamy/nightglass/issues/29), [#55](https://github.com/jsbellamy/nightglass/issues/55), [#56](https://github.com/jsbellamy/nightglass/issues/56) |
 | Ability effect stills + derivation recipes | one still per distinct effect | [#20](https://github.com/jsbellamy/nightglass/issues/20), [#4](https://github.com/jsbellamy/nightglass/issues/4) |
 | Hand-authored idle micro-loops (optional) and downed poses | up to 4 + 4 | [#4](https://github.com/jsbellamy/nightglass/issues/4) |
 | Equipment Bases with names and icons | 12 | [#8](https://github.com/jsbellamy/nightglass/issues/8) |
@@ -485,7 +489,7 @@ an implementer or orchestrator ticks to publish a PR.
 | Acquisition: byte-identical offline rebuild, provider-neutral, validator gates | `pipeline/test_contract.py` / `npm run assets:verify` all-green with no provider/network; accepted Class still hashes ([#29](https://github.com/jsbellamy/nightglass/issues/29), [#21](https://github.com/jsbellamy/nightglass/issues/21)) |
 | Effects read at 1× under stress; separation enforced; deterministic | `pipeline/effects/verify.py` 6/6 gates ([#20](https://github.com/jsbellamy/nightglass/issues/20)) |
 | Animation contract: attribution, cue alignment, 30fps legibility, anchors | [presentation-contract prototype](../prototype/presentation-contract/NOTES.md) `verify.py` 7/7 gates ([#4](https://github.com/jsbellamy/nightglass/issues/4)) |
-| Opponent art through grid recovery: Pipcap (29×40) and Boss (32×41) accepted, shared `moonberry-16`, byte-identical offline rebuild | [opponent-art prototype](../prototype/comfyui-fit/opponents/NOTES.md) ([#30](https://github.com/jsbellamy/nightglass/issues/30)) |
+| Opponent art through grid recovery: 32×48 canvas contract; recovered ink measurements Pipcap ~29×40 and Boss ~32×41; shared `moonberry-16`; byte-identical offline rebuild | [opponent-art prototype](../prototype/comfyui-fit/opponents/NOTES.md) ([#30](https://github.com/jsbellamy/nightglass/issues/30)) |
 | Body-motion rejections (closed evidence, not dependencies) | [#13](https://github.com/jsbellamy/nightglass/issues/13), [#19](https://github.com/jsbellamy/nightglass/issues/19), [#26](https://github.com/jsbellamy/nightglass/issues/26), [#24](https://github.com/jsbellamy/nightglass/issues/24) |
 | SideScape reuse/reject inventory | [foundation research](research/sidescape-foundation.md) ([#9](https://github.com/jsbellamy/nightglass/issues/9)) |
 
@@ -503,21 +507,11 @@ re-stating a second suite here.
 
 Carried forward deliberately; none blocks implementation planning.
 
-- **Priest and Hunter canonical references** and **two of the three Boss
-  stills** are not yet acquired; the pipeline is proven on Knight, Wizard,
-  Pipcap, and one Boss
-  ([#30](https://github.com/jsbellamy/nightglass/issues/30) confirmed the
-  opponent canvases through grid recovery).
-- **`moonberry-16` extension**: opponents and Bosses share the palette (#30);
-  extending it for Priest, Hunter, and backdrops is unresolved, and
-  `moonberry-glow` disjointness must be preserved as effects grow.
-- **Presentation concurrency** is validated at three simultaneous actor pools,
-  not five; whether five stay legible (or must dim) awaits opponent art and a
-  real Wave.
+- **`moonberry-glow` disjointness** must be preserved as Ability effect stills
+  grow; Stage backdrops are palette-**exempt** per
+  [`docs/backdrop-contract.md`](backdrop-contract.md) (shipped at 480×86 as
+  `src/assets/backdrops/backdrop-{1,2,3}.png`).
 - **Naming, setting details, and brand identity** beyond the Moonberry
   language remain undecided ("Nightglass" is the repo name, not a confirmed
   product name).
 - **Provider commercial terms** — accepted risk, see §1.
-- The stale `prototype/comfyui-fit/canonical/*.png` pair predates the frozen
-  contract and should be deleted or regenerated (flagged in
-  [#20](https://github.com/jsbellamy/nightglass/issues/20)).

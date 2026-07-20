@@ -1,5 +1,11 @@
 # Rendered-output evidence: prototype findings
 
+> **Historical.** Point-in-time record from 2026-07-19. Superseded by
+> [`docs/agents/acceptance-evidence.md`](../agents/acceptance-evidence.md) and the
+> production harness at `e2e/` (`npm run test:evidence`). Findings here may describe
+> a state that no longer exists; do not action them without re-verifying against the
+> current tree.
+
 Resolves Wayfinder ticket "Prototype rendered-output evidence for the Battle
 Tile and Management Dock" (nightglass#91), on the map "Wayfind vertical-slice
 validation and rendered-output testing" (nightglass#86).
