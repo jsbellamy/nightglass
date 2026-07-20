@@ -2,6 +2,7 @@ import backdrop1Url from "../assets/backdrops/backdrop-1.png";
 import backdrop2Url from "../assets/backdrops/backdrop-2.png";
 import backdrop3Url from "../assets/backdrops/backdrop-3.png";
 import { opponentCombatants, partyCombatants } from "../core/combat";
+import { FORMATION_SLOT_BY_INDEX, parseEntityId } from "../core/entity-id";
 import type { EngineEvent } from "../core/events";
 import type { CombatantState, Snapshot } from "../core/snapshot";
 import type { Content, StageDef } from "../core/types";
@@ -37,16 +38,16 @@ interface CombatantLookup {
 }
 
 function formationSlotFromEntityId(entityId: string): FormationSlot {
-  const slot = entityId.split(":")[2];
-  if (slot === "front" || slot === "middle" || slot === "back") {
-    return slot;
+  const parsed = parseEntityId(entityId);
+  if (parsed.side !== "party") {
+    return "back";
   }
-  return "back";
+  return FORMATION_SLOT_BY_INDEX[parsed.formationIndex] ?? "back";
 }
 
 function opponentIndexFromEntityId(entityId: string): number {
-  const index = Number(entityId.split(":")[2]);
-  return Number.isFinite(index) ? index : 0;
+  const parsed = parseEntityId(entityId);
+  return parsed.side === "opponent" ? parsed.index : 0;
 }
 
 function stageDefFor(content: Content, stageId: 1 | 2 | 3): StageDef | undefined {

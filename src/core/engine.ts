@@ -56,14 +56,13 @@ import type {
   StageDef,
   StatusEffectDef,
 } from "./types";
+import { opponentEntityId, partyEntityId } from "./entity-id";
 import { awardXp, levelFromXp, reserveXpAward } from "./xp";
 
 export const SCHEMA_VERSION = 1;
 const WAVE_TRANSITION_MS = 2_000;
 const DEFEAT_HOLD_MS = 2_000;
 const REVIVAL_RECOVERY_MS = 1_000;
-
-const FORMATION_SLOTS = ["front", "middle", "back"] as const;
 
 export interface Engine {
   advanceBy(ms: number): EngineEvent[];
@@ -189,9 +188,8 @@ function makePartyCombatant(
 ): CombatantState {
   const equipmentMods = equipmentModifiersForLoadout(equipmentLoadout, armory, content);
   const stats = characterStats(classKit, talentState, equipmentMods);
-  const slot = FORMATION_SLOTS[slotIndex] ?? "back";
   return {
-    entityId: `party:${classId}:${slot}`,
+    entityId: partyEntityId(classId, slotIndex),
     side: "party",
     defId: classId,
     health: stats.maxHealth,
@@ -209,7 +207,7 @@ function makeOpponentCombatant(
   index: number,
 ): CombatantState {
   return {
-    entityId: `opp:${encounter}:${index}`,
+    entityId: opponentEntityId(String(encounter), index),
     side: "opponent",
     defId: opponent.id,
     health: opponent.base.maxHealth,
@@ -280,10 +278,9 @@ function createAttempt(
   const partyMembers = state.progression.party.map((classId, slotIndex) => {
     const preserved = preserveParty?.find((combatant) => combatant.defId === classId);
     if (preserved) {
-      const slot = FORMATION_SLOTS[slotIndex] ?? "back";
       return {
         ...structuredClone(preserved),
-        entityId: `party:${classId}:${slot}`,
+        entityId: partyEntityId(classId, slotIndex),
       };
     }
     const classKit = index.classesById.get(classId);
@@ -961,10 +958,9 @@ function applyPendingEdits(
         if (!existing) {
           throw new Error(`Formation edit references missing Party Member ${classId}`);
         }
-        const slot = FORMATION_SLOTS[slotIndex] ?? "back";
         return {
           ...existing,
-          entityId: `party:${classId}:${slot}`,
+          entityId: partyEntityId(classId, slotIndex),
         };
       });
       attempt.combatants = [...reordered, ...opponentCombatants(attempt.combatants)];

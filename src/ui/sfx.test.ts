@@ -2,6 +2,7 @@
 
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { EngineEvent } from "../core/events";
+import { opponentEntityId } from "../core/entity-id";
 import { SAVE_KEY } from "./boot";
 import {
   AUDIO_PREFS_KEY,
@@ -124,7 +125,7 @@ describe("Presentation-event SFX", () => {
     const batch = Array.from({ length: 5 }, (_, index) =>
       impactEvent(2_000, [
         {
-          targetId: `opp:1:${index}`,
+          targetId: opponentEntityId("1", index),
           kind: "damage",
           channel: "physical",
           amount: 1,

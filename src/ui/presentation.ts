@@ -1,5 +1,6 @@
 import effectManifest from "../assets/effects/manifest.json";
 import type { EngineEvent } from "../core/events";
+import { isPartyEntity } from "../core/entity-id";
 import type { Snapshot } from "../core/snapshot";
 import type { Content, Rarity } from "../core/types";
 import { effectRecipes } from "../data/effects";
@@ -135,7 +136,7 @@ export function strikePointOffset(anchorDx = 0): { x: number; y: number } {
 }
 
 function facingForEntity(entityId: string): 1 | -1 {
-  return entityId.startsWith("party:") ? 1 : -1;
+  return isPartyEntity(entityId) ? 1 : -1;
 }
 
 function frameAtTime(entry: EffectManifestEntry, elapsedMs: number): string | null {

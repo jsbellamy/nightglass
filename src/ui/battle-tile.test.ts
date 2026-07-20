@@ -2,6 +2,7 @@
 
 import { describe, expect, it } from "vitest";
 import { createEngine } from "../core/engine";
+import { opponentEntityId } from "../core/entity-id";
 import type { Snapshot } from "../core/snapshot";
 import { fixtureContent } from "../core/testing/fixture-content";
 import { buildContent } from "../data";
@@ -25,7 +26,7 @@ function snapshotWithFiveOpponents(base: Snapshot): Snapshot {
     throw new Error("missing fixture grunt");
   }
   const opponents = Array.from({ length: 5 }, (_, index) => ({
-    entityId: `opp:${attempt.encounter}:${index}`,
+    entityId: opponentEntityId(String(attempt.encounter), index),
     side: "opponent" as const,
     defId: grunt.id,
     health: grunt.base.maxHealth,
