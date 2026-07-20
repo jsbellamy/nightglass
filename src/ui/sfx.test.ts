@@ -8,6 +8,7 @@ import {
   CUE_IDS,
   createSfx,
   type PlayableAudio,
+  type SfxDeps,
 } from "./sfx";
 
 function createAudioStub() {
@@ -52,6 +53,10 @@ function impactEvent(
   };
 }
 
+function defaultDeps(overrides: Partial<SfxDeps> = {}): SfxDeps {
+  return { storage: storageStub(), ...overrides };
+}
+
 describe("Presentation-event SFX", () => {
   afterEach(() => {
     vi.restoreAllMocks();
@@ -59,7 +64,7 @@ describe("Presentation-event SFX", () => {
 
   it("starts default-muted with no playback on Presentation Events", () => {
     const { createAudio, instances } = createAudioStub();
-    const sfx = createSfx({ createAudio });
+    const sfx = createSfx(defaultDeps({ createAudio }));
     sfx.handleEvents([
       impactEvent(1_000, [
         {
@@ -77,7 +82,7 @@ describe("Presentation-event SFX", () => {
 
   it("plays the physical impact cue when unmuted", () => {
     const { createAudio, instances } = createAudioStub();
-    const sfx = createSfx({ createAudio });
+    const sfx = createSfx(defaultDeps({ createAudio }));
     sfx.setMuted(false);
     sfx.handleEvents([
       impactEvent(1_000, [
@@ -96,7 +101,7 @@ describe("Presentation-event SFX", () => {
 
   it("selects elemental vs physical impact cues per damage channel", () => {
     const { createAudio, instances } = createAudioStub();
-    const sfx = createSfx({ createAudio });
+    const sfx = createSfx(defaultDeps({ createAudio }));
     sfx.setMuted(false);
     sfx.handleEvents([
       impactEvent(1_000, [
@@ -114,7 +119,7 @@ describe("Presentation-event SFX", () => {
 
   it("de-dupes same-timestamp impact cues to one play per damage channel", () => {
     const { createAudio, instances } = createAudioStub();
-    const sfx = createSfx({ createAudio });
+    const sfx = createSfx(defaultDeps({ createAudio }));
     sfx.setMuted(false);
     const batch = Array.from({ length: 5 }, (_, index) =>
       impactEvent(2_000, [
@@ -134,7 +139,7 @@ describe("Presentation-event SFX", () => {
 
   it("wires knockout, wave-started, stage-cleared, party-defeat, and drop-awarded cues", () => {
     const { createAudio, instances } = createAudioStub();
-    const sfx = createSfx({ createAudio });
+    const sfx = createSfx(defaultDeps({ createAudio }));
     sfx.setMuted(false);
     const events: EngineEvent[] = [
       { seq: 1, atMs: 100, type: "wave-started", stage: 1, encounter: 1, boss: false },
@@ -173,9 +178,9 @@ describe("Presentation-event SFX", () => {
     const { createAudio, instances } = createAudioStub();
     const doc = document.implementation.createHTMLDocument("test");
     Object.defineProperty(doc, "hidden", { value: false, configurable: true });
-    const sfx = createSfx({ createAudio, document: doc });
+    const sfx = createSfx(defaultDeps({ createAudio, document: doc }));
+    sfx.mountStatusControls();
     sfx.setMuted(false);
-    sfx.syncAmbient();
     const ambient = instances.find((audio) => audio.src.includes(CUE_IDS["ambient-night-garden"]));
     expect(ambient?.loop).toBe(true);
     expect(ambient?.play).toHaveBeenCalled();
@@ -185,9 +190,36 @@ describe("Presentation-event SFX", () => {
     expect(ambient?.pause).toHaveBeenCalled();
   });
 
+  it("plays one impact cue per channel for a same-timestamp batch", () => {
+    const { createAudio, instances } = createAudioStub();
+    const sfx = createSfx(defaultDeps({ createAudio }));
+    sfx.setMuted(false);
+    sfx.handleEvents([
+      impactEvent(3_000, [
+        {
+          targetId: "opp:1:0",
+          kind: "damage",
+          channel: "physical",
+          amount: 1,
+          healthAfter: 9,
+        },
+        {
+          targetId: "opp:1:1",
+          kind: "damage",
+          channel: "elemental",
+          amount: 1,
+          healthAfter: 9,
+        },
+      ]),
+    ]);
+    expect(instances.some((audio) => audio.src.includes(CUE_IDS["impact-physical"]))).toBe(true);
+    expect(instances.some((audio) => audio.src.includes(CUE_IDS["impact-elemental"]))).toBe(true);
+    expect(instances).toHaveLength(2);
+  });
+
   it("toggles mute from the status-line control with keyboard", () => {
     const { createAudio } = createAudioStub();
-    const sfx = createSfx({ createAudio });
+    const sfx = createSfx(defaultDeps({ createAudio }));
     const controls = sfx.mountStatusControls();
     const muteButton = controls.querySelector<HTMLButtonElement>(".audio-mute-toggle");
     expect(muteButton).not.toBeNull();

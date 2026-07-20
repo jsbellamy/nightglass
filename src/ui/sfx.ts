@@ -66,7 +66,6 @@ export interface SfxController {
   setMuted(muted: boolean): void;
   setVolume(volume: number): void;
   toggleMuted(): void;
-  syncAmbient(): void;
   mountStatusControls(): HTMLElement;
   destroy(): void;
 }
@@ -109,20 +108,8 @@ function impactChannelsForEvent(event: Extract<EngineEvent, { type: "impact" }>)
   return [...channels];
 }
 
-function memoryStorage(): Pick<Storage, "getItem" | "setItem"> {
-  const map = new Map<string, string>();
-  return {
-    getItem: (key) => map.get(key) ?? null,
-    setItem: (key, value) => {
-      map.set(key, value);
-    },
-  };
-}
-
 export function createSfx(deps: SfxDeps = {}): SfxController {
-  const storage =
-    deps.storage ??
-    (typeof localStorage !== "undefined" ? localStorage : memoryStorage());
+  const storage = deps.storage ?? localStorage;
   const doc = deps.document ?? document;
   const createAudio =
     deps.createAudio ??
@@ -135,6 +122,7 @@ export function createSfx(deps: SfxDeps = {}): SfxController {
   let ambient: PlayableAudio | null = null;
   let controlsRoot: HTMLElement | null = null;
   let popoverOpen = false;
+  let onDocumentClick: ((event: MouseEvent) => void) | null = null;
 
   function applyVolume(audio: PlayableAudio): void {
     audio.volume = prefs.muted ? 0 : prefs.volume;
@@ -162,7 +150,7 @@ export function createSfx(deps: SfxDeps = {}): SfxController {
   }
 
   function startAmbient(): void {
-    if (prefs.muted || doc.hidden) {
+    if (prefs.muted || doc.hidden || !controlsRoot) {
       stopAmbient();
       return;
     }
@@ -185,7 +173,7 @@ export function createSfx(deps: SfxDeps = {}): SfxController {
   function updateMuteButton(button: HTMLButtonElement): void {
     button.textContent = prefs.muted ? "🔇" : "🔊";
     button.setAttribute("aria-label", prefs.muted ? "Unmute audio" : "Mute audio");
-    button.setAttribute("aria-pressed", prefs.muted ? "false" : "true");
+    button.setAttribute("aria-pressed", prefs.muted ? "true" : "false");
   }
 
   function closePopover(popover: HTMLElement): void {
@@ -262,39 +250,37 @@ export function createSfx(deps: SfxDeps = {}): SfxController {
       this.setMuted(!prefs.muted);
     },
 
-    syncAmbient,
-
     mountStatusControls(): HTMLElement {
       if (controlsRoot) {
         return controlsRoot;
       }
 
-      const root = document.createElement("div");
+      const root = doc.createElement("div");
       root.className = "audio-controls";
 
-      const muteButton = document.createElement("button");
+      const muteButton = doc.createElement("button");
       muteButton.type = "button";
       muteButton.className = "status-button audio-mute-toggle focus-ring";
       updateMuteButton(muteButton);
 
-      const volumeToggle = document.createElement("button");
+      const volumeToggle = doc.createElement("button");
       volumeToggle.type = "button";
       volumeToggle.className = "status-button audio-volume-toggle focus-ring";
       volumeToggle.setAttribute("aria-label", "Audio volume");
       volumeToggle.setAttribute("aria-haspopup", "dialog");
       volumeToggle.textContent = "▾";
 
-      const popover = document.createElement("div");
+      const popover = doc.createElement("div");
       popover.className = "audio-volume-popover";
       popover.hidden = true;
       popover.setAttribute("role", "dialog");
       popover.setAttribute("aria-label", "Master volume");
 
-      const label = document.createElement("label");
+      const label = doc.createElement("label");
       label.className = "audio-volume-label";
       label.textContent = "Volume";
 
-      const slider = document.createElement("input");
+      const slider = doc.createElement("input");
       slider.type = "range";
       slider.min = "0";
       slider.max = "100";
@@ -346,7 +332,7 @@ export function createSfx(deps: SfxDeps = {}): SfxController {
         slider.setAttribute("aria-valuenow", slider.value);
       });
 
-      doc.addEventListener("click", (event) => {
+      onDocumentClick = (event: MouseEvent) => {
         if (!popoverOpen) {
           return;
         }
@@ -355,7 +341,8 @@ export function createSfx(deps: SfxDeps = {}): SfxController {
           return;
         }
         closePopover(popover);
-      });
+      };
+      doc.addEventListener("click", onDocumentClick);
 
       root.append(muteButton, volumeToggle, popover);
       controlsRoot = root;
@@ -365,6 +352,10 @@ export function createSfx(deps: SfxDeps = {}): SfxController {
 
     destroy(): void {
       doc.removeEventListener("visibilitychange", onVisibilityChange);
+      if (onDocumentClick) {
+        doc.removeEventListener("click", onDocumentClick);
+        onDocumentClick = null;
+      }
       stopAmbient();
       ambient = null;
       controlsRoot = null;
