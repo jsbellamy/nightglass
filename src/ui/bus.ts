@@ -1,32 +1,31 @@
+import type { Engine } from "../core/engine";
 import type { EngineEvent } from "../core/events";
 import type { Snapshot } from "../core/snapshot";
-import type { ClassId, EquipmentSlotId } from "../core/types";
 
 export const NIGHTGLASS_BUS_CHANNEL = "nightglass";
 
 export const ARMORY_BADGE_EVENT = "nightglass:armory-badge";
 
-export type TileCommand =
-  | { cmd: "selectStage"; args: [1 | 2 | 3] }
-  | {
-      cmd: "setParty";
-      args: [{ members: [ClassId, ClassId, ClassId]; reserve: ClassId }];
-    }
-  | { cmd: "setFormation"; args: [[ClassId, ClassId, ClassId]] }
-  | {
-      cmd: "setLoadout";
-      args: [ClassId, [string, string, string]];
-    }
-  | { cmd: "allocateTalent"; args: [ClassId, string] }
-  | { cmd: "deallocateTalent"; args: [ClassId, string] }
-  | {
-      cmd: "equip";
-      args: [number, ClassId, EquipmentSlotId];
-    }
-  | { cmd: "unequip"; args: [ClassId, EquipmentSlotId] }
-  | { cmd: "discard"; args: [number[]] }
-  | { cmd: "setLocked"; args: [number, boolean] }
-  | { cmd: "markSeen"; args: [number[]] };
+/** Engine methods dispatchable across the bus. Excludes the tick/read seam. */
+export type TileCommandName = Exclude<
+  keyof Engine,
+  "advanceBy" | "snapshot" | "beginFreshAttempt"
+>;
+
+export type TileCommand = {
+  [K in TileCommandName]: { cmd: K; args: Parameters<Engine[K]> };
+}[TileCommandName];
+
+/** Every dispatchable Engine method must have a matching TileCommand variant. */
+type Assert<T extends true> = T;
+type _TileCommandCoversEngine = Assert<
+  [TileCommand["cmd"]] extends [TileCommandName]
+    ? [TileCommandName] extends [TileCommand["cmd"]]
+      ? true
+      : false
+    : false
+>;
+void (0 as unknown as _TileCommandCoversEngine);
 
 export type BusMessage =
   | { type: "command"; command: TileCommand }

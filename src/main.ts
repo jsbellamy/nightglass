@@ -29,45 +29,10 @@ function isDockWindow(): boolean {
   return new URLSearchParams(window.location.search).get("window") === "dock";
 }
 
-function applyTileCommand(engine: Engine, command: TileCommand): EngineEvent[] {
-  switch (command.cmd) {
-    case "selectStage":
-      return engine.selectStage(command.args[0]);
-    case "setParty":
-      engine.setParty(command.args[0].members, command.args[0].reserve);
-      return [];
-    case "setFormation":
-      engine.setFormation(command.args[0]);
-      return [];
-    case "setLoadout":
-      engine.setLoadout(command.args[0], command.args[1]);
-      return [];
-    case "allocateTalent":
-      engine.allocateTalent(command.args[0], command.args[1]);
-      return [];
-    case "deallocateTalent":
-      engine.deallocateTalent(command.args[0], command.args[1]);
-      return [];
-    case "equip":
-      engine.equip(command.args[0], command.args[1], command.args[2]);
-      return [];
-    case "unequip":
-      engine.unequip(command.args[0], command.args[1]);
-      return [];
-    case "discard":
-      engine.discard(command.args[0]);
-      return [];
-    case "setLocked":
-      engine.setLocked(command.args[0], command.args[1]);
-      return [];
-    case "markSeen":
-      engine.markSeen(command.args[0]);
-      return [];
-    default: {
-      const exhaustive: never = command;
-      throw new Error(`Unhandled bus command: ${JSON.stringify(exhaustive)}`);
-    }
-  }
+export function applyTileCommand(engine: Engine, command: TileCommand): EngineEvent[] {
+  const method = engine[command.cmd] as (...args: unknown[]) => void | EngineEvent[];
+  const result = method.apply(engine, command.args);
+  return Array.isArray(result) ? result : [];
 }
 
 export function mountDockShell(root: HTMLElement): { destroy(): void } {
