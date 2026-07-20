@@ -122,6 +122,10 @@ describe("tick snapshot cache", () => {
     return {
       doc,
       rafCallbacks,
+      advancePumpMs(ms: number): void {
+        clock.ms += ms;
+        vi.advanceTimersByTime(ms);
+      },
       schedule: {
         now: () => clock.ms,
         setInterval: ((handler: TimerHandler) =>
@@ -169,7 +173,7 @@ describe("tick snapshot cache", () => {
     snapshotSpy.mockClear();
     shell.startPump();
 
-    vi.advanceTimersByTime(PUMP_INTERVAL_MS);
+    pump.advancePumpMs(PUMP_INTERVAL_MS);
 
     for (let frame = 0; frame < 5; frame++) {
       pump.runRafAt((frame + 1) * 17);
@@ -223,7 +227,7 @@ describe("tick snapshot cache", () => {
     });
 
     shell.startPump();
-    vi.advanceTimersByTime(PUMP_INTERVAL_MS);
+    pump.advancePumpMs(PUMP_INTERVAL_MS);
 
     const pumpMessage = published.find((message) => message.type === "pump");
     expect(pumpMessage?.type).toBe("pump");
@@ -280,9 +284,9 @@ describe("tick snapshot cache", () => {
     });
 
     shell.startPump();
-    vi.advanceTimersByTime(PUMP_INTERVAL_MS);
+    pump.advancePumpMs(PUMP_INTERVAL_MS);
 
-    expect(shell.tickSnapshotAtMs()).toBe(5_000);
+    expect(shell.tickSnapshotAtMs()).toBe(5_000 + PUMP_INTERVAL_MS);
     shell.stop();
   });
 
@@ -335,7 +339,7 @@ describe("tick snapshot cache", () => {
     });
 
     shell.startPump();
-    vi.advanceTimersByTime(PUMP_INTERVAL_MS);
+    pump.advancePumpMs(PUMP_INTERVAL_MS);
     pump.runRafAt(17);
     renderedPending.length = 0;
 
@@ -376,6 +380,10 @@ describe("presentation clock", () => {
 
     return {
       rafCallbacks,
+      advancePumpMs(ms: number): void {
+        clock.ms += ms;
+        vi.advanceTimersByTime(ms);
+      },
       schedule: {
         now: () => clock.ms,
         setInterval: ((handler: TimerHandler) =>
@@ -434,11 +442,11 @@ describe("presentation clock", () => {
     const { shell, pump, presentationNowMs } = await mountWithRenderNowMsCapture(clock);
 
     shell.startPump();
-    vi.advanceTimersByTime(PUMP_INTERVAL_MS);
+    pump.advancePumpMs(PUMP_INTERVAL_MS);
     presentationNowMs.length = 0;
 
-    pump.runRafAt(100);
-    pump.runRafAt(200);
+    pump.runRafAt(300);
+    pump.runRafAt(400);
 
     expect(presentationNowMs).toHaveLength(2);
     expect(presentationNowMs[1]! - presentationNowMs[0]!).toBe(100);
@@ -451,7 +459,7 @@ describe("presentation clock", () => {
     const { shell, engine, pump, presentationNowMs } = await mountWithRenderNowMsCapture(clock);
 
     shell.startPump();
-    vi.advanceTimersByTime(PUMP_INTERVAL_MS);
+    pump.advancePumpMs(PUMP_INTERVAL_MS);
     const simNowMs = engine.snapshot().simNowMs;
     presentationNowMs.length = 0;
 
@@ -466,12 +474,12 @@ describe("presentation clock", () => {
     const { shell, pump, presentationNowMs } = await mountWithRenderNowMsCapture(clock);
 
     shell.startPump();
-    vi.advanceTimersByTime(PUMP_INTERVAL_MS);
+    pump.advancePumpMs(PUMP_INTERVAL_MS);
     presentationNowMs.length = 0;
 
     pump.runRafAt(400);
     pump.runRafAt(800);
-    vi.advanceTimersByTime(PUMP_INTERVAL_MS);
+    pump.advancePumpMs(PUMP_INTERVAL_MS);
     pump.runRafAt(1_050);
     pump.runRafAt(1_300);
 
@@ -486,7 +494,7 @@ describe("presentation clock", () => {
     const { shell, pump, presentationNowMs } = await mountWithRenderNowMsCapture(clock);
 
     shell.startPump();
-    vi.advanceTimersByTime(PUMP_INTERVAL_MS);
+    pump.advancePumpMs(PUMP_INTERVAL_MS);
     presentationNowMs.length = 0;
 
     pump.runRafAt(33);
