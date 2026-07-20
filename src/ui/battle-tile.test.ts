@@ -42,6 +42,23 @@ async function capturePresentationRenderNowMs(
   return renderNowMs;
 }
 
+function trackBackgroundImageWrites(element: HTMLElement): () => number {
+  let count = 0;
+  const style = element.style;
+  vi.spyOn(element, "style", "get").mockReturnValue(
+    new Proxy(style, {
+      set(target, prop, value) {
+        if (prop === "backgroundImage") {
+          count += 1;
+        }
+        Reflect.set(target, prop, value);
+        return true;
+      },
+    }),
+  );
+  return () => count;
+}
+
 function snapshotWithFiveOpponents(base: Snapshot): Snapshot {
   const attempt = base.attempt;
   if (!attempt) {
@@ -225,6 +242,124 @@ describe("Battle Tile renderer", () => {
     const text = root.querySelector(".stage-wave-text")?.textContent ?? "";
     expect(text).toContain("Orchard Understory");
     expect(text).toContain("Wave 1");
+  });
+
+  it("writes backdrop image once across repeated renders on the same stage", () => {
+    const root = document.createElement("main");
+    const tile = mountBattleTile(root, buildContent());
+    const engine = createEngine(buildContent(), undefined, LOOT_SEED);
+    const snapshot = engine.snapshot();
+    const backdrop = root.querySelector<HTMLElement>(".battlefield-backdrop");
+    if (!backdrop) {
+      throw new Error("missing backdrop");
+    }
+    const backgroundImageWrites = trackBackgroundImageWrites(backdrop);
+
+    tile.render(snapshot);
+    tile.render(structuredClone(snapshot));
+    tile.render(structuredClone(snapshot));
+
+    expect(backgroundImageWrites()).toBe(1);
+  });
+
+  it("rewrites backdrop image once when the stage backdropKey changes", () => {
+    const root = document.createElement("main");
+    const content = buildContent();
+    const tile = mountBattleTile(root, content);
+    const engine = createEngine(content, undefined, LOOT_SEED);
+    const snapshot = engine.snapshot();
+    const backdrop = root.querySelector<HTMLElement>(".battlefield-backdrop");
+    if (!backdrop) {
+      throw new Error("missing backdrop");
+    }
+    const backgroundImageWrites = trackBackgroundImageWrites(backdrop);
+
+    tile.render(snapshot);
+    expect(backgroundImageWrites()).toBe(1);
+
+    const stage2 = structuredClone(snapshot);
+    if (!stage2.attempt) {
+      throw new Error("missing attempt");
+    }
+    stage2.attempt.stage = 2;
+    tile.render(stage2);
+    expect(backgroundImageWrites()).toBe(2);
+  });
+
+  it("keeps dataset backdropKey correct on every render without rewriting it", () => {
+    const root = document.createElement("main");
+    const tile = mountBattleTile(root, buildContent());
+    const engine = createEngine(buildContent(), undefined, LOOT_SEED);
+    const snapshot = engine.snapshot();
+    const battlefield = root.querySelector<HTMLElement>(".battlefield");
+    if (!battlefield) {
+      throw new Error("missing battlefield");
+    }
+    let datasetWrites = 0;
+    const originalDescriptor = Object.getOwnPropertyDescriptor(
+      HTMLElement.prototype,
+      "dataset",
+    );
+    if (!originalDescriptor?.get) {
+      throw new Error("expected dataset getter");
+    }
+    vi.spyOn(battlefield, "dataset", "get").mockImplementation(function (this: HTMLElement) {
+      const real = originalDescriptor.get!.call(this) as DOMStringMap;
+      return new Proxy(real, {
+        set(target, prop, value) {
+          if (prop === "backdropKey") {
+            datasetWrites += 1;
+          }
+          Reflect.set(target, prop, value);
+          return true;
+        },
+      });
+    });
+
+    tile.render(snapshot);
+    expect(battlefield.dataset["backdropKey"]).toBe("backdrop-1");
+    expect(datasetWrites).toBe(1);
+
+    tile.render(structuredClone(snapshot));
+    expect(battlefield.dataset["backdropKey"]).toBe("backdrop-1");
+    expect(datasetWrites).toBe(1);
+  });
+
+  it("does not set static backdrop layout as inline styles", () => {
+    const root = document.createElement("main");
+    const tile = mountBattleTile(root, buildContent());
+    const engine = createEngine(buildContent(), undefined, LOOT_SEED);
+    tile.render(engine.snapshot());
+
+    const backdrop = root.querySelector<HTMLElement>(".battlefield-backdrop");
+    expect(backdrop?.style.backgroundSize).toBe("");
+    expect(backdrop?.style.backgroundRepeat).toBe("");
+    expect(backdrop?.style.backgroundPosition).toBe("");
+  });
+
+  it("reapplies backdrop after a no-attempt render and a new attempt", () => {
+    const root = document.createElement("main");
+    const content = buildContent();
+    const tile = mountBattleTile(root, content);
+    const engine = createEngine(content, undefined, LOOT_SEED);
+    const withAttempt = engine.snapshot();
+    tile.render(withAttempt);
+
+    const idle = structuredClone(withAttempt);
+    idle.attempt = null;
+    tile.render(idle);
+
+    const resumed = structuredClone(withAttempt);
+    if (!resumed.attempt) {
+      throw new Error("missing attempt");
+    }
+    resumed.attempt.stage = 2;
+    tile.render(resumed);
+
+    const battlefield = root.querySelector<HTMLElement>(".battlefield");
+    const backdrop = root.querySelector<HTMLElement>(".battlefield-backdrop");
+    expect(battlefield?.dataset["backdropKey"]).toBe("backdrop-2");
+    expect(backdrop?.style.backgroundImage).toMatch(/backdrop-2/);
   });
 
   it("keys the battlefield backdrop image per Stage and keeps audio mute controls", () => {

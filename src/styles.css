@@ -154,6 +154,9 @@ body {
   z-index: 0;
   background-color: #12141c;
   image-rendering: pixelated;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: center;
 }
 
 .party-zone,
