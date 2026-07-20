@@ -36,10 +36,20 @@ context pointer. A missing value is a decision to resolve before generation.
 
 ### Contract pointers
 
-- For Characters and opponents that enter the Battle Tile, read
-  [`../acquisition-contract.md`](../acquisition-contract.md). It owns the logical
-  grid, conservative prompt safe box, magenta key, Archived Raw Bundle,
-  bottom-center anchor, `moonberry-16`, validator, manifest, and offline rebuild.
+- For Characters and opponents that enter the Battle Tile, pick the acquisition
+  contract that matches the target size tier (`MonsterSize` /
+  `MONSTER_FRAMES` in `src/core/types.ts`, `FRAMES` in `pipeline/acquire.py`):
+  - **medium (default)** — [`../acquisition-contract.md`](../acquisition-contract.md)
+    (32×48). Use this when the task does not name a tier, and for every current
+    Class still and ordinary medium opponent.
+  - **small** — [`../acquisition-contract-small.md`](../acquisition-contract-small.md)
+    (24×32).
+  - **large** — [`../acquisition-contract-large.md`](../acquisition-contract-large.md)
+    (48×72), including Boss-scale opponents.
+  Each contract owns that tier's logical grid, conservative prompt safe box,
+  magenta key, Archived Raw Bundle, bottom-center anchor, `moonberry-16`,
+  validator, manifest, and offline rebuild. Do not paraphrase one tier's shell
+  into another's geometry.
 - For **Equipment Base icons**, read [`../icon-contract.md`](../icon-contract.md).
   It owns the 34×34 runtime, text-grid sources under `src/assets/icon-sources/`,
   palette scoping, ingest gates, `src/assets/icons/` manifest layout, and the
@@ -74,11 +84,11 @@ accepted generation and record its SHA-256.
 
 Write the prompt as a contract: subject and identity, composition, art language,
 geometry, background, and acceptance constraints. For Battle Tile bodies, paste
-the acquisition contract's **grid shell** (exact logical canvas, flat-block
-pixels, conservative **safe box**, magenta clearance, outline/palette bans)
-around the subject description — do not paraphrase the shell into softer art
-direction. Request the safe box; never ask the subject to fill the runtime
-canvas.
+the **chosen tier** acquisition contract's **grid shell** (exact logical canvas,
+flat-block pixels, conservative **safe box**, magenta clearance, outline/palette
+bans) around the subject description — do not paraphrase the shell into softer
+art direction, and do not borrow another tier's geometry. Request the safe box;
+never ask the subject to fill the runtime canvas.
 
 For Equipment Base icons, use this **icon grid shell**
 around a concrete subject noun — same discipline as the Character shell, resized
