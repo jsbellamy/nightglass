@@ -13,8 +13,6 @@ export const UI_CORE_VALUE_IMPORT_ALLOWLIST: Record<string, string> = {
     "Combatant iteration helpers until battle-tile snapshot-view slice (#158)",
   "equipment-format.ts": "Core stat math imports narrowed by stat-derivation slice (#159)",
   "ability-format.ts": "Core combat math imports narrowed by stat-derivation slice (#159)",
-  "talents-surface.ts":
-    "allocateTalentPoint / deallocateTalentPoint removed by Engine legality-queries slice (#161)",
   "loadout-surface.ts":
     "equipmentModifiersForLoadout / characterStats removed by loadout stat-derivation slice (#159)",
   "armory-surface.ts":

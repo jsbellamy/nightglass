@@ -1,6 +1,7 @@
 import type { ReadonlySnapshot } from "../core/snapshot";
 import type { Content } from "../core/types";
 import type { TileCommand } from "./bus";
+import { EMPTY_ENGINE_LEGALITY, type EngineLegalityView } from "./engine-legality";
 import { mountArmorySurface } from "./armory-surface";
 import { mountLoadoutSurface } from "./loadout-surface";
 import { mountPartySurface } from "./party-surface";
@@ -18,7 +19,7 @@ export const DOCK_TABS: { id: DockTabId; label: string }[] = [
 ];
 
 export interface ManagementDock {
-  render(snapshot: ReadonlySnapshot | null): void;
+  render(snapshot: ReadonlySnapshot | null, legality?: EngineLegalityView): void;
   setArmoryBadge(visible: boolean): void;
   setOpen(open: boolean): void;
   destroy(): void;
@@ -266,7 +267,7 @@ export function mountManagementDock(
   setActiveTab(activeTab);
 
   return {
-    render(snapshot) {
+    render(snapshot, legality = EMPTY_ENGINE_LEGALITY) {
       const stageLabel = snapshot?.attempt
         ? `Stage ${snapshot.attempt.stage} · ${
             snapshot.attempt.encounter === 3 ? "Boss" : `Wave ${snapshot.attempt.encounter}`
@@ -275,8 +276,8 @@ export function mountManagementDock(
       root.dataset["stageLabel"] = stageLabel;
       partySurface.render(snapshot);
       loadoutSurface.render(snapshot);
-      talentsSurface.render(snapshot);
-      armorySurface.render(snapshot);
+      talentsSurface.render(snapshot, legality);
+      armorySurface.render(snapshot, legality);
       stageSurface.render(snapshot);
     },
     setArmoryBadge(visible) {

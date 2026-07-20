@@ -19,6 +19,7 @@ import {
 } from "./combat";
 import {
   assignDrop,
+  canEquipToSlot,
   discardDrops,
   equipmentModifiersForLoadout,
   findDrop,
@@ -41,6 +42,8 @@ import {
 import { createDefaultProgression } from "./load-state";
 import {
   allocateTalentPoint,
+  canAllocateTalentPoint,
+  canDeallocateTalentPoint,
   deallocateTalentPoint,
   emptyTalentState,
   stripAbilityFromLoadout,
@@ -74,8 +77,14 @@ export interface Engine {
   setFormation(order: [ClassId, ClassId, ClassId]): void;
   allocateTalent(classId: ClassId, talentId: string): void;
   deallocateTalent(classId: ClassId, talentId: string): void;
+  /** Whether allocateTalent(classId, talentId) would succeed right now. Never throws. */
+  canAllocateTalent(classId: ClassId, talentId: string): boolean;
+  /** Whether deallocateTalent(classId, talentId) would succeed right now. Never throws. */
+  canDeallocateTalent(classId: ClassId, talentId: string): boolean;
   setParty(members: [ClassId, ClassId, ClassId], reserve: ClassId): void;
   equip(dropId: number, classId: ClassId, slot: EquipmentSlotId): void;
+  /** Whether equip(dropId, classId, slot) would succeed right now. Never throws. */
+  canEquip(dropId: number, classId: ClassId, slot: EquipmentSlotId): boolean;
   unequip(classId: ClassId, slot: EquipmentSlotId): void;
   setLocked(dropId: number, locked: boolean): void;
   markSeen(dropIds: number[]): void;
@@ -1259,6 +1268,34 @@ export function createEngine(
     setTalentDraft(state, classId, draft);
   }
 
+  function canAllocateTalent(classId: ClassId, talentId: string): boolean {
+    const classKit = index.classesById.get(classId);
+    if (!classKit) {
+      return false;
+    }
+    try {
+      const draft = effectiveTalentState(state, classId);
+      const level = characterLevel(state.progression, classId, index.content.xpThresholds);
+      return canAllocateTalentPoint(draft, classKit, talentId, level);
+    } catch {
+      return false;
+    }
+  }
+
+  function canDeallocateTalent(classId: ClassId, talentId: string): boolean {
+    const classKit = index.classesById.get(classId);
+    if (!classKit) {
+      return false;
+    }
+    try {
+      const draft = effectiveTalentState(state, classId);
+      const level = characterLevel(state.progression, classId, index.content.xpThresholds);
+      return canDeallocateTalentPoint(draft, classKit, talentId, level);
+    } catch {
+      return false;
+    }
+  }
+
   function setParty(members: [ClassId, ClassId, ClassId], reserve: ClassId): void {
     const roster = new Set([...members, reserve]);
     if (roster.size !== 4) {
@@ -1279,6 +1316,14 @@ export function createEngine(
     }
     validateEquip(drop, index.content, classId, slot);
     assignDrop(state.progression.armory, dropId, classId, slot);
+  }
+
+  function canEquip(dropId: number, classId: ClassId, slot: EquipmentSlotId): boolean {
+    const drop = findDrop(state.progression.armory, dropId);
+    if (!drop) {
+      return false;
+    }
+    return canEquipToSlot(drop, index.content, classId, slot);
   }
 
   function unequip(classId: ClassId, slot: EquipmentSlotId): void {
@@ -1319,8 +1364,11 @@ export function createEngine(
     setFormation,
     allocateTalent,
     deallocateTalent,
+    canAllocateTalent,
+    canDeallocateTalent,
     setParty,
     equip,
+    canEquip,
     unequip,
     setLocked,
     markSeen,

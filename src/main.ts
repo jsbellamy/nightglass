@@ -7,6 +7,10 @@ import { createBusEndpoint, type BusEndpoint, type TileCommand } from "./ui/bus"
 import { mountBattleTile } from "./ui/battle-tile";
 import { createProductionDockWindowPort, type DockWindowPort } from "./ui/dock-window";
 import { mountManagementDock } from "./ui/dock";
+import {
+  legalityViewFromSerialized,
+  serializeEngineLegality,
+} from "./ui/engine-legality";
 import { startPump, type PumpController } from "./ui/pump";
 import type { TileShell } from "./ui/tile-shell-types";
 import { ARMORY_BADGE_EVENT } from "./ui/bus";
@@ -53,10 +57,10 @@ export function mountDockShell(root: HTMLElement): { destroy(): void } {
 
   bus = createBusEndpoint({
     snapshot(message) {
-      dock.render(message.snapshot);
+      dock.render(message.snapshot, legalityViewFromSerialized(message.legality));
     },
     pump(message) {
-      dock.render(message.snapshot);
+      dock.render(message.snapshot, legalityViewFromSerialized(message.legality));
     },
     "armory-badge"() {
       dock.setArmoryBadge(true);
@@ -103,7 +107,12 @@ export function mountTileShell(root: HTMLElement, options: TileShellOptions = {}
   tile.render(engine.snapshot());
 
   function publishSnapshot(): void {
-    bus?.publish({ type: "snapshot", snapshot: engine.snapshot() });
+    const snapshot = engine.snapshot();
+    bus?.publish({
+      type: "snapshot",
+      snapshot,
+      legality: serializeEngineLegality(engine, snapshot, content),
+    });
   }
 
   bus = busFactory({
@@ -133,7 +142,13 @@ export function mountTileShell(root: HTMLElement, options: TileShellOptions = {}
     advanceBy: (ms: number) => engine.advanceBy(ms),
     onAdvance: (events: EngineEvent[]) => {
       tile.applyEvents(events, engine.snapshot());
-      bus?.publish({ type: "pump", events, snapshot: engine.snapshot() });
+      const snapshot = engine.snapshot();
+      bus?.publish({
+        type: "pump",
+        events,
+        snapshot,
+        legality: serializeEngineLegality(engine, snapshot, content),
+      });
     },
     render: () => tile.render(engine.snapshot()),
   };

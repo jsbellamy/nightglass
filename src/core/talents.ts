@@ -71,6 +71,21 @@ export function allocateTalentPoint(
   throw new Error(`Unknown Talent ${talentId} for ${classKit.id}`);
 }
 
+export function canAllocateTalentPoint(
+  state: ClassTalentState,
+  classKit: ClassKitDef,
+  talentId: string,
+  level: number,
+): boolean {
+  try {
+    const draft = structuredClone(state);
+    allocateTalentPoint(draft, classKit, talentId, level);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function deallocateTalentPoint(
   state: ClassTalentState,
   classKit: ClassKitDef,
@@ -102,6 +117,21 @@ export function deallocateTalentPoint(
   state.statRanks[talentId] = currentRank - 1;
   if (spentTalentPoints(state) > level) {
     throw new Error(`Talent allocation exceeds Level ${level} budget after deallocation`);
+  }
+}
+
+export function canDeallocateTalentPoint(
+  state: ClassTalentState,
+  classKit: ClassKitDef,
+  talentId: string,
+  level: number,
+): boolean {
+  try {
+    const draft = structuredClone(state);
+    deallocateTalentPoint(draft, classKit, talentId, level);
+    return true;
+  } catch {
+    return false;
   }
 }
 

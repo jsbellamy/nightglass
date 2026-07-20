@@ -1,17 +1,11 @@
 import type { ReadonlySnapshot } from "../core/snapshot";
-import {
-  allocateTalentPoint,
-  deallocateTalentPoint,
-  spentTalentPoints,
-  totalStatPoints,
-  type ClassTalentState,
-} from "../core/talents";
-import type { ClassId, ClassKitDef, Content } from "../core/types";
+import type { ClassId, Content } from "../core/types";
 import {
   formatStatModifierPerRank,
   formatStatTalentDelta,
 } from "./ability-format";
 import type { TileCommand } from "./bus";
+import type { EngineLegalityView } from "./engine-legality";
 import { bindPressable } from "./keyboard";
 import {
   CLASS_LABELS,
@@ -23,7 +17,7 @@ import {
 } from "./snapshot-view";
 
 export interface TalentsSurface {
-  render(snapshot: ReadonlySnapshot | null): void;
+  render(snapshot: ReadonlySnapshot | null, legality: EngineLegalityView): void;
   destroy(): void;
 }
 
@@ -32,40 +26,18 @@ export interface TalentsSurfaceOptions {
   onCommand?: (command: TileCommand) => void;
 }
 
+function totalStatPoints(statRanks: Record<string, number>): number {
+  return Object.values(statRanks).reduce((sum, rank) => sum + rank, 0);
+}
+
+function spentTalentPoints(talentState: ReturnType<typeof effectiveTalentState>): number {
+  return totalStatPoints(talentState.statRanks) + (talentState.abilityTalentId ? 1 : 0);
+}
+
 function availableTalentPoints(snapshot: ReadonlySnapshot, classId: ClassId, content: Content): number {
   const level = levelFor(snapshot, content, classId);
   const talentState = effectiveTalentState(snapshot, classId);
   return Math.max(0, level - spentTalentPoints(talentState));
-}
-
-function canAllocateStat(
-  talentState: ClassTalentState,
-  classKit: ClassKitDef,
-  talentId: string,
-  level: number,
-): boolean {
-  try {
-    const draft = structuredClone(talentState);
-    allocateTalentPoint(draft, classKit, talentId, level);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-function canDeallocateStat(
-  talentState: ClassTalentState,
-  classKit: ClassKitDef,
-  talentId: string,
-  level: number,
-): boolean {
-  try {
-    const draft = structuredClone(talentState);
-    deallocateTalentPoint(draft, classKit, talentId, level);
-    return true;
-  } catch {
-    return false;
-  }
 }
 
 function abilityTalentSlotted(snapshot: ReadonlySnapshot, classId: ClassId, abilityId: string): boolean {
@@ -93,7 +65,7 @@ export function mountTalentsSurface(
   const { content } = options;
   root.classList.add("talents-surface");
 
-  function render(snapshot: ReadonlySnapshot | null): void {
+  function render(snapshot: ReadonlySnapshot | null, legality: EngineLegalityView): void {
     root.replaceChildren();
     if (!snapshot) {
       const empty = document.createElement("p");
@@ -184,7 +156,7 @@ export function mountTalentsSurface(
         allocate.dataset["talentId"] = statTalent.id;
         allocate.dataset["classId"] = classId;
         allocate.textContent = "Add point";
-        allocate.disabled = !canAllocateStat(talentState, classKit, statTalent.id, level);
+        allocate.disabled = !legality.canAllocateTalent(classId, statTalent.id);
         bindPressable(allocate, () => {
           options.onCommand?.({ cmd: "allocateTalent", args: [classId, statTalent.id] });
         });
@@ -196,7 +168,7 @@ export function mountTalentsSurface(
         deallocate.dataset["talentId"] = statTalent.id;
         deallocate.dataset["classId"] = classId;
         deallocate.textContent = "Remove point";
-        deallocate.disabled = !canDeallocateStat(talentState, classKit, statTalent.id, level);
+        deallocate.disabled = !legality.canDeallocateTalent(classId, statTalent.id);
         bindPressable(deallocate, () => {
           options.onCommand?.({ cmd: "deallocateTalent", args: [classId, statTalent.id] });
         });
@@ -255,7 +227,7 @@ export function mountTalentsSurface(
           pick.dataset["talentId"] = abilityId;
           pick.dataset["classId"] = classId;
           pick.textContent = "Choose";
-          pick.disabled = !canAllocateStat(talentState, classKit, abilityId, level);
+          pick.disabled = !legality.canAllocateTalent(classId, abilityId);
           bindPressable(pick, () => {
             options.onCommand?.({ cmd: "allocateTalent", args: [classId, abilityId] });
           });
@@ -268,7 +240,7 @@ export function mountTalentsSurface(
           remove.dataset["talentId"] = abilityId;
           remove.dataset["classId"] = classId;
           remove.textContent = "Remove";
-          remove.disabled = !canDeallocateStat(talentState, classKit, abilityId, level);
+          remove.disabled = !legality.canDeallocateTalent(classId, abilityId);
           bindPressable(remove, () => {
             options.onCommand?.({ cmd: "deallocateTalent", args: [classId, abilityId] });
           });
@@ -293,8 +265,4 @@ export function mountTalentsSurface(
   };
 }
 
-export {
-  availableTalentPoints,
-  canAllocateStat,
-  canDeallocateStat,
-};
+export { availableTalentPoints };

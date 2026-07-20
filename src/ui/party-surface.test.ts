@@ -10,6 +10,7 @@ import type { Content } from "../core/types";
 import { buildContent } from "../data";
 import { applyTileCommand } from "../main";
 import { createBusEndpoint } from "./bus";
+import { serializeEngineLegality } from "./engine-legality";
 import { mountPartySurface } from "./party-surface";
 import { levelFor } from "./snapshot-view";
 
@@ -106,7 +107,12 @@ describe("Party surface", () => {
       {
         command: (message) => {
           applyTileCommand(engine, message.command);
-          tileBus.publish({ type: "snapshot", snapshot: engine.snapshot() });
+          const snapshot = engine.snapshot();
+          tileBus.publish({
+            type: "snapshot",
+            snapshot,
+            legality: serializeEngineLegality(engine, snapshot, content),
+          });
         },
       },
       busChannel,

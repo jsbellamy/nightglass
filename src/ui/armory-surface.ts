@@ -20,6 +20,7 @@ import {
   statsForEquipmentLoadout,
 } from "./equipment-format";
 import { bindPressable } from "./keyboard";
+import { EMPTY_ENGINE_LEGALITY, type EngineLegalityView } from "./engine-legality";
 import { createEquipmentIconElement } from "./icons";
 import {
   CLASS_LABELS,
@@ -32,7 +33,7 @@ import {
 const SLOTS: EquipmentSlotId[] = ["weapon", "armor", "charm"];
 
 export interface ArmorySurface {
-  render(snapshot: ReadonlySnapshot | null): void;
+  render(snapshot: ReadonlySnapshot | null, legality: EngineLegalityView): void;
   destroy(): void;
 }
 
@@ -84,6 +85,7 @@ export function mountArmorySurface(
   } | null = null;
   let lastSnapshot: ReadonlySnapshot | null = null;
   let optimisticallySeenDropIds = new Set<number>();
+  let currentLegality: EngineLegalityView = EMPTY_ENGINE_LEGALITY;
 
   root.classList.add("armory-surface");
 
@@ -528,7 +530,7 @@ export function mountArmorySurface(
     container.append(note);
 
     const candidates = snapshot.progression.armory.filter((drop) =>
-      isCompatibleWithSlot(drop, content, classId, slot),
+      isCompatibleWithSlot(drop, classId, slot, currentLegality.canEquip),
     );
 
     const candidateList = document.createElement("div");
@@ -752,7 +754,8 @@ export function mountArmorySurface(
     container.append(card);
   }
 
-  function render(snapshot: ReadonlySnapshot | null): void {
+  function render(snapshot: ReadonlySnapshot | null, legality: EngineLegalityView = currentLegality): void {
+    currentLegality = legality;
     if (snapshot) {
       syncOptimisticSeen(snapshot.progression.armory);
     }

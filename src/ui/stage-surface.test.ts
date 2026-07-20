@@ -9,6 +9,7 @@ import { cloneSnapshot, type DropInstance } from "../core/snapshot";
 import { fixtureContent } from "../core/testing/fixture-content";
 import { buildContent } from "../data";
 import { createBusEndpoint } from "./bus";
+import { serializeEngineLegality } from "./engine-legality";
 import { mountStageSurface } from "./stage-surface";
 
 const LOOT_SEED = 42;
@@ -88,7 +89,12 @@ describe("Stage surface", () => {
           if (message.command.cmd === "selectStage") {
             engine.selectStage(message.command.args[0]);
           }
-          tileBus.publish({ type: "snapshot", snapshot: engine.snapshot() });
+          const snapshot = engine.snapshot();
+          tileBus.publish({
+            type: "snapshot",
+            snapshot,
+            legality: serializeEngineLegality(engine, snapshot, content),
+          });
         },
       },
       busChannel,

@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import { createEngine } from "../core/engine";
 import { fixtureContent } from "../core/testing/fixture-content";
 import { createBusEndpoint, type BusMessage } from "./bus";
+import { serializeEngineLegality } from "./engine-legality";
 
 /** Drain BroadcastChannel delivery (command hop + snapshot hop). */
 async function flushBus(): Promise<void> {
@@ -25,7 +26,12 @@ describe("nightglass BroadcastChannel bus", () => {
         command: (message) => {
           if (message.command.cmd === "selectStage") {
             engine.selectStage(message.command.args[0]);
-            tileBus.publish({ type: "snapshot", snapshot: engine.snapshot() });
+            const snapshot = engine.snapshot();
+            tileBus.publish({
+              type: "snapshot",
+              snapshot,
+              legality: serializeEngineLegality(engine, snapshot, fixtureContent),
+            });
           }
         },
       },
@@ -65,10 +71,12 @@ describe("nightglass BroadcastChannel bus", () => {
     );
 
     const tileBus = createBusEndpoint({}, busChannel);
+    const snapshot = engine.snapshot();
     tileBus.publish({
       type: "pump",
       events: [],
-      snapshot: engine.snapshot(),
+      snapshot,
+      legality: serializeEngineLegality(engine, snapshot, fixtureContent),
     });
     await flushBus();
 
