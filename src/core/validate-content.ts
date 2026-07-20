@@ -42,6 +42,7 @@ export function validateContent(
   const abilityById = indexById(content.abilities);
   const statusIds = new Set(content.statuses.map((s) => s.id));
   const opponentIds = new Set(content.opponents.map((o) => o.id));
+  const opponentById = new Map(content.opponents.map((entry) => [entry.id, entry]));
   const classIds = new Set(content.classes.map((c) => c.id));
 
   violations.push(...duplicateIds(content.abilities, "abilities"));
@@ -158,7 +159,6 @@ export function validateContent(
       );
     }
 
-    const opponentById = new Map(content.opponents.map((entry) => [entry.id, entry]));
     violations.push(
       ...largeOpponentWaveViolations(stage.id, "wave 1", stage.waves[0], opponentById),
     );

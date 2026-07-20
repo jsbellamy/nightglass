@@ -127,11 +127,10 @@ describe("validateContent", () => {
     };
 
     const violations = validateContent(content, { fixture: true });
-    expect(violations).not.toEqual(
-      expect.arrayContaining([
-        expect.stringMatching(/"large" opponent/),
-      ]),
+    const largeRuleViolations = violations.filter((violation) =>
+      violation.includes('"large" opponent'),
     );
+    expect(largeRuleViolations).toEqual([]);
   });
 
   it("returns [] for shipped Content assembled from data modules", () => {
