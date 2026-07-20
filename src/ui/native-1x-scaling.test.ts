@@ -2,7 +2,8 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { SPRITE_SOURCES } from "./sprites";
+import { MONSTER_FRAMES, type MonsterSize } from "../core/types";
+import { resolveSprite, SPRITE_SOURCES } from "./sprites";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const spritesDir = join(here, "../assets/sprites");
@@ -18,12 +19,14 @@ function pngIhdrSize(bytes: Buffer): { width: number; height: number } {
   };
 }
 
-/** Parse the base `.combatant-sprite` rule — not descendant / state overrides. */
-function combatantSpriteRuleSize(css: string): { width: number; height: number } {
-  const match = css.match(
-    /^\.combatant-sprite\s*\{([^}]+)\}/m,
-  );
-  expect(match, ".combatant-sprite rule").not.toBeNull();
+/** Parse one specific `.combatant-sprite` rule — not descendant / state overrides. */
+function combatantSpriteRuleSize(
+  css: string,
+  selector: string,
+): { width: number; height: number } {
+  const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const match = css.match(new RegExp(`^${escaped}\\s*\\{([^}]+)\\}`, "m"));
+  expect(match, `${selector} rule`).not.toBeNull();
   const body = match![1]!;
   const width = body.match(/width:\s*(\d+)px/);
   const height = body.match(/height:\s*(\d+)px/);
@@ -32,11 +35,21 @@ function combatantSpriteRuleSize(css: string): { width: number; height: number }
   return { width: Number(width![1]), height: Number(height![1]) };
 }
 
+const TIER_SPRITE_SELECTORS: Record<MonsterSize, string> = {
+  medium: ".combatant-sprite",
+  small: ".combatant.size-small .combatant-sprite",
+  large: ".combatant.size-large .combatant-sprite",
+};
+
 describe("native-1× sprite dimensions", () => {
-  it("evidence: native-1x-scaling — SPRITE_SOURCES, PNG IHDR, and .combatant-sprite agree at 32×48 (excluding knockout-collapse transform)", () => {
+  it("evidence: native-1x-scaling — MONSTER_FRAMES, resolveSprite, PNG IHDR, and per-tier .combatant-sprite rules agree (excluding knockout-collapse transform)", () => {
     const css = readFileSync(stylesPath, "utf8");
-    const cssSize = combatantSpriteRuleSize(css);
-    expect(cssSize).toEqual({ width: 32, height: 48 });
+
+    for (const tier of Object.keys(MONSTER_FRAMES) as MonsterSize[]) {
+      const [frameWidth, frameHeight] = MONSTER_FRAMES[tier];
+      const cssSize = combatantSpriteRuleSize(css, TIER_SPRITE_SELECTORS[tier]);
+      expect(cssSize, `CSS for tier ${tier}`).toEqual({ width: frameWidth, height: frameHeight });
+    }
 
     // Deliberate knockout scale lives on `.combatant-stack`, not the sprite rule.
     // A knocked-out sprite legitimately measures 28.16×44.16; this assertion
@@ -46,12 +59,17 @@ describe("native-1× sprite dimensions", () => {
     );
 
     for (const [key, source] of Object.entries(SPRITE_SOURCES)) {
-      expect(source.width, `${key} declared width`).toBe(32);
-      expect(source.height, `${key} declared height`).toBe(48);
+      const [frameWidth, frameHeight] = MONSTER_FRAMES[source.size];
+      const resolved = resolveSprite(key);
+      expect(resolved.size, `${key} size`).toBe(source.size);
+      expect(resolved.width, `${key} resolved width`).toBe(frameWidth);
+      expect(resolved.height, `${key} resolved height`).toBe(frameHeight);
+
+      const tierCss = combatantSpriteRuleSize(css, TIER_SPRITE_SELECTORS[source.size]);
+      expect(tierCss).toEqual({ width: frameWidth, height: frameHeight });
 
       const ihdr = pngIhdrSize(readFileSync(join(spritesDir, `${key}.png`)));
-      expect(ihdr).toEqual(cssSize);
-      expect(ihdr).toEqual({ width: source.width, height: source.height });
+      expect(ihdr, `${key} PNG IHDR`).toEqual({ width: frameWidth, height: frameHeight });
     }
   });
 });

@@ -122,6 +122,7 @@ function ensureCombatantElement(
   element = document.createElement("div");
   element.className = [
     "combatant",
+    `size-${sprite.size}`,
     isParty ? "party" : "opponent",
     isParty ? "facing-right" : "facing-left",
     formationSlot ? `formation-${formationSlot}` : "",
