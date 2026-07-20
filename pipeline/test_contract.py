@@ -225,9 +225,9 @@ manifest_data = json.loads((RUNTIME_DIR / "manifest.json").read_text())
 for raw_tag, runtime_name in RUNTIME_SPRITES.items():
     sprite_key = pathlib.Path(runtime_name).stem
     entry = manifest_data[sprite_key]
-    frame = A.normalize(RAW_DIR / f"{raw_tag}.png")
+    rebuilt_image = A.normalize(RAW_DIR / f"{raw_tag}.png")
     recorded = entry["frames"][0]["sha256"]
-    actual = hashlib.sha256(frame.tobytes()).hexdigest()
+    actual = hashlib.sha256(rebuilt_image.tobytes()).hexdigest()
     check(f"medium re-acquire sha256 matches manifest for {sprite_key}",
           actual == recorded, f"got {actual[:16]}… expected {recorded[:16]}…")
 

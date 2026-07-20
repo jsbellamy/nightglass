@@ -7,7 +7,7 @@ socket, and loads no model. Its only input is the archived raw bundle
 (`assets-raw/grid_raw/*.png` plus provenance sidecars). Running it with the
 provider absent and the network down reproduces byte-identical runtime frames.
 
-    normalize  raw PNG  -> key magenta -> recover logical grid -> 32x48 frame
+    normalize  raw PNG  -> key magenta -> recover logical grid -> tier runtime frame
     validate   frame(s)  -> [] or a list of rejection reasons
     manifest   frames    -> integer-ms animation manifest
 
