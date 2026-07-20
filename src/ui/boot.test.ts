@@ -15,6 +15,7 @@ import {
   runOfflineBoot,
   SAVE_KEY,
 } from "./boot";
+import { mountOfflineSummary } from "./offline-summary";
 import type { Snapshot } from "../core/snapshot";
 
 import { mountTileShell } from "../main";
@@ -123,8 +124,8 @@ describe("bootTile", () => {
   });
 });
 
-describe("offline loot equivalence", () => {
-  it("consumes the same loot stream for live stepping and one offline advanceBy", () => {
+describe("offline boot", () => {
+  it("awards no equipment during runOfflineBoot while live advanceBy still gains loot", () => {
     const now = () => 0;
     const live = createEngine(fullContent, undefined, DEFAULT_LOOT_SEED, now);
     live.advanceBy(1);
@@ -140,13 +141,29 @@ describe("offline loot equivalence", () => {
     const saved = offlineSeed.snapshot();
     saved.savedAtMs = savedAt;
     const offline = createEngine(fullContent, saved, undefined, () => liveMs);
-    runOfflineBoot(offline, fullContent, savedAt, liveMs);
+    const armoryBefore = offline.snapshot().progression.armory.length;
+    const { summary } = runOfflineBoot(offline, fullContent, savedAt, liveMs);
     const offlineArmory = offline.snapshot().progression.armory;
 
-    expect(offlineArmory.map((drop) => drop.dropId)).toEqual(
-      liveArmory.map((drop) => drop.dropId),
-    );
-    expect(offlineArmory).toEqual(liveArmory);
+    expect(liveArmory.length).toBeGreaterThan(armoryBefore);
+    expect(offlineArmory.length).toBe(armoryBefore);
+    expect(summary?.drops ?? []).toEqual([]);
+  });
+
+  it("renders an offline summary without a Drops section for an 8-hour span", () => {
+    const engine = createEngine(fullContent, undefined, DEFAULT_LOOT_SEED, () => 0);
+    engine.advanceBy(1);
+    const saved = engine.snapshot();
+    saved.savedAtMs = 0;
+    const offline = createEngine(fullContent, saved, undefined, () => OFFLINE_CAP_MS);
+    const { summary } = runOfflineBoot(offline, fullContent, 0, OFFLINE_CAP_MS);
+    expect(summary).not.toBeNull();
+    expect(summary!.drops).toEqual([]);
+
+    const root = document.createElement("main");
+    mountOfflineSummary(root, summary!);
+    expect(root.querySelector(".offline-summary-drops-title")).toBeNull();
+    expect(root.querySelector(".offline-summary-drops")).toBeNull();
   });
 });
 
@@ -155,7 +172,7 @@ describe("offline progress CI timing budget", () => {
     const engine = createEngine(fullContent, undefined, DEFAULT_LOOT_SEED);
     engine.advanceBy(1);
     const start = performance.now();
-    engine.advanceBy(OFFLINE_CAP_MS);
+    engine.advanceOffline(OFFLINE_CAP_MS);
     const elapsed = performance.now() - start;
     expect(elapsed).toBeLessThan(2000);
   });

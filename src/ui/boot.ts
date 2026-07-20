@@ -66,7 +66,7 @@ export function runOfflineBoot(
   }
 
   const before = engine.snapshot();
-  const events = engine.advanceBy(offlineMs);
+  const events = engine.advanceOffline(offlineMs);
   const afterAdvance = engine.snapshot();
   const capped = nowMs - (savedAtMs ?? nowMs) > OFFLINE_CAP_MS;
   const summary = summarizeOfflineProgress(

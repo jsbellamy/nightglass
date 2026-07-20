@@ -37,6 +37,7 @@ void (0 as unknown as _EveryDispatchableCommandSampled);
 function createStubEngine(): Engine {
   return {
     advanceBy: vi.fn(() => []),
+    advanceOffline: vi.fn(() => []),
     snapshot: vi.fn(),
     beginFreshAttempt: vi.fn(() => []),
     selectStage: vi.fn(

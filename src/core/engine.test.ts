@@ -273,6 +273,88 @@ describe("chunk-equivalence advancement", () => {
   });
 });
 
+function eventsWithoutDropAwards(events: EngineEvent[]): EngineEvent[] {
+  return events.filter((event) => event.type !== "drop-awarded");
+}
+
+function stableEventsForOfflineParity(events: EngineEvent[]): string {
+  return stable(
+    eventsWithoutDropAwards(events).map((event) => {
+      const { seq: _seq, ...withoutSeq } = event;
+      return withoutSeq;
+    }),
+  );
+}
+
+function collectOfflineEvents(
+  engine: ReturnType<typeof createEngine>,
+  totalMs: number,
+  stepMs: number,
+): EngineEvent[] {
+  const events: EngineEvent[] = [];
+  let remaining = totalMs;
+  while (remaining > 0) {
+    const step = Math.min(stepMs, remaining);
+    events.push(...engine.advanceOffline(step));
+    remaining -= step;
+  }
+  return events;
+}
+
+describe("advanceOffline", () => {
+  it("awards no drops or drop-awarded events over a span that clears several encounters", () => {
+    const engine = createEngine(engineContent, undefined, LOOT_SEED, fixtureNow);
+    engine.advanceOffline(1);
+    const armoryBefore = engine.snapshot().progression.armory.length;
+    const events = engine.advanceOffline(DURATION_MS);
+    expect(events.some((event) => event.type === "wave-cleared")).toBe(true);
+    expect(events.filter((event) => event.type === "drop-awarded")).toEqual([]);
+    expect(engine.snapshot().progression.armory.length).toBe(armoryBefore);
+  });
+
+  it("matches advanceBy on XP, level-up, and wave or stage events for the same seed and span", () => {
+    const withDrops = createEngine(engineContent, undefined, LOOT_SEED, fixtureNow);
+    const withoutDrops = createEngine(engineContent, undefined, LOOT_SEED, fixtureNow);
+    const byEvents = withDrops.advanceBy(DURATION_MS);
+    const offlineEvents = withoutDrops.advanceOffline(DURATION_MS);
+    expect(stableEventsForOfflineParity(offlineEvents)).toBe(stableEventsForOfflineParity(byEvents));
+    expect(withDrops.snapshot().progression.characterXp).toEqual(
+      withoutDrops.snapshot().progression.characterXp,
+    );
+  });
+
+  it("does not change advanceBy drop awarding", () => {
+    const engine = createEngine(engineContent, undefined, LOOT_SEED, fixtureNow);
+    const events = engine.advanceBy(DURATION_MS);
+    expect(events.some((event) => event.type === "drop-awarded")).toBe(true);
+    expect(engine.snapshot().progression.armory.length).toBeGreaterThan(0);
+  });
+
+  it("throws on non-integer and negative elapsedMs like advanceBy", () => {
+    const engine = createEngine(engineContent, undefined, LOOT_SEED, fixtureNow);
+    expect(() => engine.advanceOffline(-1)).toThrow(/non-negative integer/);
+    expect(() => engine.advanceOffline(1.5)).toThrow(/non-negative integer/);
+    expect(() => engine.advanceBy(-1)).toThrow(/non-negative integer/);
+    expect(() => engine.advanceBy(1.5)).toThrow(/non-negative integer/);
+  });
+
+  it("is chunk-neutral: many small calls match one large call", () => {
+    const oneMs = createEngine(engineContent, undefined, LOOT_SEED, fixtureNow);
+    const oneMsEvents = collectOfflineEvents(oneMs, DURATION_MS, 1);
+
+    const sevenMs = createEngine(engineContent, undefined, LOOT_SEED, fixtureNow);
+    const sevenMsEvents = collectOfflineEvents(sevenMs, DURATION_MS, 7);
+
+    const single = createEngine(engineContent, undefined, LOOT_SEED, fixtureNow);
+    const singleEvents = single.advanceOffline(DURATION_MS);
+
+    expect(stable(oneMsEvents)).toBe(stable(sevenMsEvents));
+    expect(stable(oneMsEvents)).toBe(stable(singleEvents));
+    expect(stable(oneMs.snapshot())).toBe(stable(sevenMs.snapshot()));
+    expect(stable(oneMs.snapshot())).toBe(stable(single.snapshot()));
+  });
+});
+
 describe("save/reload equivalence", () => {
   it("continues with identical events after restoring a mid-Attempt Snapshot", () => {
     const continuous = createEngine(engineContent, undefined, LOOT_SEED, fixtureNow);

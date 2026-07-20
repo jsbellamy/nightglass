@@ -11,6 +11,7 @@ export const ARMORY_BADGE_EVENT = "nightglass:armory-badge";
 export type TileCommandName = Exclude<
   keyof Engine,
   | "advanceBy"
+  | "advanceOffline"
   | "snapshot"
   | "beginFreshAttempt"
   | "canAllocateTalent"
