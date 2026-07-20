@@ -5,7 +5,7 @@ import {
   readTextContrastSample,
 } from "./helpers/contrast";
 import { attachDockPage, focusDockTab, openTilePage } from "./helpers/dock-context";
-import { armoryColourSnapshot } from "./helpers/snapshots";
+import { armoryColourSnapshot, stabilizeArmoryColourFixture } from "./helpers/snapshots";
 
 const DOCK_PRIMARY_TEXT: { tab: string; selector: string }[] = [
   { tab: "party", selector: ".party-formation .character-name" },
@@ -68,18 +68,15 @@ test.describe("accessibility contrast floor", () => {
         knockout.stackTransform !== "none",
     ).toBe(true);
 
-    await postBusSnapshot(dock, armoryColourSnapshot());
     await focusDockTab(dock, "armory");
-    await expect(dock.locator(".armory-collection .equipment-card").first()).toBeVisible({
-      timeout: 5_000,
-    });
-    const raritySignals = await dock.evaluate(() => {
-      const card = document.querySelector(".armory-collection .equipment-card.rarity-epic");
-      const name = card?.querySelector(".equipment-name")?.textContent?.trim();
-      const meta = card?.querySelector(".equipment-meta")?.textContent?.trim();
+    await stabilizeArmoryColourFixture(dock);
+    const epicCard = dock.locator(".armory-collection .equipment-card.rarity-epic");
+    const raritySignals = await epicCard.evaluate((card) => {
+      const name = card.querySelector(".equipment-name")?.textContent?.trim();
+      const meta = card.querySelector(".equipment-meta")?.textContent?.trim();
       const locked =
-        card?.querySelector(".locked-marker")?.textContent?.trim() ??
-        card?.querySelector(".equipment-lock-toggle")?.textContent?.trim();
+        card.querySelector(".locked-marker")?.textContent?.trim() ??
+        card.querySelector(".equipment-lock-toggle")?.textContent?.trim();
       return {
         hasName: (name?.length ?? 0) > 0,
         hasMeta: (meta?.length ?? 0) > 0,

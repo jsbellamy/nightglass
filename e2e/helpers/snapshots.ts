@@ -1,7 +1,9 @@
+import { expect, type Page } from "@playwright/test";
 import { createEngine } from "../../src/core/engine";
 import { cloneSnapshot, type DropInstance, type Snapshot } from "../../src/core/snapshot";
 import type { ClassId, EquipmentSlotId } from "../../src/core/types";
 import { buildContent } from "../../src/data";
+import { postBusSnapshot } from "./bus";
 
 export function talentsReadySnapshot(): Snapshot {
   const boot = createEngine(buildContent(), undefined, 42);
@@ -61,6 +63,23 @@ export function armoryColourSnapshot(): Snapshot {
   });
   snapshot.progression.armory = armory;
   return snapshot;
+}
+
+/** Re-seed the dock until the epic fixture wins over live tile pump snapshots. */
+export async function stabilizeArmoryColourFixture(dock: Page): Promise<void> {
+  const snapshot = armoryColourSnapshot();
+  const epicName = dock.locator(
+    ".armory-collection .equipment-card.rarity-epic .equipment-name",
+  );
+  await expect
+    .poll(
+      async () => {
+        await postBusSnapshot(dock, snapshot);
+        return (await epicName.textContent())?.trim() ?? "";
+      },
+      { timeout: 10_000 },
+    )
+    .not.toBe("");
 }
 
 export function keyboardBootSnapshot(): Snapshot {
