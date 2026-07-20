@@ -2,7 +2,6 @@ import type { EngineEvent } from "../core/events";
 import type { FrameMetrics, FrameMetricsReport } from "./frame-metrics";
 
 export const PUMP_INTERVAL_MS = 250;
-export const RENDER_FRAME_MS = 33;
 export const HIDDEN_HEARTBEAT_MS = 5000;
 
 export interface PumpController {
@@ -34,7 +33,6 @@ export function startPump(deps: PumpDeps): PumpController {
   let pumpTimer: ReturnType<typeof setInterval> | null = null;
   let heartbeatTimer: ReturnType<typeof setInterval> | null = null;
   let rafId: number | null = null;
-  let lastRenderAtMs = -RENDER_FRAME_MS;
   let lastPumpAtMs = now();
   let lastHiddenPumpAtMs = now();
   let stopped = false;
@@ -55,11 +53,6 @@ export function startPump(deps: PumpDeps): PumpController {
     if (stopped || isHidden()) {
       return;
     }
-    const at = now();
-    if (at - lastRenderAtMs < RENDER_FRAME_MS) {
-      return;
-    }
-    lastRenderAtMs = at;
     if (deps.frameMetrics) {
       deps.frameMetrics.measure(deps.render);
     } else {
@@ -85,7 +78,6 @@ export function startPump(deps: PumpDeps): PumpController {
       cancelFrame(rafId);
       rafId = null;
     }
-    lastRenderAtMs = -RENDER_FRAME_MS;
   }
 
   function startLivePump(): void {
