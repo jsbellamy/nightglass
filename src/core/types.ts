@@ -82,11 +82,27 @@ export interface ClassKitDef {
   talents: TalentTierDef;
 }
 
+export type MonsterSize = "small" | "medium" | "large";
+
+/**
+ * Native-1x frame dimensions per size tier, as [width, height] in logical
+ * pixels. The single source of truth: the acquisition contracts, the sprite
+ * registry, the CSS rules, and the committed PNGs all derive from this table.
+ * Large is capped at 72px tall so a large monster standing on the battlefield
+ * floor (bottom: 6px) clears the boss health bar, which occupies y=4..6.
+ */
+export const MONSTER_FRAMES: Record<MonsterSize, readonly [number, number]> = {
+  small: [24, 32],
+  medium: [32, 48],
+  large: [48, 72],
+} as const;
+
 export interface OpponentDef {
   id: string;
   name: string;
   family: string;
   boss: boolean;
+  size: MonsterSize;
   base: BaseStats;
   abilityIds: string[];
   xpAward: number;

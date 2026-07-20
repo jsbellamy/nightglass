@@ -1,4 +1,4 @@
-import type { AffixId, ClassId, Content, EquipmentBaseDef } from "./types";
+import type { AffixId, ClassId, Content, EquipmentBaseDef, OpponentDef } from "./types";
 
 /** Per-Stage Character XP encounter budgets from issue #5 / vertical-slice-spec §7. */
 export const ENCOUNTER_BUDGETS = {
@@ -42,6 +42,7 @@ export function validateContent(
   const abilityById = indexById(content.abilities);
   const statusIds = new Set(content.statuses.map((s) => s.id));
   const opponentIds = new Set(content.opponents.map((o) => o.id));
+  const opponentById = new Map(content.opponents.map((entry) => [entry.id, entry]));
   const classIds = new Set(content.classes.map((c) => c.id));
 
   violations.push(...duplicateIds(content.abilities, "abilities"));
@@ -158,6 +159,16 @@ export function validateContent(
       );
     }
 
+    violations.push(
+      ...largeOpponentWaveViolations(stage.id, "wave 1", stage.waves[0], opponentById),
+    );
+    violations.push(
+      ...largeOpponentWaveViolations(stage.id, "wave 2", stage.waves[1], opponentById),
+    );
+    violations.push(
+      ...largeOpponentWaveViolations(stage.id, "boss", stage.boss, opponentById),
+    );
+
     for (const [waveIndex, wave] of stage.waves.entries()) {
       if (wave.opponents.length === 0) {
         violations.push(`stage ${stage.id} wave ${waveIndex + 1} has no opponents`);
@@ -228,6 +239,28 @@ function waveBudgetViolations(
     ];
   }
   return [];
+}
+
+function largeOpponentWaveViolations(
+  stageId: number,
+  waveLabel: string,
+  wave: { opponents: string[] },
+  opponentById: Map<string, OpponentDef>,
+): string[] {
+  if (wave.opponents.length <= 1) {
+    return [];
+  }
+
+  const violations: string[] = [];
+  for (const opponentId of wave.opponents) {
+    const opponent = opponentById.get(opponentId);
+    if (opponent?.size === "large") {
+      violations.push(
+        `stage ${stageId} ${waveLabel} has a "large" opponent "${opponentId}" alongside ${wave.opponents.length - 1} other opponent(s); large opponents must be solo`,
+      );
+    }
+  }
+  return violations;
 }
 
 function equipmentBaseCardinalityViolations(bases: EquipmentBaseDef[]): string[] {
