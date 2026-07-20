@@ -1,7 +1,6 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { createEngine } from "./engine";
 import type { EngineEvent } from "./events";
-import * as equipmentModule from "./equipment";
 import type { DropInstance, ProgressionState, Snapshot } from "./snapshot";
 import { defaultTalentsForClasses } from "./talents";
 import { fixtureContent } from "./testing/fixture-content";
@@ -26,6 +25,21 @@ function dropIdsWhileClearingEncounter(
       if (event.type === "wave-cleared" && event.encounter === encounter) {
         return drops;
       }
+    }
+  }
+  throw new Error(`encounter ${encounter} never cleared`);
+}
+
+function eventsWhileClearingEncounter(
+  engine: ReturnType<typeof createEngine>,
+  encounter: 1 | 2 | 3,
+): EngineEvent[] {
+  const collected: EngineEvent[] = [];
+  for (let ms = 0; ms < 300_000; ms += 1) {
+    const events = engine.advanceBy(1);
+    collected.push(...events);
+    if (events.some((event) => event.type === "wave-cleared" && event.encounter === encounter)) {
+      return collected;
     }
   }
   throw new Error(`encounter ${encounter} never cleared`);
@@ -2136,8 +2150,8 @@ describe("Equipment and Drops", () => {
     const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
     engine.advanceBy(1);
 
-    const encounterOneDrops = dropIdsWhileClearingEncounter(engine, 1);
-    expect(encounterOneDrops).toEqual([]);
+    const encounterOneEvents = eventsWhileClearingEncounter(engine, 1);
+    expect(encounterOneEvents.filter((event) => event.type === "drop-awarded")).toEqual([]);
     expect(engine.snapshot().nextDropId).toBe(1);
 
     const encounterTwoDrops = dropIdsWhileClearingEncounter(engine, 2);
@@ -2151,42 +2165,23 @@ describe("Equipment and Drops", () => {
     expect(engine.snapshot().progression.armory.map((drop) => drop.dropId)).toEqual([1, 2]);
   });
 
-  it("rolls encounter 2 without uncommonFloor and encounter 3 with uncommonFloor", () => {
-    const rollSpy = vi.spyOn(equipmentModule, "rollDrop");
-    const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
-    engine.advanceBy(1);
-
-    dropIdsWhileClearingEncounter(engine, 1);
-    rollSpy.mockClear();
-
-    dropIdsWhileClearingEncounter(engine, 2);
-    expect(rollSpy).toHaveBeenCalledTimes(1);
-    expect(rollSpy.mock.calls[0]?.[0].uncommonFloor).toBeFalsy();
-
-    rollSpy.mockClear();
-    dropIdsWhileClearingEncounter(engine, 3);
-    expect(rollSpy).toHaveBeenCalledTimes(1);
-    expect(rollSpy.mock.calls[0]?.[0].uncommonFloor).toBe(true);
-
-    rollSpy.mockRestore();
-  });
-
-  it("never awards common rarity on encounter-3 clears across many boss kills", () => {
-    const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
-    engine.advanceBy(1);
-    dropIdsWhileClearingEncounter(engine, 1);
-    dropIdsWhileClearingEncounter(engine, 2);
-
-    for (let bossKill = 0; bossKill < 40; bossKill += 1) {
-      dropIdsWhileClearingEncounter(engine, 3);
-      const snap = engine.snapshot();
-      const bossDrop = snap.progression.armory[snap.progression.armory.length - 1];
-      expect(bossDrop?.rarity).not.toBe("common");
-      if (bossKill < 39) {
-        dropIdsWhileClearingEncounter(engine, 1);
-        dropIdsWhileClearingEncounter(engine, 2);
+  it("rolls encounter 2 without uncommonFloor while encounter 3 enforces it", () => {
+    let sawCommonOnEncounter2 = false;
+    for (let seed = 0; seed < 500; seed += 1) {
+      const engine = createEngine(fixtureContent, undefined, seed);
+      engine.advanceBy(1);
+      dropIdsWhileClearingEncounter(engine, 1);
+      dropIdsWhileClearingEncounter(engine, 2);
+      const encounterTwoDrop = engine.snapshot().progression.armory[0];
+      if (encounterTwoDrop?.rarity === "common") {
+        sawCommonOnEncounter2 = true;
       }
+      dropIdsWhileClearingEncounter(engine, 3);
+      const encounterThreeDrop =
+        engine.snapshot().progression.armory[engine.snapshot().progression.armory.length - 1];
+      expect(encounterThreeDrop?.rarity).not.toBe("common");
     }
+    expect(sawCommonOnEncounter2).toBe(true);
   });
 
   it("produces identical Drops for the same loot seed across two Engines", () => {
