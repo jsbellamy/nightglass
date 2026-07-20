@@ -1,10 +1,10 @@
 import { equipmentModifiersForLoadout } from "../core/equipment";
+import { characterStats } from "../core/stats";
 import type { Snapshot } from "../core/snapshot";
 import type { AbilityDef, ClassId, Content } from "../core/types";
 import {
   abilityRawDisplay,
   actionCyclePhase,
-  characterBaseStats,
   cooldownRemainingMs,
   formatAbilityRawLine,
   formatAbilityTimings,
@@ -54,7 +54,7 @@ export function mountLoadoutSurface(
   function renderAbilityCard(
     container: HTMLElement,
     ability: AbilityDef,
-    stats: ReturnType<typeof characterBaseStats>,
+    stats: ReturnType<typeof characterStats>,
     snapshot: Snapshot,
     classId: ClassId,
     slotIndex: number | "basic",
@@ -137,7 +137,7 @@ export function mountLoadoutSurface(
         snapshot.progression.armory,
         content,
       );
-      const stats = characterBaseStats(classKit, talentState, equipmentMods);
+      const stats = characterStats(classKit, talentState, equipmentMods);
       const applied = appliedLoadout(snapshot, classId);
       const loadout = effectiveLoadout(snapshot, classId);
       const hasPending = snapshot.pendingEdits.some(
