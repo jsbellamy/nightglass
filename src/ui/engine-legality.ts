@@ -1,4 +1,5 @@
 import type { Engine } from "../core/engine";
+import type { EngineEvent } from "../core/events";
 import type { Snapshot } from "../core/snapshot";
 import type { ClassId, Content, EquipmentSlotId } from "../core/types";
 import { rosterClassIds } from "./snapshot-view";
@@ -23,6 +24,40 @@ function talentKey(classId: ClassId, talentId: string): string {
 
 function equipKey(dropId: number, classId: ClassId, slot: EquipmentSlotId): string {
   return `${dropId}:${classId}:${slot}`;
+}
+
+/**
+ * Whether an event can change equip or talent legality.
+ *
+ * Exhaustive by construction: adding a variant to EngineEvent without adding a
+ * case here is a compile error. The Presentation Event vocabulary is
+ * append-only (docs/agents/code-style.md), so new variants will arrive — and
+ * each one must be consciously classified rather than defaulting to "safe".
+ */
+export function invalidatesLegality(event: EngineEvent): boolean {
+  switch (event.type) {
+    case "level-up":
+    case "drop-awarded":
+    case "config-applied":
+      return true;
+    case "stage-attempt-started":
+    case "wave-started":
+    case "action-started":
+    case "impact":
+    case "status-applied":
+    case "status-expired":
+    case "knockout":
+    case "revived":
+    case "wave-cleared":
+    case "stage-cleared":
+    case "party-defeat":
+    case "xp-awarded":
+      return false;
+    default: {
+      const exhaustive: never = event;
+      return exhaustive;
+    }
+  }
 }
 
 export function legalityViewFromEngine(engine: Engine): EngineLegalityView {

@@ -8,6 +8,7 @@ import { mountBattleTile } from "./ui/battle-tile";
 import { createProductionDockWindowPort, type DockWindowPort } from "./ui/dock-window";
 import { mountManagementDock } from "./ui/dock";
 import {
+  invalidatesLegality,
   legalityViewFromSerialized,
   serializeEngineLegality,
   type SerializedEngineLegality,
@@ -194,7 +195,7 @@ export function mountTileShell(root: HTMLElement, options: TileShellOptions = {}
     bus?.publish({
       type: "snapshot",
       snapshot,
-      legality: serializeEngineLegality(engine, snapshot, content),
+      legality: currentLegality(snapshot),
     });
   }
 
@@ -229,10 +230,19 @@ export function mountTileShell(root: HTMLElement, options: TileShellOptions = {}
 
   let lastSnapshot: Snapshot | null = null;
   let lastSnapshotAtMs = 0;
+  let cachedLegality: SerializedEngineLegality | null = null;
 
   function invalidateTickSnapshot(): void {
     lastSnapshot = null;
     lastSnapshotAtMs = 0;
+    cachedLegality = null;
+  }
+
+  function currentLegality(snapshot: Snapshot): SerializedEngineLegality {
+    if (cachedLegality === null) {
+      cachedLegality = serializeEngineLegality(engine, snapshot, content);
+    }
+    return cachedLegality;
   }
 
   const REALTIME_CLAMP_MS = PUMP_INTERVAL_MS;
@@ -250,15 +260,16 @@ export function mountTileShell(root: HTMLElement, options: TileShellOptions = {}
   const pumpDeps = {
     advanceBy: (ms: number) => engine.advanceBy(ms),
     onAdvance: (events: EngineEvent[]) => {
+      if (events.some(invalidatesLegality)) {
+        cachedLegality = null;
+      }
       lastSnapshot = engine.snapshot();
       lastSnapshotAtMs = clockNow();
       frameMetrics.time("applyEvents", () =>
         tile.applyEvents(events, lastSnapshot!),
       );
       if (dockSubscribed) {
-        const legality = frameMetrics.time("legality", () =>
-          serializeEngineLegality(engine, lastSnapshot!, content),
-        );
+        const legality = frameMetrics.time("legality", () => currentLegality(lastSnapshot!));
         frameMetrics.time("publish", () =>
           bus?.publish({ type: "pump", events, snapshot: lastSnapshot!, legality }),
         );
