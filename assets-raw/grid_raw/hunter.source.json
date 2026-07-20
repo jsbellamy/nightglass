@@ -1,0 +1,13 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "226f5e361ce3186628730f2911beafe6481690604e94fe1ebc8631530a3c680a",
+  "asset_class": "Character",
+  "runtime_destination": "src/assets/sprites/hunter.png",
+  "style_reference": "assets-raw/grid_raw/priest.png",
+  "style_reference_sha256": "34712fbd19213319951ec00330e88242de4a6ba7b5b0822a43eb90a80478d635",
+  "candidate": "hunter-n",
+  "facing": "right",
+  "role": "party_class",
+  "prompt": "TRUE chunky pixel art sprite ONLY. Canvas is exactly 32 logical columns by 48 logical rows rendered large — the 1024x1536 output represents exactly 32 logical columns by 48 logical rows; every logical pixel is one uniform 32x32 rendered-pixel square and every boundary aligns to that grid. One full-body chibi Hunter of a storybook night-garden fantasy guild, strict side profile facing RIGHT: fitted mint-green stitched tunic with leaf-scale shoulder, plum hood down on the back, berry-pink scarf tail, cream trousers tucked into short boots, dark-plum one-cell outline, alert stance drawing a curved bramble-wood shortbow held forward-right with the string pulled and one thorn arrow nocked, small quiver at the hip. Keep the combined silhouette within 26x40 logical cells, centered, with at least TWO full magenta cells of clearance on LEFT, RIGHT, TOP, and BOTTOM — do not touch or crop any edge. Use 10-12 flat colors, one-cell outlines, bow limbs at least two cells thick. Every unused cell is flat #ff00ff. No smaller pixels, gradients, anti-aliasing, dithering, floor, shadow, glow, particles, extra characters, text, watermark, transparency, cropped equipment, or hot magenta in the Hunter."
+}
