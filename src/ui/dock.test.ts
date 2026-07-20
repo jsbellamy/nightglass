@@ -7,13 +7,29 @@ import { describe, expect, it, vi } from "vitest";
 import { createEngine } from "../core/engine";
 import { fixtureContent } from "../core/testing/fixture-content";
 import { mountBattleTile } from "./battle-tile";
-import { DOCK_TABS, mountManagementDock } from "./dock";
+import { DOCK_SURFACES, DOCK_TABS, mountManagementDock } from "./dock";
 
 function mountDock(root: HTMLElement, options: Parameters<typeof mountManagementDock>[1] = {}) {
   return mountManagementDock(root, { content: fixtureContent, ...options });
 }
 
 describe("Management Dock shell", () => {
+  it("registers every dock tab in DOCK_SURFACES and no extras", () => {
+    const tabIds = DOCK_TABS.map((tab) => tab.id);
+    const surfaceIds = DOCK_SURFACES.map((entry) => entry.id);
+    expect(surfaceIds).toEqual(tabIds);
+    expect(new Set(surfaceIds).size).toBe(surfaceIds.length);
+  });
+
+  it("renders tabs in Party, Loadout, Talents, Armory, Stage order", () => {
+    const root = document.createElement("main");
+    mountDock(root);
+    const labels = [...root.querySelectorAll<HTMLButtonElement>(".dock-tab")].map(
+      (button) => button.textContent?.replace(/\s+/g, " ").trim(),
+    );
+    expect(labels).toEqual(["Party", "Loadout", "Talents", "Armory", "Stage"]);
+  });
+
   it("shows one surface at a time across the five tabs", () => {
     const root = document.createElement("main");
     const dock = mountDock(root);
