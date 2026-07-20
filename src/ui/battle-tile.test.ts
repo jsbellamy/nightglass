@@ -199,4 +199,34 @@ describe("Battle Tile renderer", () => {
     expect(text).toContain("Orchard Understory");
     expect(text).toContain("Wave 1");
   });
+
+  it("keys the battlefield backdrop image per Stage and keeps audio mute controls", () => {
+    const root = document.createElement("main");
+    const content = buildContent();
+    const tile = mountBattleTile(root, content);
+    const engine = createEngine(content, undefined, LOOT_SEED);
+    tile.render(engine.snapshot());
+
+    const battlefield = root.querySelector<HTMLElement>(".battlefield");
+    const backdrop = root.querySelector<HTMLElement>(".battlefield-backdrop");
+    expect(battlefield?.dataset["backdropKey"]).toBe("backdrop-1");
+    expect(backdrop?.style.backgroundImage).toMatch(/backdrop-1/);
+    expect(backdrop?.style.backgroundImage).not.toMatch(/linear-gradient/);
+    expect(root.querySelector(".audio-mute-toggle")).not.toBeNull();
+    expect(root.querySelector(".audio-volume-toggle")).not.toBeNull();
+
+    const stage2 = structuredClone(engine.snapshot());
+    if (!stage2.attempt) {
+      throw new Error("missing attempt");
+    }
+    stage2.attempt.stage = 2;
+    tile.render(stage2);
+    expect(battlefield?.dataset["backdropKey"]).toBe("backdrop-2");
+    expect(backdrop?.style.backgroundImage).toMatch(/backdrop-2/);
+
+    stage2.attempt.stage = 3;
+    tile.render(stage2);
+    expect(battlefield?.dataset["backdropKey"]).toBe("backdrop-3");
+    expect(backdrop?.style.backgroundImage).toMatch(/backdrop-3/);
+  });
 });

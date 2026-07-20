@@ -9,17 +9,20 @@ adding or changing raster assets.
 ## Layout
 
 - `assets-raw/grid_raw/` — Archived Raw Bundle (`*.png` + `*.source.json`)
+- `assets-raw/backdrops/` — Stage backdrop Archived Raw Bundle (see `docs/backdrop-contract.md`)
 - `pipeline/acquire.py` — offline normalizer, validator, and manifest writer
 - `pipeline/icons/` — Equipment icon ingest, Stage-2 build, and contract tests
+- `pipeline/backdrops.py` — Stage backdrop nearest reduce + byte-identity verify
 - `pipeline/palette.json` — `moonberry-16` palette definition
 - `src/assets/sprites/` — committed runtime PNGs and `manifest.json`
+- `src/assets/backdrops/` — committed 480×86 Stage backdrop runtimes
 - `src/assets/icon-sources/` — generated text-grid icon sources (see `docs/icon-contract.md`)
 - `src/assets/icons/` — committed 34×34 Equipment icon runtimes and manifest
 
 ## Commands
 
 ```bash
-npm run assets:build   # rebuild runtime sprites + icons from committed sources
+npm run assets:build   # rebuild runtime sprites + icons + backdrops from committed sources
 npm run assets:verify  # contract tests + byte-identity rebuild proof
 ```
 
