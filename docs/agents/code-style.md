@@ -69,3 +69,7 @@ Test at these public boundaries, nowhere internal:
   enough to check against). An **interim** named by the issue body is the
   sanctioned form of building ahead; anything else built for an imagined
   future need is a violation.
+- A validator emits a machine-readable report alongside its human-readable
+  output, on both the pass and fail paths. An agent reads gate results from the
+  report; the printed lines are for people. A print-only validator forces every
+  later reader to re-run the script or open the artifact it was measuring.

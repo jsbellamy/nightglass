@@ -1,5 +1,6 @@
 __pycache__/
 pipeline/icons/fixtures/raws/
+pipeline/icons/verify-report.json
 
 # Logs
 logs
