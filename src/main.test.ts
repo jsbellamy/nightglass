@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createEngine } from "./core/engine";
 import { buildContent } from "./data";
 import type { EngineEvent } from "./core/events";
+import type { Snapshot } from "./core/snapshot";
 import { mountDockShell, mountTileShell } from "./main";
 import { BATTLEFIELD_HEIGHT, STATUS_LINE_HEIGHT, TILE_HEIGHT, TILE_WIDTH } from "./ui/battle-tile";
 import type { BusMessage, createBusEndpoint } from "./ui/bus";
@@ -1183,6 +1184,300 @@ describe("pump publish when dock subscribed", () => {
 
     shell.stop();
     vi.mocked(battleTile.mountBattleTile).mockRestore();
+  });
+});
+
+describe("serialized legality cache", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    Object.defineProperty(document, "hidden", { configurable: true, value: false });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  function createControlledPumpSchedule(clock: { ms: number }) {
+    const rafCallbacks: FrameRequestCallback[] = [];
+    const doc = {
+      hidden: false,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    } as unknown as Document;
+
+    return {
+      advancePumpMs(ms: number): void {
+        clock.ms += ms;
+        vi.advanceTimersByTime(ms);
+      },
+      schedule: {
+        now: () => clock.ms,
+        setInterval: ((handler: TimerHandler) =>
+          setInterval(handler, PUMP_INTERVAL_MS)) as typeof setInterval,
+        clearInterval: ((id: ReturnType<typeof setInterval>) =>
+          clearInterval(id)) as typeof clearInterval,
+        requestAnimationFrame: (callback: FrameRequestCallback) => {
+          rafCallbacks.push(callback);
+          return rafCallbacks.length;
+        },
+        cancelAnimationFrame: vi.fn(),
+        document: doc,
+      } satisfies NonNullable<Parameters<typeof mountTileShell>[1]>["pumpSchedule"],
+    };
+  }
+
+  function mountSubscribedTile(clock: { ms: number }) {
+    const pump = createControlledPumpSchedule(clock);
+    const published: BusMessage[] = [];
+    let handlers: Parameters<typeof createBusEndpoint>[0] = {};
+    const content = buildContent();
+    const engine = createEngine(content, undefined, 42);
+
+    const root = document.createElement("main");
+    const shell = mountTileShell(root, {
+      engine,
+      content,
+      dockWindow: createMockDockWindow(),
+      deferPump: true,
+      now: () => clock.ms,
+      pumpSchedule: pump.schedule,
+      busFactory: (busHandlers) => {
+        handlers = busHandlers;
+        return {
+          publish: (message) => published.push(message),
+          close: () => {},
+        };
+      },
+    });
+
+    handlers["dock-opened"]?.({ type: "dock-opened" });
+    published.length = 0;
+
+    return { shell, pump, published, handlers, engine, content };
+  }
+
+  it("does not call serializeEngineLegality on a tick whose events are all non-invalidating", async () => {
+    const legalityModule = await import("./ui/engine-legality");
+    const serializeSpy = vi.spyOn(legalityModule, "serializeEngineLegality");
+
+    const clock = { ms: 0 };
+    const { shell, pump, engine } = mountSubscribedTile(clock);
+    serializeSpy.mockClear();
+
+    vi.spyOn(engine, "advanceBy").mockReturnValue([
+      { seq: 1, atMs: 250, type: "impact", entityId: "e1", abilityId: "a", results: [] },
+      { seq: 2, atMs: 250, type: "knockout", entityId: "e2" },
+    ] satisfies EngineEvent[]);
+
+    shell.startPump();
+    pump.advancePumpMs(PUMP_INTERVAL_MS);
+
+    expect(serializeSpy).not.toHaveBeenCalled();
+    shell.stop();
+    serializeSpy.mockRestore();
+  });
+
+  it.each([
+    { seq: 1, atMs: 250, type: "level-up", classId: "knight", level: 2 },
+    { seq: 1, atMs: 250, type: "drop-awarded", dropId: 99 },
+    { seq: 1, atMs: 250, type: "config-applied" },
+  ] as const satisfies readonly EngineEvent[])(
+    "recomputes legality on a tick containing $type",
+    async (invalidating) => {
+      const legalityModule = await import("./ui/engine-legality");
+      const serializeSpy = vi.spyOn(legalityModule, "serializeEngineLegality");
+
+      const clock = { ms: 0 };
+      const { shell, pump, engine, content, published } = mountSubscribedTile(clock);
+      serializeSpy.mockClear();
+
+      vi.spyOn(engine, "advanceBy").mockReturnValue([invalidating]);
+      shell.startPump();
+      pump.advancePumpMs(PUMP_INTERVAL_MS);
+
+      expect(serializeSpy).toHaveBeenCalledTimes(1);
+      const pumpMessage = published.find((message) => message.type === "pump");
+      expect(pumpMessage?.legality).toEqual(
+        serializeEngineLegality(engine, pumpMessage!.snapshot, content),
+      );
+
+      shell.stop();
+      serializeSpy.mockRestore();
+    },
+  );
+
+  it("invalidates the cache on command so the snapshot publish carries fresh legality", async () => {
+    const legalityModule = await import("./ui/engine-legality");
+    const serializeSpy = vi.spyOn(legalityModule, "serializeEngineLegality");
+
+    const clock = { ms: 0 };
+    const { shell, pump, handlers, engine, content, published } = mountSubscribedTile(clock);
+
+    shell.startPump();
+    vi.spyOn(engine, "advanceBy").mockReturnValue([
+      { seq: 1, atMs: 250, type: "config-applied" },
+    ] satisfies EngineEvent[]);
+    pump.advancePumpMs(PUMP_INTERVAL_MS);
+    serializeSpy.mockClear();
+
+    handlers.command?.({
+      type: "command",
+      command: { cmd: "setParty", args: [["priest", "wizard", "knight"], "hunter"] },
+    });
+
+    expect(serializeSpy).toHaveBeenCalled();
+    const snapshotMessage = published.find((message) => message.type === "snapshot");
+    expect(snapshotMessage?.type).toBe("snapshot");
+    expect(snapshotMessage?.legality).toEqual(
+      serializeEngineLegality(engine, snapshotMessage!.snapshot, content),
+    );
+    shell.stop();
+    serializeSpy.mockRestore();
+  });
+
+  it("reuses the cached legality object across consecutive non-invalidating ticks", async () => {
+    const legalityModule = await import("./ui/engine-legality");
+    const serializeSpy = vi.spyOn(legalityModule, "serializeEngineLegality");
+
+    const clock = { ms: 0 };
+    const { shell, pump, published, engine } = mountSubscribedTile(clock);
+    serializeSpy.mockClear();
+
+    vi.spyOn(engine, "advanceBy").mockReturnValue([
+      { seq: 1, atMs: 250, type: "config-applied" },
+    ] satisfies EngineEvent[]);
+    shell.startPump();
+    pump.advancePumpMs(PUMP_INTERVAL_MS);
+    const firstLegality = published.find((m) => m.type === "pump")?.legality;
+    serializeSpy.mockClear();
+    published.length = 0;
+
+    vi.mocked(engine.advanceBy).mockReturnValue([
+      { seq: 2, atMs: 500, type: "impact", entityId: "e1", abilityId: "a", results: [] },
+    ] satisfies EngineEvent[]);
+    pump.advancePumpMs(PUMP_INTERVAL_MS);
+
+    expect(serializeSpy).not.toHaveBeenCalled();
+    const secondLegality = published.find((m) => m.type === "pump")?.legality;
+    expect(secondLegality).toBe(firstLegality);
+    shell.stop();
+    serializeSpy.mockRestore();
+  });
+
+  it("matches unconditional recomputation over a scripted command and event sequence", async () => {
+    const clock = { ms: 0 };
+    const { shell, pump, published, handlers, engine, content } = mountSubscribedTile(clock);
+
+    const scripted: EngineEvent[][] = [
+      [{ seq: 1, atMs: 250, type: "impact", entityId: "e1", abilityId: "a", results: [] }],
+      [{ seq: 2, atMs: 500, type: "xp-awarded", classId: "knight", amount: 1, totalXp: 1 }],
+      [{ seq: 3, atMs: 750, type: "level-up", classId: "knight", level: 2 }],
+      [{ seq: 4, atMs: 1000, type: "drop-awarded", dropId: 7 }],
+    ];
+
+    let step = 0;
+    vi.spyOn(engine, "advanceBy").mockImplementation(() => scripted[step++] ?? []);
+    shell.startPump();
+
+    const steps: { legality: unknown; snapshot: Snapshot }[] = [];
+    const recordPublished = () => {
+      for (const message of published) {
+        if (message.type === "pump" || message.type === "snapshot") {
+          steps.push({ legality: message.legality, snapshot: message.snapshot });
+        }
+      }
+    };
+
+    pump.advancePumpMs(PUMP_INTERVAL_MS);
+    recordPublished();
+    handlers.command?.({
+      type: "command",
+      command: { cmd: "setParty", args: [["priest", "wizard", "knight"], "hunter"] },
+    });
+    recordPublished();
+    pump.advancePumpMs(PUMP_INTERVAL_MS);
+    recordPublished();
+
+    for (const { legality, snapshot } of steps) {
+      expect(legality).toEqual(serializeEngineLegality(engine, snapshot, content));
+    }
+    shell.stop();
+  });
+
+  it("invalidates during an unsubscribed stretch so dock-opened receives freshly computed legality", async () => {
+    const legalityModule = await import("./ui/engine-legality");
+    const serializeSpy = vi.spyOn(legalityModule, "serializeEngineLegality");
+
+    const clock = { ms: 0 };
+    const pump = createControlledPumpSchedule(clock);
+    const published: BusMessage[] = [];
+    let handlers: Parameters<typeof createBusEndpoint>[0] = {};
+    const content = buildContent();
+    const engine = createEngine(content, undefined, 42);
+
+    vi.spyOn(engine, "advanceBy").mockReturnValue([
+      { seq: 1, atMs: 250, type: "level-up", classId: "knight", level: 2 },
+    ] satisfies EngineEvent[]);
+
+    const root = document.createElement("main");
+    const shell = mountTileShell(root, {
+      engine,
+      content,
+      dockWindow: createMockDockWindow(),
+      deferPump: true,
+      now: () => clock.ms,
+      pumpSchedule: pump.schedule,
+      busFactory: (busHandlers) => {
+        handlers = busHandlers;
+        return {
+          publish: (message) => published.push(message),
+          close: () => {},
+        };
+      },
+    });
+
+    shell.startPump();
+    serializeSpy.mockClear();
+    pump.advancePumpMs(PUMP_INTERVAL_MS);
+    expect(serializeSpy).not.toHaveBeenCalled();
+
+    handlers["dock-opened"]?.({ type: "dock-opened" });
+    const snapshotMessage = published.find((message) => message.type === "snapshot");
+    expect(snapshotMessage?.type).toBe("snapshot");
+    expect(snapshotMessage!.legality).toEqual(
+      serializeEngineLegality(engine, snapshotMessage!.snapshot, content),
+    );
+    expect(serializeSpy).toHaveBeenCalled();
+
+    shell.stop();
+    serializeSpy.mockRestore();
+  });
+
+  it("never mutates a cached legality map in place; invalidation replaces it", async () => {
+    const clock = { ms: 0 };
+    const { shell, pump, published, engine } = mountSubscribedTile(clock);
+
+    vi.spyOn(engine, "advanceBy").mockReturnValue([
+      { seq: 1, atMs: 250, type: "config-applied" },
+    ] satisfies EngineEvent[]);
+    shell.startPump();
+    pump.advancePumpMs(PUMP_INTERVAL_MS);
+    const cached = published.find((m) => m.type === "pump")?.legality;
+    expect(cached).toBeDefined();
+    const equipBefore = { ...cached!.equip };
+
+    vi.mocked(engine.advanceBy).mockReturnValue([
+      { seq: 2, atMs: 500, type: "drop-awarded", dropId: 42 },
+    ] satisfies EngineEvent[]);
+    pump.advancePumpMs(PUMP_INTERVAL_MS);
+    const pumpMessages = published.filter((m) => m.type === "pump");
+    const refreshed = pumpMessages[pumpMessages.length - 1]?.legality;
+
+    expect(refreshed).not.toBe(cached);
+    expect(cached!.equip).toEqual(equipBefore);
+    shell.stop();
   });
 });
 
