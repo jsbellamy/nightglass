@@ -9,7 +9,7 @@ import { createProductionDockWindowPort, type DockWindowPort } from "./ui/dock-w
 import { mountManagementDock } from "./ui/dock";
 import { startPump, type PumpController } from "./ui/pump";
 import type { TileShell } from "./ui/tile-shell-types";
-import { ARMORY_BADGE_EVENT } from "./ui/presentation";
+import { ARMORY_BADGE_EVENT } from "./ui/bus";
 import type { EngineEvent } from "./core/events";
 
 export { TILE_HEIGHT, TILE_WIDTH } from "./ui/battle-tile";

@@ -4,6 +4,8 @@ import type { ClassId, EquipmentSlotId } from "../core/types";
 
 export const NIGHTGLASS_BUS_CHANNEL = "nightglass";
 
+export const ARMORY_BADGE_EVENT = "nightglass:armory-badge";
+
 export type TileCommand =
   | { cmd: "selectStage"; args: [1 | 2 | 3] }
   | {
