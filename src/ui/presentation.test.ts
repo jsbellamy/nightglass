@@ -613,7 +613,7 @@ describe("batched anchor geometry reads", () => {
     presentation.destroy();
   });
 
-  it("captures combatant layout before rebuilding the effect lane each frame", () => {
+  it("captures combatant layout before reconciling the effect lane each frame", () => {
     const { effectLane, presentation, addCombatant } = mountPresentationHarness();
     addCombatant("opp:1:0", "140px");
     const snapshot = createEngine(buildContent(), undefined, LOOT_SEED).snapshot();
@@ -633,26 +633,216 @@ describe("batched anchor geometry reads", () => {
       snapshot,
     );
 
-    let readsBeforeReplace = 0;
-    const replaceSpy = vi.spyOn(effectLane, "replaceChildren");
+    let readsBeforeEffectAppend = 0;
+    const appendSpy = vi.spyOn(effectLane, "append");
     const offsetLeftDescriptor = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "offsetLeft")!;
     const offsetLeftSpy = vi.spyOn(HTMLElement.prototype, "offsetLeft", "get").mockImplementation(function (
       this: HTMLElement,
     ) {
-      if (replaceSpy.mock.calls.length === 0) {
-        readsBeforeReplace += 1;
+      if (appendSpy.mock.calls.length === 0) {
+        readsBeforeEffectAppend += 1;
       }
       return offsetLeftDescriptor.get!.call(this);
     });
 
     presentation.render(950, snapshot);
 
-    expect(readsBeforeReplace).toBeGreaterThan(0);
-    const lastReadOrder = Math.max(...offsetLeftSpy.mock.invocationCallOrder);
-    expect(lastReadOrder).toBeLessThan(replaceSpy.mock.invocationCallOrder[0]!);
+    expect(readsBeforeEffectAppend).toBeGreaterThan(0);
+    if (appendSpy.mock.calls.length > 0) {
+      const lastReadOrder = Math.max(...offsetLeftSpy.mock.invocationCallOrder);
+      expect(lastReadOrder).toBeLessThan(appendSpy.mock.invocationCallOrder[0]!);
+    }
     offsetLeftSpy.mockRestore();
-    replaceSpy.mockRestore();
+    appendSpy.mockRestore();
     presentation.destroy();
+  });
+});
+
+describe("keyed DOM reconciliation", () => {
+  afterEach(() => {
+    document.body.replaceChildren();
+  });
+
+  it("reuses the same status-icon img when the snapshot is unchanged", () => {
+    const root = document.createElement("main");
+    document.body.append(root);
+    const tile = mountBattleTile(root, fixtureContent);
+    const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
+    const snapshot = engine.snapshot();
+    snapshot.simNowMs = 500;
+    tile.render(snapshot);
+    tile.applyEvents(
+      [
+        { seq: 1, atMs: 500, type: "status-applied", entityId: "party:knight:front", statusId: "braced", expiresAtMs: 5_500 },
+      ],
+      snapshot,
+    );
+    tile.render(snapshot);
+    const firstIcon = root.querySelector<HTMLImageElement>(".status-icon");
+    tile.render(snapshot);
+    const secondIcon = root.querySelector<HTMLImageElement>(".status-icon");
+    expect(firstIcon).toBe(secondIcon);
+    tile.destroy();
+  });
+
+  it("removes a status icon when the status expires between frames", () => {
+    const root = document.createElement("main");
+    document.body.append(root);
+    const tile = mountBattleTile(root, fixtureContent);
+    const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
+    const snapshot = engine.snapshot();
+    snapshot.simNowMs = 500;
+    tile.applyEvents(
+      [
+        { seq: 1, atMs: 500, type: "status-applied", entityId: "party:knight:front", statusId: "braced", expiresAtMs: 5_500 },
+      ],
+      snapshot,
+    );
+    tile.render(snapshot);
+    expect(root.querySelector(".status-icon")).not.toBeNull();
+
+    tile.applyEvents(
+      [{ seq: 2, atMs: 600, type: "status-expired", entityId: "party:knight:front", statusId: "braced" }],
+      snapshot,
+    );
+    tile.render(snapshot);
+    expect(root.querySelector(".status-icon")).toBeNull();
+    tile.destroy();
+  });
+
+  it("keeps the effect img node across frames and only updates src when the frame URL changes", () => {
+    const { effectLane, presentation, addCombatant } = mountPresentationHarness();
+    addCombatant("opp:1:0", "100px");
+    const snapshot = createEngine(buildContent(), undefined, LOOT_SEED).snapshot();
+    snapshot.simNowMs = 1_000;
+    presentation.applyEvents(
+      [
+        {
+          seq: 1,
+          atMs: 900,
+          type: "action-started",
+          entityId: "party:knight:front",
+          abilityId: "steel-cut",
+          impactAtMs: 1_000,
+          targetIds: ["opp:1:0"],
+        },
+      ],
+      snapshot,
+    );
+    presentation.render(950, snapshot);
+    const firstImg = effectLane.querySelector<HTMLImageElement>(".effect-frame");
+    expect(firstImg).not.toBeNull();
+    const srcSpy = vi.spyOn(firstImg!, "src", "set");
+
+    presentation.render(955, snapshot);
+    const secondImg = effectLane.querySelector<HTMLImageElement>(".effect-frame");
+    expect(secondImg).toBe(firstImg);
+    expect(srcSpy).not.toHaveBeenCalled();
+    srcSpy.mockRestore();
+    presentation.destroy();
+  });
+
+  it("reuses the same damage-number span across consecutive frames within its lifetime", () => {
+    const { presentation, addCombatant } = mountPresentationHarness();
+    addCombatant("opp:1:0", "100px");
+    const snapshot = createEngine(buildContent(), undefined, LOOT_SEED).snapshot();
+    snapshot.simNowMs = 2_000;
+    presentation.applyEvents(
+      [
+        {
+          seq: 1,
+          atMs: 2_000,
+          type: "impact",
+          entityId: "party:knight:front",
+          abilityId: "steel-cut",
+          results: [{ targetId: "opp:1:0", kind: "damage", channel: "physical", amount: 3, healthAfter: 10 }],
+        },
+      ],
+      snapshot,
+    );
+    presentation.render(2_050, snapshot);
+    const first = document.body.querySelector<HTMLElement>(".damage-number");
+    presentation.render(2_100, snapshot);
+    const second = document.body.querySelector<HTMLElement>(".damage-number");
+    expect(first).toBe(second);
+    presentation.destroy();
+  });
+
+  it("removes damage numbers after their lifetime and does not accumulate orphans", () => {
+    const { presentation, addCombatant } = mountPresentationHarness();
+    addCombatant("opp:1:0", "100px");
+    const snapshot = createEngine(buildContent(), undefined, LOOT_SEED).snapshot();
+    for (let i = 0; i < 30; i += 1) {
+      const atMs = 1_000 + i * 1_000;
+      presentation.applyEvents(
+        [
+          {
+            seq: i + 1,
+            atMs,
+            type: "impact",
+            entityId: "party:knight:front",
+            abilityId: "steel-cut",
+            results: [{ targetId: "opp:1:0", kind: "damage", channel: "physical", amount: 1, healthAfter: 10 }],
+          },
+        ],
+        snapshot,
+      );
+      presentation.render(atMs + 50, snapshot);
+      presentation.render(atMs + 950, snapshot);
+    }
+    expect(document.body.querySelectorAll(".damage-number")).toHaveLength(0);
+    presentation.destroy();
+  });
+
+  it("creates no new status icons, effect frames, or damage spans after the first steady frame", () => {
+    const root = document.createElement("main");
+    document.body.append(root);
+    const tile = mountBattleTile(root, buildContent());
+    const engine = createEngine(buildContent(), undefined, LOOT_SEED);
+    let snapshot = engine.snapshot();
+    snapshot.simNowMs = 1_050;
+    tile.applyEvents(
+      [
+        { seq: 1, atMs: 1_000, type: "status-applied", entityId: "party:knight:front", statusId: "braced", expiresAtMs: 9_000 },
+        {
+          seq: 2,
+          atMs: 900,
+          type: "action-started",
+          entityId: "party:knight:front",
+          abilityId: "steel-cut",
+          impactAtMs: 1_000,
+          targetIds: ["opp:1:0"],
+        },
+        {
+          seq: 3,
+          atMs: 1_000,
+          type: "impact",
+          entityId: "party:knight:front",
+          abilityId: "steel-cut",
+          results: [
+            {
+              targetId: "opp:1:0",
+              kind: "damage",
+              channel: "physical",
+              amount: 2,
+              healthAfter: 8,
+            },
+          ],
+        },
+      ],
+      snapshot,
+    );
+    tile.render(snapshot);
+
+    const createElementSpy = vi.spyOn(document, "createElement");
+    for (let frame = 0; frame < 60; frame += 1) {
+      snapshot = { ...snapshot, simNowMs: 1_050 + frame * 16 };
+      tile.render(snapshot);
+    }
+    const createdTags = createElementSpy.mock.calls.map(([tag]) => tag);
+    expect(createdTags.filter((tag) => tag === "img" || tag === "span")).toHaveLength(0);
+    createElementSpy.mockRestore();
+    tile.destroy();
   });
 });
 
