@@ -43,7 +43,8 @@ tile chrome; 480×86 describes only the battlefield asset — they do not contra
 
 ## Consequences
 
-- New dock surfaces must publish commands and consume Snapshots/events on the bus;
+- New dock surfaces must publish commands and consume Snapshots and Presentation
+  Events on the bus;
   they must not assume shared memory with the tile's Engine instance.
 - Layout or evidence tests should import dimensions from `tile-geometry.ts` and
   `dock-geometry.ts`, not duplicate magic numbers.
