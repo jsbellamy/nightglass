@@ -7,21 +7,20 @@ import {
   type ClassTalentState,
 } from "../core/talents";
 import type { ClassId, ClassKitDef, Content } from "../core/types";
-import { levelFromXp } from "../core/xp";
 import {
   formatStatModifierPerRank,
   formatStatTalentDelta,
 } from "./ability-format";
 import type { TileCommand } from "./bus";
 import { bindPressable } from "./keyboard";
-import { effectiveLoadout, effectiveTalentState } from "./loadout-surface";
-
-const CLASS_LABELS: Record<ClassId, string> = {
-  knight: "Knight",
-  wizard: "Wizard",
-  priest: "Priest",
-  hunter: "Hunter",
-};
+import {
+  CLASS_LABELS,
+  classKitFor,
+  effectiveLoadout,
+  effectiveTalentState,
+  levelFor,
+  rosterClassIds,
+} from "./snapshot-view";
 
 export interface TalentsSurface {
   render(snapshot: Snapshot | null): void;
@@ -33,21 +32,8 @@ export interface TalentsSurfaceOptions {
   onCommand?: (command: TileCommand) => void;
 }
 
-function classKitFor(content: Content, classId: ClassId): ClassKitDef {
-  const classKit = content.classes.find((entry) => entry.id === classId);
-  if (!classKit) {
-    throw new Error(`Missing Class Kit ${classId}`);
-  }
-  return classKit;
-}
-
-function rosterClassIds(snapshot: Snapshot): ClassId[] {
-  const { party, reserve } = snapshot.progression;
-  return [...party, reserve];
-}
-
-function availableTalentPoints(snapshot: Snapshot, classId: ClassId, thresholds: number[]): number {
-  const level = levelFromXp(snapshot.progression.characterXp[classId] ?? 0, thresholds);
+function availableTalentPoints(snapshot: Snapshot, classId: ClassId, content: Content): number {
+  const level = levelFor(snapshot, content, classId);
   const talentState = effectiveTalentState(snapshot, classId);
   return Math.max(0, level - spentTalentPoints(talentState));
 }
@@ -125,10 +111,7 @@ export function mountTalentsSurface(
     for (const classId of rosterClassIds(snapshot)) {
       const classKit = classKitFor(content, classId);
       const talentState = effectiveTalentState(snapshot, classId);
-      const level = levelFromXp(
-        snapshot.progression.characterXp[classId] ?? 0,
-        content.xpThresholds,
-      );
+      const level = levelFor(snapshot, content, classId);
       const hasPending = snapshot.pendingEdits.some(
         (edit) => edit.kind === "talent" && edit.classId === classId,
       );
@@ -145,7 +128,7 @@ export function mountTalentsSurface(
       const pointsLine = document.createElement("p");
       pointsLine.className = "talent-points";
       pointsLine.dataset["talentPoints"] = "true";
-      pointsLine.textContent = `${availableTalentPoints(snapshot, classId, content.xpThresholds)} Talent Points available`;
+      pointsLine.textContent = `${availableTalentPoints(snapshot, classId, content)} Talent Points available`;
       section.append(pointsLine);
 
       if (hasPending) {

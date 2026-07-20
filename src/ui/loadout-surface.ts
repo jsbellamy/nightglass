@@ -1,7 +1,6 @@
 import { equipmentModifiersForLoadout } from "../core/equipment";
 import type { Snapshot } from "../core/snapshot";
-import type { ClassTalentState } from "../core/talents";
-import type { AbilityDef, ClassId, ClassKitDef, Content } from "../core/types";
+import type { AbilityDef, ClassId, Content } from "../core/types";
 import {
   abilityRawDisplay,
   actionCyclePhase,
@@ -12,13 +11,16 @@ import {
   formatCooldownState,
 } from "./ability-format";
 import type { TileCommand } from "./bus";
-
-const CLASS_LABELS: Record<ClassId, string> = {
-  knight: "Knight",
-  wizard: "Wizard",
-  priest: "Priest",
-  hunter: "Hunter",
-};
+import {
+  appliedLoadout,
+  CLASS_LABELS,
+  classKitFor,
+  combatantForClass,
+  effectiveLoadout,
+  effectiveTalentState,
+  rosterClassIds,
+  unlockableAbilityIds,
+} from "./snapshot-view";
 
 export interface LoadoutSurface {
   render(snapshot: Snapshot | null): void;
@@ -32,63 +34,6 @@ export interface LoadoutSurfaceOptions {
 
 function abilityById(content: Content, abilityId: string): AbilityDef | undefined {
   return content.abilities.find((ability) => ability.id === abilityId);
-}
-
-function classKitFor(content: Content, classId: ClassId): ClassKitDef {
-  const classKit = content.classes.find((entry) => entry.id === classId);
-  if (!classKit) {
-    throw new Error(`Missing Class Kit ${classId}`);
-  }
-  return classKit;
-}
-
-function effectiveTalentState(snapshot: Snapshot, classId: ClassId): ClassTalentState {
-  const pending = snapshot.pendingEdits.find(
-    (edit) => edit.kind === "talent" && edit.classId === classId,
-  );
-  if (pending?.kind === "talent") {
-    return {
-      statRanks: { ...pending.statRanks },
-      abilityTalentId: pending.abilityTalentId,
-    };
-  }
-  return structuredClone(snapshot.progression.talents[classId]!);
-}
-
-function appliedLoadout(snapshot: Snapshot, classId: ClassId): [string, string, string] {
-  return [...snapshot.progression.loadouts[classId]!] as [string, string, string];
-}
-
-function effectiveLoadout(snapshot: Snapshot, classId: ClassId): [string, string, string] {
-  const pending = snapshot.pendingEdits.find(
-    (edit) => edit.kind === "loadout" && edit.classId === classId,
-  );
-  if (pending?.kind === "loadout") {
-    return [...pending.loadout] as [string, string, string];
-  }
-  return appliedLoadout(snapshot, classId);
-}
-
-function unlockableAbilityIds(
-  classKit: ClassKitDef,
-  talentState: ClassTalentState,
-): string[] {
-  const ids = [classKit.basicAbilityId, ...classKit.coreAbilityIds];
-  if (talentState.abilityTalentId) {
-    ids.push(talentState.abilityTalentId);
-  }
-  return ids;
-}
-
-function rosterClassIds(snapshot: Snapshot): ClassId[] {
-  const { party, reserve } = snapshot.progression;
-  return [...party, reserve];
-}
-
-function combatantForClass(snapshot: Snapshot, classId: ClassId) {
-  return snapshot.attempt?.combatants.find(
-    (combatant) => combatant.side === "party" && combatant.defId === classId,
-  );
 }
 
 function newlyInsertedAbilities(
@@ -335,11 +280,7 @@ export function mountLoadoutSurface(
   };
 }
 
-export function unlockableAbilityIdsForClass(
-  classKit: ClassKitDef,
-  talentState: ClassTalentState,
-): string[] {
-  return unlockableAbilityIds(classKit, talentState);
-}
-
-export { effectiveLoadout, effectiveTalentState };
+// INTERIM: peer surfaces still import these through loadout-surface.
+// Removed by the seam-contract slice once every consumer imports snapshot-view directly.
+export { effectiveLoadout, effectiveTalentState } from "./snapshot-view";
+export { unlockableAbilityIds as unlockableAbilityIdsForClass } from "./snapshot-view";
