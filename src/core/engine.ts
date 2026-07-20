@@ -2,20 +2,17 @@ import {
   chooseFirstValidAbility,
   combatantById,
   effectiveStats,
-  healAmount,
   isCombatantStunned,
   livingCombatants,
-  mitigateDamage,
-  mitigationForChannel,
   opponentAbilityCandidates,
   opponentCombatants,
   partyAbilityCandidates,
   partyCombatants,
-  powerForStats,
-  rawDamageFromEffect,
   revalidateTargets,
+  resolveEffect,
   resolveTargets,
   shouldApplyStun,
+  type EffectOutcome,
 } from "./combat";
 import {
   assignDrop,
@@ -508,6 +505,83 @@ function applyStatus(
   return "applied";
 }
 
+type ImpactResults = Extract<EngineEvent, { type: "impact" }>["results"];
+
+function projectHealthFromOutcome(
+  targetId: string,
+  targetMaxHealth: number,
+  projectedHealth: number,
+  outcome: EffectOutcome,
+  results: ImpactResults,
+  ensurePending: (targetId: string) => PendingImpactChange,
+): number {
+  if (outcome.damageDetail) {
+    const { amount, channel, element } = outcome.damageDetail;
+    const healthAfter = Math.max(0, projectedHealth - amount);
+    results.push({
+      targetId,
+      kind: "damage",
+      channel,
+      ...(element ? { element } : {}),
+      amount,
+      healthAfter,
+    });
+    ensurePending(targetId).healthDelta -= amount;
+    return healthAfter;
+  }
+
+  if (outcome.revived && outcome.revivedHealth !== undefined) {
+    const amount = outcome.revivedHealth;
+    results.push({ targetId, kind: "heal", amount, healthAfter: amount });
+    const pending = ensurePending(targetId);
+    pending.revived = true;
+    pending.revivedHealth = amount;
+    pending.knockedOut = false;
+    return amount;
+  }
+
+  if (outcome.healDetail) {
+    const { amount } = outcome.healDetail;
+    const healthAfter = Math.min(targetMaxHealth, projectedHealth + amount);
+    results.push({ targetId, kind: "heal", amount, healthAfter });
+    ensurePending(targetId).healthDelta += amount;
+    return healthAfter;
+  }
+
+  return projectedHealth;
+}
+
+function queueStatusFromOutcome(
+  target: CombatantState,
+  outcome: EffectOutcome,
+  simNowMs: number,
+  index: ContentIndex,
+  ensurePending: (targetId: string) => PendingImpactChange,
+): void {
+  const statusId = outcome.statusToApply?.statusId ?? outcome.statusToRefresh?.statusId;
+  if (!statusId) {
+    return;
+  }
+  const statusDef = index.statusesById.get(statusId);
+  if (!statusDef) {
+    return;
+  }
+  if (statusDef.kind === "stun" && !shouldApplyStun(target, index.opponentsById)) {
+    return;
+  }
+  const durationMs = outcome.statusToApply?.durationMs ?? outcome.statusToRefresh?.durationMs;
+  if (durationMs === undefined) {
+    return;
+  }
+  const expiresAtMs = simNowMs + durationMs;
+  const pending = ensurePending(target.entityId);
+  if (outcome.statusToRefresh) {
+    pending.statusesToRefresh.push({ statusId, expiresAtMs });
+  } else if (outcome.statusToApply) {
+    pending.statusesToApply.push({ statusId, expiresAtMs });
+  }
+}
+
 function resolveImpacts(state: EngineState, index: ContentIndex, events: EngineEvent[]): void {
   const attempt = state.attempt;
   if (!attempt) {
@@ -581,75 +655,28 @@ function resolveImpacts(state: EngineState, index: ContentIndex, events: EngineE
       let projectedHealth = preTargetHealth;
 
       for (const effect of ability.effects) {
-        if (effect.kind === "damage") {
-          const channel = effect.channel ?? "physical";
-          const raw = rawDamageFromEffect(powerForStats(actorStats, channel), effect);
-          const amount = mitigateDamage(raw, mitigationForChannel(targetStats, channel));
-          projectedHealth = Math.max(0, projectedHealth - amount);
-          results.push({
-            targetId: target.entityId,
-            kind: "damage",
-            channel,
-            ...(effect.element ? { element: effect.element } : {}),
-            amount,
-            healthAfter: projectedHealth,
-          });
-          const pending = ensurePending(target.entityId);
-          pending.healthDelta -= amount;
-        }
+        const outcome = resolveEffect(
+          effect,
+          actorStats,
+          {
+            stats: targetStats,
+            health: projectedHealth,
+            maxHealth: target.maxHealth,
+            knockedOut: preTargetKnockedOut,
+            statuses: target.statuses,
+          },
+          index.statusesById,
+        );
 
-        if (effect.kind === "heal" && !preTargetKnockedOut) {
-          const amount = healAmount(powerForStats(actorStats, "elemental"), effect);
-          const capped = Math.min(target.maxHealth, projectedHealth + amount);
-          const applied = capped - projectedHealth;
-          projectedHealth = capped;
-          results.push({
-            targetId: target.entityId,
-            kind: "heal",
-            amount: applied,
-            healthAfter: projectedHealth,
-          });
-          const pending = ensurePending(target.entityId);
-          pending.healthDelta += applied;
-        }
-
-        if (effect.kind === "revive" && preTargetKnockedOut) {
-          const amount = healAmount(powerForStats(actorStats, "elemental"), effect);
-          projectedHealth = amount;
-          results.push({
-            targetId: target.entityId,
-            kind: "heal",
-            amount,
-            healthAfter: projectedHealth,
-          });
-          const pending = ensurePending(target.entityId);
-          pending.revived = true;
-          pending.revivedHealth = amount;
-          pending.knockedOut = false;
-        }
-
-        if (effect.kind === "apply-status") {
-          const statusId = effect.statusId;
-          if (!statusId) {
-            continue;
-          }
-          const statusDef = index.statusesById.get(statusId);
-          if (!statusDef) {
-            continue;
-          }
-          if (statusDef.kind === "stun" && !shouldApplyStun(target, index.opponentsById)) {
-            continue;
-          }
-          const durationMs = effect.stunMs ?? statusDef.durationMs;
-          const expiresAtMs = state.simNowMs + durationMs;
-          const pending = ensurePending(target.entityId);
-          const existing = target.statuses.find((status) => status.statusId === statusId);
-          if (existing) {
-            pending.statusesToRefresh.push({ statusId, expiresAtMs });
-          } else {
-            pending.statusesToApply.push({ statusId, expiresAtMs });
-          }
-        }
+        projectedHealth = projectHealthFromOutcome(
+          target.entityId,
+          target.maxHealth,
+          projectedHealth,
+          outcome,
+          results,
+          ensurePending,
+        );
+        queueStatusFromOutcome(target, outcome, state.simNowMs, index, ensurePending);
       }
     }
 

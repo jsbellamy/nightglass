@@ -4,13 +4,11 @@ import {
   chooseFirstValidAbility,
   effectiveStats,
   hasValidTarget,
-  healAmount,
   isAbilityValid,
-  mitigateDamage,
   partyAbilityCandidates,
-  powerForStats,
-  rawFromCoefficient,
+  previewEffectRaw,
   revalidateTargets,
+  resolveEffect,
   selectFirstKnockedOutAlly,
   selectLowestHealthAlly,
   shouldApplyStun,
@@ -61,12 +59,64 @@ function opponentCombatant(id: string, overrides: Partial<CombatantState> = {}):
   };
 }
 
-describe("mitigation formula", () => {
+const emptyTarget = {
+  stats: {
+    maxHealth: 100,
+    physical: 0,
+    elemental: 0,
+    armor: 0,
+    elementalResistance: 0,
+  },
+  health: 100,
+  maxHealth: 100,
+  knockedOut: false,
+  statuses: [] as const,
+};
+
+describe("damage mitigation at impact", () => {
   it("uses max(1, floor(raw × 100 / (100 + mitigation))) with mitigation clamped ≥ 0", () => {
-    expect(mitigateDamage(100, 100)).toBe(50);
-    expect(mitigateDamage(100, -20)).toBe(100);
-    expect(mitigateDamage(1, 0)).toBe(1);
-    expect(mitigateDamage(50, 200)).toBe(16);
+    const actor = { ...emptyTarget.stats, physical: 100, elemental: 0 };
+    const mitigated = (raw: number, mitigation: number) =>
+      resolveEffect(
+        { kind: "damage", channel: "physical", coefficient: raw / 100 },
+        actor,
+        { ...emptyTarget, stats: { ...emptyTarget.stats, armor: mitigation } },
+        statusesById,
+      ).damageDetail?.amount;
+
+    expect(mitigated(100, 100)).toBe(50);
+    expect(mitigated(100, -20)).toBe(100);
+    expect(mitigated(1, 0)).toBe(1);
+    expect(mitigated(50, 200)).toBe(16);
+  });
+
+  it("pairs Elemental Power with Elemental Resistance, not Armor", () => {
+    const actorStats: BaseStats = {
+      maxHealth: 100,
+      physical: 10,
+      elemental: 100,
+      armor: 0,
+      elementalResistance: 0,
+    };
+    const targetStats: BaseStats = {
+      maxHealth: 200,
+      physical: 0,
+      elemental: 0,
+      armor: 200,
+      elementalResistance: 5,
+    };
+    const outcome = resolveEffect(
+      { kind: "damage", channel: "elemental", coefficient: 1 },
+      actorStats,
+      { ...emptyTarget, stats: targetStats, health: 200, maxHealth: 200 },
+      statusesById,
+    );
+    expect(outcome.damageDetail?.amount).toBe(95);
+    const wrongMitigation = Math.max(
+      1,
+      Math.floor((100 * 100) / (100 + targetStats.armor)),
+    );
+    expect(outcome.damageDetail?.amount).not.toBe(wrongMitigation);
   });
 });
 
@@ -86,9 +136,10 @@ describe("Power math", () => {
       { percent: { physicalPower: 0.05 } },
     ]);
     expect(stats.physical).toBe(Math.floor((14 + 6) * 1.15));
-    expect(rawFromCoefficient(powerForStats(stats, "physical"), 0.9)).toBe(
-      Math.floor(Math.floor((14 + 6) * 1.15) * 0.9),
-    );
+    const physicalPower = Math.floor((14 + 6) * 1.15);
+    expect(
+      previewEffectRaw({ kind: "damage", channel: "physical", coefficient: 0.9 }, stats),
+    ).toBe(Math.floor(physicalPower * 0.9));
   });
 
   it("combines flat modifiers before summed percentage modifiers", () => {
@@ -213,8 +264,22 @@ describe("retarget once", () => {
 
 describe("healing", () => {
   it("ignores mitigation and cannot overheal", () => {
-    const power = 14;
-    expect(healAmount(power, { kind: "heal", coefficient: 0.8 })).toBe(11);
+    const outcome = resolveEffect(
+      { kind: "heal", coefficient: 0.8 },
+      { maxHealth: 100, physical: 0, elemental: 14, armor: 0, elementalResistance: 0 },
+      { ...emptyTarget, health: 95, maxHealth: 100 },
+      statusesById,
+    );
+    expect(outcome.healDetail?.amount).toBe(5);
+    expect(
+      previewEffectRaw({ kind: "heal", coefficient: 0.8 }, {
+        maxHealth: 100,
+        physical: 0,
+        elemental: 14,
+        armor: 0,
+        elementalResistance: 0,
+      }),
+    ).toBe(11);
   });
 });
 
