@@ -67,6 +67,53 @@ body {
   cursor: default;
 }
 
+.audio-controls {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  flex: 0 0 auto;
+}
+
+.audio-volume-toggle {
+  width: 14px;
+  padding: 0;
+  font-size: 8px;
+}
+
+.audio-volume-popover {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border: 1px solid rgba(255, 249, 233, 0.18);
+  border-radius: 6px;
+  background: rgba(15, 17, 24, 0.98);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+.audio-volume-popover[hidden] {
+  display: none;
+}
+
+.audio-volume-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  color: #fff9e9;
+  white-space: nowrap;
+}
+
+.audio-volume-slider {
+  width: 88px;
+  accent-color: #c8b48a;
+}
+
 .status-drag-region {
   position: relative;
   flex: 1;
