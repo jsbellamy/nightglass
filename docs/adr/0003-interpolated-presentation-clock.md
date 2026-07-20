@@ -52,9 +52,6 @@ aligned with `docs/animation-contract.md` (integer-pixel, integer-millisecond).
 `BattleTile.render(snapshot, nowMs?)` defaults `nowMs` to `snapshot.simNowMs`
 when omitted. Event-driven `applyEvents` renders still use sim time directly.
 
-Issue **#199** (audio release timing) will hang off this same presentation-clock
-seam.
-
 ## Consequences
 
 - Smooth combat motion without changing Engine tick size or Snapshot shape.
@@ -63,3 +60,9 @@ seam.
 - Any new per-frame presentation work should take `nowMs` from the tile render
   path, not `snapshot.simNowMs`, unless it intentionally tracks sim boundaries
   only.
+- **Audio release** (`SfxController.releaseDueTo` in `src/ui/sfx.ts`) is a
+  second consumer of the presentation clock: `BattleTile.render` queues cues from
+  tick batches via `handleEvents` but plays them only when `releaseDueTo(nowMs)`
+  runs with the same interpolated `nowMs` as `presentation.render`. This
+  deliberately departs from keeping audio on the tick path in
+  `docs/agents/code-style.md` so impact sounds align with hit frames.

@@ -8,8 +8,12 @@ import knockoutUrl from "../assets/audio/knockout.ogg";
 import partyDefeatUrl from "../assets/audio/party-defeat.ogg";
 import stageClearedUrl from "../assets/audio/stage-cleared.ogg";
 import waveStartedUrl from "../assets/audio/wave-started.ogg";
+import { PUMP_INTERVAL_MS } from "./pump";
 
 export const AUDIO_PREFS_KEY = "nightglass-audio-v1";
+
+export const MAX_CUES_PER_RELEASE = 4;
+const POOL_SIZE_PER_CUE = 4;
 
 export interface AudioPrefs {
   muted: boolean;
@@ -60,8 +64,21 @@ export interface SfxDeps {
   createAudio?: (src: string) => PlayableAudio;
 }
 
+interface QueuedCue {
+  atMs: number;
+  cue: SfxCueId;
+}
+
+interface PoolEntry {
+  audio: PlayableAudio;
+  lastStartedAt: number;
+}
+
 export interface SfxController {
+  /** Queues cues from a tick's events, keyed by each event's atMs. Does not play them. */
   handleEvents(events: EngineEvent[]): void;
+  /** Plays every queued cue with atMs <= nowMs, in atMs order, then drops them. */
+  releaseDueTo(nowMs: number): void;
   getPrefs(): AudioPrefs;
   setMuted(muted: boolean): void;
   setVolume(volume: number): void;
@@ -108,6 +125,47 @@ function impactChannelsForEvent(event: Extract<EngineEvent, { type: "impact" }>)
   return [...channels];
 }
 
+function cuesForEvent(
+  event: EngineEvent,
+  impactKeys: Set<string>,
+): { atMs: number; cue: SfxCueId }[] {
+  const queued: { atMs: number; cue: SfxCueId }[] = [];
+  switch (event.type) {
+    case "impact": {
+      for (const channel of impactChannelsForEvent(event)) {
+        const key = `${event.atMs}:${channel}`;
+        if (impactKeys.has(key)) {
+          continue;
+        }
+        impactKeys.add(key);
+        queued.push({
+          atMs: event.atMs,
+          cue: channel === "physical" ? "impact-physical" : "impact-elemental",
+        });
+      }
+      break;
+    }
+    case "knockout":
+      queued.push({ atMs: event.atMs, cue: "knockout" });
+      break;
+    case "wave-started":
+      queued.push({ atMs: event.atMs, cue: "wave-started" });
+      break;
+    case "stage-cleared":
+      queued.push({ atMs: event.atMs, cue: "stage-cleared" });
+      break;
+    case "party-defeat":
+      queued.push({ atMs: event.atMs, cue: "party-defeat" });
+      break;
+    case "drop-awarded":
+      queued.push({ atMs: event.atMs, cue: "drop-awarded" });
+      break;
+    default:
+      break;
+  }
+  return queued;
+}
+
 export function createSfx(deps: SfxDeps = {}): SfxController {
   const storage = deps.storage ?? localStorage;
   const doc = deps.document ?? document;
@@ -123,6 +181,9 @@ export function createSfx(deps: SfxDeps = {}): SfxController {
   let controlsRoot: HTMLElement | null = null;
   let popoverOpen = false;
   let onDocumentClick: ((event: MouseEvent) => void) | null = null;
+  const cueQueue: QueuedCue[] = [];
+  const pools = new Map<SfxCueId, PoolEntry[]>();
+  let playGeneration = 0;
 
   function applyVolume(audio: PlayableAudio): void {
     audio.volume = prefs.muted ? 0 : prefs.volume;
@@ -132,11 +193,31 @@ export function createSfx(deps: SfxDeps = {}): SfxController {
     writePrefs(storage, prefs);
   }
 
+  function acquirePooledAudio(cue: SfxCueId): PlayableAudio {
+    let pool = pools.get(cue);
+    if (!pool) {
+      pool = Array.from({ length: POOL_SIZE_PER_CUE }, () => ({
+        audio: createAudio(CUE_URLS[cue]),
+        lastStartedAt: -1,
+      }));
+      pools.set(cue, pool);
+    }
+    let chosen = pool[0]!;
+    for (const entry of pool) {
+      if (entry.lastStartedAt < chosen.lastStartedAt) {
+        chosen = entry;
+      }
+    }
+    chosen.lastStartedAt = ++playGeneration;
+    chosen.audio.currentTime = 0;
+    return chosen.audio;
+  }
+
   function playCue(cue: SfxCueId): void {
     if (prefs.muted) {
       return;
     }
-    const audio = createAudio(CUE_URLS[cue]);
+    const audio = acquirePooledAudio(cue);
     applyVolume(audio);
     void audio.play();
   }
@@ -187,40 +268,40 @@ export function createSfx(deps: SfxDeps = {}): SfxController {
 
   doc.addEventListener("visibilitychange", onVisibilityChange);
 
+  function dropStaleCues(nowMs: number): void {
+    const staleBefore = nowMs - PUMP_INTERVAL_MS;
+    for (let index = cueQueue.length - 1; index >= 0; index -= 1) {
+      if (cueQueue[index]!.atMs < staleBefore) {
+        cueQueue.splice(index, 1);
+      }
+    }
+  }
+
   return {
     handleEvents(events: EngineEvent[]): void {
       const impactKeys = new Set<string>();
       for (const event of events) {
-        switch (event.type) {
-          case "impact": {
-            for (const channel of impactChannelsForEvent(event)) {
-              const key = `${event.atMs}:${channel}`;
-              if (impactKeys.has(key)) {
-                continue;
-              }
-              impactKeys.add(key);
-              playCue(channel === "physical" ? "impact-physical" : "impact-elemental");
-            }
-            break;
-          }
-          case "knockout":
-            playCue("knockout");
-            break;
-          case "wave-started":
-            playCue("wave-started");
-            break;
-          case "stage-cleared":
-            playCue("stage-cleared");
-            break;
-          case "party-defeat":
-            playCue("party-defeat");
-            break;
-          case "drop-awarded":
-            playCue("drop-awarded");
-            break;
-          default:
-            break;
+        cueQueue.push(...cuesForEvent(event, impactKeys));
+      }
+    },
+
+    releaseDueTo(nowMs: number): void {
+      dropStaleCues(nowMs);
+
+      const due: QueuedCue[] = [];
+      for (let index = cueQueue.length - 1; index >= 0; index -= 1) {
+        const entry = cueQueue[index]!;
+        if (entry.atMs <= nowMs) {
+          due.push(entry);
+          cueQueue.splice(index, 1);
         }
+      }
+
+      due.sort((left, right) => left.atMs - right.atMs);
+
+      const toPlay = due.slice(0, MAX_CUES_PER_RELEASE);
+      for (const entry of toPlay) {
+        playCue(entry.cue);
       }
     },
 
@@ -356,6 +437,7 @@ export function createSfx(deps: SfxDeps = {}): SfxController {
         doc.removeEventListener("click", onDocumentClick);
         onDocumentClick = null;
       }
+      cueQueue.length = 0;
       stopAmbient();
       ambient = null;
       controlsRoot = null;

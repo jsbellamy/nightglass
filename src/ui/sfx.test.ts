@@ -3,10 +3,12 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { EngineEvent } from "../core/events";
 import { opponentEntityId } from "../core/entity-id";
+import { PUMP_INTERVAL_MS } from "./pump";
 import { SAVE_KEY } from "./boot";
 import {
   AUDIO_PREFS_KEY,
   CUE_IDS,
+  MAX_CUES_PER_RELEASE,
   createSfx,
   type PlayableAudio,
   type SfxDeps,
@@ -58,6 +60,10 @@ function defaultDeps(overrides: Partial<SfxDeps> = {}): SfxDeps {
   return { storage: storageStub(), ...overrides };
 }
 
+function playedCount(instances: PlayableAudio[]): number {
+  return instances.filter((audio) => vi.mocked(audio.play).mock.calls.length > 0).length;
+}
+
 describe("Presentation-event SFX", () => {
   afterEach(() => {
     vi.restoreAllMocks();
@@ -77,8 +83,29 @@ describe("Presentation-event SFX", () => {
         },
       ]),
     ]);
+    sfx.releaseDueTo(1_000);
     expect(instances).toHaveLength(0);
     expect(sfx.getPrefs().muted).toBe(true);
+  });
+
+  it("does not call play until releaseDueTo", () => {
+    const { createAudio, instances } = createAudioStub();
+    const sfx = createSfx(defaultDeps({ createAudio }));
+    sfx.setMuted(false);
+    sfx.handleEvents([
+      impactEvent(1_000, [
+        {
+          targetId: "opp:1:0",
+          kind: "damage",
+          channel: "physical",
+          amount: 3,
+          healthAfter: 7,
+        },
+      ]),
+    ]);
+    expect(playedCount(instances)).toBe(0);
+    sfx.releaseDueTo(1_000);
+    expect(playedCount(instances)).toBe(1);
   });
 
   it("plays the physical impact cue when unmuted", () => {
@@ -96,6 +123,7 @@ describe("Presentation-event SFX", () => {
         },
       ]),
     ]);
+    sfx.releaseDueTo(1_000);
     expect(instances.some((audio) => audio.src.includes(CUE_IDS["impact-physical"]))).toBe(true);
     expect(instances.find((audio) => audio.src.includes(CUE_IDS["impact-physical"]))?.play).toHaveBeenCalled();
   });
@@ -115,6 +143,7 @@ describe("Presentation-event SFX", () => {
         },
       ]),
     ]);
+    sfx.releaseDueTo(1_000);
     expect(instances.some((audio) => audio.src.includes(CUE_IDS["impact-elemental"]))).toBe(true);
   });
 
@@ -134,31 +163,123 @@ describe("Presentation-event SFX", () => {
       ]),
     );
     sfx.handleEvents(batch);
-    const physicalPlays = instances.filter((audio) => audio.src.includes(CUE_IDS["impact-physical"]));
-    expect(physicalPlays).toHaveLength(1);
+    sfx.releaseDueTo(2_000);
+    const physicalPlayCalls = instances
+      .filter((audio) => audio.src.includes(CUE_IDS["impact-physical"]))
+      .reduce((count, audio) => count + vi.mocked(audio.play).mock.calls.length, 0);
+    expect(physicalPlayCalls).toBe(1);
   });
 
-  it("wires knockout, wave-started, stage-cleared, party-defeat, and drop-awarded cues", () => {
+  it("wires knockout, wave-started, stage-cleared, and party-defeat cues", () => {
     const { createAudio, instances } = createAudioStub();
     const sfx = createSfx(defaultDeps({ createAudio }));
     sfx.setMuted(false);
+    const baseAtMs = 1_000;
     const events: EngineEvent[] = [
-      { seq: 1, atMs: 100, type: "wave-started", stage: 1, encounter: 1, boss: false },
-      { seq: 2, atMs: 200, type: "knockout", entityId: "opp:1:0" },
-      { seq: 3, atMs: 300, type: "stage-cleared", stage: 1 },
-      { seq: 4, atMs: 400, type: "party-defeat", stage: 1 },
-      { seq: 5, atMs: 500, type: "drop-awarded", dropId: 1 },
+      { seq: 1, atMs: baseAtMs, type: "wave-started", stage: 1, encounter: 1, boss: false },
+      { seq: 2, atMs: baseAtMs + 10, type: "knockout", entityId: "opp:1:0" },
+      { seq: 3, atMs: baseAtMs + 20, type: "stage-cleared", stage: 1 },
+      { seq: 4, atMs: baseAtMs + 30, type: "party-defeat", stage: 1 },
     ];
     sfx.handleEvents(events);
+    sfx.releaseDueTo(baseAtMs + 30);
     for (const cue of [
       "wave-started",
       "knockout",
       "stage-cleared",
       "party-defeat",
-      "drop-awarded",
     ] as const) {
-      expect(instances.some((audio) => audio.src.includes(CUE_IDS[cue]))).toBe(true);
+      const plays = instances
+        .filter((audio) => audio.src.includes(CUE_IDS[cue]))
+        .reduce((count, audio) => count + vi.mocked(audio.play).mock.calls.length, 0);
+      expect(plays).toBeGreaterThan(0);
     }
+  });
+
+  it("releaseDueTo plays due cues in ascending atMs order", () => {
+    const playedCues: string[] = [];
+    const createAudio = vi.fn((src: string): PlayableAudio => {
+      const audio: PlayableAudio = {
+        src,
+        volume: 1,
+        loop: false,
+        currentTime: 0,
+        play: vi.fn().mockImplementation(async () => {
+          if (src.includes(CUE_IDS["wave-started"])) {
+            playedCues.push("wave-started");
+          } else if (src.includes(CUE_IDS["drop-awarded"])) {
+            playedCues.push("drop-awarded");
+          } else if (src.includes(CUE_IDS.knockout)) {
+            playedCues.push("knockout");
+          }
+        }),
+        pause: vi.fn(),
+      };
+      return audio;
+    });
+    const sfx = createSfx(defaultDeps({ createAudio }));
+    sfx.setMuted(false);
+    sfx.handleEvents([
+      { seq: 3, atMs: 300, type: "knockout", entityId: "opp:1:0" },
+      { seq: 1, atMs: 100, type: "wave-started", stage: 1, encounter: 1, boss: false },
+      { seq: 2, atMs: 200, type: "drop-awarded", dropId: 1 },
+    ]);
+    sfx.releaseDueTo(300);
+    expect(playedCues).toEqual(["wave-started", "drop-awarded", "knockout"]);
+    sfx.releaseDueTo(300);
+    expect(playedCues).toEqual(["wave-started", "drop-awarded", "knockout"]);
+  });
+
+  it("releaseDueTo skips cues with atMs after nowMs", () => {
+    const { createAudio, instances } = createAudioStub();
+    const sfx = createSfx(defaultDeps({ createAudio }));
+    sfx.setMuted(false);
+    sfx.handleEvents([{ seq: 1, atMs: 2_000, type: "knockout", entityId: "opp:1:0" }]);
+    sfx.releaseDueTo(1_000);
+    expect(playedCount(instances)).toBe(0);
+    sfx.releaseDueTo(2_000);
+    expect(playedCount(instances)).toBe(1);
+  });
+
+  it("plays each queued cue exactly once across repeated releaseDueTo calls", () => {
+    const { createAudio, instances } = createAudioStub();
+    const sfx = createSfx(defaultDeps({ createAudio }));
+    sfx.setMuted(false);
+    sfx.handleEvents([{ seq: 1, atMs: 500, type: "knockout", entityId: "opp:1:0" }]);
+    sfx.releaseDueTo(500);
+    sfx.releaseDueTo(500);
+    sfx.releaseDueTo(1_000);
+    const knockoutPlays = instances
+      .filter((audio) => audio.src.includes(CUE_IDS.knockout))
+      .reduce((sum, audio) => sum + vi.mocked(audio.play).mock.calls.length, 0);
+    expect(knockoutPlays).toBe(1);
+  });
+
+  it("drops cues more than PUMP_INTERVAL_MS behind nowMs at release", () => {
+    const { createAudio, instances } = createAudioStub();
+    const sfx = createSfx(defaultDeps({ createAudio }));
+    sfx.setMuted(false);
+    sfx.handleEvents([{ seq: 1, atMs: 0, type: "knockout", entityId: "opp:1:0" }]);
+    const nowMs = PUMP_INTERVAL_MS + 1;
+    sfx.releaseDueTo(nowMs);
+    expect(playedCount(instances)).toBe(0);
+  });
+
+  it(`plays at most ${MAX_CUES_PER_RELEASE} cues per releaseDueTo and drops the rest`, () => {
+    const { createAudio, instances } = createAudioStub();
+    const sfx = createSfx(defaultDeps({ createAudio }));
+    sfx.setMuted(false);
+    const events: EngineEvent[] = Array.from({ length: 8 }, (_, index) => ({
+      seq: index + 1,
+      atMs: 1_000,
+      type: "knockout" as const,
+      entityId: `opp:1:${index}`,
+    }));
+    sfx.handleEvents(events);
+    sfx.releaseDueTo(1_000);
+    expect(playedCount(instances)).toBe(MAX_CUES_PER_RELEASE);
+    sfx.releaseDueTo(1_000);
+    expect(playedCount(instances)).toBe(MAX_CUES_PER_RELEASE);
   });
 
   it("round-trips audio prefs in nightglass-audio-v1 without touching the save key", () => {
@@ -213,9 +334,58 @@ describe("Presentation-event SFX", () => {
         },
       ]),
     ]);
-    expect(instances.some((audio) => audio.src.includes(CUE_IDS["impact-physical"]))).toBe(true);
-    expect(instances.some((audio) => audio.src.includes(CUE_IDS["impact-elemental"]))).toBe(true);
-    expect(instances).toHaveLength(2);
+    sfx.releaseDueTo(3_000);
+    const physicalPlays = instances
+      .filter((audio) => audio.src.includes(CUE_IDS["impact-physical"]))
+      .reduce((count, audio) => count + vi.mocked(audio.play).mock.calls.length, 0);
+    const elementalPlays = instances
+      .filter((audio) => audio.src.includes(CUE_IDS["impact-elemental"]))
+      .reduce((count, audio) => count + vi.mocked(audio.play).mock.calls.length, 0);
+    expect(physicalPlays).toBe(1);
+    expect(elementalPlays).toBe(1);
+  });
+
+  it("reuses a bounded pool of audio elements for repeated plays", () => {
+    const { createAudio, instances } = createAudioStub();
+    const sfx = createSfx(defaultDeps({ createAudio }));
+    sfx.setMuted(false);
+    for (let index = 0; index < 20; index += 1) {
+      sfx.handleEvents([
+        { seq: index, atMs: index * 10, type: "knockout", entityId: "opp:1:0" },
+      ]);
+      sfx.releaseDueTo(index * 10);
+    }
+    const knockoutInstances = instances.filter((audio) => audio.src.includes(CUE_IDS.knockout));
+    expect(knockoutInstances.length).toBeLessThanOrEqual(4);
+    expect(createAudio.mock.calls.length).toBeLessThanOrEqual(4);
+  });
+
+  it("resets currentTime to 0 before play on a reused element", () => {
+    const { createAudio, instances } = createAudioStub();
+    const sfx = createSfx(defaultDeps({ createAudio }));
+    sfx.setMuted(false);
+    for (let index = 0; index < 4; index += 1) {
+      sfx.handleEvents([
+        { seq: index, atMs: index * 10, type: "knockout", entityId: "opp:1:0" },
+      ]);
+      sfx.releaseDueTo(index * 10);
+    }
+    const firstPlayed = instances.find((audio) => vi.mocked(audio.play).mock.calls.length > 0);
+    expect(firstPlayed).toBeDefined();
+    firstPlayed!.currentTime = 42;
+    sfx.handleEvents([{ seq: 99, atMs: 100, type: "knockout", entityId: "opp:1:0" }]);
+    sfx.releaseDueTo(100);
+    expect(firstPlayed!.currentTime).toBe(0);
+  });
+
+  it("clearing via destroy prevents later releaseDueTo playback", () => {
+    const { createAudio, instances } = createAudioStub();
+    const sfx = createSfx(defaultDeps({ createAudio }));
+    sfx.setMuted(false);
+    sfx.handleEvents([{ seq: 1, atMs: 100, type: "knockout", entityId: "opp:1:0" }]);
+    sfx.destroy();
+    sfx.releaseDueTo(100);
+    expect(playedCount(instances)).toBe(0);
   });
 
   it("toggles mute from the status-line control with keyboard", () => {
