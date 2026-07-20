@@ -1,15 +1,21 @@
 import type { Engine } from "../core/engine";
 import type { EngineEvent } from "../core/events";
 import type { Snapshot } from "../core/snapshot";
+import type { SerializedEngineLegality } from "./engine-legality";
 
 export const NIGHTGLASS_BUS_CHANNEL = "nightglass";
 
 export const ARMORY_BADGE_EVENT = "nightglass:armory-badge";
 
-/** Engine methods dispatchable across the bus. Excludes the tick/read seam. */
+/** Engine methods dispatchable across the bus. Excludes the tick/read seam and legality queries. */
 export type TileCommandName = Exclude<
   keyof Engine,
-  "advanceBy" | "snapshot" | "beginFreshAttempt"
+  | "advanceBy"
+  | "snapshot"
+  | "beginFreshAttempt"
+  | "canAllocateTalent"
+  | "canDeallocateTalent"
+  | "canEquip"
 >;
 
 export type TileCommand = {
@@ -29,8 +35,8 @@ void (0 as unknown as _TileCommandCoversEngine);
 
 export type BusMessage =
   | { type: "command"; command: TileCommand }
-  | { type: "snapshot"; snapshot: Snapshot }
-  | { type: "pump"; events: EngineEvent[]; snapshot: Snapshot }
+  | { type: "snapshot"; snapshot: Snapshot; legality: SerializedEngineLegality }
+  | { type: "pump"; events: EngineEvent[]; snapshot: Snapshot; legality: SerializedEngineLegality }
   | { type: "armory-badge" }
   | { type: "dock-opened" }
   | { type: "dock-closed" };

@@ -4,7 +4,7 @@ import type { EngineEvent } from "./events";
 import type { DropInstance, ProgressionState, Snapshot } from "./snapshot";
 import { defaultTalentsForClasses } from "./talents";
 import { fixtureContent } from "./testing/fixture-content";
-import type { Content } from "./types";
+import type { ClassId, Content } from "./types";
 
 const LOOT_SEED = 0x5090;
 const DURATION_MS = 30_000;
@@ -2375,6 +2375,123 @@ describe("Equipment and Drops", () => {
     expect(restored.snapshot().progression.armory[0]).toEqual(
       reloaded.snapshot().progression.armory[0],
     );
+  });
+});
+
+describe("Engine legality predicates", () => {
+  function commandSucceeds(run: () => void): boolean {
+    try {
+      run();
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  it("matches allocateTalent, deallocateTalent, and equip throw behavior across representative states", () => {
+    const boot = createEngine(fixtureContent, undefined, LOOT_SEED);
+    boot.advanceBy(1);
+    const saved = boot.snapshot();
+    saved.progression.characterXp.knight = 850;
+
+    const fresh = () => createEngine(fixtureContent, structuredClone(saved), LOOT_SEED);
+
+    const allocateEngine = fresh();
+    expect(allocateEngine.canAllocateTalent("knight", "k-fortitude")).toBe(
+      commandSucceeds(() => allocateEngine.allocateTalent("knight", "k-fortitude")),
+    );
+
+    const unknownTalent = fresh();
+    expect(unknownTalent.canAllocateTalent("knight", "not-a-talent")).toBe(
+      commandSucceeds(() => unknownTalent.allocateTalent("knight", "not-a-talent")),
+    );
+
+    const unknownClass = fresh();
+    expect(unknownClass.canAllocateTalent("not-a-class" as ClassId, "k-fortitude")).toBe(
+      commandSucceeds(() => unknownClass.allocateTalent("not-a-class" as ClassId, "k-fortitude")),
+    );
+
+    const capped = fresh();
+    for (let rank = 0; rank < 5; rank += 1) {
+      capped.allocateTalent("knight", rank % 2 === 0 ? "k-fortitude" : "k-swordcraft");
+    }
+    expect(capped.canAllocateTalent("knight", "k-fortitude")).toBe(
+      commandSucceeds(() => capped.allocateTalent("knight", "k-fortitude")),
+    );
+
+    const mid = createEngine(fixtureContent, undefined, LOOT_SEED);
+    mid.advanceBy(1);
+    const midSaved = mid.snapshot();
+    midSaved.progression.characterXp.knight = 250;
+    const gated = createEngine(fixtureContent, midSaved, LOOT_SEED);
+    expect(gated.canAllocateTalent("knight", "k-hold-line")).toBe(
+      commandSucceeds(() => gated.allocateTalent("knight", "k-hold-line")),
+    );
+
+    const abilityLocked = fresh();
+    for (let rank = 0; rank < 5; rank += 1) {
+      abilityLocked.allocateTalent("knight", rank % 2 === 0 ? "k-fortitude" : "k-swordcraft");
+    }
+    abilityLocked.allocateTalent("knight", "k-hold-line");
+    expect(abilityLocked.canDeallocateTalent("knight", "k-fortitude")).toBe(
+      commandSucceeds(() => abilityLocked.deallocateTalent("knight", "k-fortitude")),
+    );
+    expect(abilityLocked.canDeallocateTalent("knight", "k-hold-line")).toBe(
+      commandSucceeds(() => abilityLocked.deallocateTalent("knight", "k-hold-line")),
+    );
+
+    const armoryEngine = createEngine(fixtureContent, undefined, LOOT_SEED);
+    armoryEngine.advanceBy(1);
+    let dropId: number | null = null;
+    for (let ms = 0; ms < 300_000; ms += 1) {
+      const events = armoryEngine.advanceBy(1);
+      const awarded = events.find((event) => event.type === "drop-awarded");
+      if (awarded) {
+        dropId = awarded.dropId;
+        break;
+      }
+    }
+    expect(dropId).not.toBeNull();
+    const snap = armoryEngine.snapshot();
+    const drop = snap.progression.armory.find((entry) => entry.dropId === dropId);
+    expect(drop).toBeDefined();
+
+    expect(armoryEngine.canEquip(dropId!, "knight", "weapon")).toBe(
+      commandSucceeds(() => armoryEngine.equip(dropId!, "knight", "weapon")),
+    );
+    expect(armoryEngine.canEquip(dropId!, "wizard", "weapon")).toBe(
+      commandSucceeds(() => armoryEngine.equip(dropId!, "wizard", "weapon")),
+    );
+    expect(armoryEngine.canEquip(dropId!, "knight", "armor")).toBe(
+      commandSucceeds(() => armoryEngine.equip(dropId!, "knight", "armor")),
+    );
+    expect(armoryEngine.canEquip(9_999, "knight", "weapon")).toBe(false);
+    expect(() => armoryEngine.equip(9_999, "knight", "weapon")).toThrow();
+  });
+
+  it("honours uncommitted pendingEdits when allocating mid-Attempt", () => {
+    const boot = createEngine(fixtureContent, undefined, LOOT_SEED);
+    boot.advanceBy(1);
+    const saved = boot.snapshot();
+    saved.progression.characterXp.knight = 850;
+    const engine = createEngine(fixtureContent, saved, LOOT_SEED);
+    engine.selectStage(1);
+
+    expect(engine.canAllocateTalent("knight", "k-fortitude")).toBe(true);
+    engine.allocateTalent("knight", "k-fortitude");
+    expect(engine.snapshot().pendingEdits.some((edit) => edit.kind === "talent")).toBe(true);
+    expect(engine.canAllocateTalent("knight", "k-fortitude")).toBe(
+      commandSucceeds(() => engine.allocateTalent("knight", "k-fortitude")),
+    );
+    expect(engine.snapshot().progression.talents.knight?.statRanks["k-fortitude"]).toBe(0);
+  });
+
+  it("never throws from legality queries", () => {
+    const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
+    expect(() => engine.canAllocateTalent("knight", "k-fortitude")).not.toThrow();
+    expect(() => engine.canAllocateTalent("bogus" as ClassId, "k-fortitude")).not.toThrow();
+    expect(() => engine.canDeallocateTalent("knight", "missing")).not.toThrow();
+    expect(() => engine.canEquip(0, "knight", "weapon")).not.toThrow();
   });
 });
 

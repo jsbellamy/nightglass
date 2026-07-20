@@ -7,8 +7,16 @@ import { describe, expect, it } from "vitest";
 import { createEngine } from "../core/engine";
 import { fixtureContent } from "../core/testing/fixture-content";
 import { mountTalentsSurface } from "./talents-surface";
+import { legalityViewFromEngine } from "./engine-legality";
 
 const LOOT_SEED = 42;
+
+function renderTalents(
+  surface: ReturnType<typeof mountTalentsSurface>,
+  engine: ReturnType<typeof createEngine>,
+): void {
+  surface.render(engine.snapshot(), legalityViewFromEngine(engine));
+}
 
 function activateFocused(): void {
   const active = document.activeElement;
@@ -40,7 +48,7 @@ describe("Talents surface", () => {
     const engine = leveledKnightEngine();
     const surface = mountTalentsSurface(root, { content: fixtureContent });
 
-    surface.render(engine.snapshot());
+    renderTalents(surface, engine);
     const knight = knightSection(root);
     expect(knight.querySelector('[data-talent-points="true"]')?.textContent).toMatch(
       /6 Talent Points available/,
@@ -64,7 +72,7 @@ describe("Talents surface", () => {
     });
 
     for (let rank = 0; rank < 5; rank += 1) {
-      surface.render(engine.snapshot());
+      renderTalents(surface, engine);
       const talentId = rank % 2 === 0 ? "k-fortitude" : "k-swordcraft";
       const allocate = knightSection(root).querySelector<HTMLButtonElement>(
         `[data-talent-id="${talentId}"][data-talent-action="allocate"]`,
@@ -72,7 +80,7 @@ describe("Talents surface", () => {
       allocate?.click();
     }
 
-    surface.render(engine.snapshot());
+    renderTalents(surface, engine);
     const fortitudeAllocate = knightSection(root).querySelector<HTMLButtonElement>(
       `[data-talent-id="k-fortitude"][data-talent-action="allocate"]`,
     );
@@ -91,7 +99,7 @@ describe("Talents surface", () => {
     const midLevel = createEngine(fixtureContent, saved, LOOT_SEED);
     const surface = mountTalentsSurface(root, { content: fixtureContent });
 
-    surface.render(midLevel.snapshot());
+    renderTalents(surface, midLevel);
     const pick = knightSection(root).querySelector<HTMLButtonElement>(
       `[data-talent-id="k-hold-line"][data-talent-action="allocate"]`,
     );
@@ -118,7 +126,7 @@ describe("Talents surface", () => {
       },
     });
 
-    surface.render(engine.snapshot());
+    renderTalents(surface, engine);
     const removeStat = knightSection(root).querySelector<HTMLButtonElement>(
       `[data-talent-id="k-fortitude"][data-talent-action="deallocate"]`,
     );
@@ -138,7 +146,7 @@ describe("Talents surface", () => {
     engine.setLoadout("knight", ["k-hold-line", "k-sweep", "k-rally"]);
 
     const surface = mountTalentsSurface(root, { content: fixtureContent });
-    surface.render(engine.snapshot());
+    renderTalents(surface, engine);
 
     expect(
       knightSection(root).querySelector('[data-loadout-warning="true"]')?.textContent,
@@ -153,7 +161,7 @@ describe("Talents surface", () => {
     engine.allocateTalent("knight", "k-fortitude");
     const surface = mountTalentsSurface(root, { content: fixtureContent });
 
-    surface.render(engine.snapshot());
+    renderTalents(surface, engine);
     expect(
       knightSection(root).querySelector('[data-pending-kind="talent"]')?.textContent,
     ).toMatch(/next Wave/i);
@@ -179,13 +187,13 @@ describe("Talents surface", () => {
       },
     });
 
-    surface.render(engine.snapshot());
+    renderTalents(surface, engine);
     const allocate = knightSection(root).querySelector<HTMLButtonElement>(
       `[data-talent-id="k-fortitude"][data-talent-action="allocate"]`,
     );
     allocate?.focus();
     activateFocused();
-    surface.render(engine.snapshot());
+    renderTalents(surface, engine);
     expect(commands).toContainEqual({ cmd: "allocateTalent", args: ["knight", "k-fortitude"] });
 
     const deallocate = knightSection(root).querySelector<HTMLButtonElement>(
@@ -193,7 +201,7 @@ describe("Talents surface", () => {
     );
     deallocate?.focus();
     activateFocused();
-    surface.render(engine.snapshot());
+    renderTalents(surface, engine);
     expect(commands).toContainEqual({
       cmd: "deallocateTalent",
       args: ["knight", "k-fortitude"],

@@ -9,8 +9,25 @@ import { cloneSnapshot, type DropInstance, type Snapshot } from "../core/snapsho
 import { fixtureContent } from "../core/testing/fixture-content";
 import { mountArmorySurface } from "./armory-surface";
 import { mountManagementDock } from "./dock";
+import { legalityViewFromEngine } from "./engine-legality";
 
 const LOOT_SEED = 42;
+
+function renderArmory(
+  surface: ReturnType<typeof mountArmorySurface>,
+  snapshot: Snapshot,
+): void {
+  const engine = createEngine(fixtureContent, snapshot, LOOT_SEED);
+  surface.render(snapshot, legalityViewFromEngine(engine));
+}
+
+function renderDock(
+  dock: ReturnType<typeof mountManagementDock>,
+  snapshot: Snapshot,
+): void {
+  const engine = createEngine(fixtureContent, snapshot, LOOT_SEED);
+  dock.render(snapshot, legalityViewFromEngine(engine));
+}
 
 function activateFocused(): void {
   const active = document.activeElement;
@@ -49,7 +66,7 @@ describe("Armory surface", () => {
       drop({ dropId: 3, baseId: "fixture-charm", awardedAtMs: 200, seen: false }),
     ]);
     const surface = mountArmorySurface(root, { content: fixtureContent });
-    surface.render(snapshot);
+    renderArmory(surface, snapshot);
 
     const ids = [...root.querySelectorAll<HTMLElement>(".equipment-card")].map(
       (card) => card.dataset["dropId"],
@@ -74,24 +91,24 @@ describe("Armory surface", () => {
       drop({ dropId: 3, baseId: "fixture-focus", awardedAtMs: 300, rarity: "uncommon" }),
     ]);
     const surface = mountArmorySurface(root, { content: fixtureContent });
-    surface.render(snapshot);
+    renderArmory(surface, snapshot);
 
     root.querySelector<HTMLButtonElement>('[data-filter-key="slot"][data-filter-value="weapon"]')?.click();
-    surface.render(snapshot);
+    renderArmory(surface, snapshot);
     expect(
       [...root.querySelectorAll<HTMLElement>(".equipment-card")].map((card) => card.dataset["dropId"]),
     ).toEqual(["1", "3"]);
 
     root.querySelector<HTMLButtonElement>(".armory-filter-clear")?.click();
-    surface.render(snapshot);
+    renderArmory(surface, snapshot);
     root.querySelector<HTMLButtonElement>('[data-filter-key="assigned"][data-filter-value="assigned"]')?.click();
-    surface.render(snapshot);
+    renderArmory(surface, snapshot);
     expect(root.querySelector<HTMLElement>(".equipment-card")?.dataset["dropId"]).toBe("2");
 
     const sort = root.querySelector<HTMLSelectElement>('[data-armory-sort="true"]');
     sort!.value = "name";
     sort!.dispatchEvent(new Event("change"));
-    surface.render(snapshot);
+    renderArmory(surface, snapshot);
     expect(root.querySelector(".equipment-card")?.textContent).toMatch(/Fixture Armor/);
 
     surface.destroy();
@@ -116,16 +133,16 @@ describe("Armory surface", () => {
       }),
     ]);
     const surface = mountArmorySurface(root, { content: fixtureContent });
-    surface.render(snapshot);
+    renderArmory(surface, snapshot);
 
     root.querySelector<HTMLButtonElement>('[data-class-id="knight"][data-compare-slot="weapon"]')?.click();
-    surface.render(snapshot);
+    renderArmory(surface, snapshot);
     expect(root.querySelector('[data-next-attempt-note="true"]')?.textContent).toMatch(
       /next Stage Attempt/i,
     );
 
     root.querySelector<HTMLButtonElement>('[data-compare-candidate="2"]')?.click();
-    surface.render(snapshot);
+    renderArmory(surface, snapshot);
     expect(root.querySelector('[data-stat-deltas="true"]')?.textContent).toMatch(/Physical/);
     expect(root.querySelector('[data-ability-deltas="true"]')).not.toBeNull();
     expect(root.textContent?.toLowerCase()).not.toMatch(/\bpower total\b|\baggregate score\b/);
@@ -156,24 +173,24 @@ describe("Armory surface", () => {
       },
     });
 
-    surface.render(engine.snapshot());
+    renderArmory(surface, engine.snapshot());
 
     root.querySelector<HTMLButtonElement>('[data-class-id="knight"][data-compare-slot="armor"]')?.click();
-    surface.render(engine.snapshot());
+    renderArmory(surface, engine.snapshot());
     root.querySelector<HTMLButtonElement>('[data-compare-candidate="1"]')?.click();
-    surface.render(engine.snapshot());
+    renderArmory(surface, engine.snapshot());
 
     const equip = root.querySelector<HTMLButtonElement>('[data-equip-button="true"]');
     equip?.focus();
     activateFocused();
-    surface.render(engine.snapshot());
+    renderArmory(surface, engine.snapshot());
     expect(root.querySelector('[data-cross-equip-confirm="true"]')).not.toBeNull();
 
     const confirm = root.querySelector<HTMLButtonElement>(".armory-confirm-yes");
     confirm?.focus();
     activateFocused();
     const snapshot = engine.snapshot();
-    surface.render(snapshot);
+    renderArmory(surface, snapshot);
 
     expect(commands).toContainEqual({ cmd: "equip", args: [1, "knight", "armor"] });
     expect(
@@ -214,17 +231,17 @@ describe("Armory surface", () => {
       content: fixtureContent,
       onCommand: (command) => commands.push(command),
     });
-    surface.render(snapshot);
+    renderArmory(surface, snapshot);
 
     expect(root.querySelector('[data-discard-select="2"]')).toBeNull();
     expect(root.querySelector('[data-discard-select="3"]')).toBeNull();
     const checkbox = root.querySelector<HTMLInputElement>('[data-discard-select="4"]');
     checkbox!.checked = true;
     checkbox!.dispatchEvent(new Event("change"));
-    surface.render(snapshot);
+    renderArmory(surface, snapshot);
 
     root.querySelector<HTMLButtonElement>('[data-bulk-discard="true"]')?.click();
-    surface.render(snapshot);
+    renderArmory(surface, snapshot);
     expect(root.querySelector('[data-discard-confirm="true"]')?.textContent).toMatch(/Fixture Charm/);
     expect(root.querySelector('[data-discard-confirm="true"]')?.textContent).toMatch(/Epic/i);
 
@@ -245,9 +262,9 @@ describe("Armory surface", () => {
     Object.freeze(snapshot.progression.armory);
 
     const surface = mountArmorySurface(root, { content: fixtureContent });
-    surface.render(snapshot);
+    renderArmory(surface, snapshot);
     root.querySelector<HTMLButtonElement>('[data-open-detail="1"]')?.click();
-    surface.render(snapshot);
+    renderArmory(surface, snapshot);
 
     expect(snapshot.progression.armory[0]!.seen).toBe(false);
     expect(root.querySelector('[data-unseen-marker="true"]')).toBeNull();
@@ -268,12 +285,12 @@ describe("Armory surface", () => {
       drop({ dropId: 1, baseId: "fixture-blade", seen: false }),
       drop({ dropId: 2, baseId: "fixture-armor", seen: true }),
     ]);
-    dock.render(snapshot);
+    renderDock(dock, snapshot);
     dockRoot.querySelector<HTMLButtonElement>('[data-dock-tab="armory"]')?.click();
-    dock.render(snapshot);
+    renderDock(dock, snapshot);
 
     dockRoot.querySelector<HTMLButtonElement>('[data-open-detail="1"]')?.click();
-    dock.render(snapshot);
+    renderDock(dock, snapshot);
     expect(commands).toContainEqual({ cmd: "markSeen", args: [[1]] });
     expect(dockRoot.querySelector('[data-unseen-marker="true"]')).toBeNull();
 
@@ -281,7 +298,7 @@ describe("Armory surface", () => {
       drop({ dropId: 1, baseId: "fixture-blade", seen: true }),
       drop({ dropId: 2, baseId: "fixture-armor", seen: true }),
     ]);
-    dock.render(cleared);
+    renderDock(dock, cleared);
     expect(
       dockRoot.querySelector<HTMLElement>('[data-dock-tab="armory"] .dock-tab-badge')?.hidden,
     ).toBe(true);
@@ -302,7 +319,7 @@ describe("Armory surface", () => {
       drop({ dropId: 2, baseId: "fixture-armor", rarity: "epic", seen: true }),
     ]);
     const surface = mountArmorySurface(root, { content: fixtureContent });
-    surface.render(snapshot);
+    renderArmory(surface, snapshot);
 
     const cardIcon = root.querySelector<HTMLImageElement>(
       ".equipment-card .equipment-icon-img--content",
@@ -347,19 +364,19 @@ describe("Armory surface", () => {
       },
     });
 
-    surface.render(engine.snapshot());
+    renderArmory(surface, engine.snapshot());
 
     const slot = root.querySelector<HTMLButtonElement>(
       '[data-class-id="knight"][data-compare-slot="weapon"]',
     );
     slot?.focus();
     activateFocused();
-    surface.render(engine.snapshot());
+    renderArmory(surface, engine.snapshot());
 
     const candidate = root.querySelector<HTMLButtonElement>('[data-compare-candidate="1"]');
     candidate?.focus();
     activateFocused();
-    surface.render(engine.snapshot());
+    renderArmory(surface, engine.snapshot());
     expect(commands).toContainEqual({ cmd: "markSeen", args: [[1]] });
 
     const equip = root.querySelector<HTMLButtonElement>('[data-equip-button="true"]');

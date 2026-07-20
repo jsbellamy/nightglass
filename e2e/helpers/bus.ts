@@ -3,6 +3,12 @@ import type { Snapshot } from "../../src/core/snapshot";
 import { NIGHTGLASS_BUS_CHANNEL } from "../../src/ui/bus";
 import type { TileCommand } from "../../src/ui/bus";
 
+const EMPTY_SERIALIZED_LEGALITY = {
+  talentAllocate: {},
+  talentDeallocate: {},
+  equip: {},
+};
+
 /** Post a tile command as a third BroadcastChannel peer — no production hook. */
 export async function postBusCommand(page: Page, command: TileCommand): Promise<void> {
   await page.evaluate(
@@ -20,7 +26,7 @@ export async function postBusSnapshot(page: Page, snapshot: Snapshot): Promise<v
   await page.evaluate(
     ({ channelName, snapshot: snap }) => {
       const channel = new BroadcastChannel(channelName);
-      channel.postMessage({ type: "snapshot", snapshot: snap });
+      channel.postMessage({ type: "snapshot", snapshot: snap, legality: EMPTY_SERIALIZED_LEGALITY });
       channel.close();
     },
     { channelName: NIGHTGLASS_BUS_CHANNEL, snapshot },

@@ -1,7 +1,6 @@
 import {
   equipmentModifiersForLoadout,
   snapshotEquipmentLoadouts,
-  validateEquip,
 } from "../core/equipment";
 import { characterStats } from "../core/stats";
 import type { DropInstance, EquipmentLoadout } from "../core/snapshot";
@@ -254,16 +253,11 @@ export function sortArmoryDrops(
 
 export function isCompatibleWithSlot(
   drop: DropInstance,
-  content: Content,
   classId: ClassId,
   slot: EquipmentSlotId,
+  canEquip: (dropId: number, classId: ClassId, slot: EquipmentSlotId) => boolean,
 ): boolean {
-  try {
-    validateEquip(drop, content, classId, slot);
-    return true;
-  } catch {
-    return false;
-  }
+  return canEquip(drop.dropId, classId, slot);
 }
 
 export interface StatDeltaLine {

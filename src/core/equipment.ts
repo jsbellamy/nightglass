@@ -319,21 +319,43 @@ export function findDrop(armory: DropInstance[], dropId: number): DropInstance |
   return armory.find((entry) => entry.dropId === dropId);
 }
 
+export function equipViolation(
+  drop: DropInstance,
+  content: Content,
+  classId: ClassId,
+  slot: EquipmentSlotId,
+): string | null {
+  const base = content.equipmentBases.find((entry) => entry.id === drop.baseId);
+  if (!base) {
+    return `Missing Equipment Base ${drop.baseId}`;
+  }
+  if (base.slot !== slot) {
+    return `Drop ${drop.dropId} is not compatible with slot ${slot}`;
+  }
+  if (base.slot === "weapon" && base.weaponClass !== classId) {
+    return `Weapon Drop ${drop.dropId} is restricted to Class ${base.weaponClass}`;
+  }
+  return null;
+}
+
+export function canEquipToSlot(
+  drop: DropInstance,
+  content: Content,
+  classId: ClassId,
+  slot: EquipmentSlotId,
+): boolean {
+  return equipViolation(drop, content, classId, slot) === null;
+}
+
 export function validateEquip(
   drop: DropInstance,
   content: Content,
   classId: ClassId,
   slot: EquipmentSlotId,
 ): void {
-  const base = content.equipmentBases.find((entry) => entry.id === drop.baseId);
-  if (!base) {
-    throw new Error(`Missing Equipment Base ${drop.baseId}`);
-  }
-  if (base.slot !== slot) {
-    throw new Error(`Drop ${drop.dropId} is not compatible with slot ${slot}`);
-  }
-  if (base.slot === "weapon" && base.weaponClass !== classId) {
-    throw new Error(`Weapon Drop ${drop.dropId} is restricted to Class ${base.weaponClass}`);
+  const violation = equipViolation(drop, content, classId, slot);
+  if (violation) {
+    throw new Error(violation);
   }
 }
 
