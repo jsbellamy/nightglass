@@ -338,50 +338,65 @@ test.describe("rendered-output evidence seam", () => {
     ).toHaveLength(8);
     assertCombatantsFitTile([...geometry.opponents, ...geometry.party]);
 
+    type DropClearance = {
+      notification: Rect;
+      statusLine: Rect;
+      stageWave: Rect;
+      buttons: Rect[];
+      combatants: Rect[];
+      notificationInStatusDom: boolean;
+    };
+
+    let dropClearance: DropClearance | null = null;
     await expect
       .poll(
         async () => {
-          return tile.evaluate(() => {
-            const toast = document.querySelector<HTMLElement>(
+          dropClearance = await tile.evaluate(() => {
+            const r = (el: Element | null): Rect => {
+              if (!el) return { x: 0, y: 0, w: 0, h: 0 };
+              const b = el.getBoundingClientRect();
+              return { x: b.x, y: b.y, w: b.width, h: b.height, cls: el.className };
+            };
+            const notificationEl = document.querySelector<HTMLElement>(
               ".status-notification-layer .drop-toast",
             );
-            return toast !== null && !toast.hidden && toast.querySelector(".equipment-icon-img--content") !== null;
+            if (
+              !notificationEl ||
+              notificationEl.hidden ||
+              !notificationEl.querySelector(".equipment-icon-img--content")
+            ) {
+              return null;
+            }
+            const notification = r(notificationEl);
+            if (notification.h < 34) {
+              return null;
+            }
+            const statusLine = r(document.querySelector(".status-line"));
+            const stageWave = r(document.querySelector(".stage-wave-text"));
+            const buttons = [...document.querySelectorAll(".status-button")].map((el) => r(el));
+            const combatants = [...document.querySelectorAll(".combatant")].map((el) => r(el));
+            const statusLineEl = document.querySelector(".status-line");
+            return {
+              notification,
+              statusLine,
+              stageWave,
+              buttons,
+              combatants,
+              notificationInStatusDom:
+                !!statusLineEl &&
+                (statusLineEl.contains(notificationEl) ||
+                  statusLineEl.parentElement?.contains(notificationEl) === true),
+            };
           });
+          return dropClearance?.notification.h ?? 0;
         },
-        { timeout: 180_000, intervals: [2_000] },
+        { timeout: 180_000, intervals: [500] },
       )
-      .toBe(true);
+      .toBeGreaterThanOrEqual(34);
 
-    const dropClearance = await tile.evaluate(() => {
-      const r = (el: Element | null): Rect => {
-        if (!el) return { x: 0, y: 0, w: 0, h: 0 };
-        const b = el.getBoundingClientRect();
-        return { x: b.x, y: b.y, w: b.width, h: b.height, cls: el.className };
-      };
-      const notificationEl = document.querySelector(".status-notification-layer .drop-toast");
-      const notification = r(notificationEl);
-      const statusLine = r(document.querySelector(".status-line"));
-      const stageWave = r(document.querySelector(".stage-wave-text"));
-      const buttons = [...document.querySelectorAll(".status-button")].map((el) => r(el));
-      const combatants = [...document.querySelectorAll(".combatant")].map((el) => r(el));
-      const statusLineEl = document.querySelector(".status-line");
-      return {
-        notification,
-        statusLine,
-        stageWave,
-        buttons,
-        combatants,
-        notificationInStatusDom:
-          !!notificationEl &&
-          !!statusLineEl &&
-          (statusLineEl.contains(notificationEl) ||
-            statusLineEl.parentElement?.contains(notificationEl) === true),
-      };
-    });
-
-    expect(dropClearance.notification.h, "drop notification height hosts 34px icon").toBeGreaterThanOrEqual(
-      34,
-    );
+    if (!dropClearance) {
+      throw new Error("drop clearance poll passed but left dropClearance unset");
+    }
     expect(dropClearance.notificationInStatusDom, "drop notification mounted in status chrome").toBe(
       true,
     );
