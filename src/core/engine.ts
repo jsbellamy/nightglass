@@ -1,5 +1,4 @@
 import {
-  applyStatModifiers,
   chooseFirstValidAbility,
   combatantById,
   effectiveStats,
@@ -44,12 +43,11 @@ import {
   deallocateTalentPoint,
   emptyTalentState,
   stripAbilityFromLoadout,
-  talentStatModifiers,
   type ClassTalentState,
 } from "./talents";
+import { characterStats } from "./stats";
 import type {
   AbilityDef,
-  BaseStats,
   ClassId,
   ClassKitDef,
   Content,
@@ -57,7 +55,6 @@ import type {
   OpponentDef,
   StageDef,
   StatusEffectDef,
-  StatModifiers,
 } from "./types";
 import { awardXp, levelFromXp, reserveXpAward } from "./xp";
 
@@ -144,18 +141,6 @@ function restoreProgression(
   };
 }
 
-function partyBaseStats(
-  classKit: ClassKitDef,
-  talentState: ClassTalentState,
-  equipmentMods: StatModifiers[] = [],
-): BaseStats {
-  const modifiers: StatModifiers[] = [
-    ...talentStatModifiers(talentState, classKit),
-    ...equipmentMods,
-  ];
-  return applyStatModifiers(classKit.base, modifiers);
-}
-
 function characterLevel(
   progression: ProgressionState,
   classId: ClassId,
@@ -203,7 +188,7 @@ function makePartyCombatant(
   content: Content,
 ): CombatantState {
   const equipmentMods = equipmentModifiersForLoadout(equipmentLoadout, armory, content);
-  const stats = partyBaseStats(classKit, talentState, equipmentMods);
+  const stats = characterStats(classKit, talentState, equipmentMods);
   const slot = FORMATION_SLOTS[slotIndex] ?? "back";
   return {
     entityId: `party:${classId}:${slot}`,
@@ -382,7 +367,7 @@ function statsForCombatant(
       progression.armory,
       index.content,
     );
-    base = partyBaseStats(classKit, talentState, equipmentMods);
+    base = characterStats(classKit, talentState, equipmentMods);
   } else {
     const opponent = index.opponentsById.get(combatant.defId);
     if (!opponent) {
@@ -951,7 +936,7 @@ function applyPendingEdits(
           state.progression.armory,
           index.content,
         );
-        const stats = partyBaseStats(
+        const stats = characterStats(
           classKit,
           state.progression.talents[edit.classId]!,
           equipmentMods,
