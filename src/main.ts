@@ -11,13 +11,26 @@ import {
   legalityViewFromSerialized,
   serializeEngineLegality,
 } from "./ui/engine-legality";
-import { startPump, type PumpController } from "./ui/pump";
+import { startPump, type PumpController, type PumpDeps } from "./ui/pump";
 import { createFrameMetrics } from "./ui/frame-metrics";
 import type { TileShell } from "./ui/tile-shell-types";
 import { ARMORY_BADGE_EVENT } from "./ui/bus";
 import type { EngineEvent } from "./core/events";
+import type { Snapshot } from "./core/snapshot";
 
 export { TILE_HEIGHT, TILE_WIDTH } from "./ui/battle-tile";
+
+type TileShellPumpSchedule = Partial<
+  Pick<
+    PumpDeps,
+    | "now"
+    | "setInterval"
+    | "clearInterval"
+    | "requestAnimationFrame"
+    | "cancelAnimationFrame"
+    | "document"
+  >
+>;
 
 export interface TileShellOptions {
   dockWindow?: DockWindowPort;
@@ -26,6 +39,10 @@ export interface TileShellOptions {
   content?: Content;
   onBeforeUnload?: () => void;
   deferPump?: boolean;
+  /** Wall-clock ms for snapshot timing; defaults to `Date.now`. */
+  now?: () => number;
+  /** Injectable pump timers for tests; production uses real browser scheduling. */
+  pumpSchedule?: TileShellPumpSchedule;
 }
 
 export type { TileShell } from "./ui/tile-shell-types";
@@ -119,6 +136,7 @@ export function mountTileShell(root: HTMLElement, options: TileShellOptions = {}
   bus = busFactory({
     command(message) {
       const events = applyTileCommand(engine, message.command);
+      invalidateTickSnapshot();
       if (events.length > 0) {
         tile.applyEvents(events, engine.snapshot());
       }
@@ -139,21 +157,37 @@ export function mountTileShell(root: HTMLElement, options: TileShellOptions = {}
     bus?.publish({ type: "armory-badge" });
   });
 
-  const frameMetrics = createFrameMetrics();
+  const clockNow = options.now ?? Date.now;
+  const frameMetrics = createFrameMetrics({ now: clockNow });
+
+  let lastSnapshot: Snapshot | null = null;
+  let lastSnapshotAtMs = 0;
+
+  function invalidateTickSnapshot(): void {
+    lastSnapshot = null;
+    lastSnapshotAtMs = 0;
+  }
 
   const pumpDeps = {
     advanceBy: (ms: number) => engine.advanceBy(ms),
     onAdvance: (events: EngineEvent[]) => {
-      tile.applyEvents(events, engine.snapshot());
-      const snapshot = engine.snapshot();
+      lastSnapshot = engine.snapshot();
+      lastSnapshotAtMs = clockNow();
+      tile.applyEvents(events, lastSnapshot);
       bus?.publish({
         type: "pump",
         events,
-        snapshot,
-        legality: serializeEngineLegality(engine, snapshot, content),
+        snapshot: lastSnapshot,
+        legality: serializeEngineLegality(engine, lastSnapshot, content),
       });
     },
-    render: () => tile.render(engine.snapshot()),
+    render: () => {
+      if (!lastSnapshot) {
+        lastSnapshot = engine.snapshot();
+        lastSnapshotAtMs = clockNow();
+      }
+      tile.render(lastSnapshot);
+    },
     frameMetrics,
   };
 
@@ -162,7 +196,27 @@ export function mountTileShell(root: HTMLElement, options: TileShellOptions = {}
     if (pump) {
       return;
     }
-    pump = startPump(pumpDeps);
+    const schedule = options.pumpSchedule;
+    const pumpOptions: PumpDeps = {
+      ...pumpDeps,
+      now: schedule?.now ?? clockNow,
+    };
+    if (schedule?.setInterval) {
+      pumpOptions.setInterval = schedule.setInterval;
+    }
+    if (schedule?.clearInterval) {
+      pumpOptions.clearInterval = schedule.clearInterval;
+    }
+    if (schedule?.requestAnimationFrame) {
+      pumpOptions.requestAnimationFrame = schedule.requestAnimationFrame;
+    }
+    if (schedule?.cancelAnimationFrame) {
+      pumpOptions.cancelAnimationFrame = schedule.cancelAnimationFrame;
+    }
+    if (schedule?.document) {
+      pumpOptions.document = schedule.document;
+    }
+    pump = startPump(pumpOptions);
   }
 
   if (!options.deferPump) {
@@ -189,6 +243,9 @@ export function mountTileShell(root: HTMLElement, options: TileShellOptions = {}
     },
     frameMetrics() {
       return pump?.frameMetrics() ?? null;
+    },
+    tickSnapshotAtMs() {
+      return lastSnapshotAtMs;
     },
     destroy() {
       pump?.stop();
