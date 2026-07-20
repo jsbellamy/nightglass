@@ -1,0 +1,78 @@
+{
+  "license": "Creative Commons CC0 1.0 (public domain dedication)",
+  "notes": "Kenney game audio packs (kenney.nl). Files were copied from the CC0 Sounds mirror for offline acquisition; SHA-256 is over the committed bytes in src/assets/audio/.",
+  "files": [
+    {
+      "path": "src/assets/audio/impact-physical.ogg",
+      "cue": "impact-physical",
+      "sourceUrl": "https://cc0-sounds.exi.software/sounds/kenney_impactsounds/Audio/impactMetal_medium_000.ogg",
+      "pack": "Kenney Impact Sounds",
+      "author": "Kenney (www.kenney.nl)",
+      "license": "CC0 1.0",
+      "sha256": "a96f879fec0864a8938e0c745b6996a6c5679c16a234ce31a01cc995e8401003"
+    },
+    {
+      "path": "src/assets/audio/impact-elemental.ogg",
+      "cue": "impact-elemental",
+      "sourceUrl": "https://cc0-sounds.exi.software/sounds/kenney_impactsounds/Audio/impactGlass_light_000.ogg",
+      "pack": "Kenney Impact Sounds",
+      "author": "Kenney (www.kenney.nl)",
+      "license": "CC0 1.0",
+      "sha256": "d750cf88097d0c3e69920e6e14496e1444e1a9da01aa4cca8f5ec8cb44c57b4f"
+    },
+    {
+      "path": "src/assets/audio/knockout.ogg",
+      "cue": "knockout",
+      "sourceUrl": "https://cc0-sounds.exi.software/sounds/kenney_impactsounds/Audio/impactMetal_heavy_000.ogg",
+      "pack": "Kenney Impact Sounds",
+      "author": "Kenney (www.kenney.nl)",
+      "license": "CC0 1.0",
+      "sha256": "e07045693e4a2b3d165c424e3dab4c781d9ff8880a386880ac89a51315d7f831"
+    },
+    {
+      "path": "src/assets/audio/wave-started.ogg",
+      "cue": "wave-started",
+      "sourceUrl": "https://cc0-sounds.exi.software/sounds/kenney_uiaudio/Audio/click1.ogg",
+      "pack": "Kenney UI Audio",
+      "author": "Kenney (www.kenney.nl)",
+      "license": "CC0 1.0",
+      "sha256": "59175ac17cd49a68dd736285738441287636112a84a6f7ce0d89921bda5a5360"
+    },
+    {
+      "path": "src/assets/audio/stage-cleared.ogg",
+      "cue": "stage-cleared",
+      "sourceUrl": "https://cc0-sounds.exi.software/sounds/kenney_interfacesounds/Audio/confirmation_001.ogg",
+      "pack": "Kenney Interface Sounds",
+      "author": "Kenney (www.kenney.nl)",
+      "license": "CC0 1.0",
+      "sha256": "063564703b6094d70718a3e787a55cc9141611e4ecd6b6637f8828f79b4a8c3a"
+    },
+    {
+      "path": "src/assets/audio/party-defeat.ogg",
+      "cue": "party-defeat",
+      "sourceUrl": "https://cc0-sounds.exi.software/sounds/kenney_interfacesounds/Audio/error_001.ogg",
+      "pack": "Kenney Interface Sounds",
+      "author": "Kenney (www.kenney.nl)",
+      "license": "CC0 1.0",
+      "sha256": "46e67425d16339772e8d328fb36a49426c9467418686e11beeb71ff84b0f6433"
+    },
+    {
+      "path": "src/assets/audio/drop-awarded.ogg",
+      "cue": "drop-awarded",
+      "sourceUrl": "https://cc0-sounds.exi.software/sounds/kenney_uiaudio/Audio/rollover1.ogg",
+      "pack": "Kenney UI Audio",
+      "author": "Kenney (www.kenney.nl)",
+      "license": "CC0 1.0",
+      "sha256": "4eb47e2e1540c44847b47a89825e21335c820a4e54cacf8c4c1eb5100e36af42"
+    },
+    {
+      "path": "src/assets/audio/ambient-night-garden.ogg",
+      "cue": "ambient-night-garden",
+      "sourceUrl": "https://cc0-sounds.exi.software/sounds/kenney_rpgaudio/Audio/bookOpen.ogg",
+      "pack": "Kenney RPG Audio",
+      "author": "Kenney (www.kenney.nl)",
+      "license": "CC0 1.0",
+      "sha256": "953390534377222bee89ac8cd9e60a58fdc037c71a4d7c18c43cd647c7f34ba8"
+    }
+  ]
+}

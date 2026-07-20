@@ -3,6 +3,7 @@ import type { EngineEvent } from "../core/events";
 import type { CombatantState, Snapshot } from "../core/snapshot";
 import type { Content, StageDef } from "../core/types";
 import { createPresentation, type Presentation } from "./presentation";
+import { createSfx, type SfxController } from "./sfx";
 import { resolveSprite } from "./sprites";
 
 export {
@@ -266,12 +267,8 @@ export function mountBattleTile(
     dockToggle.addEventListener("click", options.onDockToggle);
   }
 
-  const mutePlaceholder = document.createElement("button");
-  mutePlaceholder.type = "button";
-  mutePlaceholder.className = "status-button mute-placeholder";
-  mutePlaceholder.setAttribute("aria-label", "Mute audio");
-  mutePlaceholder.textContent = "🔇";
-  mutePlaceholder.disabled = true;
+  const sfx: SfxController = createSfx();
+  const audioControls = sfx.mountStatusControls();
 
   const dragRegion = document.createElement("span");
   dragRegion.className = "status-drag-region";
@@ -285,7 +282,7 @@ export function mountBattleTile(
   const stageWaveText = document.createElement("span");
   stageWaveText.className = "stage-wave-text";
 
-  statusLine.append(dockToggle, mutePlaceholder, dragRegion, stageWaveText);
+  statusLine.append(dockToggle, audioControls, dragRegion, stageWaveText);
 
   const battlefield = document.createElement("section");
   battlefield.className = "battlefield";
@@ -397,6 +394,7 @@ export function mountBattleTile(
       }
     }
     presentation.applyEvents(events, activeSnapshot);
+    sfx.handleEvents(events);
     presentation.render(activeSnapshot.simNowMs, activeSnapshot);
   }
 
@@ -404,6 +402,7 @@ export function mountBattleTile(
     render,
     applyEvents,
     destroy() {
+      sfx.destroy();
       presentation.destroy();
       root.replaceChildren();
       root.classList.remove("battle-tile", "tile-shell");
