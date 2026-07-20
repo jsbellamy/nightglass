@@ -9,7 +9,7 @@ One of the four combat identities available at launch: Knight, Wizard, Priest, o
 _Avoid_: job, role, archetype
 
 **Class Kit**:
-The fixed combat design belonging to a Class: its basic attack, Core Abilities, and Talent Tiers. In the vertical slice, every Class Kit has one basic attack, four Core Abilities, and one Talent Tier.
+The fixed combat design belonging to a Class: its Basic Attack, Core Abilities, and Talent Tiers. In the vertical slice, every Class Kit has one Basic Attack, four Core Abilities, and one Talent Tier.
 _Avoid_: move set, skill set
 
 **Core Ability**:
@@ -33,8 +33,12 @@ The Party's ordered Front, Middle, and Back positions. Ordinary opponent attacks
 _Avoid_: party order, lineup
 
 **Battlefield**:
-The fixed side-on combat scene where the Party faces right and opponents face left. Characters may move within it for attacks but do not use multi-directional exploration movement.
+The fixed side-on combat scene where the Party faces right and Opponents face left. Characters may move within it for attacks but do not use multi-directional exploration movement.
 _Avoid_: map, arena, board
+
+**Opponent**:
+A combatant fought by the Party on the Battlefield, defined by authored statistics and Abilities. Opponents are not Characters on the Roster.
+_Avoid_: enemy, mob, monster
 
 **Battle Tile**:
 The fixed 480×112 logical-pixel, always-on-top surface that contains the live Battlefield. The Management Dock fans out beside it but does not resize, replace, or implicitly pause it.
@@ -87,6 +91,10 @@ _Avoid_: capstone row, ability tier
 **Equipment**:
 A combat Drop that can be worn by a Character to increase or alter that Character's power without changing the Character's combat appearance.
 _Avoid_: gear (as the general term), item (when specifically referring to worn power)
+
+**Drop**:
+The awarded instance of Equipment that enters the Armory after combat, identified by a unique drop identifier and carrying rolled Rarity, Affixes, and Item Level. Distinguished from **Equipment Base** (the authored template) and **Equipment** (the wearable category).
+_Avoid_: loot roll, item instance
 
 **Equipment Base**:
 The authored identity of an Equipment piece within one Equipment Tier, supplying its Equipment Slot, icon, name stem, Class restriction if any, and guaranteed base statistic.
@@ -164,6 +172,10 @@ _Avoid_: backswing, end lag
 The time after an Ability's Impact before that Ability can be chosen again.
 _Avoid_: recharge
 
+**Damage Channel**:
+Whether an Ability effect applies **Physical Damage** or **Elemental Damage**. Distinct from **Element**, which names a specific elemental identity within Elemental Damage.
+_Avoid_: damage type (as the general term)
+
 **Physical Damage**:
 Damage reduced by the target's Armor.
 _Avoid_: weapon damage (as the general term)
@@ -190,7 +202,7 @@ _Avoid_: ward, magic defense
 
 **Element**:
 The identity carried by Elemental Damage for future element-specific interactions. In the vertical slice, every Element is reduced by the same Elemental Resistance statistic.
-_Avoid_: damage channel, damage type
+_Avoid_: using "damage channel" to mean an Element; damage type (as the general term)
 
 **Healing**:
 Restoration of lost health up to a Character's maximum health. Its raw amount is calculated from the user's Elemental Power and the Ability's Healing coefficient. Excess Healing has no effect unless an Ability explicitly defines another outcome.
@@ -220,8 +232,12 @@ _Avoid_: skill tree, passive tree
 An action a Character can perform during Automatic Combat, such as a spell, weapon technique, heal, buff, or defensive action.
 _Avoid_: spell (as the general term), skill
 
+**Basic Attack**:
+The always-available Ability defined by a Class Kit, chosen during Automatic Combat when no configured Ability in the Ability Loadout qualifies. It is not one of the three Ability Loadout slots and does not compete for them.
+_Avoid_: auto-attack, default skill
+
 **Ability Loadout**:
-An ordered selection of unlocked Abilities configured for one Character. During Automatic Combat, the Character chooses the first configured Ability whose cooldown and targeting conditions permit it, falling back to a basic attack when none qualify.
+An ordered selection of unlocked Abilities configured for one Character. During Automatic Combat, the Character chooses the first configured Ability whose cooldown and targeting conditions permit it, falling back to the Basic Attack when none qualify.
 _Avoid_: spell loadout, action bar, skill loadout
 
 **Activation Delay**:
@@ -237,16 +253,21 @@ One run through a Stage. The Party begins fully restored, while damage and Knock
 _Avoid_: run, battle
 
 **Wave**:
-One group of opponents fought within a Stage; defeating it advances the Party to the next Wave or the Boss.
+One group of Opponents fought within a Stage; defeating it advances the Party to the next Wave or the Boss.
 _Avoid_: round, encounter
+
+**Encounter**:
+The ordinal position within a Stage Attempt at which combat occurs: 1, 2, or 3. Encounters 1 and 2 are Waves; Encounter 3 is the Boss.
+_Avoid_: wave number (when the Boss is meant)
 
 **Boss**:
 The final opponent or opponent group in a Stage whose defeat clears that Stage.
 _Avoid_: final boss
 
 **Failure Policy**:
-The player's choice for handling a failed Stage attempt: Retry repeats that Stage, while Retreat moves back one Stage and may continue stepping down after further failures.
+The intended player's choice for handling a failed Stage Attempt: Retry repeats that Stage, while Retreat moves back one Stage and may continue stepping down after further failures.
 _Avoid_: death mode, retry setting
+_Vertical slice:_ not implemented — Retry and Retreat are explained through Stage selection and automatic retry behavior rather than a persistent policy setting.
 
 **Party Defeat**:
 The failure condition that ends the current Stage attempt, occurring when every Party Member is Knocked Out.
@@ -259,6 +280,10 @@ _Avoid_: death, defeat
 **Offline Progress**:
 Capped advancement calculated when the application reopens after being closed. It summarizes progression and Drops, then begins a fresh visible Stage Attempt.
 _Avoid_: idle gains, background combat
+
+**Content**:
+The aggregate authored data supplied to the Simulation Engine: Class Kits, Abilities, Opponents, Stages, Equipment Bases, Affix bands, and related definitions. It is validated before use and treated as immutable for the lifetime of an Engine instance.
+_Avoid_: game data, content pack
 
 **Simulation Engine**:
 The headless, caller-advanced module that owns deterministic combat and progression rules. It accepts player commands, advances from injected time and RNG sources, and exposes Snapshots plus Presentation Events without depending on timers, the DOM, Tauri, audio, or animation assets.
