@@ -1,0 +1,30 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "prompt": "Ultra-wide panoramic night-garden fantasy battlefield backdrop strip, soft muted pixel-art painting style, very low contrast, dark dreamy palette of deep plum, twilight slate, muted mint and faint berry, gentle moonlight from the upper left. SCENE: A winding bramble hollow of curling thorn vines and pale night blossoms under a thin crescent moon, faint fireflies. IMPORTANT COMPOSITION for a short wide crop: pack curling thorn vines, pale blossoms, and faint fireflies into the middle horizontal band; thin crescent moon small and dim near the top edge; nearly flat dark ground across the bottom third; nothing bright, nothing sharp, no focal creature. No characters, no animals, no text, no watermark, no UI, no borders, no vignette frame.\n",
+  "raw_sha256": "363004fc9b9a8fa284406e950e815658e3c709607b688bf50790dcb4f6004315",
+  "asset_class": "backdrop",
+  "runtime_destination": "src/assets/backdrops/backdrop-2.png",
+  "direct_inputs": [],
+  "source_resolution": [
+    1536,
+    1024
+  ],
+  "reduction": {
+    "crop_box": [
+      0,
+      374,
+      1536,
+      649
+    ],
+    "crop_size": [
+      1536,
+      275
+    ],
+    "resample": "NEAREST",
+    "runtime_size": [
+      480,
+      86
+    ]
+  }
+}

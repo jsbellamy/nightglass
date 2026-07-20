@@ -1,0 +1,30 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "prompt": "Ultra-wide panoramic night-garden fantasy battlefield backdrop strip, soft muted pixel-art painting style, VERY low contrast and OVERALL DARK, dark dreamy palette of deep plum, twilight slate, muted mint and faint berry only. SCENE: Terraced garden steps of giant night-bloom flowers climbing toward a wide low moon, distant stitched banners. CRITICAL: flowers must be DIM and desaturated (dusty plum petals, not glowing white); moon must be a faint soft disc barely brighter than the sky; no bright highlights, no firefly sparkles brighter than a health bar, no luminous bloom cores. Composition for a short wide crop: terraced steps and soft flower silhouettes packed into the middle horizontal band; nearly flat dark ground across the bottom third; sky thin and dark at the top. No characters, no animals, no text, no watermark, no UI, no borders, no vignette frame.\n",
+  "raw_sha256": "8d420343249f9a9504ad693f0ce4d44bb4d32e162419d40f65ab85541343bc75",
+  "asset_class": "backdrop",
+  "runtime_destination": "src/assets/backdrops/backdrop-3.png",
+  "direct_inputs": [],
+  "source_resolution": [
+    1536,
+    1024
+  ],
+  "reduction": {
+    "crop_box": [
+      0,
+      374,
+      1536,
+      649
+    ],
+    "crop_size": [
+      1536,
+      275
+    ],
+    "resample": "NEAREST",
+    "runtime_size": [
+      480,
+      86
+    ]
+  }
+}

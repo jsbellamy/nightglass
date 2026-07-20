@@ -1,3 +1,6 @@
+import backdrop1Url from "../assets/backdrops/backdrop-1.png";
+import backdrop2Url from "../assets/backdrops/backdrop-2.png";
+import backdrop3Url from "../assets/backdrops/backdrop-3.png";
 import { opponentCombatants, partyCombatants } from "../core/combat";
 import type { EngineEvent } from "../core/events";
 import type { CombatantState, Snapshot } from "../core/snapshot";
@@ -50,23 +53,16 @@ function stageDefFor(content: Content, stageId: 1 | 2 | 3): StageDef | undefined
   return content.stages.find((stage) => stage.id === stageId);
 }
 
-/** Interim #59: muted night-garden gradients until backdrop asset slice lands. */
-const BACKDROP_GRADIENTS: Record<string, string> = {
-  "backdrop-1":
-    "linear-gradient(180deg, #1a1428 0%, #24304a 38%, #2f4a3a 72%, #1a2820 100%)",
-  "backdrop-2":
-    "linear-gradient(180deg, #141228 0%, #2a2448 40%, #3a2f52 70%, #1e1828 100%)",
-  "backdrop-3":
-    "linear-gradient(180deg, #101420 0%, #1e2840 35%, #3a2850 68%, #182028 100%)",
-  "fixture-meadow":
-    "linear-gradient(180deg, #1a1428 0%, #24304a 38%, #2f4a3a 72%, #1a2820 100%)",
+/** Stage-keyed battlefield band art from docs/backdrop-contract.md (#59). */
+const BACKDROP_URLS: Record<string, string> = {
+  "backdrop-1": backdrop1Url,
+  "backdrop-2": backdrop2Url,
+  "backdrop-3": backdrop3Url,
+  "fixture-meadow": backdrop1Url,
 };
 
-function backdropGradient(backdropKey: string): string {
-  return (
-    BACKDROP_GRADIENTS[backdropKey] ??
-    BACKDROP_GRADIENTS["backdrop-1"]!
-  );
+function backdropUrl(backdropKey: string): string {
+  return BACKDROP_URLS[backdropKey] ?? BACKDROP_URLS["backdrop-1"]!;
 }
 
 function healthFillPercent(health: number, maxHealth: number): number {
@@ -343,7 +339,10 @@ export function mountBattleTile(
     const stage = stageDefFor(content, attempt.stage);
     const backdropKey = stage?.backdropKey ?? "backdrop-1";
     battlefield.dataset["backdropKey"] = backdropKey;
-    backdrop.style.background = backdropGradient(backdropKey);
+    backdrop.style.backgroundImage = `url(${backdropUrl(backdropKey)})`;
+    backdrop.style.backgroundSize = "100% 100%";
+    backdrop.style.backgroundRepeat = "no-repeat";
+    backdrop.style.backgroundPosition = "center";
 
     const party = partyCombatants(attempt.combatants).sort((left, right) => {
       const leftSlot = FORMATION_ORDER.indexOf(formationSlotFromEntityId(left.entityId));

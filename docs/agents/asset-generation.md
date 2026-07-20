@@ -43,6 +43,11 @@ context pointer. A missing value is a decision to resolve before generation.
   [`../animation-contract.md`](../animation-contract.md). It owns layer separation,
   `moonberry-glow`, effect anchors, deterministic derivation, and runtime
   transforms.
+- For **Stage backdrops**, read [`../backdrop-contract.md`](../backdrop-contract.md).
+  It owns the 480×86 battlefield band, palette exemption from `moonberry-16`,
+  deliberate large→nearest resize (the body no-resize rule does not apply),
+  Archived Raw Bundle under `assets-raw/backdrops/`, and
+  `pipeline/backdrops.py` byte-identity verify.
 - For Moonberry visual language, use the decision and retained references from
   [Prototype the original-IP art direction](https://github.com/jsbellamy/nightglass/issues/3).
 - For another asset class, the task must declare its runtime shape and validator;

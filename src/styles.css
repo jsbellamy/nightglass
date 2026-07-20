@@ -152,6 +152,8 @@ body {
   position: absolute;
   inset: 0;
   z-index: 0;
+  background-color: #12141c;
+  image-rendering: pixelated;
 }
 
 .party-zone,
