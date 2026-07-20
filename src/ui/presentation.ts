@@ -10,6 +10,8 @@ import {
   type DamageNumberInput,
 } from "./damage-numbers";
 import { effectImageUrl, statusEffectGlyphUrl } from "./effect-images";
+import { equipmentBaseForDrop } from "./equipment-format";
+import { createEquipmentIconElement } from "./icons";
 
 /** Contract constants — source: prototype/presentation-contract/present.py */
 export const LUNGE = {
@@ -85,7 +87,8 @@ interface ActiveBanner {
 interface ActiveDropToast {
   dropId: number;
   rarity: Rarity;
-  label: string;
+  itemName: string;
+  iconKey: string;
   startedAtMs: number;
 }
 
@@ -181,9 +184,6 @@ function bannerLabel(event: EngineEvent, content: Content): string | null {
   }
 }
 
-function rarityLabel(rarity: Rarity): string {
-  return rarity.charAt(0).toUpperCase() + rarity.slice(1);
-}
 
 export function createPresentation(options: PresentationOptions): Presentation {
   const { battlefield, effectLane, feedbackLayer, notificationLayer, content } = options;
@@ -201,7 +201,7 @@ export function createPresentation(options: PresentationOptions): Presentation {
   bannerEl.hidden = true;
 
   const dropToastEl = document.createElement("div");
-  dropToastEl.className = "drop-toast interim-drop-toast";
+  dropToastEl.className = "drop-toast";
   dropToastEl.hidden = true;
 
   const damageLayer = document.createElement("div");
@@ -276,10 +276,12 @@ export function createPresentation(options: PresentationOptions): Presentation {
         case "drop-awarded": {
           const drop = snapshot.progression.armory.find((entry) => entry.dropId === event.dropId);
           if (drop) {
+            const base = equipmentBaseForDrop(drop, content);
             dropToast = {
               dropId: drop.dropId,
               rarity: drop.rarity,
-              label: `Drop · ${rarityLabel(drop.rarity)}`,
+              itemName: base.name,
+              iconKey: base.iconKey,
               startedAtMs: event.atMs,
             };
             battlefield.dispatchEvent(new CustomEvent(ARMORY_BADGE_EVENT, { bubbles: true }));
@@ -572,14 +574,19 @@ export function createPresentation(options: PresentationOptions): Presentation {
     if (!dropToast || nowMs - dropToast.startedAtMs > DROP_TOAST_MS) {
       dropToast = null;
       dropToastEl.hidden = true;
-      dropToastEl.textContent = "";
-      dropToastEl.className = "drop-toast interim-drop-toast";
+      dropToastEl.replaceChildren();
+      dropToastEl.removeAttribute("aria-label");
+      dropToastEl.className = "drop-toast";
       return;
     }
     dropToastEl.hidden = false;
-    dropToastEl.textContent = dropToast.label;
     dropToastEl.dataset["dropId"] = String(dropToast.dropId);
-    dropToastEl.className = `drop-toast interim-drop-toast rarity-${dropToast.rarity}`;
+    dropToastEl.className = `drop-toast rarity-${dropToast.rarity}`;
+    dropToastEl.setAttribute("aria-label", `${dropToast.itemName} drop`);
+
+    dropToastEl.replaceChildren(
+      createEquipmentIconElement(dropToast.iconKey, "content", { extraClass: "drop-toast-icon" }),
+    );
   }
 
   function render(nowMs: number, snapshot: Snapshot): void {

@@ -1,5 +1,9 @@
 import { expect, test, type Browser, type Page } from "@playwright/test";
 import { mkdirSync } from "node:fs";
+import { createEngine } from "../src/core/engine";
+import { cloneSnapshot, type DropInstance, type Snapshot } from "../src/core/snapshot";
+import type { ClassId, EquipmentSlotId } from "../src/core/types";
+import { buildContent } from "../src/data";
 import { NIGHTGLASS_BUS_CHANNEL } from "../src/ui/bus";
 import { DOCK_HEIGHT, DOCK_WIDTH } from "../src/ui/dock-geometry";
 import {
@@ -7,12 +11,15 @@ import {
   TILE_HEIGHT,
   TILE_WIDTH,
 } from "../src/ui/tile-geometry";
-import { postBusCommand } from "./helpers/bus";
+import { postBusCommand, postBusSnapshot } from "./helpers/bus";
 import { contrastRatio, parseRGB } from "./helpers/contrast";
 
 const SCREENSHOTS = "e2e-screenshots";
 /** Committed review artifact for the knockout-readability judgement (#103). */
 const KNOCKOUT_ARTIFACT = "docs/research/evidence/knockout-readability/tile-combat.png";
+/** Committed review artifact for 16px Armory slot icon legibility (#132). */
+const EQUIPMENT_CHROME_LEGIBILITY_ARTIFACT =
+  "docs/research/evidence/124-equipment-icon-consumers/armory-slot-strip.png";
 
 type Rect = { x: number; y: number; w: number; h: number; cls?: string };
 
@@ -59,6 +66,49 @@ async function openTile(browser: Browser): Promise<{ context: Awaited<ReturnType
   await tile.goto("/", { waitUntil: "networkidle" });
   await tile.waitForSelector(".battle-tile .status-line");
   return { context, tile };
+}
+
+function equipmentIconReviewSnapshot(): Snapshot {
+  const engine = createEngine(buildContent(), undefined, 42);
+  const snapshot = cloneSnapshot(engine.snapshot());
+  const equipped: [string, ClassId, EquipmentSlotId][] = [
+    ["thornquill-blade", "knight", "weapon"],
+    ["leafmail-vest", "knight", "armor"],
+    ["berrybright-charm", "knight", "charm"],
+    ["dewlight-focus", "wizard", "weapon"],
+    ["plumweave-aegis", "wizard", "armor"],
+    ["gloamberry-locket", "wizard", "charm"],
+    ["moonpetal-relic", "priest", "weapon"],
+    ["plumweave-aegis", "priest", "armor"],
+    ["berrybright-charm", "priest", "charm"],
+    ["bramblesong-bow", "hunter", "weapon"],
+    ["leafmail-vest", "hunter", "armor"],
+    ["gloamberry-locket", "hunter", "charm"],
+  ];
+  const armory: DropInstance[] = equipped.map((entry, index) => ({
+    dropId: index + 1,
+    baseId: entry[0],
+    itemLevel: 1,
+    rarity: index % 4 === 0 ? "rare" : "common",
+    affixes: [],
+    awardedAtMs: 10_000 - index,
+    seen: true,
+    locked: false,
+    assignedTo: { classId: entry[1], slot: entry[2] },
+  }));
+  armory.push({
+    dropId: 100,
+    baseId: "starfruit-prism",
+    itemLevel: 2,
+    rarity: "epic",
+    affixes: [],
+    awardedAtMs: 20_000,
+    seen: false,
+    locked: false,
+    assignedTo: null,
+  });
+  snapshot.progression.armory = armory;
+  return snapshot;
 }
 
 /** Third-peer bus spy on the page — observes delivery without production hooks. */
@@ -295,7 +345,7 @@ test.describe("rendered-output evidence seam", () => {
             const toast = document.querySelector<HTMLElement>(
               ".status-notification-layer .drop-toast",
             );
-            return toast !== null && !toast.hidden && (toast.textContent?.length ?? 0) > 0;
+            return toast !== null && !toast.hidden && toast.querySelector(".equipment-icon-img--content") !== null;
           });
         },
         { timeout: 180_000, intervals: [2_000] },
@@ -316,7 +366,9 @@ test.describe("rendered-output evidence seam", () => {
       return { notification, statusLine, stageWave, buttons, combatants };
     });
 
-    expect(dropClearance.notification.w, "drop notification visible width").toBeGreaterThan(0);
+    expect(dropClearance.notification.h, "drop notification height hosts 34px icon").toBeGreaterThanOrEqual(
+      34,
+    );
     expect(
       rectContains(dropClearance.statusLine, dropClearance.notification),
       "drop notification inside status line",
@@ -466,6 +518,96 @@ test.describe("rendered-output evidence seam", () => {
       .toBeGreaterThan(pumpCountBefore);
 
     expect(pageErrors, "page errors").toEqual([]);
+    await context.close();
+  });
+
+  test("evidence: equipment-icon-content-tier / evidence: equipment-icon-chrome-legibility — content-tier geometry and chrome-tier legibility artifact", async ({
+    browser,
+  }) => {
+    const { context, tile } = await openTile(browser);
+    const dock = await context.newPage();
+    await dock.setViewportSize({ width: DOCK_WIDTH, height: DOCK_HEIGHT });
+    await dock.goto("/?window=dock", { waitUntil: "networkidle" });
+    await dock.waitForSelector(".management-dock");
+
+    await postBusSnapshot(dock, equipmentIconReviewSnapshot());
+    await dock.click('[data-dock-tab="armory"]');
+    await dock.waitForSelector(".armory-slot-strip .equipment-icon-img--chrome");
+
+    const contentTier = await dock.evaluate(() => {
+      const img = document.querySelector<HTMLImageElement>(
+        ".armory-collection .equipment-icon-img--content",
+      );
+      const wrap = img?.closest(".equipment-icon-content");
+      if (!img || !wrap) {
+        return null;
+      }
+      const imgBox = img.getBoundingClientRect();
+      const wrapStyle = getComputedStyle(wrap);
+      const imgStyle = getComputedStyle(img);
+      const card = img.closest(".equipment-card");
+      const header = img.closest(".equipment-card-header");
+      const swatchBehind = header?.querySelector(".equipment-rarity");
+      return {
+        imgW: imgBox.width,
+        imgH: imgBox.height,
+        attrW: img.width,
+        attrH: img.height,
+        wrapOverflow: wrapStyle.overflow,
+        wrapBorderWidth: wrapStyle.borderTopWidth,
+        wrapBackground: wrapStyle.backgroundColor,
+        imgWidthCss: imgStyle.width,
+        imgHeightCss: imgStyle.height,
+        headerAlign: header ? getComputedStyle(header).alignItems : null,
+        cardHasRarityTint: card?.classList.contains("rarity-epic") ?? false,
+        swatchBehindIcon: swatchBehind !== null,
+      };
+    });
+
+    expect(contentTier, "collection content-tier icon present").not.toBeNull();
+    expect(contentTier!.imgW, "rendered content width").toBe(34);
+    expect(contentTier!.imgH, "rendered content height").toBe(34);
+    expect(contentTier!.attrW, "logical content width").toBe(34);
+    expect(contentTier!.attrH, "logical content height").toBe(34);
+    expect(contentTier!.imgWidthCss, "CSS content width").toBe("34px");
+    expect(contentTier!.imgHeightCss, "CSS content height").toBe("34px");
+    expect(contentTier!.wrapOverflow, "no overflow clip on wrapper").not.toBe("hidden");
+    expect(Number.parseFloat(contentTier!.wrapBorderWidth), "no wrapper border").toBe(0);
+    expect(contentTier!.swatchBehindIcon, "no rarity swatch behind icon").toBe(false);
+    expect(contentTier!.cardHasRarityTint, "rarity tint on card").toBe(true);
+    expect(contentTier!.headerAlign, "header vertical alignment").toBe("center");
+
+    const chromeIcons = await dock.evaluate(() => {
+      return [...document.querySelectorAll(".armory-slot-button .equipment-icon-img--chrome")].map(
+        (el) => {
+          const img = el as HTMLImageElement;
+          const box = img.getBoundingClientRect();
+          const style = getComputedStyle(img);
+          const button = img.closest(".armory-slot-button");
+          const label = button?.querySelector(".armory-slot-label");
+          return {
+            w: box.width,
+            h: box.height,
+            cssW: style.width,
+            cssH: style.height,
+            hasLabel: label !== null && (label.textContent?.length ?? 0) > 0,
+          };
+        },
+      );
+    });
+    expect(chromeIcons, "twelve equipped slot chrome icons").toHaveLength(12);
+    for (const icon of chromeIcons) {
+      expect(icon.w, "chrome rendered width").toBe(16);
+      expect(icon.h, "chrome rendered height").toBe(16);
+      expect(icon.cssW, "chrome CSS width").toBe("16px");
+      expect(icon.cssH, "chrome CSS height").toBe("16px");
+      expect(icon.hasLabel, "slot label present").toBe(true);
+    }
+
+    mkdirSync("docs/research/evidence/124-equipment-icon-consumers", { recursive: true });
+    const strip = await dock.locator(".armory-slot-strip");
+    await strip.screenshot({ path: EQUIPMENT_CHROME_LEGIBILITY_ARTIFACT });
+
     await context.close();
   });
 });

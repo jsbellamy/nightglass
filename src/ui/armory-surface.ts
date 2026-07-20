@@ -10,12 +10,10 @@ import {
   compareEquipmentStatDeltas,
   discardableDrop,
   equipmentBaseForDrop,
-  equipmentBaseInitials,
   filterArmoryDrops,
   formatAffix,
   formatAssignment,
   formatGuaranteedStat,
-  formatRarityLabel,
   hasUnseenArmoryDrops,
   isCompatibleWithSlot,
   rareOrEpicDropNames,
@@ -24,11 +22,8 @@ import {
   statsForEquipmentLoadout,
 } from "./equipment-format";
 import { bindPressable } from "./keyboard";
+import { createEquipmentIconElement } from "./icons";
 import { effectiveLoadout, effectiveTalentState } from "./loadout-surface";
-import {
-  isEquipmentIcons34Prototype,
-  prototypeIconUrl,
-} from "./prototype-equipment-icons-34";
 
 const ROSTER: ClassId[] = ["knight", "wizard", "priest", "hunter"];
 const SLOTS: EquipmentSlotId[] = ["weapon", "armor", "charm"];
@@ -42,8 +37,6 @@ export interface ArmorySurfaceOptions {
   content: Content;
   onCommand?: (command: TileCommand) => void;
   onBadgeChange?: (visible: boolean) => void;
-  /** PROTOTYPE #125 — when true, render native 34×34 Equipment Base icons. */
-  equipmentIcons34Prototype?: boolean;
 }
 
 type ArmoryView = "collection" | "detail" | "compare";
@@ -111,41 +104,25 @@ export function mountArmorySurface(
     publish({ cmd: "markSeen", args: [[dropId]] });
   }
 
-  const useIcons34 = options.equipmentIcons34Prototype === true || isEquipmentIcons34Prototype();
+  function appendContentTierIcon(container: HTMLElement, iconKey: string, name: string): void {
+    const wrap = document.createElement("span");
+    wrap.className = "equipment-icon-content";
+    wrap.setAttribute("aria-label", `${name} icon`);
+    wrap.append(createEquipmentIconElement(iconKey, "content"));
+    container.append(wrap);
+  }
+
+  function appendChromeTierIcon(container: HTMLElement, iconKey: string, name: string): void {
+    const wrap = document.createElement("span");
+    wrap.className = "equipment-icon-chrome";
+    wrap.setAttribute("aria-label", `${name} icon`);
+    wrap.append(createEquipmentIconElement(iconKey, "chrome"));
+    container.append(wrap);
+  }
 
   function renderDropIconChip(container: HTMLElement, drop: DropInstance): void {
     const base = equipmentBaseForDrop(drop, content);
-    if (useIcons34) {
-      const chip = document.createElement("span");
-      chip.className = "equipment-icon-chip equipment-icon-chip--native-34";
-      chip.dataset["prototypeIcon"] = "equipment-icons-34";
-      chip.setAttribute("aria-label", `${base.name} icon (34×34 prototype)`);
-      const img = document.createElement("img");
-      img.className = "equipment-icon-img";
-      img.src = prototypeIconUrl(base.iconKey);
-      img.alt = "";
-      img.width = 34;
-      img.height = 34;
-      img.decoding = "async";
-      chip.append(img);
-      container.append(chip);
-      return;
-    }
-    const chip = document.createElement("span");
-    chip.className = "equipment-icon-chip interim-equipment-icon";
-    chip.dataset["interimIcon"] = "issue-58";
-    chip.setAttribute("aria-label", `Interim icon for ${base.name} (#58)`);
-    chip.title = "Interim text icon — replaced by equipment-icons slice #58";
-    chip.textContent = equipmentBaseInitials(base.name);
-    container.append(chip);
-  }
-
-  function renderRarity(container: HTMLElement, rarity: DropInstance["rarity"]): void {
-    const label = document.createElement("span");
-    label.className = `equipment-rarity rarity-${rarity}`;
-    label.dataset["rarityLabel"] = "true";
-    label.textContent = formatRarityLabel(rarity);
-    container.append(label);
+    appendContentTierIcon(container, base.iconKey, base.name);
   }
 
   function renderDropSummary(card: HTMLElement, drop: DropInstance): void {
@@ -169,7 +146,7 @@ export function mountArmorySurface(
     titleWrap.append(meta);
 
     header.append(titleWrap);
-    renderRarity(header, drop.rarity);
+    card.classList.add(`rarity-${drop.rarity}`);
     card.append(header);
 
     const guaranteed = document.createElement("p");
@@ -341,10 +318,8 @@ export function mountArmorySurface(
         label.textContent = SLOT_LABELS[slot];
         button.append(label);
         if (equipped) {
-          const name = document.createElement("span");
-          name.className = "armory-slot-equipped";
-          name.textContent = equipmentBaseForDrop(equipped, content).name;
-          button.append(name);
+          const base = equipmentBaseForDrop(equipped, content);
+          appendChromeTierIcon(button, base.iconKey, base.name);
         } else {
           const empty = document.createElement("span");
           empty.className = "armory-slot-empty";
@@ -787,18 +762,6 @@ export function mountArmorySurface(
     title.className = "dock-surface-title";
     title.textContent = "Armory";
     root.append(title);
-
-    const interimNote = document.createElement("p");
-    interimNote.className = "armory-interim-icon-note";
-    if (useIcons34) {
-      interimNote.dataset["prototypeIconNote"] = "equipment-icons-34";
-      interimNote.textContent =
-        "PROTOTYPE #125 — native 34×34 Equipment Base icons (compact source → Stage-2 build).";
-    } else {
-      interimNote.dataset["interimIconNote"] = "issue-58";
-      interimNote.textContent = "Interim text-chip icons stand in for equipment art until slice #58.";
-    }
-    root.append(interimNote);
 
     renderSlotStrip(snapshot, root);
 

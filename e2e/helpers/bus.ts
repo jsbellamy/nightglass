@@ -1,4 +1,5 @@
 import type { Page } from "@playwright/test";
+import type { Snapshot } from "../../src/core/snapshot";
 import { NIGHTGLASS_BUS_CHANNEL } from "../../src/ui/bus";
 import type { TileCommand } from "../../src/ui/bus";
 
@@ -11,5 +12,17 @@ export async function postBusCommand(page: Page, command: TileCommand): Promise<
       channel.close();
     },
     { channelName: NIGHTGLASS_BUS_CHANNEL, command },
+  );
+}
+
+/** Publish a Snapshot to every bus peer (e.g. seed the Management Dock Armory). */
+export async function postBusSnapshot(page: Page, snapshot: Snapshot): Promise<void> {
+  await page.evaluate(
+    ({ channelName, snapshot: snap }) => {
+      const channel = new BroadcastChannel(channelName);
+      channel.postMessage({ type: "snapshot", snapshot: snap });
+      channel.close();
+    },
+    { channelName: NIGHTGLASS_BUS_CHANNEL, snapshot },
   );
 }
