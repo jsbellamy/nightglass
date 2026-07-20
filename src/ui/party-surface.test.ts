@@ -5,9 +5,12 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { createEngine } from "../core/engine";
+import { fixtureContent } from "../core/testing/fixture-content";
+import type { Content } from "../core/types";
 import { buildContent } from "../data";
 import { createBusEndpoint } from "./bus";
 import { mountPartySurface } from "./party-surface";
+import { levelFor } from "./snapshot-view";
 
 const LOOT_SEED = 42;
 const content = buildContent();
@@ -37,7 +40,7 @@ describe("Party surface", () => {
   it("shows Formation slots, Reserve, and all four Characters", () => {
     const root = document.createElement("div");
     const engine = createEngine(content, undefined, LOOT_SEED);
-    const surface = mountPartySurface(root);
+    const surface = mountPartySurface(root, { content });
 
     surface.render(engine.snapshot());
 
@@ -55,6 +58,7 @@ describe("Party surface", () => {
     const commands: unknown[] = [];
     const engine = createEngine(content, undefined, LOOT_SEED);
     const surface = mountPartySurface(root, {
+      content,
       onCommand: (command) => {
         commands.push(command);
         if (command.cmd === "setFormation") {
@@ -121,6 +125,7 @@ describe("Party surface", () => {
     );
 
     const surface = mountPartySurface(root, {
+      content,
       onCommand: (command) => {
         dockBus.publish({ type: "command", command });
       },
@@ -161,6 +166,7 @@ describe("Party surface", () => {
     const engine = createEngine(content, undefined, LOOT_SEED);
     const commands: unknown[] = [];
     const surface = mountPartySurface(root, {
+      content,
       onCommand: (command) => {
         commands.push(command);
         if (command.cmd === "setFormation") {
@@ -199,6 +205,30 @@ describe("Party surface", () => {
 
     surface.destroy();
     root.remove();
+  });
+
+  it("renders Character Level from Content xpThresholds, not hardcoded production values", () => {
+    const customThresholds: Content["xpThresholds"] = [0, 10, 30, 60];
+    const testContent: Content = {
+      ...fixtureContent,
+      xpThresholds: customThresholds,
+    };
+    const engine = createEngine(testContent, undefined, LOOT_SEED);
+    const snapshot = engine.snapshot();
+    snapshot.progression.characterXp.knight = 25;
+
+    const root = document.createElement("div");
+    const surface = mountPartySurface(root, { content: testContent });
+    surface.render(snapshot);
+
+    const expectedLevel = levelFor(snapshot, testContent, "knight");
+    const knightLevelLine = root.querySelector(
+      '.formation-slot[data-slot="0"] .character-level',
+    );
+    expect(knightLevelLine?.textContent).toBe(`Level ${expectedLevel}`);
+    expect(expectedLevel).toBe(2);
+
+    surface.destroy();
   });
 });
 

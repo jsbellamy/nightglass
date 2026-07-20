@@ -141,6 +141,7 @@ export function mountManagementDock(
   }
 
   const partySurface = mountPartySurface(partyRoot, {
+    content: options.content,
     onCommand: (command) => {
       options.onCommand?.(command);
     },

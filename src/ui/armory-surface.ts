@@ -1,9 +1,8 @@
 import { dropStatModifiers, snapshotEquipmentLoadouts } from "../core/equipment";
 import type { DropInstance, Snapshot } from "../core/snapshot";
-import type { ClassId, ClassKitDef, Content, EquipmentSlotId } from "../core/types";
+import type { ClassId, Content, EquipmentSlotId } from "../core/types";
 import type { TileCommand } from "./bus";
 import {
-  CLASS_LABELS,
   type ArmoryFilters,
   type ArmorySortId,
   compareAbilityRawChanges,
@@ -23,9 +22,14 @@ import {
 } from "./equipment-format";
 import { bindPressable } from "./keyboard";
 import { createEquipmentIconElement } from "./icons";
-import { effectiveLoadout, effectiveTalentState } from "./loadout-surface";
+import {
+  CLASS_LABELS,
+  classKitFor,
+  effectiveLoadout,
+  effectiveTalentState,
+  rosterClassIds,
+} from "./snapshot-view";
 
-const ROSTER: ClassId[] = ["knight", "wizard", "priest", "hunter"];
 const SLOTS: EquipmentSlotId[] = ["weapon", "armor", "charm"];
 
 export interface ArmorySurface {
@@ -45,14 +49,6 @@ interface CompareContext {
   classId: ClassId;
   slot: EquipmentSlotId;
   selectedDropId: number | null;
-}
-
-function classKitFor(content: Content, classId: ClassId): ClassKitDef {
-  const classKit = content.classes.find((entry) => entry.id === classId);
-  if (!classKit) {
-    throw new Error(`Missing Class Kit ${classId}`);
-  }
-  return classKit;
 }
 
 function equippedDropId(
@@ -288,7 +284,7 @@ export function mountArmorySurface(
     strip.setAttribute("role", "group");
     strip.setAttribute("aria-label", "Character equipment slots");
 
-    for (const classId of ROSTER) {
+    for (const classId of rosterClassIds(snapshot)) {
       const character = document.createElement("section");
       character.className = "armory-character-slots";
       character.dataset["classId"] = classId;
