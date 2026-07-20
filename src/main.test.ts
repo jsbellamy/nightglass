@@ -361,6 +361,7 @@ describe("tick snapshot cache", () => {
     ] satisfies EngineEvent[]);
 
     const root = document.createElement("main");
+    let handlers: Parameters<typeof createBusEndpoint>[0] = {};
     const shell = mountTileShell(root, {
       engine,
       content,
@@ -368,16 +369,22 @@ describe("tick snapshot cache", () => {
       deferPump: true,
       now: () => clock.ms,
       pumpSchedule: pump.schedule,
-      busFactory: (handlers) => ({
-        publish: (message) => {
-          published.push(message);
-          if (message.type === "pump") {
-            handlers.pump?.(message);
-          }
-        },
-        close: () => {},
-      }),
+      busFactory: (busHandlers) => {
+        handlers = busHandlers;
+        return {
+          publish: (message) => {
+            published.push(message);
+            if (message.type === "pump") {
+              handlers.pump?.(message);
+            }
+          },
+          close: () => {},
+        };
+      },
     });
+
+    handlers["dock-opened"]?.({ type: "dock-opened" });
+    published.length = 0;
 
     shell.startPump();
     pump.advancePumpMs(PUMP_INTERVAL_MS);
@@ -476,6 +483,7 @@ describe("tick snapshot cache", () => {
     );
 
     const root = document.createElement("main");
+    let handlers: Parameters<typeof createBusEndpoint>[0] = {};
     const shell = mountTileShell(root, {
       engine,
       content,
@@ -483,16 +491,21 @@ describe("tick snapshot cache", () => {
       deferPump: true,
       now: () => clock.ms,
       pumpSchedule: pump.schedule,
-      busFactory: (handlers) => ({
-        publish: (message) => {
-          clock.ms += 20;
-          if (message.type === "pump") {
-            handlers.pump?.(message);
-          }
-        },
-        close: () => {},
-      }),
+      busFactory: (busHandlers) => {
+        handlers = busHandlers;
+        return {
+          publish: (message) => {
+            clock.ms += 20;
+            if (message.type === "pump") {
+              handlers.pump?.(message);
+            }
+          },
+          close: () => {},
+        };
+      },
     });
+
+    handlers["dock-opened"]?.({ type: "dock-opened" });
 
     shell.startPump();
     pump.advancePumpMs(PUMP_INTERVAL_MS);
@@ -724,6 +737,239 @@ describe("presentation clock", () => {
       expect(Number.isInteger(nowMs)).toBe(true);
     }
     shell.stop();
+  });
+});
+
+describe("pump publish when dock subscribed", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    Object.defineProperty(document, "hidden", { configurable: true, value: false });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  function createControlledPumpSchedule(clock: { ms: number }) {
+    const rafCallbacks: FrameRequestCallback[] = [];
+    const doc = {
+      hidden: false,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    } as unknown as Document;
+
+    return {
+      advancePumpMs(ms: number): void {
+        clock.ms += ms;
+        vi.advanceTimersByTime(ms);
+      },
+      schedule: {
+        now: () => clock.ms,
+        setInterval: ((handler: TimerHandler) =>
+          setInterval(handler, PUMP_INTERVAL_MS)) as typeof setInterval,
+        clearInterval: ((id: ReturnType<typeof setInterval>) =>
+          clearInterval(id)) as typeof clearInterval,
+        requestAnimationFrame: (callback: FrameRequestCallback) => {
+          rafCallbacks.push(callback);
+          return rafCallbacks.length;
+        },
+        cancelAnimationFrame: vi.fn(),
+        document: doc,
+      } satisfies NonNullable<Parameters<typeof mountTileShell>[1]>["pumpSchedule"],
+    };
+  }
+
+  function mountTileWithBusCapture(clock: { ms: number }) {
+    const pump = createControlledPumpSchedule(clock);
+    const published: BusMessage[] = [];
+    let handlers: Parameters<typeof createBusEndpoint>[0] = {};
+    const content = buildContent();
+    const engine = createEngine(content, undefined, 42);
+
+    vi.spyOn(engine, "advanceBy").mockReturnValue([
+      { seq: 1, atMs: 250, type: "config-applied" },
+    ] satisfies EngineEvent[]);
+
+    const root = document.createElement("main");
+    const shell = mountTileShell(root, {
+      engine,
+      content,
+      dockWindow: createMockDockWindow(),
+      deferPump: true,
+      now: () => clock.ms,
+      pumpSchedule: pump.schedule,
+      busFactory: (busHandlers) => {
+        handlers = busHandlers;
+        return {
+          publish: (message) => published.push(message),
+          close: () => {},
+        };
+      },
+    });
+
+    published.length = 0;
+
+    return { shell, pump, published, handlers, engine, content };
+  }
+
+  it("records zero legality and publish phase time when no dock is subscribed", () => {
+    const clock = { ms: 0 };
+    const { shell, pump } = mountTileWithBusCapture(clock);
+
+    shell.startPump();
+    pump.advancePumpMs(PUMP_INTERVAL_MS);
+
+    const report = shell.frameMetrics();
+    expect(report?.tickSampleCount).toBe(1);
+    expect(report?.tickPhases.legality.p50Ms).toBe(0);
+    expect(report?.tickPhases.publish.p50Ms).toBe(0);
+    expect(report?.tickPhases.applyEvents.p50Ms).toBeGreaterThanOrEqual(0);
+    shell.stop();
+  });
+
+  it("publishes no pump message on a tick with events when no dock has announced", () => {
+    const clock = { ms: 0 };
+    const { shell, pump, published } = mountTileWithBusCapture(clock);
+
+    shell.startPump();
+    pump.advancePumpMs(PUMP_INTERVAL_MS);
+
+    expect(published.filter((message) => message.type === "pump")).toHaveLength(0);
+    shell.stop();
+  });
+
+  it("does not call serializeEngineLegality during a tick when no dock is subscribed", async () => {
+    const legalityModule = await import("./ui/engine-legality");
+    const serializeSpy = vi.spyOn(legalityModule, "serializeEngineLegality");
+
+    const clock = { ms: 0 };
+    const { shell, pump } = mountTileWithBusCapture(clock);
+    serializeSpy.mockClear();
+
+    shell.startPump();
+    pump.advancePumpMs(PUMP_INTERVAL_MS);
+
+    expect(serializeSpy).not.toHaveBeenCalled();
+    shell.stop();
+    serializeSpy.mockRestore();
+  });
+
+  it("publishes a pump message with legality after dock-opened when a tick produces events", async () => {
+    const clock = { ms: 0 };
+    const { shell, pump, published, handlers, engine, content } = mountTileWithBusCapture(clock);
+
+    handlers["dock-opened"]?.({ type: "dock-opened" });
+    published.length = 0;
+
+    shell.startPump();
+    pump.advancePumpMs(PUMP_INTERVAL_MS);
+
+    const pumpMessages = published.filter((message) => message.type === "pump");
+    expect(pumpMessages).toHaveLength(1);
+    const pumpMessage = pumpMessages[0]!;
+    expect(pumpMessage.type).toBe("pump");
+    expect(pumpMessage.legality).toEqual(
+      serializeEngineLegality(engine, pumpMessage.snapshot, content),
+    );
+    shell.stop();
+  });
+
+  it("stops publishing pump messages on the next tick after dock-closed", () => {
+    const clock = { ms: 0 };
+    const { shell, pump, published, handlers } = mountTileWithBusCapture(clock);
+
+    handlers["dock-opened"]?.({ type: "dock-opened" });
+    shell.startPump();
+    pump.advancePumpMs(PUMP_INTERVAL_MS);
+    expect(published.filter((message) => message.type === "pump")).toHaveLength(1);
+
+    handlers["dock-closed"]?.({ type: "dock-closed" });
+    published.length = 0;
+    pump.advancePumpMs(PUMP_INTERVAL_MS);
+
+    expect(published.filter((message) => message.type === "pump")).toHaveLength(0);
+    shell.stop();
+  });
+
+  it("publishes snapshot immediately on dock-opened without waiting for the next tick", () => {
+    const clock = { ms: 0 };
+    const { shell, published, handlers } = mountTileWithBusCapture(clock);
+
+    handlers["dock-opened"]?.({ type: "dock-opened" });
+
+    expect(published.some((message) => message.type === "snapshot")).toBe(true);
+    shell.stop();
+  });
+
+  it("publishes snapshot on command even when no dock is subscribed", () => {
+    const clock = { ms: 0 };
+    const { shell, published, handlers } = mountTileWithBusCapture(clock);
+
+    handlers.command?.({
+      type: "command",
+      command: { cmd: "setParty", args: [["priest", "wizard", "knight"], "hunter"] },
+    });
+
+    expect(published.some((message) => message.type === "snapshot")).toBe(true);
+    shell.stop();
+  });
+
+  it("manual-check: adr-0002-tile-independence — applies events and updates tick snapshot whether or not a dock is subscribed", async () => {
+    const clock = { ms: 0 };
+    const pump = createControlledPumpSchedule(clock);
+    const content = buildContent();
+    const engine = createEngine(content, undefined, 42);
+    const applyCalls: { events: EngineEvent[]; snapshot: unknown }[] = [];
+
+    vi.spyOn(engine, "advanceBy").mockReturnValue([
+      { seq: 1, atMs: 250, type: "config-applied" },
+    ] satisfies EngineEvent[]);
+
+    const { mountBattleTile: realMount } =
+      await vi.importActual<typeof battleTile>("./ui/battle-tile");
+    vi.spyOn(battleTile, "mountBattleTile").mockImplementation((root, battleContent, options) => {
+      const tile = realMount(root, battleContent, options);
+      const originalApply = tile.applyEvents.bind(tile);
+      tile.applyEvents = (events, snapshot) => {
+        applyCalls.push({ events, snapshot });
+        return originalApply(events, snapshot);
+      };
+      return tile;
+    });
+
+    let handlers: Parameters<typeof createBusEndpoint>[0] = {};
+    const root = document.createElement("main");
+    const shell = mountTileShell(root, {
+      engine,
+      content,
+      dockWindow: createMockDockWindow(),
+      deferPump: true,
+      now: () => clock.ms,
+      pumpSchedule: pump.schedule,
+      busFactory: (busHandlers) => {
+        handlers = busHandlers;
+        return { publish: () => {}, close: () => {} };
+      },
+    });
+
+    shell.startPump();
+    pump.advancePumpMs(PUMP_INTERVAL_MS);
+    const unsubscribedApply = applyCalls.length;
+    const unsubscribedTickAt = shell.tickSnapshotAtMs();
+    expect(unsubscribedApply).toBe(1);
+
+    applyCalls.length = 0;
+    handlers["dock-opened"]?.({ type: "dock-opened" });
+    pump.advancePumpMs(PUMP_INTERVAL_MS);
+    const subscribedApply = applyCalls.length;
+    const subscribedTickAt = shell.tickSnapshotAtMs();
+    expect(subscribedApply).toBe(1);
+    expect(subscribedTickAt).toBeGreaterThan(unsubscribedTickAt);
+
+    shell.stop();
+    vi.mocked(battleTile.mountBattleTile).mockRestore();
   });
 });
 
