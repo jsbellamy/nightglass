@@ -56,11 +56,34 @@ Production ingest of twelve Equipment Base icons (six Tier I sources + six
 - `MIN_GRID_SCORE = 0.04` — **held** at n=6 (all ≫ floor)
 - `OFF_RAMP_REJECT` **retuned 0.15 → 0.20** — measured peak 16.4% full-palette / 18.5% subset on blade; fixture fail fraction raised 0.20 → 0.25 so the gate still flips visibly
 
+## Rejected candidates
+
+Retry order followed `docs/agents/asset-generation.md` (underfill → regen; off-ramp → palette subset / regen; identity miss → prompt tweak). Family-level round notes are in the table above under **Original sample + style cohort + identity choices**.
+
+| Candidate | Primary failure | Recovered / signal |
+| --- | --- | --- |
+| r1/thornquill-blade | underfill | not recorded |
+| r1/dewlight-focus | off-ramp / wrong sample | not recorded |
+| r1/leafmail-vest | off-ramp / overshoot | not recorded |
+| r1/moonpetal-relic | underfill / off-ramp | not recorded |
+| r1/berrybright-charm | sparkle / off-ramp | not recorded |
+| r2/thornquill-blade | off-ramp / overshoot | not recorded |
+| r2/dewlight-focus | off-ramp | not recorded |
+| r2/leafmail-vest | off-ramp / overshoot | not recorded |
+| r2/moonpetal-relic | overshoot | not recorded |
+| r3/thornquill-blade | off-ramp / overshoot | not recorded |
+| r3/leafmail-vest | off-ramp / overshoot | not recorded |
+| r3/berrybright-charm-r2 | soft silhouette | not recorded |
+| r5/thornquill-blade | off-ramp / overshoot | not recorded |
+| bow-retry/bramblesong-bow-from-125 | #125 string lost at Stage-2 | 11×30; x=0.191 / y=0.171; far 14.6% |
+| bow-retry/bramblesong-bow-r7 | string did not survive grid recovery | not recorded |
+
+Rejected provider raws were pruned from this tree; the table above is the durable record. Recover archived PNGs from git history at the commit titled **Prune rejected-candidate PNGs; preserve measurements as tables (#183)**.
+
 ## Artifacts
 
 - Accepted raws + sidecars: [`accepted-raws/`](./accepted-raws/)
 - Ingest report: [`ingest-report.json`](./ingest-report.json)
-- Rejected rounds: [`rejected/`](./rejected/)
 - Runtime + contact sheet: `src/assets/icons/` (built by `npm run assets:build`)
 
 Provider raws are evidence only — **nothing added to `assets-raw/`**.

@@ -51,8 +51,7 @@ verbatim paste of the `docs/acquisition-contract.md` fixed shell.
 | hunter-m | pitch-fail | x=0.064, y=0.026 |
 | hunter-n (accepted) | — | 32×40 |
 
-Rejected raws and minimal sidecars live under
-`docs/research/evidence/56-hunter-canonical/rejected/`.
+Rejected provider raws were pruned from this tree; the table above is the durable record. Recover archived PNGs from git history at the commit titled **Prune rejected-candidate PNGs; preserve measurements as tables (#183)**.
 
 ## Validator output and byte identity
 

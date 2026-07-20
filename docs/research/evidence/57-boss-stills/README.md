@@ -50,7 +50,7 @@ Retry order followed `docs/agents/asset-generation.md` (clip-fail → clearance;
 | boss-3-e | clip-fail | single bottom-left near-magenta corner pixel |
 | boss-3-f | (gates pass; not chosen) | 20×40 — more underfilled than c |
 
-Rejected raws live under `docs/research/evidence/57-boss-stills/rejected/`.
+Rejected provider raws were pruned from this tree; the table above is the durable record. Recover archived PNGs from git history at the commit titled **Prune rejected-candidate PNGs; preserve measurements as tables (#183)**.
 
 ## Validator output and byte identity
 
