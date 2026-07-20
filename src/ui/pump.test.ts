@@ -273,6 +273,37 @@ describe("frame metrics wiring", () => {
 
     pump.stop();
   });
+
+  it("records one tick sample when the live interval pumps with a recorder", () => {
+    const doc = document;
+    Object.defineProperty(doc, "hidden", { configurable: true, value: false });
+    const frameMetrics = createFrameMetrics();
+    const advanceBy = vi.fn(() => {
+      return [{ seq: 1, atMs: 250, type: "config-applied" }] satisfies EngineEvent[];
+    });
+
+    const pump = startPump({
+      advanceBy,
+      onAdvance: vi.fn(),
+      render: vi.fn(),
+      frameMetrics,
+      setInterval: ((handler: TimerHandler) =>
+        setInterval(handler, PUMP_INTERVAL_MS)) as typeof setInterval,
+      clearInterval: ((id: ReturnType<typeof setInterval>) =>
+        clearInterval(id)) as typeof clearInterval,
+      requestAnimationFrame: vi.fn(),
+      cancelAnimationFrame: vi.fn(),
+      document: doc,
+    });
+
+    vi.advanceTimersByTime(PUMP_INTERVAL_MS);
+
+    const report = pump.frameMetrics();
+    expect(report?.tickSampleCount).toBe(1);
+    expect(report?.tickPhases.advance.maxMs).toBeGreaterThanOrEqual(0);
+
+    pump.stop();
+  });
 });
 
 function createPumpTestHarness(options?: {
