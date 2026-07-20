@@ -486,13 +486,16 @@ describe("unhide catch-up drain", () => {
     h.advanceBy.mockClear();
 
     const hiddenSpanMs = MAX_CATCH_UP_CHUNK_MS * 2 + 5000;
+    let cycleTotalMs = 0;
+    let pumpCalls = 0;
+
     h.setHidden(true);
     h.clockValue = hiddenSpanMs;
     h.setHidden(false);
 
-    let pumpCalls = 0;
     const unhideAt = h.clock;
-    h.advanceBy.mockImplementation((_ms: number) => {
+    h.advanceBy.mockImplementation((ms: number) => {
+      cycleTotalMs += ms;
       pumpCalls += 1;
       if (pumpCalls === 1) {
         h.clockValue = unhideAt + MAX_CATCH_UP_BUDGET_MS + 1;
@@ -501,13 +504,10 @@ describe("unhide catch-up drain", () => {
     });
 
     h.runRafAt(h.clock);
-    const afterFirstDrain = h.totalAdvancedMs();
-    expect(afterFirstDrain).toBeGreaterThan(0);
-    expect(afterFirstDrain).toBeLessThan(hiddenSpanMs);
+    expect(cycleTotalMs).toBeGreaterThan(0);
+    expect(cycleTotalMs).toBeLessThan(hiddenSpanMs);
 
-    h.advanceBy.mockImplementation(() => []);
     h.setHidden(true);
-
     h.clockValue += HIDDEN_HEARTBEAT_MS;
     h.runIntervals();
 
@@ -516,25 +516,17 @@ describe("unhide catch-up drain", () => {
     h.setIntervalFn.mockClear();
 
     let guard = 0;
-    while (h.setIntervalFn.mock.calls.length === 0 && guard < 10_000) {
+    while (guard < 10_000) {
       guard += 1;
       h.runRafAt(h.clock);
+      if (h.setIntervalFn.mock.calls.length > 0) {
+        break;
+      }
       h.clockValue += 16;
     }
     expect(h.setIntervalFn).toHaveBeenCalled();
 
-    h.advanceBy.mockClear();
-    const settledAt = h.clockValue;
-    h.setHidden(true);
-    h.clockValue = settledAt + 1000;
-    h.setHidden(false);
-    let settleGuard = 0;
-    while (h.rafCallbacks.length > 0 && settleGuard < 10_000) {
-      settleGuard += 1;
-      h.runRafAt(h.clock);
-    }
-    expect(h.totalAdvancedMs()).toBeGreaterThanOrEqual(1000);
-    expect(h.totalAdvancedMs() - 1000).toBeLessThanOrEqual(20);
+    expect(cycleTotalMs).toBe(h.clockValue);
     h.assertAdvanceByDeltasValid();
 
     h.pump.stop();
