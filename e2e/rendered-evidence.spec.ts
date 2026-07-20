@@ -13,6 +13,7 @@ import {
   TILE_WIDTH,
 } from "../src/ui/battle-tile-layout";
 import { postBusCommand, postBusSnapshot } from "./helpers/bus";
+import { advanceUntil, advanceUntilVisible } from "./helpers/advance";
 import { contrastRatio, parseRGB } from "./helpers/contrast";
 
 const SCREENSHOTS = "e2e-screenshots";
@@ -136,6 +137,41 @@ async function readBusSpyTypes(page: Page): Promise<string[]> {
   });
 }
 
+type EffectImageLoadingState = {
+  frameSeen: boolean;
+  iconSeen: boolean;
+  brokenFrames: { complete: boolean }[];
+  brokenIcons: { complete: boolean }[];
+};
+
+async function readEffectImageLoadingState(tile: Page): Promise<EffectImageLoadingState> {
+  return tile.evaluate(() => {
+    const samples = (selector: string) =>
+      [...document.querySelectorAll<HTMLImageElement>(selector)].map((el) => ({
+        complete: el.complete && el.naturalWidth > 0 && el.naturalHeight > 0,
+      }));
+    const frames = samples("img.effect-frame");
+    const icons = samples("img.status-icon");
+    const brokenFrames = frames.filter((entry) => !entry.complete);
+    const brokenIcons = icons.filter((entry) => !entry.complete);
+    return {
+      frameSeen: frames.some((entry) => entry.complete),
+      iconSeen: icons.some((entry) => entry.complete),
+      brokenFrames,
+      brokenIcons,
+    };
+  });
+}
+
+function effectImagesReady(state: EffectImageLoadingState): boolean {
+  return (
+    state.frameSeen &&
+    state.iconSeen &&
+    state.brokenFrames.length === 0 &&
+    state.brokenIcons.length === 0
+  );
+}
+
 test.describe("rendered-output evidence seam", () => {
   test("evidence: tile-geometry / evidence: native-1x-scaling / evidence: aa-contrast / evidence: effect-image-loading — Battle Tile geometry, sprites, contrast, effect frames, status glyphs, and combat feedback at native 1×", async ({
     browser,
@@ -233,32 +269,19 @@ test.describe("rendered-output evidence seam", () => {
       expect(ratio, `AA contrast ${sample.sel}`).toBeGreaterThanOrEqual(floor);
     }
 
-    await expect
-      .poll(
-        async () =>
-          tile.evaluate(() => {
-            const samples = (selector: string) =>
-              [...document.querySelectorAll<HTMLImageElement>(selector)].map((el) => ({
-                complete: el.complete && el.naturalWidth > 0 && el.naturalHeight > 0,
-              }));
-            const frames = samples("img.effect-frame");
-            const icons = samples("img.status-icon");
-            const brokenFrames = frames.filter((entry) => !entry.complete);
-            const brokenIcons = icons.filter((entry) => !entry.complete);
-            return {
-              frameSeen: frames.some((entry) => entry.complete),
-              iconSeen: icons.some((entry) => entry.complete),
-              brokenFrames,
-              brokenIcons,
-            };
-          }),
-        { timeout: 90_000, intervals: [500] },
-      )
-      .toMatchObject({ frameSeen: true, iconSeen: true, brokenFrames: [], brokenIcons: [] });
+    await advanceUntil(tile, async () => effectImagesReady(await readEffectImageLoadingState(tile)));
+    const effectState = await readEffectImageLoadingState(tile);
+    expect(effectState).toMatchObject({
+      frameSeen: true,
+      iconSeen: true,
+      brokenFrames: [],
+      brokenIcons: [],
+    });
 
-    // Seeded run knocks someone out by ~2.5s sim; wait for the DOM class, then
+    // Seeded run knocks someone out after sim advances; wait for the DOM class, then
     // assert on the nodes CSS actually targets (.combatant-sprite / .combatant-stack).
-    await expect(tile.locator(".combatant.knocked-out")).toBeVisible({ timeout: 15_000 });
+    await advanceUntilVisible(tile, tile.locator(".combatant.knocked-out"));
+    await expect(tile.locator(".combatant.knocked-out")).toBeVisible();
     mkdirSync("docs/research/evidence/knockout-readability", { recursive: true });
     await tile.screenshot({ path: `${SCREENSHOTS}/02-tile-combat.png` });
     await tile.screenshot({ path: KNOCKOUT_ARTIFACT });
@@ -286,23 +309,25 @@ test.describe("rendered-output evidence seam", () => {
   test("evidence: tile-geometry — five Opponents fit the Battle Tile at 1× on a Stage 2 Wave without overlap", async ({
     browser,
   }) => {
-    test.setTimeout(240_000);
+    test.setTimeout(60_000);
     const { context, tile } = await openTile(browser);
 
-    // Five-opponent waves exist only in stages 2–3. Wait until Stage 2 unlocks,
+    // Five-opponent waves exist only in stages 2–3. Advance until Stage 2 unlocks,
     // then force it over the bus as a third peer (no production test hook).
-    await expect(tile.locator(".stage-wave-text")).toContainText("Moonlit", {
-      timeout: 90_000,
+    await advanceUntil(tile, async () => {
+      const text = await tile.locator(".stage-wave-text").textContent();
+      return text?.includes("Moonlit") ?? false;
     });
+    await expect(tile.locator(".stage-wave-text")).toContainText("Moonlit");
     await postBusCommand(tile, { cmd: "selectStage", args: [2] });
     await expect(tile.locator(".stage-wave-text")).toContainText("Moonlit");
 
-    await expect
-      .poll(async () => tile.locator(".opponent-zone .combatant").count(), {
-        timeout: 120_000,
-        intervals: [2_000],
-      })
-      .toBe(5);
+    await advanceUntil(
+      tile,
+      async () => (await tile.locator(".opponent-zone .combatant").count()) === 5,
+      { stepMs: 2_000 },
+    );
+    await expect(tile.locator(".opponent-zone .combatant")).toHaveCount(5);
 
     await expect(tile.locator(".battlefield")).toHaveClass(/opponent-stress-layout/);
 
@@ -349,55 +374,51 @@ test.describe("rendered-output evidence seam", () => {
     };
 
     let dropClearance: DropClearance | null = null;
-    await expect
-      .poll(
-        async () => {
-          dropClearance = await tile.evaluate(() => {
-            const r = (el: Element | null): Rect => {
-              if (!el) return { x: 0, y: 0, w: 0, h: 0 };
-              const b = el.getBoundingClientRect();
-              return { x: b.x, y: b.y, w: b.width, h: b.height, cls: el.className };
-            };
-            const notificationEl = document.querySelector<HTMLElement>(
-              ".status-notification-layer .drop-toast",
-            );
-            if (
-              !notificationEl ||
-              notificationEl.hidden ||
-              !notificationEl.querySelector(".equipment-icon-img--content")
-            ) {
-              return null;
-            }
-            const notification = r(notificationEl);
-            if (notification.h < 34) {
-              return null;
-            }
-            const statusLine = r(document.querySelector(".status-line"));
-            const stageWave = r(document.querySelector(".stage-wave-text"));
-            const buttons = [...document.querySelectorAll(".status-button")].map((el) => r(el));
-            const combatants = [...document.querySelectorAll(".combatant")].map((el) => r(el));
-            const statusLineEl = document.querySelector(".status-line");
-            return {
-              notification,
-              statusLine,
-              stageWave,
-              buttons,
-              combatants,
-              notificationInStatusDom:
-                !!statusLineEl &&
-                (statusLineEl.contains(notificationEl) ||
-                  statusLineEl.parentElement?.contains(notificationEl) === true),
-            };
-          });
-          return dropClearance?.notification.h ?? 0;
-        },
-        { timeout: 180_000, intervals: [500] },
-      )
-      .toBeGreaterThanOrEqual(34);
+    await advanceUntil(tile, async () => {
+      dropClearance = await tile.evaluate(() => {
+        const r = (el: Element | null): Rect => {
+          if (!el) return { x: 0, y: 0, w: 0, h: 0 };
+          const b = el.getBoundingClientRect();
+          return { x: b.x, y: b.y, w: b.width, h: b.height, cls: el.className };
+        };
+        const notificationEl = document.querySelector<HTMLElement>(
+          ".status-notification-layer .drop-toast",
+        );
+        if (
+          !notificationEl ||
+          notificationEl.hidden ||
+          !notificationEl.querySelector(".equipment-icon-img--content")
+        ) {
+          return null;
+        }
+        const notification = r(notificationEl);
+        if (notification.h < 34) {
+          return null;
+        }
+        const statusLine = r(document.querySelector(".status-line"));
+        const stageWave = r(document.querySelector(".stage-wave-text"));
+        const buttons = [...document.querySelectorAll(".status-button")].map((el) => r(el));
+        const combatants = [...document.querySelectorAll(".combatant")].map((el) => r(el));
+        const statusLineEl = document.querySelector(".status-line");
+        return {
+          notification,
+          statusLine,
+          stageWave,
+          buttons,
+          combatants,
+          notificationInStatusDom:
+            !!statusLineEl &&
+            (statusLineEl.contains(notificationEl) ||
+              statusLineEl.parentElement?.contains(notificationEl) === true),
+        };
+      });
+      return (dropClearance?.notification.h ?? 0) >= 34;
+    });
 
     if (!dropClearance) {
       throw new Error("drop clearance poll passed but left dropClearance unset");
     }
+    expect(dropClearance.notification.h).toBeGreaterThanOrEqual(34);
     expect(dropClearance.notificationInStatusDom, "drop notification mounted in status chrome").toBe(
       true,
     );
