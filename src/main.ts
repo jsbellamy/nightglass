@@ -13,6 +13,9 @@ import {
   type SerializedEngineLegality,
 } from "./ui/engine-legality";
 import { PUMP_INTERVAL_MS, startPump, type PumpController, type PumpDeps } from "./ui/pump";
+
+const TEST_HOOKS_ENABLED =
+  import.meta.env.DEV || import.meta.env.MODE === "evidence";
 import { createFrameMetrics } from "./ui/frame-metrics";
 import type { TileShell } from "./ui/tile-shell-types";
 import { ARMORY_BADGE_EVENT } from "./ui/bus";
@@ -299,14 +302,33 @@ export function mountTileShell(root: HTMLElement, options: TileShellOptions = {}
     pump = startPump(pumpOptions);
   }
 
+  /**
+   * Advances the simulation by `totalMs` immediately, without waiting for wall
+   * clock. Chunked at PUMP_INTERVAL_MS so event batching matches live play.
+   * Test-only: absent from production builds.
+   */
+  function advanceForTest(totalMs: number): void {
+    let remaining = Math.max(0, Math.floor(totalMs));
+    while (remaining > 0) {
+      const step = Math.min(remaining, PUMP_INTERVAL_MS);
+      const events = engine.advanceBy(step);
+      if (events.length > 0) {
+        pumpDeps.onAdvance(events);
+      }
+      remaining -= step;
+    }
+    pumpDeps.render();
+  }
+
   if (!options.deferPump) {
     startLivePump();
   }
 
-  if (import.meta.env.DEV) {
-    const devWindow = window as unknown as Record<string, unknown>;
-    devWindow["__nightglassFrameMetrics"] = () => pump?.frameMetrics() ?? null;
-    devWindow["__nightglassFrameMetricsReset"] = () => {
+  if (TEST_HOOKS_ENABLED) {
+    const testWindow = window as unknown as Record<string, unknown>;
+    testWindow["__nightglassAdvance"] = (ms: number) => advanceForTest(ms);
+    testWindow["__nightglassFrameMetrics"] = () => pump?.frameMetrics() ?? null;
+    testWindow["__nightglassFrameMetricsReset"] = () => {
       frameMetrics.reset();
     };
   }
