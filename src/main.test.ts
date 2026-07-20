@@ -12,6 +12,8 @@ import * as battleTile from "./ui/battle-tile";
 import * as dockModule from "./ui/dock";
 import { serializeEngineLegality } from "./ui/engine-legality";
 import { PUMP_INTERVAL_MS } from "./ui/pump";
+import type { Page } from "@playwright/test";
+import { advanceSim } from "../e2e/helpers/advance";
 
 describe("Battle Tile shell", () => {
   it("mounts the live Battle Tile with status line and battlefield on the root element", () => {
@@ -737,6 +739,211 @@ describe("presentation clock", () => {
       expect(Number.isInteger(nowMs)).toBe(true);
     }
     shell.stop();
+  });
+});
+
+describe("__nightglassAdvance test hook", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    Object.defineProperty(document, "hidden", { configurable: true, value: false });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+    if (vi.isMockFunction(battleTile.mountBattleTile)) {
+      vi.mocked(battleTile.mountBattleTile).mockRestore();
+    }
+  });
+
+  function createControlledPumpSchedule(clock: { ms: number }) {
+    const rafCallbacks: FrameRequestCallback[] = [];
+    const doc = {
+      hidden: false,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    } as unknown as Document;
+
+    return {
+      advancePumpMs(ms: number): void {
+        clock.ms += ms;
+        vi.advanceTimersByTime(ms);
+      },
+      schedule: {
+        now: () => clock.ms,
+        setInterval: ((handler: TimerHandler) =>
+          setInterval(handler, PUMP_INTERVAL_MS)) as typeof setInterval,
+        clearInterval: ((id: ReturnType<typeof setInterval>) =>
+          clearInterval(id)) as typeof clearInterval,
+        requestAnimationFrame: (callback: FrameRequestCallback) => {
+          rafCallbacks.push(callback);
+          return rafCallbacks.length;
+        },
+        cancelAnimationFrame: vi.fn(),
+        document: doc,
+      } satisfies NonNullable<Parameters<typeof mountTileShell>[1]>["pumpSchedule"],
+    };
+  }
+
+  it("advances snapshot.simNowMs by the requested duration", () => {
+    const content = buildContent();
+    const engine = createEngine(content, undefined, 42);
+    const before = engine.snapshot().simNowMs;
+    const root = document.createElement("main");
+    const shell = mountTileShell(root, {
+      engine,
+      content,
+      dockWindow: createMockDockWindow(),
+      deferPump: true,
+    });
+    const advance = (window as unknown as Record<string, unknown>)["__nightglassAdvance"] as
+      | ((ms: number) => void)
+      | undefined;
+    expect(typeof advance).toBe("function");
+
+    advance!(60_000);
+
+    expect(engine.snapshot().simNowMs).toBe(before + 60_000);
+    shell.stop();
+  });
+
+  it("chunks a 60 s jump into 240 advanceBy calls of 250 ms each", () => {
+    const content = buildContent();
+    const engine = createEngine(content, undefined, 42);
+    const advanceBySpy = vi.spyOn(engine, "advanceBy");
+    const root = document.createElement("main");
+    const shell = mountTileShell(root, {
+      engine,
+      content,
+      dockWindow: createMockDockWindow(),
+      deferPump: true,
+    });
+    const advance = (window as unknown as Record<string, unknown>)["__nightglassAdvance"] as (
+      ms: number,
+    ) => void;
+
+    advance(60_000);
+
+    expect(advanceBySpy).toHaveBeenCalledTimes(240);
+    for (const [ms] of advanceBySpy.mock.calls) {
+      expect(ms).toBe(PUMP_INTERVAL_MS);
+    }
+    shell.stop();
+  });
+
+  it("routes tick events through onAdvance so pump bus messages match live play", async () => {
+    const content = buildContent();
+    const engine = createEngine(content, undefined, 42);
+    const published: BusMessage[] = [];
+
+    vi.spyOn(engine, "advanceBy").mockReturnValue([
+      { seq: 1, atMs: 250, type: "config-applied" },
+    ] satisfies EngineEvent[]);
+
+    const root = document.createElement("main");
+    const shell = mountTileShell(root, {
+      engine,
+      content,
+      dockWindow: createMockDockWindow(),
+      deferPump: true,
+      busFactory: (handlers) => ({
+        publish: (message) => {
+          published.push(message);
+          if (message.type === "pump") {
+            handlers.pump?.(message);
+          }
+        },
+        close: () => {},
+      }),
+    });
+
+    const advance = (window as unknown as Record<string, unknown>)["__nightglassAdvance"] as (
+      ms: number,
+    ) => void;
+    advance(PUMP_INTERVAL_MS);
+
+    const pumpMessage = published.find((message) => message.type === "pump");
+    expect(pumpMessage?.type).toBe("pump");
+    expect(pumpMessage?.events).toHaveLength(1);
+    shell.stop();
+  });
+
+  it("renders synchronously once after the jump without waiting for animation frame", async () => {
+    const content = buildContent();
+    const engine = createEngine(content, undefined, 42);
+    const { mountBattleTile: realMount } =
+      await vi.importActual<typeof battleTile>("./ui/battle-tile");
+    const renderSpy = vi.fn();
+    vi.spyOn(battleTile, "mountBattleTile").mockImplementation((root, battleContent, options) => {
+      const tile = realMount(root, battleContent, options);
+      const originalRender = tile.render.bind(tile);
+      tile.render = (...args) => {
+        renderSpy();
+        return originalRender(...args);
+      };
+      return tile;
+    });
+
+    const root = document.createElement("main");
+    const shell = mountTileShell(root, {
+      engine,
+      content,
+      dockWindow: createMockDockWindow(),
+      deferPump: true,
+    });
+
+    renderSpy.mockClear();
+    const advance = (window as unknown as Record<string, unknown>)["__nightglassAdvance"] as (
+      ms: number,
+    ) => void;
+    advance(PUMP_INTERVAL_MS);
+
+    expect(renderSpy).toHaveBeenCalledTimes(1);
+    expect(root.querySelectorAll(".combatant").length).toBeGreaterThan(0);
+    shell.stop();
+  });
+
+  it("keeps the live pump advancing sim time after a sim jump", () => {
+    const content = buildContent();
+    const engine = createEngine(content, undefined, 42);
+    const clock = { ms: 0 };
+    const pump = createControlledPumpSchedule(clock);
+
+    const root = document.createElement("main");
+    const shell = mountTileShell(root, {
+      engine,
+      content,
+      dockWindow: createMockDockWindow(),
+      deferPump: true,
+      now: () => clock.ms,
+      pumpSchedule: pump.schedule,
+    });
+
+    shell.startPump();
+    const advance = (window as unknown as Record<string, unknown>)["__nightglassAdvance"] as (
+      ms: number,
+    ) => void;
+    advance(60_000);
+    const simAfterJump = engine.snapshot().simNowMs;
+
+    pump.advancePumpMs(PUMP_INTERVAL_MS);
+
+    expect(engine.snapshot().simNowMs).toBe(simAfterJump + PUMP_INTERVAL_MS);
+    shell.stop();
+  });
+});
+
+describe("advanceSim helper", () => {
+  it("throws a clear diagnostic when __nightglassAdvance is absent", async () => {
+    const page = {
+      evaluate: async (fn: (ms: number) => void, ms: number) => {
+        fn(ms);
+      },
+    } as unknown as Page;
+
+    await expect(advanceSim(page, 1_000)).rejects.toThrow(
+      /__nightglassAdvance is missing.*evidence build/i,
+    );
   });
 });
 
