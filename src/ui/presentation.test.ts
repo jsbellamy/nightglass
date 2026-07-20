@@ -595,7 +595,7 @@ describe("batched anchor geometry reads", () => {
     presentation.destroy();
   });
 
-  it("performs zero geometry reads when there are no effects or damage numbers", () => {
+  it("does not consult combatant layout when no effects or floating damage are active", () => {
     const { presentation, addCombatant } = mountPresentationHarness();
     addCombatant("opp:1:0", "50px");
     const snapshot = createEngine(buildContent(), undefined, LOOT_SEED).snapshot();
@@ -613,7 +613,7 @@ describe("batched anchor geometry reads", () => {
     presentation.destroy();
   });
 
-  it("reads anchor geometry before the first effect-lane replaceChildren of the frame", () => {
+  it("captures combatant layout before rebuilding the effect lane each frame", () => {
     const { effectLane, presentation, addCombatant } = mountPresentationHarness();
     addCombatant("opp:1:0", "140px");
     const snapshot = createEngine(buildContent(), undefined, LOOT_SEED).snapshot();
