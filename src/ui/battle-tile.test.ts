@@ -1,11 +1,12 @@
 // @vitest-environment happy-dom
 
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { createEngine } from "../core/engine";
 import { opponentEntityId } from "../core/entity-id";
 import type { Snapshot } from "../core/snapshot";
 import { fixtureContent } from "../core/testing/fixture-content";
 import { buildContent } from "../data";
+import * as presentationModule from "./presentation";
 import {
   BATTLEFIELD_HEIGHT,
   STATUS_LINE_HEIGHT,
@@ -229,5 +230,53 @@ describe("Battle Tile renderer", () => {
     tile.render(stage2);
     expect(battlefield?.dataset["backdropKey"]).toBe("backdrop-3");
     expect(backdrop?.style.backgroundImage).toMatch(/backdrop-3/);
+  });
+
+  it("forwards an explicit nowMs to presentation.render", async () => {
+    const renderNowMs: number[] = [];
+    const { createPresentation: realCreate } =
+      await vi.importActual<typeof presentationModule>("./presentation");
+    const createSpy = vi.spyOn(presentationModule, "createPresentation").mockImplementation((opts) => {
+      const pres = realCreate(opts);
+      const originalRender = pres.render.bind(pres);
+      pres.render = (nowMs, snapshot) => {
+        renderNowMs.push(nowMs);
+        return originalRender(nowMs, snapshot);
+      };
+      return pres;
+    });
+
+    const root = document.createElement("main");
+    const tile = mountBattleTile(root, fixtureContent);
+    const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
+    const snapshot = engine.snapshot();
+    tile.render(snapshot, 4_321);
+
+    expect(renderNowMs[renderNowMs.length - 1]).toBe(4_321);
+    createSpy.mockRestore();
+  });
+
+  it("defaults nowMs to snapshot.simNowMs when render omits it", async () => {
+    const renderNowMs: number[] = [];
+    const { createPresentation: realCreate } =
+      await vi.importActual<typeof presentationModule>("./presentation");
+    const createSpy = vi.spyOn(presentationModule, "createPresentation").mockImplementation((opts) => {
+      const pres = realCreate(opts);
+      const originalRender = pres.render.bind(pres);
+      pres.render = (nowMs, snapshot) => {
+        renderNowMs.push(nowMs);
+        return originalRender(nowMs, snapshot);
+      };
+      return pres;
+    });
+
+    const root = document.createElement("main");
+    const tile = mountBattleTile(root, fixtureContent);
+    const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
+    const snapshot = engine.snapshot();
+    tile.render(snapshot);
+
+    expect(renderNowMs[renderNowMs.length - 1]).toBe(snapshot.simNowMs);
+    createSpy.mockRestore();
   });
 });

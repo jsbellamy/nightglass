@@ -11,7 +11,7 @@ import {
   legalityViewFromSerialized,
   serializeEngineLegality,
 } from "./ui/engine-legality";
-import { startPump, type PumpController, type PumpDeps } from "./ui/pump";
+import { PUMP_INTERVAL_MS, startPump, type PumpController, type PumpDeps } from "./ui/pump";
 import { createFrameMetrics } from "./ui/frame-metrics";
 import type { TileShell } from "./ui/tile-shell-types";
 import { ARMORY_BADGE_EVENT } from "./ui/bus";
@@ -168,6 +168,18 @@ export function mountTileShell(root: HTMLElement, options: TileShellOptions = {}
     lastSnapshotAtMs = 0;
   }
 
+  const REALTIME_CLAMP_MS = PUMP_INTERVAL_MS;
+
+  function presentationNowMs(): number {
+    if (!lastSnapshot) {
+      return Math.floor(clockNow());
+    }
+    const elapsed = Math.max(0, clockNow() - lastSnapshotAtMs);
+    return Math.floor(
+      lastSnapshot.simNowMs + Math.min(elapsed, REALTIME_CLAMP_MS),
+    );
+  }
+
   const pumpDeps = {
     advanceBy: (ms: number) => engine.advanceBy(ms),
     onAdvance: (events: EngineEvent[]) => {
@@ -186,7 +198,7 @@ export function mountTileShell(root: HTMLElement, options: TileShellOptions = {}
         lastSnapshot = engine.snapshot();
         lastSnapshotAtMs = clockNow();
       }
-      tile.render(lastSnapshot);
+      tile.render(lastSnapshot, presentationNowMs());
     },
     frameMetrics,
   };

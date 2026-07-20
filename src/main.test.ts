@@ -354,6 +354,152 @@ describe("tick snapshot cache", () => {
   });
 });
 
+describe("presentation clock", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    Object.defineProperty(document, "hidden", { configurable: true, value: false });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+    vi.mocked(battleTile.mountBattleTile).mockRestore();
+  });
+
+  function createControlledPumpSchedule(clock: { ms: number }) {
+    const rafCallbacks: FrameRequestCallback[] = [];
+    const doc = {
+      hidden: false,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    } as unknown as Document;
+
+    return {
+      rafCallbacks,
+      schedule: {
+        now: () => clock.ms,
+        setInterval: ((handler: TimerHandler) =>
+          setInterval(handler, PUMP_INTERVAL_MS)) as typeof setInterval,
+        clearInterval: ((id: ReturnType<typeof setInterval>) =>
+          clearInterval(id)) as typeof clearInterval,
+        requestAnimationFrame: (callback: FrameRequestCallback) => {
+          rafCallbacks.push(callback);
+          return rafCallbacks.length;
+        },
+        cancelAnimationFrame: vi.fn(),
+        document: doc,
+      } satisfies NonNullable<Parameters<typeof mountTileShell>[1]>["pumpSchedule"],
+      runRafAt(at: number): void {
+        clock.ms = at;
+        const callbacks = rafCallbacks.splice(0);
+        for (const callback of callbacks) {
+          callback(at);
+        }
+      },
+    };
+  }
+
+  async function mountWithRenderNowMsCapture(clock: { ms: number }) {
+    const presentationNowMs: number[] = [];
+    const pump = createControlledPumpSchedule(clock);
+    const { mountBattleTile: realMount } =
+      await vi.importActual<typeof battleTile>("./ui/battle-tile");
+    vi.spyOn(battleTile, "mountBattleTile").mockImplementation((root, battleContent, options) => {
+      const tile = realMount(root, battleContent, options);
+      const originalRender = tile.render.bind(tile);
+      tile.render = (snapshot, nowMs) => {
+        presentationNowMs.push(nowMs ?? snapshot.simNowMs);
+        return originalRender(snapshot, nowMs);
+      };
+      return tile;
+    });
+
+    const content = buildContent();
+    const engine = createEngine(content, undefined, 42);
+    const root = document.createElement("main");
+    const shell = mountTileShell(root, {
+      engine,
+      content,
+      dockWindow: createMockDockWindow(),
+      deferPump: true,
+      now: () => clock.ms,
+      pumpSchedule: pump.schedule,
+    });
+
+    return { shell, engine, pump, presentationNowMs };
+  }
+
+  it("passes nowMs values 100 ms apart between sim ticks", async () => {
+    const clock = { ms: 0 };
+    const { shell, pump, presentationNowMs } = await mountWithRenderNowMsCapture(clock);
+
+    shell.startPump();
+    vi.advanceTimersByTime(PUMP_INTERVAL_MS);
+    presentationNowMs.length = 0;
+
+    pump.runRafAt(100);
+    pump.runRafAt(200);
+
+    expect(presentationNowMs).toHaveLength(2);
+    expect(presentationNowMs[1]! - presentationNowMs[0]!).toBe(100);
+    expect(presentationNowMs[0]).not.toBe(presentationNowMs[1]);
+    shell.stop();
+  });
+
+  it("clamps interpolation to one sim tick ahead of the cached snapshot", async () => {
+    const clock = { ms: 0 };
+    const { shell, engine, pump, presentationNowMs } = await mountWithRenderNowMsCapture(clock);
+
+    shell.startPump();
+    vi.advanceTimersByTime(PUMP_INTERVAL_MS);
+    const simNowMs = engine.snapshot().simNowMs;
+    presentationNowMs.length = 0;
+
+    pump.runRafAt(900);
+
+    expect(presentationNowMs[presentationNowMs.length - 1]).toBe(simNowMs + PUMP_INTERVAL_MS);
+    shell.stop();
+  });
+
+  it("never decreases nowMs across a late tick followed by recovery", async () => {
+    const clock = { ms: 0 };
+    const { shell, pump, presentationNowMs } = await mountWithRenderNowMsCapture(clock);
+
+    shell.startPump();
+    vi.advanceTimersByTime(PUMP_INTERVAL_MS);
+    presentationNowMs.length = 0;
+
+    pump.runRafAt(400);
+    pump.runRafAt(800);
+    vi.advanceTimersByTime(PUMP_INTERVAL_MS);
+    pump.runRafAt(1_050);
+    pump.runRafAt(1_300);
+
+    for (let index = 1; index < presentationNowMs.length; index++) {
+      expect(presentationNowMs[index]!).toBeGreaterThanOrEqual(presentationNowMs[index - 1]!);
+    }
+    shell.stop();
+  });
+
+  it("passes only integer nowMs values to the tile renderer", async () => {
+    const clock = { ms: 0 };
+    const { shell, pump, presentationNowMs } = await mountWithRenderNowMsCapture(clock);
+
+    shell.startPump();
+    vi.advanceTimersByTime(PUMP_INTERVAL_MS);
+    presentationNowMs.length = 0;
+
+    pump.runRafAt(33);
+    pump.runRafAt(66);
+    pump.runRafAt(99);
+
+    for (const nowMs of presentationNowMs) {
+      expect(Number.isInteger(nowMs)).toBe(true);
+    }
+    shell.stop();
+  });
+});
+
 function createMockDockWindow(): DockWindowPort & {
   tileMutations: string[];
   dockPositionUpdates: number;

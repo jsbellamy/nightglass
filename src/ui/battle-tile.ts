@@ -27,7 +27,7 @@ export interface BattleTileMountOptions {
 }
 
 export interface BattleTile {
-  render(snapshot: ReadonlySnapshot): void;
+  render(snapshot: ReadonlySnapshot, nowMs?: number): void;
   applyEvents(events: EngineEvent[], snapshot?: ReadonlySnapshot): void;
   destroy(): void;
 }
@@ -342,8 +342,9 @@ export function mountBattleTile(
 
   let lastSnapshot: ReadonlySnapshot | null = null;
 
-  function render(snapshot: ReadonlySnapshot): void {
+  function render(snapshot: ReadonlySnapshot, nowMs?: number): void {
     lastSnapshot = snapshot;
+    const presentationNowMs = nowMs ?? snapshot.simNowMs;
     stageWaveText.textContent = stageWaveLabel(snapshot, content);
 
     const attempt = snapshot.attempt;
@@ -374,7 +375,7 @@ export function mountBattleTile(
     syncCombatants(opponentZone, opponents, lookup);
     updateBossBar(battlefield, boss);
     battlefield.classList.toggle("opponent-stress-layout", opponents.length >= 5);
-    presentation.render(snapshot.simNowMs, snapshot);
+    presentation.render(presentationNowMs, snapshot);
   }
 
   function applyEvents(events: EngineEvent[], snapshot?: ReadonlySnapshot): void {
