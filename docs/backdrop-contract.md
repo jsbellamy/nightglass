@@ -69,7 +69,7 @@ five-opponent stress case — not a quantize gate.
 
 ## Prompt shell
 
-Substitute the SCENE line per Stage:
+Base shell from issue #59 (substitute the SCENE line per Stage):
 
 ```
 A wide storybook night-garden fantasy backdrop painting, soft muted pixel-art
@@ -80,6 +80,15 @@ detail and silhouettes kept soft and dim in the upper two thirds, nothing
 bright, nothing sharp, no focal creature. No characters, no animals, no text,
 no watermark, no UI, no borders, no vignette frame.
 ```
+
+**Approved acquisition addendum (provider 16:9 dumps).** Cursor `GenerateImage`
+cannot emit ~5.58:1 strips directly. The accepted #59 raws use the base shell's
+SCENE and constraints wrapped in an ultra-wide panoramic framing clause so the
+centered 480:86 crop retains Stage identity (tree/lantern, bramble, terrace)
+rather than ground-only mud. Exact strings live in
+`assets-raw/backdrops/<key>.source.json` and are the provenance source of truth;
+future acquisitions may use the base shell alone when the provider can emit a
+near-band aspect.
 
 SCENE lines:
 

@@ -223,5 +223,10 @@ describe("Battle Tile renderer", () => {
     tile.render(stage2);
     expect(battlefield?.dataset["backdropKey"]).toBe("backdrop-2");
     expect(backdrop?.style.backgroundImage).toMatch(/backdrop-2/);
+
+    stage2.attempt.stage = 3;
+    tile.render(stage2);
+    expect(battlefield?.dataset["backdropKey"]).toBe("backdrop-3");
+    expect(backdrop?.style.backgroundImage).toMatch(/backdrop-3/);
   });
 });
