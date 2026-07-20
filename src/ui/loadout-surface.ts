@@ -21,6 +21,7 @@ import {
   rosterClassIds,
   unlockableAbilityIds,
 } from "./snapshot-view";
+import { el, mountSurfaceShell, pendingMarker } from "./surface-shell";
 
 export interface LoadoutSurface {
   render(snapshot: ReadonlySnapshot | null): void;
@@ -44,239 +45,224 @@ function newlyInsertedAbilities(
   return new Set(pending.filter((abilityId) => !previous.has(abilityId)));
 }
 
+function renderAbilityCard(
+  ability: AbilityDef,
+  stats: ReturnType<typeof characterStats>,
+  snapshot: ReadonlySnapshot,
+  classId: ClassId,
+  slotIndex: number | "basic",
+  activationDelayPending: boolean,
+): HTMLElement {
+  const cardChildren = [el("p", { class: "ability-name", text: ability.name })];
+
+  const raw = formatAbilityRawLine(abilityRawDisplay(ability, stats));
+  if (raw) {
+    cardChildren.push(
+      el("p", { class: "ability-raw", data: { rawResult: "true" }, text: raw }),
+    );
+  }
+
+  cardChildren.push(
+    el("p", { class: "ability-timings", text: formatAbilityTimings(ability) }),
+  );
+
+  if (activationDelayPending && ability.cooldownMs > 0) {
+    cardChildren.push(
+      el("p", {
+        class: "activation-delay",
+        data: { activationDelay: "true" },
+        text: "Activation Delay: starts on full cooldown",
+      }),
+    );
+  }
+
+  const combatant = combatantForClass(snapshot, classId);
+  if (combatant && snapshot.attempt && slotIndex !== "basic" && !activationDelayPending) {
+    const readyAt = combatant.cooldownReadyAtMs[ability.id] ?? 0;
+    const remainingMs = cooldownRemainingMs(readyAt, snapshot.simNowMs);
+    cardChildren.push(
+      el("p", {
+        class: "ability-cooldown",
+        data: {
+          cooldownTelemetry: "true",
+          remainingMs: String(remainingMs),
+        },
+        text: formatCooldownState(readyAt, snapshot.simNowMs),
+      }),
+    );
+  }
+
+  const cardData: Record<string, string> = { abilityId: ability.id };
+  if (slotIndex !== "basic") {
+    cardData["loadoutSlot"] = String(slotIndex);
+  }
+
+  return el("article", { class: "ability-card", data: cardData }, cardChildren);
+}
+
 export function mountLoadoutSurface(
   root: HTMLElement,
   options: LoadoutSurfaceOptions,
 ): LoadoutSurface {
   const { content } = options;
-  root.classList.add("loadout-surface");
 
-  function renderAbilityCard(
-    container: HTMLElement,
-    ability: AbilityDef,
-    stats: ReturnType<typeof characterStats>,
-    snapshot: ReadonlySnapshot,
-    classId: ClassId,
-    slotIndex: number | "basic",
-    activationDelayPending: boolean,
-  ): void {
-    const card = document.createElement("article");
-    card.className = "ability-card";
-    card.dataset["abilityId"] = ability.id;
-    if (slotIndex !== "basic") {
-      card.dataset["loadoutSlot"] = String(slotIndex);
-    }
+  const shell = mountSurfaceShell(root, "loadout-surface", {
+    title: "Loadout",
+    body(snapshot) {
+      const sections: HTMLElement[] = [
+        el("p", {
+          class: "loadout-order-note",
+          text: "Slot 1 is checked first for the first valid Ability.",
+        }),
+      ];
 
-    const name = document.createElement("p");
-    name.className = "ability-name";
-    name.textContent = ability.name;
-    card.append(name);
-
-    const raw = formatAbilityRawLine(abilityRawDisplay(ability, stats));
-    if (raw) {
-      const rawLine = document.createElement("p");
-      rawLine.className = "ability-raw";
-      rawLine.dataset["rawResult"] = "true";
-      rawLine.textContent = raw;
-      card.append(rawLine);
-    }
-
-    const timings = document.createElement("p");
-    timings.className = "ability-timings";
-    timings.textContent = formatAbilityTimings(ability);
-    card.append(timings);
-
-    if (activationDelayPending && ability.cooldownMs > 0) {
-      const delay = document.createElement("p");
-      delay.className = "activation-delay";
-      delay.dataset["activationDelay"] = "true";
-      delay.textContent = "Activation Delay: starts on full cooldown";
-      card.append(delay);
-    }
-
-    const combatant = combatantForClass(snapshot, classId);
-    if (combatant && snapshot.attempt && slotIndex !== "basic" && !activationDelayPending) {
-      const readyAt = combatant.cooldownReadyAtMs[ability.id] ?? 0;
-      const cooldown = document.createElement("p");
-      cooldown.className = "ability-cooldown";
-      cooldown.dataset["cooldownTelemetry"] = "true";
-      cooldown.textContent = formatCooldownState(readyAt, snapshot.simNowMs);
-      cooldown.dataset["remainingMs"] = String(cooldownRemainingMs(readyAt, snapshot.simNowMs));
-      card.append(cooldown);
-    }
-
-    container.append(card);
-  }
-
-  function render(snapshot: ReadonlySnapshot | null): void {
-    root.replaceChildren();
-    if (!snapshot) {
-      const empty = document.createElement("p");
-      empty.className = "surface-empty";
-      empty.textContent = "No Snapshot yet.";
-      root.append(empty);
-      return;
-    }
-
-    const title = document.createElement("h2");
-    title.className = "dock-surface-title";
-    title.textContent = "Loadout";
-    root.append(title);
-
-    const orderNote = document.createElement("p");
-    orderNote.className = "loadout-order-note";
-    orderNote.textContent = "Slot 1 is checked first for the first valid Ability.";
-    root.append(orderNote);
-
-    for (const classId of rosterClassIds(snapshot)) {
-      const classKit = classKitFor(content, classId);
-      const talentState = effectiveTalentState(snapshot, classId);
-      const equipmentLoadout = snapshot.attempt?.equipmentLoadouts[classId] ?? {};
-      const equipmentMods = equipmentModifiersForLoadout(
-        equipmentLoadout,
-        snapshot.progression.armory,
-        content,
-      );
-      const stats = characterStats(classKit, talentState, equipmentMods);
-      const applied = appliedLoadout(snapshot, classId);
-      const loadout = effectiveLoadout(snapshot, classId);
-      const hasPending = snapshot.pendingEdits.some(
-        (edit) => edit.kind === "loadout" && edit.classId === classId,
-      );
-      const inserted = hasPending ? newlyInsertedAbilities(applied, loadout) : new Set<string>();
-
-      const section = document.createElement("section");
-      section.className = "loadout-character";
-      section.dataset["classId"] = classId;
-
-      const heading = document.createElement("h3");
-      heading.className = "surface-section-title";
-      heading.textContent = CLASS_LABELS[classId];
-      section.append(heading);
-
-      if (hasPending) {
-        const marker = document.createElement("p");
-        marker.className = "pending-marker pending-wave";
-        marker.dataset["pendingKind"] = "loadout";
-        marker.textContent = "Applies at next Wave";
-        section.append(marker);
-      }
-
-      const combatant = combatantForClass(snapshot, classId);
-      if (combatant?.action) {
-        const phase = actionCyclePhase(combatant.action, snapshot.simNowMs);
-        if (phase) {
-          const cycle = document.createElement("p");
-          cycle.className = "action-cycle-phase";
-          cycle.dataset["actionCycleTelemetry"] = "true";
-          cycle.textContent = `Action Cycle: ${phase} (${combatant.action.abilityId})`;
-          section.append(cycle);
-        }
-      }
-
-      const basicAbility = abilityById(content, classKit.basicAbilityId);
-      if (basicAbility) {
-        const basicSection = document.createElement("div");
-        basicSection.className = "basic-attack";
-        basicSection.setAttribute("aria-label", "Basic attack fallback");
-
-        const basicLabel = document.createElement("p");
-        basicLabel.className = "slot-label";
-        basicLabel.textContent = "Basic attack (fallback)";
-        basicSection.append(basicLabel);
-
-        renderAbilityCard(basicSection, basicAbility, stats, snapshot, classId, "basic", false);
-        section.append(basicSection);
-      }
-
-      const slots = document.createElement("div");
-      slots.className = "loadout-slots";
-
-      loadout.forEach((abilityId, slotIndex) => {
-        const ability = abilityById(content, abilityId);
-        if (!ability) {
-          return;
-        }
-
-        const slot = document.createElement("div");
-        slot.className = "loadout-slot";
-        slot.dataset["slot"] = String(slotIndex);
-
-        const slotLabel = document.createElement("p");
-        slotLabel.className = "slot-label";
-        slotLabel.textContent = `Slot ${slotIndex + 1}`;
-        slot.append(slotLabel);
-
-        renderAbilityCard(
-          slot,
-          ability,
-          stats,
-          snapshot,
-          classId,
-          slotIndex,
-          inserted.has(abilityId),
+      for (const classId of rosterClassIds(snapshot)) {
+        const classKit = classKitFor(content, classId);
+        const talentState = effectiveTalentState(snapshot, classId);
+        const equipmentLoadout = snapshot.attempt?.equipmentLoadouts[classId] ?? {};
+        const equipmentMods = equipmentModifiersForLoadout(
+          equipmentLoadout,
+          snapshot.progression.armory,
+          content,
         );
+        const stats = characterStats(classKit, talentState, equipmentMods);
+        const applied = appliedLoadout(snapshot, classId);
+        const loadout = effectiveLoadout(snapshot, classId);
+        const hasPending = snapshot.pendingEdits.some(
+          (edit) => edit.kind === "loadout" && edit.classId === classId,
+        );
+        const inserted = hasPending ? newlyInsertedAbilities(applied, loadout) : new Set<string>();
 
-        const select = document.createElement("select");
-        select.className = "loadout-assign focus-ring";
-        select.dataset["loadoutAssign"] = String(slotIndex);
-        select.dataset["classId"] = classId;
-        select.setAttribute("aria-label", `Assign Ability to slot ${slotIndex + 1} for ${CLASS_LABELS[classId]}`);
+        const sectionChildren: (HTMLElement | false)[] = [
+          el("h3", { class: "surface-section-title", text: CLASS_LABELS[classId] }),
+        ];
 
-        const currentOption = document.createElement("option");
-        currentOption.value = abilityId;
-        currentOption.textContent = ability.name;
-        currentOption.selected = true;
-        select.append(currentOption);
-
-        const unlocked = unlockableAbilityIds(classKit, talentState);
-        for (const candidateId of unlocked) {
-          if (candidateId === abilityId) {
-            continue;
-          }
-          const candidate = abilityById(content, candidateId);
-          if (!candidate) {
-            continue;
-          }
-          const duplicateIndex = loadout.indexOf(candidateId);
-          const option = document.createElement("option");
-          option.value = candidateId;
-          option.textContent = candidate.name;
-          if (duplicateIndex !== -1 && duplicateIndex !== slotIndex) {
-            option.disabled = true;
-            option.textContent = `${candidate.name} (already slotted)`;
-          }
-          select.append(option);
+        if (hasPending) {
+          const marker = pendingMarker();
+          marker.dataset["pendingKind"] = "loadout";
+          sectionChildren.push(marker);
         }
 
-        select.addEventListener("change", () => {
-          const nextAbilityId = select.value;
-          if (nextAbilityId === abilityId) {
+        const combatant = combatantForClass(snapshot, classId);
+        if (combatant?.action) {
+          const phase = actionCyclePhase(combatant.action, snapshot.simNowMs);
+          if (phase) {
+            sectionChildren.push(
+              el("p", {
+                class: "action-cycle-phase",
+                data: { actionCycleTelemetry: "true" },
+                text: `Action Cycle: ${phase} (${combatant.action.abilityId})`,
+              }),
+            );
+          }
+        }
+
+        const basicAbility = abilityById(content, classKit.basicAbilityId);
+        if (basicAbility) {
+          sectionChildren.push(
+            el(
+              "div",
+              { class: "basic-attack", aria: { label: "Basic attack fallback" } },
+              [
+                el("p", { class: "slot-label", text: "Basic attack (fallback)" }),
+                renderAbilityCard(basicAbility, stats, snapshot, classId, "basic", false),
+              ],
+            ),
+          );
+        }
+
+        const slotElements: HTMLElement[] = [];
+
+        loadout.forEach((abilityId, slotIndex) => {
+          const ability = abilityById(content, abilityId);
+          if (!ability) {
             return;
           }
-          const nextLoadout = [...loadout] as [string, string, string];
-          nextLoadout[slotIndex] = nextAbilityId;
-          options.onCommand?.({
-            cmd: "setLoadout",
-            args: [classId, nextLoadout],
+
+          const optionElements = [
+            el("option", {
+              props: { value: abilityId, selected: true },
+              text: ability.name,
+            }),
+          ];
+
+          const unlocked = unlockableAbilityIds(classKit, talentState);
+          for (const candidateId of unlocked) {
+            if (candidateId === abilityId) {
+              continue;
+            }
+            const candidate = abilityById(content, candidateId);
+            if (!candidate) {
+              continue;
+            }
+            const duplicateIndex = loadout.indexOf(candidateId);
+            const disabled = duplicateIndex !== -1 && duplicateIndex !== slotIndex;
+            optionElements.push(
+              el("option", {
+                props: {
+                  value: candidateId,
+                  disabled,
+                },
+                text: disabled
+                  ? `${candidate.name} (already slotted)`
+                  : candidate.name,
+              }),
+            );
+          }
+
+          const select = el("select", {
+            class: "loadout-assign focus-ring",
+            data: {
+              loadoutAssign: String(slotIndex),
+              classId,
+            },
+            aria: {
+              label: `Assign Ability to slot ${slotIndex + 1} for ${CLASS_LABELS[classId]}`,
+            },
+          }, optionElements);
+
+          select.addEventListener("change", () => {
+            const nextAbilityId = select.value;
+            if (nextAbilityId === abilityId) {
+              return;
+            }
+            const nextLoadout = [...loadout] as [string, string, string];
+            nextLoadout[slotIndex] = nextAbilityId;
+            options.onCommand?.({
+              cmd: "setLoadout",
+              args: [classId, nextLoadout],
+            });
           });
+
+          slotElements.push(
+            el("div", { class: "loadout-slot", data: { slot: String(slotIndex) } }, [
+              el("p", { class: "slot-label", text: `Slot ${slotIndex + 1}` }),
+              renderAbilityCard(
+                ability,
+                stats,
+                snapshot,
+                classId,
+                slotIndex,
+                inserted.has(abilityId),
+              ),
+              select,
+            ]),
+          );
         });
 
-        slot.append(select);
-        slots.append(slot);
-      });
+        sectionChildren.push(el("div", { class: "loadout-slots" }, slotElements));
 
-      section.append(slots);
-      root.append(section);
-    }
-  }
+        sections.push(
+          el("section", { class: "loadout-character", data: { classId } }, sectionChildren),
+        );
+      }
+
+      return sections;
+    },
+  });
 
   return {
-    render,
-    destroy() {
-      root.replaceChildren();
-      root.classList.remove("loadout-surface");
-    },
+    render: (snapshot) => shell.render(snapshot),
+    destroy: () => shell.destroy(),
   };
 }
-

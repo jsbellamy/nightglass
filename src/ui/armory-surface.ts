@@ -29,6 +29,7 @@ import {
   effectiveTalentState,
   rosterClassIds,
 } from "./snapshot-view";
+import { el, mountSurfaceShell } from "./surface-shell";
 
 const SLOTS: EquipmentSlotId[] = ["weapon", "armor", "charm"];
 
@@ -87,8 +88,6 @@ export function mountArmorySurface(
   let optimisticallySeenDropIds = new Set<number>();
   let currentLegality: EngineLegalityView = EMPTY_ENGINE_LEGALITY;
 
-  root.classList.add("armory-surface");
-
   function publish(command: TileCommand): void {
     options.onCommand?.(command);
   }
@@ -119,17 +118,19 @@ export function mountArmorySurface(
   }
 
   function appendContentTierIcon(container: HTMLElement, iconKey: string, name: string): void {
-    const wrap = document.createElement("span");
-    wrap.className = "equipment-icon-content";
-    wrap.setAttribute("aria-label", `${name} icon`);
+    const wrap = el("span", {
+      class: "equipment-icon-content",
+      aria: { label: `${name} icon` },
+    });
     wrap.append(createEquipmentIconElement(iconKey, "content"));
     container.append(wrap);
   }
 
   function appendChromeTierIcon(container: HTMLElement, iconKey: string, name: string): void {
-    const wrap = document.createElement("span");
-    wrap.className = "equipment-icon-chrome";
-    wrap.setAttribute("aria-label", `${name} icon`);
+    const wrap = el("span", {
+      class: "equipment-icon-chrome",
+      aria: { label: `${name} icon` },
+    });
     wrap.append(createEquipmentIconElement(iconKey, "chrome"));
     container.append(wrap);
   }
@@ -141,76 +142,64 @@ export function mountArmorySurface(
 
   function renderDropSummary(card: HTMLElement, drop: DropInstance): void {
     const base = equipmentBaseForDrop(drop, content);
-    const header = document.createElement("div");
-    header.className = "equipment-card-header";
+    const titleWrap = el("div", { class: "equipment-card-titles" }, [
+      el("p", { class: "equipment-name", text: base.name }),
+      el("p", {
+        class: "equipment-meta",
+        text: `Tier ${base.tier} · Item Level ${drop.itemLevel}`,
+      }),
+    ]);
 
+    const header = el("div", { class: "equipment-card-header" });
     renderDropIconChip(header, drop);
-
-    const titleWrap = document.createElement("div");
-    titleWrap.className = "equipment-card-titles";
-
-    const name = document.createElement("p");
-    name.className = "equipment-name";
-    name.textContent = base.name;
-    titleWrap.append(name);
-
-    const meta = document.createElement("p");
-    meta.className = "equipment-meta";
-    meta.textContent = `Tier ${base.tier} · Item Level ${drop.itemLevel}`;
-    titleWrap.append(meta);
-
     header.append(titleWrap);
     card.classList.add(`rarity-${drop.rarity}`);
     card.append(header);
 
-    const guaranteed = document.createElement("p");
-    guaranteed.className = "equipment-guaranteed";
-    guaranteed.textContent = formatGuaranteedStat(base);
-    card.append(guaranteed);
+    card.append(
+      el("p", { class: "equipment-guaranteed", text: formatGuaranteedStat(base) }),
+    );
 
     if (drop.affixes.length > 0) {
-      const affixList = document.createElement("ul");
-      affixList.className = "equipment-affix-list";
+      const affixList = el("ul", { class: "equipment-affix-list" });
       for (const affix of drop.affixes) {
-        const item = document.createElement("li");
-        item.textContent = formatAffix(affix);
-        affixList.append(item);
+        affixList.append(el("li", { text: formatAffix(affix) }));
       }
       card.append(affixList);
     }
 
-    const markers = document.createElement("div");
-    markers.className = "equipment-markers";
+    const markerChildren: HTMLElement[] = [];
     if (!isDropSeen(drop)) {
-      const unseen = document.createElement("span");
-      unseen.className = "equipment-marker unseen-marker";
-      unseen.dataset["unseenMarker"] = "true";
-      unseen.textContent = "Unseen";
-      markers.append(unseen);
+      markerChildren.push(
+        el("span", {
+          class: "equipment-marker unseen-marker",
+          data: { unseenMarker: "true" },
+          text: "Unseen",
+        }),
+      );
     }
     if (drop.locked) {
-      const locked = document.createElement("span");
-      locked.className = "equipment-marker locked-marker";
-      locked.textContent = "Locked";
-      markers.append(locked);
+      markerChildren.push(
+        el("span", { class: "equipment-marker locked-marker", text: "Locked" }),
+      );
     }
     const assignment = formatAssignment(drop.assignedTo);
     if (assignment) {
-      const assigned = document.createElement("span");
-      assigned.className = "equipment-marker assigned-marker";
-      assigned.textContent = assignment;
-      markers.append(assigned);
+      markerChildren.push(
+        el("span", { class: "equipment-marker assigned-marker", text: assignment }),
+      );
     }
-    if (markers.childElementCount > 0) {
-      card.append(markers);
+    if (markerChildren.length > 0) {
+      card.append(el("div", { class: "equipment-markers" }, markerChildren));
     }
   }
 
   function renderFilterBar(snapshot: ReadonlySnapshot, container: HTMLElement): void {
-    const bar = document.createElement("div");
-    bar.className = "armory-filters";
-    bar.setAttribute("role", "group");
-    bar.setAttribute("aria-label", "Armory filters");
+    const bar = el("div", {
+      class: "armory-filters",
+      props: { role: "group" },
+      aria: { label: "Armory filters" },
+    });
 
     const addToggle = (
       label: string,
@@ -218,13 +207,16 @@ export function mountArmorySurface(
       value: ArmoryFilters[keyof ArmoryFilters],
       active: boolean,
     ) => {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "armory-filter focus-ring";
-      button.dataset["filterKey"] = String(key);
-      button.dataset["filterValue"] = String(value);
-      button.setAttribute("aria-pressed", active ? "true" : "false");
-      button.textContent = active ? `${label} ✓` : label;
+      const button = el("button", {
+        class: "armory-filter focus-ring",
+        data: {
+          filterKey: String(key),
+          filterValue: String(value),
+        },
+        props: { type: "button" },
+        aria: { pressed: active ? "true" : "false" },
+        text: active ? `${label} ✓` : label,
+      });
       bindPressable(button, () => {
         if (active) {
           const next = { ...filters };
@@ -250,10 +242,11 @@ export function mountArmorySurface(
     addToggle("Locked", "locked", true, filters.locked === true);
     addToggle("Unseen", "unseen", true, filters.unseen === true);
 
-    const clear = document.createElement("button");
-    clear.type = "button";
-    clear.className = "armory-filter-clear focus-ring";
-    clear.textContent = "Clear filters";
+    const clear = el("button", {
+      class: "armory-filter-clear focus-ring",
+      props: { type: "button" },
+      text: "Clear filters",
+    });
     bindPressable(clear, () => {
       filters = {};
       render(snapshot);
@@ -264,15 +257,11 @@ export function mountArmorySurface(
   }
 
   function renderSortBar(snapshot: ReadonlySnapshot, container: HTMLElement): void {
-    const bar = document.createElement("div");
-    bar.className = "armory-sort";
-    const label = document.createElement("label");
-    label.className = "armory-sort-label";
-    label.textContent = "Sort";
-    const select = document.createElement("select");
-    select.className = "armory-sort-select focus-ring";
-    select.dataset["armorySort"] = "true";
-    select.setAttribute("aria-label", "Armory sort");
+    const select = el("select", {
+      class: "armory-sort-select focus-ring",
+      data: { armorySort: "true" },
+      aria: { label: "Armory sort" },
+    });
     const sorts: { id: ArmorySortId; label: string }[] = [
       { id: "default", label: "Unseen first, then newest" },
       { id: "newest", label: "Newest" },
@@ -281,64 +270,51 @@ export function mountArmorySurface(
       { id: "name", label: "Name" },
     ];
     for (const entry of sorts) {
-      const option = document.createElement("option");
-      option.value = entry.id;
-      option.textContent = entry.label;
-      option.selected = sort === entry.id;
-      select.append(option);
+      select.append(
+        el("option", {
+          props: { value: entry.id, selected: sort === entry.id },
+          text: entry.label,
+        }),
+      );
     }
     select.addEventListener("change", () => {
       sort = select.value as ArmorySortId;
       render(snapshot);
     });
-    label.append(select);
-    bar.append(label);
+    const bar = el("div", { class: "armory-sort" }, [
+      el("label", { class: "armory-sort-label", text: "Sort" }, [select]),
+    ]);
     container.append(bar);
   }
 
   function renderSlotStrip(snapshot: ReadonlySnapshot, container: HTMLElement): void {
-    const strip = document.createElement("div");
-    strip.className = "armory-slot-strip";
-    strip.setAttribute("role", "group");
-    strip.setAttribute("aria-label", "Character equipment slots");
+    const strip = el("div", {
+      class: "armory-slot-strip",
+      props: { role: "group" },
+      aria: { label: "Character equipment slots" },
+    });
 
     for (const classId of rosterClassIds(snapshot)) {
-      const character = document.createElement("section");
-      character.className = "armory-character-slots";
-      character.dataset["classId"] = classId;
-
-      const heading = document.createElement("h3");
-      heading.className = "surface-section-title";
-      heading.textContent = CLASS_LABELS[classId];
-      character.append(heading);
-
-      const slots = document.createElement("div");
-      slots.className = "armory-slot-row";
+      const slotButtons: HTMLElement[] = [];
 
       for (const slot of SLOTS) {
         const dropId = equippedDropId(snapshot.progression.armory, classId, slot);
         const equipped = dropId ? dropById(snapshot.progression.armory, dropId) : undefined;
-        const button = document.createElement("button");
-        button.type = "button";
-        button.className = "armory-slot-button focus-ring";
-        button.dataset["compareSlot"] = slot;
-        button.dataset["classId"] = classId;
-        button.setAttribute(
-          "aria-label",
-          `Compare ${CLASS_LABELS[classId]} ${SLOT_LABELS[slot]}`,
-        );
-        const label = document.createElement("span");
-        label.className = "armory-slot-label";
-        label.textContent = SLOT_LABELS[slot];
-        button.append(label);
+        const button = el("button", {
+          class: "armory-slot-button focus-ring",
+          data: {
+            compareSlot: slot,
+            classId,
+          },
+          props: { type: "button" },
+          aria: { label: `Compare ${CLASS_LABELS[classId]} ${SLOT_LABELS[slot]}` },
+        });
+        button.append(el("span", { class: "armory-slot-label", text: SLOT_LABELS[slot] }));
         if (equipped) {
           const base = equipmentBaseForDrop(equipped, content);
           appendChromeTierIcon(button, base.iconKey, base.name);
         } else {
-          const empty = document.createElement("span");
-          empty.className = "armory-slot-empty";
-          empty.textContent = "Empty";
-          button.append(empty);
+          button.append(el("span", { class: "armory-slot-empty", text: "Empty" }));
         }
         bindPressable(button, () => {
           view = "compare";
@@ -346,19 +322,22 @@ export function mountArmorySurface(
           detailDropId = null;
           render(snapshot);
         });
-        slots.append(button);
+        slotButtons.push(button);
       }
 
-      character.append(slots);
-      strip.append(character);
+      strip.append(
+        el("section", { class: "armory-character-slots", data: { classId } }, [
+          el("h3", { class: "surface-section-title", text: CLASS_LABELS[classId] }),
+          el("div", { class: "armory-slot-row" }, slotButtons),
+        ]),
+      );
     }
 
     container.append(strip);
   }
 
   function renderCollection(snapshot: ReadonlySnapshot, container: HTMLElement): void {
-    const toolbar = document.createElement("div");
-    toolbar.className = "armory-toolbar";
+    const toolbar = el("div", { class: "armory-toolbar" });
     renderFilterBar(snapshot, toolbar);
     renderSortBar(snapshot, toolbar);
     container.append(toolbar);
@@ -369,80 +348,79 @@ export function mountArmorySurface(
       content,
     );
 
-    const bulk = document.createElement("div");
-    bulk.className = "armory-bulk-actions";
-    const discardButton = document.createElement("button");
-    discardButton.type = "button";
-    discardButton.className = "armory-discard-button focus-ring";
-    discardButton.dataset["bulkDiscard"] = "true";
-    discardButton.disabled = selectedDiscard.size === 0;
-    discardButton.textContent = `Discard selected (${selectedDiscard.size})`;
+    const discardButton = el("button", {
+      class: "armory-discard-button focus-ring",
+      data: { bulkDiscard: "true" },
+      props: { type: "button", disabled: selectedDiscard.size === 0 },
+      text: `Discard selected (${selectedDiscard.size})`,
+    });
     bindPressable(discardButton, () => {
       discardConfirmOpen = true;
       render(snapshot);
     });
-    bulk.append(discardButton);
-    container.append(bulk);
+    container.append(el("div", { class: "armory-bulk-actions" }, [discardButton]));
 
     if (discardConfirmOpen) {
-      const confirm = document.createElement("div");
-      confirm.className = "armory-confirm";
-      confirm.dataset["discardConfirm"] = "true";
       const selectedDrops = [...selectedDiscard]
         .map((dropId) => dropById(snapshot.progression.armory, dropId))
         .filter((drop): drop is DropInstance => drop !== undefined);
       const rareEpic = rareOrEpicDropNames(selectedDrops, content);
-      const copy = document.createElement("p");
-      copy.className = "armory-confirm-copy";
-      copy.textContent =
-        rareEpic.length > 0
-          ? `Discard ${selectedDiscard.size} piece(s)? Rare/Epic: ${rareEpic.join(", ")}`
-          : `Discard ${selectedDiscard.size} piece(s)?`;
-      confirm.append(copy);
-      const actions = document.createElement("div");
-      actions.className = "armory-confirm-actions";
-      const yes = document.createElement("button");
-      yes.type = "button";
-      yes.className = "armory-confirm-yes focus-ring";
-      yes.textContent = "Discard";
+      const yes = el("button", {
+        class: "armory-confirm-yes focus-ring",
+        props: { type: "button" },
+        text: "Discard",
+      });
       bindPressable(yes, () => {
         publish({ cmd: "discard", args: [[...selectedDiscard]] });
         selectedDiscard = new Set();
         discardConfirmOpen = false;
       });
-      const no = document.createElement("button");
-      no.type = "button";
-      no.className = "armory-confirm-no focus-ring";
-      no.textContent = "Cancel";
+      const no = el("button", {
+        class: "armory-confirm-no focus-ring",
+        props: { type: "button" },
+        text: "Cancel",
+      });
       bindPressable(no, () => {
         discardConfirmOpen = false;
         render(snapshot);
       });
-      actions.append(yes, no);
-      confirm.append(actions);
-      container.append(confirm);
+      container.append(
+        el("div", { class: "armory-confirm", data: { discardConfirm: "true" } }, [
+          el("p", {
+            class: "armory-confirm-copy",
+            text:
+              rareEpic.length > 0
+                ? `Discard ${selectedDiscard.size} piece(s)? Rare/Epic: ${rareEpic.join(", ")}`
+                : `Discard ${selectedDiscard.size} piece(s)?`,
+          }),
+          el("div", { class: "armory-confirm-actions" }, [yes, no]),
+        ]),
+      );
     }
 
-    const list = document.createElement("div");
-    list.className = "armory-collection";
-    list.dataset["armoryCollection"] = "true";
+    const list = el("div", { class: "armory-collection", data: { armoryCollection: "true" } });
 
     for (const drop of drops) {
-      const row = document.createElement("article");
-      row.className = "equipment-card";
-      row.dataset["dropId"] = String(drop.dropId);
+      const row = el("article", {
+        class: "equipment-card",
+        data: { dropId: String(drop.dropId) },
+      });
       renderDropSummary(row, drop);
 
-      const actions = document.createElement("div");
-      actions.className = "equipment-card-actions";
+      const actionChildren: HTMLElement[] = [];
 
       if (discardableDrop(drop)) {
-        const checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.className = "armory-discard-checkbox focus-ring";
-        checkbox.dataset["discardSelect"] = String(drop.dropId);
-        checkbox.checked = selectedDiscard.has(drop.dropId);
-        checkbox.setAttribute("aria-label", `Select ${equipmentBaseForDrop(drop, content).name} for discard`);
+        const checkbox = el("input", {
+          class: "armory-discard-checkbox focus-ring",
+          data: { discardSelect: String(drop.dropId) },
+          props: {
+            type: "checkbox",
+            checked: selectedDiscard.has(drop.dropId),
+          },
+          aria: {
+            label: `Select ${equipmentBaseForDrop(drop, content).name} for discard`,
+          },
+        });
         checkbox.addEventListener("change", () => {
           if (checkbox.checked) {
             selectedDiscard.add(drop.dropId);
@@ -451,41 +429,45 @@ export function mountArmorySurface(
           }
           render(snapshot);
         });
-        actions.append(checkbox);
+        actionChildren.push(checkbox);
       }
 
-      const lockButton = document.createElement("button");
-      lockButton.type = "button";
-      lockButton.className = "equipment-lock-toggle focus-ring";
-      lockButton.dataset["lockToggle"] = String(drop.dropId);
-      lockButton.textContent = drop.locked ? "Unlock" : "Lock";
+      const lockButton = el("button", {
+        class: "equipment-lock-toggle focus-ring",
+        data: { lockToggle: String(drop.dropId) },
+        props: { type: "button" },
+        text: drop.locked ? "Unlock" : "Lock",
+      });
       bindPressable(lockButton, () => {
         publish({ cmd: "setLocked", args: [drop.dropId, !drop.locked] });
       });
-      actions.append(lockButton);
+      actionChildren.push(lockButton);
 
-      const detailButton = document.createElement("button");
-      detailButton.type = "button";
-      detailButton.className = "equipment-detail-button focus-ring";
-      detailButton.dataset["openDetail"] = String(drop.dropId);
-      detailButton.textContent = "Details";
+      const detailButton = el("button", {
+        class: "equipment-detail-button focus-ring",
+        data: { openDetail: String(drop.dropId) },
+        props: { type: "button" },
+        text: "Details",
+      });
       bindPressable(detailButton, () => {
         view = "detail";
         detailDropId = drop.dropId;
         markDropSeen(drop.dropId);
         render(snapshot);
       });
-      actions.append(detailButton);
+      actionChildren.push(detailButton);
 
-      row.append(actions);
+      row.append(el("div", { class: "equipment-card-actions" }, actionChildren));
       list.append(row);
     }
 
     if (drops.length === 0) {
-      const empty = document.createElement("p");
-      empty.className = "surface-empty";
-      empty.textContent = "No equipment matches the current filters.";
-      list.append(empty);
+      list.append(
+        el("p", {
+          class: "surface-empty",
+          text: "No equipment matches the current filters.",
+        }),
+      );
     }
 
     container.append(list);
@@ -505,11 +487,12 @@ export function mountArmorySurface(
       throw new Error(`Missing basic Ability for ${classId}`);
     }
 
-    const back = document.createElement("button");
-    back.type = "button";
-    back.className = "armory-back focus-ring";
-    back.dataset["armoryBack"] = "true";
-    back.textContent = "Back to collection";
+    const back = el("button", {
+      class: "armory-back focus-ring",
+      data: { armoryBack: "true" },
+      props: { type: "button" },
+      text: "Back to collection",
+    });
     bindPressable(back, () => {
       view = "collection";
       compareContext = null;
@@ -518,36 +501,41 @@ export function mountArmorySurface(
     });
     container.append(back);
 
-    const heading = document.createElement("h3");
-    heading.className = "surface-section-title";
-    heading.textContent = `Compare · ${CLASS_LABELS[classId]} ${SLOT_LABELS[slot]}`;
-    container.append(heading);
+    container.append(
+      el("h3", {
+        class: "surface-section-title",
+        text: `Compare · ${CLASS_LABELS[classId]} ${SLOT_LABELS[slot]}`,
+      }),
+    );
 
-    const note = document.createElement("p");
-    note.className = "armory-attempt-note";
-    note.dataset["nextAttemptNote"] = "true";
-    note.textContent = "Equipment changes apply from the next Stage Attempt.";
-    container.append(note);
+    container.append(
+      el("p", {
+        class: "armory-attempt-note",
+        data: { nextAttemptNote: "true" },
+        text: "Equipment changes apply from the next Stage Attempt.",
+      }),
+    );
 
     const candidates = snapshot.progression.armory.filter((drop) =>
       isCompatibleWithSlot(drop, classId, slot, currentLegality.canEquip),
     );
 
-    const candidateList = document.createElement("div");
-    candidateList.className = "armory-compare-candidates";
-    candidateList.setAttribute("role", "listbox");
-    candidateList.setAttribute("aria-label", "Compatible equipment");
+    const candidateList = el("div", {
+      class: "armory-compare-candidates",
+      props: { role: "listbox" },
+      aria: { label: "Compatible equipment" },
+    });
 
     for (const candidate of candidates) {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "armory-compare-candidate focus-ring";
-      button.dataset["compareCandidate"] = String(candidate.dropId);
-      button.setAttribute("role", "option");
-      button.setAttribute("aria-selected", selectedDropId === candidate.dropId ? "true" : "false");
-      if (selectedDropId === candidate.dropId) {
-        button.classList.add("selected");
-      }
+      const selected = selectedDropId === candidate.dropId;
+      const button = el("button", {
+        class: selected
+          ? "armory-compare-candidate focus-ring selected"
+          : "armory-compare-candidate focus-ring",
+        data: { compareCandidate: String(candidate.dropId) },
+        props: { type: "button", role: "option" },
+        aria: { selected: selected ? "true" : "false" },
+      });
       renderDropSummary(button, candidate);
       bindPressable(button, () => {
         compareContext = { classId, slot, selectedDropId: candidate.dropId };
@@ -563,8 +551,8 @@ export function mountArmorySurface(
       return;
     }
 
-    const selected = dropById(snapshot.progression.armory, selectedDropId);
-    if (!selected) {
+    const selectedDrop = dropById(snapshot.progression.armory, selectedDropId);
+    if (!selectedDrop) {
       return;
     }
 
@@ -573,48 +561,43 @@ export function mountArmorySurface(
       ? dropById(snapshot.progression.armory, equippedId)
       : undefined;
 
-    const comparePanel = document.createElement("div");
-    comparePanel.className = "armory-compare-panel";
-    comparePanel.dataset["comparePanel"] = "true";
+    const comparePanel = el("div", {
+      class: "armory-compare-panel",
+      data: { comparePanel: "true" },
+    });
 
-    const columns = document.createElement("div");
-    columns.className = "armory-compare-columns";
-
-    const currentColumn = document.createElement("section");
-    currentColumn.className = "armory-compare-column";
-    const currentTitle = document.createElement("h4");
-    currentTitle.textContent = "Equipped";
-    currentColumn.append(currentTitle);
+    const currentColumn = el("section", { class: "armory-compare-column" }, [
+      el("h4", { text: "Equipped" }),
+    ]);
     if (equipped) {
       renderDropSummary(currentColumn, equipped);
     } else {
-      const empty = document.createElement("p");
-      empty.className = "surface-empty";
-      empty.textContent = "Empty slot";
-      currentColumn.append(empty);
+      currentColumn.append(el("p", { class: "surface-empty", text: "Empty slot" }));
     }
 
-    const candidateColumn = document.createElement("section");
-    candidateColumn.className = "armory-compare-column";
-    const candidateTitle = document.createElement("h4");
-    candidateTitle.textContent = "Selected";
-    candidateColumn.append(candidateTitle);
-    renderDropSummary(candidateColumn, selected);
+    const candidateColumn = el("section", { class: "armory-compare-column" }, [
+      el("h4", { text: "Selected" }),
+    ]);
+    renderDropSummary(candidateColumn, selectedDrop);
 
-    columns.append(currentColumn, candidateColumn);
-    comparePanel.append(columns);
+    comparePanel.append(
+      el("div", { class: "armory-compare-columns" }, [currentColumn, candidateColumn]),
+    );
 
     const currentMods = equipped ? dropStatModifiers(equipped, content) : [];
-    const candidateMods = dropStatModifiers(selected, content);
+    const candidateMods = dropStatModifiers(selectedDrop, content);
     const statDeltas = compareEquipmentStatDeltas(currentMods, candidateMods);
     if (statDeltas.length > 0) {
-      const deltaList = document.createElement("ul");
-      deltaList.className = "armory-stat-deltas";
-      deltaList.dataset["statDeltas"] = "true";
+      const deltaList = el("ul", {
+        class: "armory-stat-deltas",
+        data: { statDeltas: "true" },
+      });
       for (const line of statDeltas) {
-        const item = document.createElement("li");
-        item.textContent = `${line.label}: ${line.before} → ${line.after} (${line.delta})`;
-        deltaList.append(item);
+        deltaList.append(
+          el("li", {
+            text: `${line.label}: ${line.before} → ${line.after} (${line.delta})`,
+          }),
+        );
       }
       comparePanel.append(deltaList);
     }
@@ -622,7 +605,7 @@ export function mountArmorySurface(
     const roster = [...snapshot.progression.party, snapshot.progression.reserve];
     const loadouts = snapshotEquipmentLoadouts(snapshot.progression.armory, roster);
     const currentLoadout = { ...loadouts[classId] };
-    const candidateLoadout = { ...currentLoadout, [slot]: selected.dropId };
+    const candidateLoadout = { ...currentLoadout, [slot]: selectedDrop.dropId };
     const currentStats = statsForEquipmentLoadout(
       classKit,
       talentState,
@@ -645,80 +628,82 @@ export function mountArmorySurface(
       abilitiesById,
     );
     if (abilityChanges.length > 0) {
-      const abilitySection = document.createElement("div");
-      abilitySection.className = "armory-ability-deltas";
-      abilitySection.dataset["abilityDeltas"] = "true";
-      const abilityHeading = document.createElement("h4");
-      abilityHeading.textContent = "Ability changes";
-      abilitySection.append(abilityHeading);
-      const abilityList = document.createElement("ul");
+      const abilityList = el("ul");
       for (const change of abilityChanges) {
-        const item = document.createElement("li");
-        item.textContent = `${change.abilityName}: ${change.before ?? "—"} → ${change.after ?? "—"}`;
-        abilityList.append(item);
+        abilityList.append(
+          el("li", {
+            text: `${change.abilityName}: ${change.before ?? "—"} → ${change.after ?? "—"}`,
+          }),
+        );
       }
-      abilitySection.append(abilityList);
-      comparePanel.append(abilitySection);
+      comparePanel.append(
+        el("div", {
+          class: "armory-ability-deltas",
+          data: { abilityDeltas: "true" },
+        }, [
+          el("h4", { text: "Ability changes" }),
+          abilityList,
+        ]),
+      );
     } else {
-      const noAbilityChange = document.createElement("p");
-      noAbilityChange.className = "armory-no-ability-change";
-      noAbilityChange.dataset["abilityDeltas"] = "true";
-      noAbilityChange.textContent = "No Ability raw value changes.";
-      comparePanel.append(noAbilityChange);
+      comparePanel.append(
+        el("p", {
+          class: "armory-no-ability-change",
+          data: { abilityDeltas: "true" },
+          text: "No Ability raw value changes.",
+        }),
+      );
     }
 
-    const equipRow = document.createElement("div");
-    equipRow.className = "armory-equip-row";
-    const equipButton = document.createElement("button");
-    equipButton.type = "button";
-    equipButton.className = "armory-equip-button focus-ring";
-    equipButton.dataset["equipButton"] = "true";
-    equipButton.textContent = "Equip selected";
+    const equipButton = el("button", {
+      class: "armory-equip-button focus-ring",
+      data: { equipButton: "true" },
+      props: { type: "button" },
+      text: "Equip selected",
+    });
     bindPressable(equipButton, () => {
-      const assigned = selected.assignedTo;
+      const assigned = selectedDrop.assignedTo;
       if (assigned && (assigned.classId !== classId || assigned.slot !== slot)) {
         crossEquipConfirm = {
-          dropId: selected.dropId,
+          dropId: selectedDrop.dropId,
           fromClassId: assigned.classId,
           fromSlot: assigned.slot,
         };
         render(snapshot);
         return;
       }
-      publish({ cmd: "equip", args: [selected.dropId, classId, slot] });
+      publish({ cmd: "equip", args: [selectedDrop.dropId, classId, slot] });
     });
-    equipRow.append(equipButton);
-    comparePanel.append(equipRow);
+    comparePanel.append(el("div", { class: "armory-equip-row" }, [equipButton]));
 
-    if (crossEquipConfirm && crossEquipConfirm.dropId === selected.dropId) {
-      const confirm = document.createElement("div");
-      confirm.className = "armory-confirm";
-      confirm.dataset["crossEquipConfirm"] = "true";
-      const copy = document.createElement("p");
-      copy.className = "armory-confirm-copy";
-      copy.textContent = `Move from ${CLASS_LABELS[crossEquipConfirm.fromClassId]} ${SLOT_LABELS[crossEquipConfirm.fromSlot]}? That slot will be empty.`;
-      confirm.append(copy);
-      const actions = document.createElement("div");
-      actions.className = "armory-confirm-actions";
-      const yes = document.createElement("button");
-      yes.type = "button";
-      yes.className = "armory-confirm-yes focus-ring";
-      yes.textContent = "Confirm equip";
+    if (crossEquipConfirm && crossEquipConfirm.dropId === selectedDrop.dropId) {
+      const yes = el("button", {
+        class: "armory-confirm-yes focus-ring",
+        props: { type: "button" },
+        text: "Confirm equip",
+      });
       bindPressable(yes, () => {
-        publish({ cmd: "equip", args: [selected.dropId, classId, slot] });
+        publish({ cmd: "equip", args: [selectedDrop.dropId, classId, slot] });
         crossEquipConfirm = null;
       });
-      const no = document.createElement("button");
-      no.type = "button";
-      no.className = "armory-confirm-no focus-ring";
-      no.textContent = "Cancel";
+      const no = el("button", {
+        class: "armory-confirm-no focus-ring",
+        props: { type: "button" },
+        text: "Cancel",
+      });
       bindPressable(no, () => {
         crossEquipConfirm = null;
         render(snapshot);
       });
-      actions.append(yes, no);
-      confirm.append(actions);
-      comparePanel.append(confirm);
+      comparePanel.append(
+        el("div", { class: "armory-confirm", data: { crossEquipConfirm: "true" } }, [
+          el("p", {
+            class: "armory-confirm-copy",
+            text: `Move from ${CLASS_LABELS[crossEquipConfirm.fromClassId]} ${SLOT_LABELS[crossEquipConfirm.fromSlot]}? That slot will be empty.`,
+          }),
+          el("div", { class: "armory-confirm-actions" }, [yes, no]),
+        ]),
+      );
     }
 
     container.append(comparePanel);
@@ -736,10 +721,11 @@ export function mountArmorySurface(
       return;
     }
 
-    const back = document.createElement("button");
-    back.type = "button";
-    back.className = "armory-back focus-ring";
-    back.textContent = "Back to collection";
+    const back = el("button", {
+      class: "armory-back focus-ring",
+      props: { type: "button" },
+      text: "Back to collection",
+    });
     bindPressable(back, () => {
       view = "collection";
       detailDropId = null;
@@ -747,57 +733,49 @@ export function mountArmorySurface(
     });
     container.append(back);
 
-    const card = document.createElement("article");
-    card.className = "equipment-card equipment-detail";
-    card.dataset["dropDetail"] = String(drop.dropId);
+    const card = el("article", {
+      class: "equipment-card equipment-detail",
+      data: { dropDetail: String(drop.dropId) },
+    });
     renderDropSummary(card, drop);
     container.append(card);
   }
+
+  function renderArmoryBody(snapshot: ReadonlySnapshot, container: HTMLElement): void {
+    if (view === "compare") {
+      renderCompare(snapshot, container);
+    } else if (view === "detail") {
+      renderDetail(snapshot, container);
+    } else {
+      renderCollection(snapshot, container);
+    }
+  }
+
+  const shell = mountSurfaceShell(root, "armory-surface", {
+    title: "Armory",
+    body(snapshot) {
+      const slotStripHost = el("div");
+      renderSlotStrip(snapshot, slotStripHost);
+      const body = el("div", { class: "armory-body" });
+      renderArmoryBody(snapshot, body);
+      return [...slotStripHost.children, body];
+    },
+  });
 
   function render(snapshot: ReadonlySnapshot | null, legality: EngineLegalityView = currentLegality): void {
     currentLegality = legality;
     if (snapshot) {
       syncOptimisticSeen(snapshot.progression.armory);
+      if (!hasUnseenDrops(snapshot.progression.armory)) {
+        options.onBadgeChange?.(false);
+      }
     }
     lastSnapshot = snapshot;
-    root.replaceChildren();
-
-    if (!snapshot) {
-      const empty = document.createElement("p");
-      empty.className = "surface-empty";
-      empty.textContent = "No Snapshot yet.";
-      root.append(empty);
-      return;
-    }
-
-    if (!hasUnseenDrops(snapshot.progression.armory)) {
-      options.onBadgeChange?.(false);
-    }
-
-    const title = document.createElement("h2");
-    title.className = "dock-surface-title";
-    title.textContent = "Armory";
-    root.append(title);
-
-    renderSlotStrip(snapshot, root);
-
-    const body = document.createElement("div");
-    body.className = "armory-body";
-    if (view === "compare") {
-      renderCompare(snapshot, body);
-    } else if (view === "detail") {
-      renderDetail(snapshot, body);
-    } else {
-      renderCollection(snapshot, body);
-    }
-    root.append(body);
+    shell.render(snapshot);
   }
 
   return {
     render,
-    destroy() {
-      root.replaceChildren();
-      root.classList.remove("armory-surface");
-    },
+    destroy: () => shell.destroy(),
   };
 }
