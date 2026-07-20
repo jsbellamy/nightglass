@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { postBusSnapshot } from "./helpers/bus";
+import { advanceUntilVisible } from "./helpers/advance";
 import {
   assertAaContrast,
   readTextContrastSample,
@@ -45,11 +46,12 @@ test.describe("accessibility contrast floor", () => {
   test("colour independence — knockout, rarity, and locked-stage states expose non-colour signals", async ({
     browser,
   }) => {
-    test.setTimeout(120_000);
+    test.setTimeout(60_000);
     const { context, tile } = await openTilePage(browser);
     const dock = await attachDockPage(context);
 
-    await expect(tile.locator(".combatant.knocked-out")).toBeVisible({ timeout: 20_000 });
+    await advanceUntilVisible(tile, tile.locator(".combatant.knocked-out"));
+    await expect(tile.locator(".combatant.knocked-out")).toBeVisible();
     const knockout = await tile.evaluate(() => {
       const combatant = document.querySelector(".combatant.knocked-out");
       const sprite = combatant?.querySelector(".combatant-sprite");
