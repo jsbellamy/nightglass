@@ -841,21 +841,28 @@ describe("__nightglassAdvance test hook", () => {
     ] satisfies EngineEvent[]);
 
     const root = document.createElement("main");
+    let handlers: Parameters<typeof createBusEndpoint>[0] = {};
     const shell = mountTileShell(root, {
       engine,
       content,
       dockWindow: createMockDockWindow(),
       deferPump: true,
-      busFactory: (handlers) => ({
-        publish: (message) => {
-          published.push(message);
-          if (message.type === "pump") {
-            handlers.pump?.(message);
-          }
-        },
-        close: () => {},
-      }),
+      busFactory: (busHandlers) => {
+        handlers = busHandlers;
+        return {
+          publish: (message) => {
+            published.push(message);
+            if (message.type === "pump") {
+              busHandlers.pump?.(message);
+            }
+          },
+          close: () => {},
+        };
+      },
     });
+
+    handlers["dock-opened"]?.({ type: "dock-opened" });
+    published.length = 0;
 
     const advance = (window as unknown as Record<string, unknown>)["__nightglassAdvance"] as (
       ms: number,
@@ -935,10 +942,9 @@ describe("__nightglassAdvance test hook", () => {
 
 describe("advanceSim helper", () => {
   it("throws a clear diagnostic when __nightglassAdvance is absent", async () => {
+    delete (window as unknown as Record<string, unknown>)["__nightglassAdvance"];
     const page = {
-      evaluate: async (fn: (ms: number) => void, ms: number) => {
-        fn(ms);
-      },
+      evaluate: async <T, R>(fn: (arg: T) => R, arg: T) => fn(arg),
     } as unknown as Page;
 
     await expect(advanceSim(page, 1_000)).rejects.toThrow(
