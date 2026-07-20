@@ -145,7 +145,7 @@ describe("presentation mapping", () => {
     expect(body?.style.getPropertyValue("--hurt-flash-strength")).toBe("0.6");
   });
 
-  it("faces party lunge right and opponent hurt recoil left via presentation events", () => {
+  it("mirrors party-facing-right and opponent-facing-left motion from Presentation Events", () => {
     const tile = mountBattleTile(root, buildContent());
     const engine = createEngine(buildContent(), undefined, LOOT_SEED);
     const snapshot = snapshotWithAction(engine.snapshot(), 1_000);
