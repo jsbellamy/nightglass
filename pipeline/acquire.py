@@ -44,10 +44,11 @@ OUTPUT_NAMES = {
     "knight": "knight",
     "wizard": "wizard",
     "priest": "priest",
+    "hunter": "hunter",
     "pipcap": "pipcap",
     "boss": "boss-1",
 }
-DEFAULT_TAGS = ("knight", "wizard", "priest", "pipcap", "boss")
+DEFAULT_TAGS = ("knight", "wizard", "priest", "hunter", "pipcap", "boss")
 
 PALETTE = [tuple(c["rgb"]) for c in
            json.loads((HERE / "palette.json").read_text())["colors"]]

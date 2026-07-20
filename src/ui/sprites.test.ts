@@ -28,10 +28,13 @@ describe("sprite registry", () => {
     expect(priest.url).toContain("priest");
   });
 
-  it("labels hunter interim fallback for asset slice #56", () => {
+  it("resolves the acquired Hunter still without an interim label", () => {
     const hunter = resolveSprite("hunter");
-    expect(hunter.interimLabel).toBe("hunter");
-    expect(hunter.interim?.issue).toBe("#56");
+    expect(hunter.interim).toBeUndefined();
+    expect(hunter.interimLabel).toBeUndefined();
+    expect(hunter.width).toBe(32);
+    expect(hunter.height).toBe(48);
+    expect(hunter.url).toContain("hunter");
   });
 
   it("maps boss-2 and boss-3 to boss-1 interim fallbacks for asset slice #57", () => {

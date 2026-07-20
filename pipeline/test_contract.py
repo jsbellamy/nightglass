@@ -22,6 +22,7 @@ RUNTIME_SPRITES = {
     "knight": "knight.png",
     "wizard": "wizard.png",
     "priest": "priest.png",
+    "hunter": "hunter.png",
     "pipcap": "pipcap.png",
     "boss": "boss-1.png",
 }
@@ -59,6 +60,8 @@ check("Boss opponent grid is recoverable without reduction",
       reports["boss"]["grid"] == [32, 41], str(reports["boss"]))
 check("Priest grid is recoverable without reduction",
       reports["priest"]["grid"] == [27, 46], str(reports["priest"]))
+check("Hunter grid is recoverable without reduction",
+      reports["hunter"]["grid"] == [32, 40], str(reports["hunter"]))
 check("both pitch fits clear the confidence gate",
       all(report[axis]["score"] >= A.MIN_GRID_SCORE
           for report in reports.values() for axis in ("pitch_x", "pitch_y")))

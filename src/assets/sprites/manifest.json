@@ -65,6 +65,28 @@
       "raw_sha256": "34712fbd19213319951ec00330e88242de4a6ba7b5b0822a43eb90a80478d635"
     }
   },
+  "hunter": {
+    "action": "still",
+    "frame_size": [
+      32,
+      48
+    ],
+    "palette": "moonberry-16",
+    "baseline_row": 47,
+    "total_ms": 1,
+    "frames": [
+      {
+        "name": "hunter",
+        "duration_ms": 1,
+        "sha256": "32e3cae818dc350e320ecca903da81645842ea620c9c2e261a071f7ceb60746a"
+      }
+    ],
+    "cues_ms": {},
+    "source": {
+      "provider": "Cursor GenerateImage",
+      "raw_sha256": "226f5e361ce3186628730f2911beafe6481690604e94fe1ebc8631530a3c680a"
+    }
+  },
   "pipcap": {
     "action": "still",
     "frame_size": [
