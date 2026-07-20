@@ -376,6 +376,7 @@ export function mountBattleTile(
     updateBossBar(battlefield, boss);
     battlefield.classList.toggle("opponent-stress-layout", opponents.length >= 5);
     presentation.render(presentationNowMs, snapshot);
+    sfx.releaseDueTo(presentationNowMs);
   }
 
   function applyEvents(events: EngineEvent[], snapshot?: ReadonlySnapshot): void {

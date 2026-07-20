@@ -7,6 +7,8 @@ import type { Snapshot } from "../core/snapshot";
 import { fixtureContent } from "../core/testing/fixture-content";
 import { buildContent } from "../data";
 import * as presentationModule from "./presentation";
+import * as sfxModule from "./sfx";
+import { CUE_IDS, type PlayableAudio } from "./sfx";
 import {
   BATTLEFIELD_HEIGHT,
   STATUS_LINE_HEIGHT,
@@ -273,5 +275,73 @@ describe("Battle Tile renderer", () => {
     });
 
     expect(renderNowMs[renderNowMs.length - 1]).toBe(snapshot.simNowMs);
+  });
+
+  it("queues SFX on applyEvents but plays on render with the presentation clock", async () => {
+    const instances: PlayableAudio[] = [];
+    const createAudio = vi.fn((src: string): PlayableAudio => {
+      const audio: PlayableAudio = {
+        src,
+        volume: 1,
+        loop: false,
+        currentTime: 0,
+        play: vi.fn().mockResolvedValue(undefined),
+        pause: vi.fn(),
+      };
+      instances.push(audio);
+      return audio;
+    });
+    const { createSfx: realCreateSfx } = await vi.importActual<typeof sfxModule>("./sfx");
+    const createSfxSpy = vi.spyOn(sfxModule, "createSfx").mockImplementation((deps) =>
+      realCreateSfx({ ...deps, createAudio }),
+    );
+
+    const root = document.createElement("main");
+    const tile = mountBattleTile(root, fixtureContent);
+    const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
+    const snapshot = engine.snapshot();
+    const opponent = snapshot.attempt?.combatants.find((combatant) => combatant.side === "opponent");
+    if (!opponent) {
+      throw new Error("expected opponent");
+    }
+
+    const sfxInstance = createSfxSpy.mock.results[0]?.value as ReturnType<typeof realCreateSfx>;
+    sfxInstance.setMuted(false);
+
+    const impact = {
+      seq: 99,
+      atMs: 4_500,
+      type: "impact" as const,
+      entityId: "party:knight:front",
+      abilityId: "knight-basic",
+      results: [
+        {
+          targetId: opponent.entityId,
+          kind: "damage" as const,
+          channel: "physical" as const,
+          amount: 1,
+          healthAfter: opponent.health - 1,
+        },
+      ],
+    };
+
+    tile.applyEvents([impact], snapshot);
+    const impactPlaysAfterApply = instances.filter(
+      (audio) =>
+        audio.src.includes(CUE_IDS["impact-physical"]) &&
+        vi.mocked(audio.play).mock.calls.length > 0,
+    );
+    expect(impactPlaysAfterApply).toHaveLength(0);
+
+    tile.render(snapshot, 4_500);
+    expect(
+      instances.some(
+        (audio) =>
+          audio.src.includes(CUE_IDS["impact-physical"]) &&
+          vi.mocked(audio.play).mock.calls.length > 0,
+      ),
+    ).toBe(true);
+
+    createSfxSpy.mockRestore();
   });
 });
