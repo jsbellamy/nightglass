@@ -1,0 +1,28 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "02543340a945e8f1cd52e15a2bb013069c2749a08fd35c0732a24cdbfdcca1ca",
+  "asset_class": "opponent",
+  "runtime_destination": "src/assets/sprites/boss-3.png",
+  "candidate": "boss-3-c.png",
+  "facing": "left",
+  "role": "boss",
+  "style_references": [
+    {
+      "path": "assets-raw/grid_raw/boss.png",
+      "sha256": "ae87deb3e047d6a80f2db3194f666479a89acd980141659f6a9c8178ca63829a",
+      "role": "identity/cohort"
+    },
+    {
+      "path": "assets-raw/grid_raw/pipcap.png",
+      "sha256": "61521e221604d6106dc890e3feafec8326b704c7626e1400fa858cea429cb5a7",
+      "role": "cohort"
+    },
+    {
+      "path": "assets-raw/grid_raw/knight.png",
+      "sha256": "9dfcdd69592cec858d9ff4d53429a2a3b48815918f4b463083e7201d69546cb5",
+      "role": "grid language"
+    }
+  ],
+  "prompt": "TRUE chunky pixel art Boss sprite matching the same crisp uniform square-block grid language as the reference Knight. Canvas is exactly 32 logical columns by 48 logical rows rendered large; each logical pixel is one solid 32x32 rendered-pixel square with aligned seams. One Moonberry botanical Boss, the Thornmother Vane, a towering regal thorn-queen in strict side profile facing LEFT: tall braided nightvine body with berry-dark thorn plates, a crown of cream-gold night-bloom flowers, long curved mint leaf-blade arms raised forward-left, dark-plum one-cell outline, upright commanding stance. IMPORTANT: keep the ENTIRE silhouette inside the frame with at least TWO full magenta cells of clearance on LEFT, RIGHT, TOP, and BOTTOM \u2014 do not touch or crop any edge. Target silhouette about 26 logical columns by 44 logical rows. Flat solid #ff00ff magenta fills every unused cell perfectly. 12 flat colors max. No anti-aliasing, gradients, dithering, soft edges, floor, shadow, glow, particles, text, watermark, or embedded effects."
+}

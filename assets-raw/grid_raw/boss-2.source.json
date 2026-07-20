@@ -1,0 +1,28 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "3ecdcdd3e5716b55e03bbee1b67916b1f6cab1221a31f7d4940d7f62e7f539d6",
+  "asset_class": "opponent",
+  "runtime_destination": "src/assets/sprites/boss-2.png",
+  "candidate": "boss-2-g.png",
+  "facing": "left",
+  "role": "boss",
+  "style_references": [
+    {
+      "path": "assets-raw/grid_raw/boss.png",
+      "sha256": "ae87deb3e047d6a80f2db3194f666479a89acd980141659f6a9c8178ca63829a",
+      "role": "identity/cohort"
+    },
+    {
+      "path": "assets-raw/grid_raw/pipcap.png",
+      "sha256": "61521e221604d6106dc890e3feafec8326b704c7626e1400fa858cea429cb5a7",
+      "role": "mushroom kinship"
+    },
+    {
+      "path": "assets-raw/grid_raw/knight.png",
+      "sha256": "9dfcdd69592cec858d9ff4d53429a2a3b48815918f4b463083e7201d69546cb5",
+      "role": "grid language"
+    }
+  ],
+  "prompt": "TRUE chunky pixel art Boss sprite matching the same crisp uniform square-block grid language as the reference Knight. Canvas is exactly 32 logical columns by 48 logical rows rendered large; each logical pixel is one solid 32x32 rendered-pixel square with aligned seams. One Moonberry botanical Boss, the Gloomcap Matron, a huge brooding elder mushroom matriarch in strict side profile facing LEFT: broad sagging cream-gold cap with berry-pink gill frills, stout twilight-slate stem body wrapped in a stitched leaf shawl, one heavy-lidded dark-plum eye, root-like feet, dark-plum one-cell outline, hunched imposing stance. IMPORTANT: keep the ENTIRE silhouette inside the frame with at least TWO full magenta cells of clearance on LEFT, RIGHT, TOP, and BOTTOM \u2014 do not touch or crop any edge. Target silhouette about 28 logical columns by 42 logical rows. Flat solid #ff00ff magenta fills every unused cell perfectly. 12 flat colors max. No anti-aliasing, gradients, dithering, soft edges, floor, shadow, glow, particles, text, watermark, or embedded effects."
+}

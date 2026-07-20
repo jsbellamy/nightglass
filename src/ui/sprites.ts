@@ -1,5 +1,7 @@
 import type { Content } from "../core/types";
 import boss1Url from "../assets/sprites/boss-1.png";
+import boss2Url from "../assets/sprites/boss-2.png";
+import boss3Url from "../assets/sprites/boss-3.png";
 import knightUrl from "../assets/sprites/knight.png";
 import pipcapUrl from "../assets/sprites/pipcap.png";
 import hunterUrl from "../assets/sprites/hunter.png";
@@ -30,23 +32,13 @@ export const SPRITE_SOURCES = {
   hunter: { url: hunterUrl, width: 32, height: 48 },
   pipcap: { url: pipcapUrl, width: 32, height: 48 },
   "boss-1": { url: boss1Url, width: 32, height: 48 },
+  "boss-2": { url: boss2Url, width: 32, height: 48 },
+  "boss-3": { url: boss3Url, width: 32, height: 48 },
 } as const satisfies Record<string, SpriteSource>;
 
 const KNOWN_SPRITE_KEYS = new Set<string>(Object.keys(SPRITE_SOURCES));
 
-/** Interim #57: later Boss silhouettes reuse boss-1 until acquired. */
-function interimBossSprite(spriteKey: "boss-2" | "boss-3"): SpriteDef {
-  const source = SPRITE_SOURCES["boss-1"];
-  return {
-    ...source,
-    interim: { issue: "#57", note: `${spriteKey} borrows boss-1.png until Boss asset slice lands` },
-  };
-}
-
 export function resolveSprite(spriteKey: string): SpriteDef {
-  if (spriteKey === "boss-2" || spriteKey === "boss-3") {
-    return interimBossSprite(spriteKey);
-  }
   if (spriteKey.startsWith("fixture-")) {
     return resolveSprite(spriteKey.includes("boss") ? "boss-1" : "pipcap");
   }
@@ -70,9 +62,6 @@ export function collectContentSpriteKeys(content: Content): string[] {
 
 export function isRegisteredSpriteKey(spriteKey: string): boolean {
   if (KNOWN_SPRITE_KEYS.has(spriteKey)) {
-    return true;
-  }
-  if (spriteKey === "boss-2" || spriteKey === "boss-3") {
     return true;
   }
   if (spriteKey.startsWith("fixture-")) {
