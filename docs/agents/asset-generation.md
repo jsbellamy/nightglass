@@ -4,6 +4,23 @@ Use this acquisition loop for every task that creates or changes a raster asset,
 whether the source is generated, hand-authored, or derived. The loop produces a
 reviewable asset and a reproducible path back to its source.
 
+## Reading discipline
+
+Read the report, not the render.
+
+Steps 1-5 are answerable entirely from JSON reports, sidecars, and validator
+output. Every measurement you would go looking for has already been recorded as
+text, at roughly a hundredth of the cost of the image it describes — read those.
+
+Step 6 is the single visual step: open one composite, the contact sheet or the
+native-scale review surface, and judge it. Run that review in a subagent, which
+opens the image, answers the asset class's questions, and returns its verdict as
+text — the image stays out of the main task's context, so its cost is bounded by
+the subagent's own turns rather than by every remaining request of the task.
+
+Guardrail: no candidate PNG is opened during steps 1-5, and no step opens a
+directory of images.
+
 ## 1. Declare the asset contract
 
 Before making an image, record:
@@ -120,11 +137,22 @@ a fresh acquisition loop with shipping gates declared in step 1.
 Run the earliest deterministic ingest or validator immediately. Use its report as
 feedback for the next candidate. Provider-resolution prettiness is not a gate.
 
-For logical-grid art, record recovered width, height, X/Y pitch, pitch
-confidence, and whether the subject touches a raw canvas edge. Classify each
-reject as exactly one primary failure, then retry **prompt-side** with that
-class's move. Keep render resolution constant; never resize a failed candidate
-into an accepted raw.
+For logical-grid art, read the ingest report rather than the candidate image.
+`pipeline/icons/ingest.py` writes `ingest-report.json` beside the raws; each entry
+carries the measurement the failure table below is keyed on:
+
+| Failure | Report key |
+| --- | --- |
+| Overshoot | `recovered.grid` vs the acceptance canvas |
+| Underfill | `recovered.grid` long axis vs `MIN_LONG_AXIS` |
+| Pitch-fail | `recovered.pitch_x.score` / `recovered.pitch_y.score` vs `MIN_GRID_SCORE` |
+| Clip-fail | `recovered.bbox` touching the raw canvas edge |
+| Off-ramp | `ramp.far_fraction` / `ramp.off_ramp_reject` |
+
+Classify the reject from those values. Do not open the candidate PNG to confirm a
+number the report already states. Classify each reject as exactly one primary
+failure, then retry **prompt-side** with that class's move. Keep render resolution
+constant; never resize a failed candidate into an accepted raw.
 
 | Failure | Signal | Retry move |
 | --- | --- | --- |
@@ -138,12 +166,9 @@ If two signals fire, fix **clip-fail** first, then **overshoot**, then
 **pitch-fail**, then **off-ramp**, then **underfill**. A candidate advances only
 when its recovered grid fits and every raw-level gate passes.
 
-**#125 Equipment icon trial (measured).** First AI pass: `dewlight-focus`
-overshot at 27×35; `bramblesong-bow` recovered but failed **off-ramp** at 17%
-far (brown wood → plum). Second pass: focus still 23×31 (near miss); bow cleared
-off-ramp at 6.9% after a Moonberry-only material rewrite. Third pass: focus
-accepted at 17×25 (underfilled vs the 26–30 target — readable, but regenerate
-larger before shipping). Evidence:
+**#125 Equipment icon trial (measured).** Brown wood reads as **off-ramp** at
+17% and must be prompted as an on-palette material; grid-faithful style references
+fix **pitch-fail**. Evidence:
 [`../research/evidence/125-equipment-icons-34/ai-gen/`](../research/evidence/125-equipment-icons-34/ai-gen/).
 
 For non-grid art, use the equivalent measurable failure—dimensions, crop,
@@ -176,17 +201,47 @@ must create one or explicitly resolve why byte identity is outside its contract.
 
 ## 6. Review in context
 
-Review the runtime asset at native scale in the surface where it ships. A sprite
-is judged at 1× in the Battle Tile, with representative neighbouring bodies and
-effects; an interface asset is judged in its actual control; a backdrop is judged
-behind the foreground palette.
+Step 6 is the only step that opens a raster for judgement. Open **one** contact
+sheet or native-scale composite — never a directory of candidate or runtime PNGs.
+If the asset class has no sheet yet, build one (same discipline as the pipeline
+outputs below) rather than opening *N* separate images.
 
-Record the review image and answer the asset-specific identity, silhouette,
-readability, and separation questions. A HITL prototype remains open until the
-human records the visual choice.
+Established composites:
 
-This step is complete when the task links the native-scale evidence and records
-an explicit accept/retry/reject result.
+- Equipment icons — `pipeline/icons/build.py` `build_contact_sheet` emits
+  `src/assets/icons/family-sheet@8x.png` (all families on one sheet).
+- Battle Tile body art — e.g.
+  `docs/research/evidence/56-hunter-canonical/COHORT_1x.png` (style cohort at
+  native 1×).
+- Boss stills — e.g.
+  `docs/research/evidence/57-boss-stills/LINEUP_strip_1x.png` (lineup at native
+  1×).
+
+Judge that single image in the surface where the asset ships: sprites at 1× on
+the Battle Tile with representative neighbours; interface assets in their
+control; backdrops behind the foreground palette.
+
+Run the visual review in **a subagent with its own context** that returns text
+only — not in the implementing agent's context. Give it:
+
+- the one composite image path;
+- the asset class's identity, silhouette, readability, and separation questions;
+- the accept bar from the owning contract (step 1 pointers).
+
+It returns an explicit **accept / retry / reject** verdict plus written answers to
+those questions. The implementing agent records that text as step-6 evidence and
+**does not open the image itself**. A subagent's context is discarded when it
+returns, so the review image is paid for on that subagent's handful of turns
+instead of on every remaining request of the asset task — the bound is structural,
+not a matter of remembering to be careful.
+
+**Human-in-the-loop review** is unchanged: a person looking at an image costs no
+context and is not required to use a subagent. A HITL prototype remains open until
+the human records the visual choice.
+
+This step is complete when the task links the composite path, attaches the
+subagent's text verdict (or the human's recorded choice), and records an explicit
+accept/retry/reject result.
 
 ## 7. Record the acquisition
 
@@ -197,7 +252,12 @@ The task resolution links:
 - runtime output and manifest
 - validator output and byte-identity proof
 - native-scale review evidence
-- rejected candidates when their failure changes future prompting
+- rejected candidates recorded as a table row (candidate, primary failure class,
+  recovered measurement) in the task's evidence README when their failure changes
+  future prompting. The row is the durable artifact — a later task reads the row,
+  never the rejected PNG. Worked example:
+  [`../research/evidence/57-boss-stills/README.md`](../research/evidence/57-boss-stills/README.md)
+  (**Rejected candidates** table).
 
 Update the owning contract only when the result changes reusable behaviour.
 Record task-specific measurements with the task evidence.
