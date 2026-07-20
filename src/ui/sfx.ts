@@ -309,7 +309,7 @@ export function createSfx(deps: SfxDeps = {}): SfxController {
     }
     if (!ambient) {
       ambient = createAudio(CUE_URLS["ambient-night-garden"]);
-      ambient.loop = true;
+      ambient.loop = false;
     }
     applyVolume(ambient);
     void ambient.play();
