@@ -357,8 +357,6 @@ export interface AbilityRawChange {
 }
 
 export function compareAbilityRawChanges(
-  _classKit: ClassKitDef,
-  _talentState: ClassTalentState,
   loadoutAbilityIds: string[],
   basicAbility: AbilityDef,
   currentStats: BaseStats,

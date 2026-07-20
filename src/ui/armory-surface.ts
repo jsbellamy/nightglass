@@ -624,8 +624,6 @@ export function mountArmorySurface(
       content,
     );
     const abilityChanges = compareAbilityRawChanges(
-      classKit,
-      talentState,
       loadout,
       basicAbility,
       currentStats,
