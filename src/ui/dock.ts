@@ -14,8 +14,6 @@ export type DockTabId = "party" | "loadout" | "talents" | "armory" | "stage";
 export interface DockSurfaceMountOptions {
   content: Content;
   onCommand(command: TileCommand): void;
-  /** Armory only — the Unseen Equipment badge; other surfaces ignore this. */
-  onBadgeChange?(visible: boolean): void;
 }
 
 export interface DockSurfaceEntry {
@@ -36,7 +34,6 @@ export const DOCK_TABS = DOCK_SURFACES.map(({ id, label }) => ({ id, label }));
 
 export interface ManagementDock {
   render(snapshot: ReadonlySnapshot | null, legality?: EngineLegalityView): void;
-  setArmoryBadge(visible: boolean): void;
   setOpen(open: boolean): void;
   destroy(): void;
 }
@@ -59,7 +56,6 @@ export function mountManagementDock(
   options: ManagementDockOptions = {},
 ): ManagementDock {
   let activeTab: DockTabId = options.initialTab ?? "party";
-  let armoryBadge = false;
   let heldSnapshot: ReadonlySnapshot | null = null;
   let heldLegality: EngineLegalityView = EMPTY_ENGINE_LEGALITY;
   let hasHeldState = false;
@@ -96,20 +92,9 @@ export function mountManagementDock(
     throw new Error("Management Dock requires content for Loadout and Talents surfaces");
   }
 
-  function syncArmoryTabBadge(): void {
-    const badge = tabButtons.get("armory")?.querySelector<HTMLElement>(".dock-tab-badge");
-    if (badge) {
-      badge.hidden = !armoryBadge;
-    }
-  }
-
   const mountOptions: DockSurfaceMountOptions = {
     content: options.content,
     onCommand: (command) => options.onCommand?.(command),
-    onBadgeChange: (visible) => {
-      armoryBadge = visible;
-      syncArmoryTabBadge();
-    },
   };
 
   for (const entry of DOCK_SURFACES) {
@@ -121,12 +106,6 @@ export function mountManagementDock(
     tabButton.setAttribute("aria-controls", `dock-panel-${entry.id}`);
     tabButton.id = `dock-tab-${entry.id}`;
     tabButton.textContent = entry.label;
-
-    const badge = document.createElement("span");
-    badge.className = "dock-tab-badge";
-    badge.hidden = true;
-    badge.setAttribute("aria-label", "New equipment");
-    tabButton.append(badge);
 
     tabList.append(tabButton);
     tabButtons.set(entry.id, tabButton);
@@ -260,10 +239,6 @@ export function mountManagementDock(
       hasHeldState = true;
       syncStageLabel();
       renderSurface(activeTab);
-    },
-    setArmoryBadge(visible) {
-      armoryBadge = visible;
-      syncArmoryTabBadge();
     },
     setOpen(open) {
       root.hidden = !open;

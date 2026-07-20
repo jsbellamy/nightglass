@@ -126,13 +126,12 @@ describe("Management Dock shell", () => {
     battleTile.destroy();
   });
 
-  it("shows the Armory tab badge when the drop-toast hook fires", () => {
+  it("renders the Armory tab without a badge element", () => {
     const root = document.createElement("main");
     const dock = mountDock(root);
 
-    expect(root.querySelector<HTMLElement>('[data-dock-tab="armory"] .dock-tab-badge')?.hidden).toBe(true);
-    dock.setArmoryBadge(true);
-    expect(root.querySelector<HTMLElement>('[data-dock-tab="armory"] .dock-tab-badge')?.hidden).toBe(false);
+    const armoryTab = root.querySelector<HTMLButtonElement>('[data-dock-tab="armory"]');
+    expect(armoryTab?.childElementCount).toBe(0);
 
     dock.destroy();
   });

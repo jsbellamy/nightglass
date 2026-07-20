@@ -41,7 +41,6 @@ export interface ArmorySurface {
 export interface ArmorySurfaceOptions {
   content: Content;
   onCommand?: (command: TileCommand) => void;
-  onBadgeChange?: (visible: boolean) => void;
 }
 
 type ArmoryView = "collection" | "detail" | "compare";
@@ -102,10 +101,6 @@ export function mountArmorySurface(
         optimisticallySeenDropIds.delete(drop.dropId);
       }
     }
-  }
-
-  function hasUnseenDrops(armory: readonly DropInstance[]): boolean {
-    return armory.some((drop) => !isDropSeen(drop));
   }
 
   function markDropSeen(dropId: number): void {
@@ -766,9 +761,6 @@ export function mountArmorySurface(
     currentLegality = legality;
     if (snapshot) {
       syncOptimisticSeen(snapshot.progression.armory);
-      if (!hasUnseenDrops(snapshot.progression.armory)) {
-        options.onBadgeChange?.(false);
-      }
     }
     lastSnapshot = snapshot;
     shell.render(snapshot);

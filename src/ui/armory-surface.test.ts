@@ -272,14 +272,13 @@ describe("Armory surface", () => {
     surface.destroy();
   });
 
-  it("marks pieces seen from detail and clears the dock badge when none remain", () => {
+  it("marks pieces seen from detail and dispatches markSeen", () => {
     const dockRoot = document.createElement("main");
     const commands: unknown[] = [];
     const dock = mountManagementDock(dockRoot, {
       content: fixtureContent,
       onCommand: (command) => commands.push(command),
     });
-    dock.setArmoryBadge(true);
 
     const snapshot = armorySnapshot([
       drop({ dropId: 1, baseId: "fixture-blade", seen: false }),
@@ -299,9 +298,7 @@ describe("Armory surface", () => {
       drop({ dropId: 2, baseId: "fixture-armor", seen: true }),
     ]);
     renderDock(dock, cleared);
-    expect(
-      dockRoot.querySelector<HTMLElement>('[data-dock-tab="armory"] .dock-tab-badge')?.hidden,
-    ).toBe(true);
+    expect(dockRoot.querySelector('[data-unseen-marker="true"]')).toBeNull();
 
     dock.destroy();
   });
