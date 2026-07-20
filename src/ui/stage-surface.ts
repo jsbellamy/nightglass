@@ -2,6 +2,7 @@ import type { ReadonlySnapshot } from "../core/snapshot";
 import type { Content } from "../core/types";
 import type { TileCommand } from "./bus";
 import { bindPressable } from "./keyboard";
+import { el, mountSurfaceShell } from "./surface-shell";
 
 export interface StageSurface {
   render(snapshot: ReadonlySnapshot | null): void;
@@ -24,7 +25,6 @@ export function mountStageSurface(
   root: HTMLElement,
   options: StageSurfaceOptions,
 ): StageSurface {
-  root.classList.add("stage-surface");
   let pendingStage: 1 | 2 | 3 | null = null;
 
   function clearConfirm(): void {
@@ -34,146 +34,113 @@ export function mountStageSurface(
 
   function renderConfirm(stageId: 1 | 2 | 3): void {
     clearConfirm();
-    const confirm = document.createElement("div");
-    confirm.className = "stage-confirm";
-    confirm.setAttribute("role", "region");
-    confirm.setAttribute("aria-label", "Confirm Stage selection");
-
-    const copy = document.createElement("p");
-    copy.className = "stage-confirm-copy";
-    copy.textContent =
-      "Abandons the current Attempt; earned XP and Drops are kept. Continue?";
-
-    const actions = document.createElement("div");
-    actions.className = "stage-confirm-actions";
-
-    const yes = document.createElement("button");
-    yes.type = "button";
-    yes.className = "stage-confirm-yes focus-ring";
-    yes.dataset["stageConfirm"] = "yes";
-    yes.textContent = "Confirm";
+    const yes = el("button", {
+      class: "stage-confirm-yes focus-ring",
+      data: { stageConfirm: "yes" },
+      props: { type: "button" },
+      text: "Confirm",
+    });
     bindPressable(yes, () => {
       options.onCommand?.({ cmd: "selectStage", args: [stageId] });
       clearConfirm();
     });
 
-    const no = document.createElement("button");
-    no.type = "button";
-    no.className = "stage-confirm-no focus-ring";
-    no.dataset["stageConfirm"] = "no";
-    no.textContent = "Cancel";
+    const no = el("button", {
+      class: "stage-confirm-no focus-ring",
+      data: { stageConfirm: "no" },
+      props: { type: "button" },
+      text: "Cancel",
+    });
     bindPressable(no, () => {
       clearConfirm();
     });
 
-    actions.append(yes, no);
-    confirm.append(copy, actions);
+    const confirm = el(
+      "div",
+      {
+        class: "stage-confirm",
+        props: { role: "region" },
+        aria: { label: "Confirm Stage selection" },
+      },
+      [
+        el("p", {
+          class: "stage-confirm-copy",
+          text: "Abandons the current Attempt; earned XP and Drops are kept. Continue?",
+        }),
+        el("div", { class: "stage-confirm-actions" }, [yes, no]),
+      ],
+    );
+
     root.append(confirm);
     yes.focus();
   }
 
+  const shell = mountSurfaceShell(root, "stage-surface", {
+    title: "Stage",
+    body(snapshot) {
+      const attempt = snapshot.attempt;
+
+      const positionText = attempt
+        ? `Current Attempt: Stage ${attempt.stage}, ${encounterLabel(attempt.encounter)}, ${attempt.phase}`
+        : "No active Attempt";
+
+      const rows = options.content.stages.map((stageDef) => {
+        const stageId = stageDef.id;
+        const unlocked = stageId <= snapshot.progression.unlockedStage;
+        const isCurrent = attempt?.stage === stageId;
+
+        const row = el("button", {
+          class: "stage-row focus-ring",
+          data: { stageId: String(stageId) },
+          props: {
+            type: "button",
+            disabled: !unlocked,
+            role: "listitem",
+          },
+          aria: { disabled: unlocked ? "false" : "true" },
+        }, [
+          el("span", { class: "stage-name", text: stageDef.name }),
+          !unlocked
+            ? el("span", {
+                class: "stage-lock-glyph",
+                props: { ariaHidden: true },
+                text: "🔒",
+              })
+            : null,
+          isCurrent ? el("span", { class: "stage-current-label", text: "Current" }) : null,
+        ]);
+
+        if (unlocked) {
+          bindPressable(row, () => {
+            pendingStage = stageId;
+            render(snapshot);
+          });
+        }
+
+        return row;
+      });
+
+      const policyCopy =
+        attempt?.phase === "defeat-hold"
+          ? "After Party Defeat, Retry restarts this Stage automatically. Retreat is selecting a lower unlocked Stage."
+          : "Retry restarts the current Stage after Party Defeat. Retreat is selecting a lower unlocked Stage (floor: Stage 1).";
+
+      return [
+        el("p", { class: "attempt-position", text: positionText }),
+        el("div", { class: "stage-list", props: { role: "list" } }, rows),
+        el("section", { class: "failure-policy", aria: { label: "Failure Policy" } }, [
+          el("h3", { class: "surface-section-title", text: "Failure Policy" }),
+          el("p", { class: "failure-policy-copy", text: policyCopy }),
+        ]),
+      ];
+    },
+  });
+
   function render(snapshot: ReadonlySnapshot | null): void {
     const confirmStage = pendingStage;
-    root.replaceChildren();
+    shell.render(snapshot);
     pendingStage = confirmStage;
-
-    if (!snapshot) {
-      const empty = document.createElement("p");
-      empty.className = "surface-empty";
-      empty.textContent = "No Snapshot yet.";
-      root.append(empty);
-      return;
-    }
-
-    const title = document.createElement("h2");
-    title.className = "dock-surface-title";
-    title.textContent = "Stage";
-    root.append(title);
-
-    const attempt = snapshot.attempt;
-    const position = document.createElement("p");
-    position.className = "attempt-position";
-    if (attempt) {
-      position.textContent = `Current Attempt: Stage ${attempt.stage}, ${encounterLabel(
-        attempt.encounter,
-      )}, ${attempt.phase}`;
-    } else {
-      position.textContent = "No active Attempt";
-    }
-    root.append(position);
-
-    const list = document.createElement("div");
-    list.className = "stage-list";
-    list.setAttribute("role", "list");
-
-    for (const stageDef of options.content.stages) {
-      const stageId = stageDef.id;
-      const unlocked = stageId <= snapshot.progression.unlockedStage;
-      const isCurrent = attempt?.stage === stageId;
-
-      const row = document.createElement("button");
-      row.type = "button";
-      row.className = "stage-row focus-ring";
-      row.dataset["stageId"] = String(stageId);
-      row.setAttribute("role", "listitem");
-      row.disabled = !unlocked;
-      row.setAttribute("aria-disabled", unlocked ? "false" : "true");
-
-      const name = document.createElement("span");
-      name.className = "stage-name";
-      name.textContent = stageDef.name;
-
-      row.append(name);
-
-      if (!unlocked) {
-        const lock = document.createElement("span");
-        lock.className = "stage-lock-glyph";
-        lock.setAttribute("aria-hidden", "true");
-        lock.textContent = "🔒";
-        row.append(lock);
-      }
-
-      if (isCurrent) {
-        const current = document.createElement("span");
-        current.className = "stage-current-label";
-        current.textContent = "Current";
-        row.append(current);
-      }
-
-      if (unlocked) {
-        bindPressable(row, () => {
-          pendingStage = stageId;
-          render(snapshot);
-        });
-      }
-
-      list.append(row);
-    }
-
-    root.append(list);
-
-    const policy = document.createElement("section");
-    policy.className = "failure-policy";
-    policy.setAttribute("aria-label", "Failure Policy");
-
-    const policyTitle = document.createElement("h3");
-    policyTitle.className = "surface-section-title";
-    policyTitle.textContent = "Failure Policy";
-    policy.append(policyTitle);
-
-    const policyCopy = document.createElement("p");
-    policyCopy.className = "failure-policy-copy";
-    if (attempt?.phase === "defeat-hold") {
-      policyCopy.textContent =
-        "After Party Defeat, Retry restarts this Stage automatically. Retreat is selecting a lower unlocked Stage.";
-    } else {
-      policyCopy.textContent =
-        "Retry restarts the current Stage after Party Defeat. Retreat is selecting a lower unlocked Stage (floor: Stage 1).";
-    }
-    policy.append(policyCopy);
-    root.append(policy);
-
-    if (pendingStage !== null) {
+    if (snapshot && pendingStage !== null) {
       renderConfirm(pendingStage);
     }
   }
@@ -182,8 +149,7 @@ export function mountStageSurface(
     render,
     destroy() {
       pendingStage = null;
-      root.replaceChildren();
-      root.classList.remove("stage-surface");
+      shell.destroy();
     },
   };
 }

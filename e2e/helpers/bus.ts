@@ -24,11 +24,11 @@ export async function postBusCommand(page: Page, command: TileCommand): Promise<
 /** Publish a Snapshot to every bus peer (e.g. seed the Management Dock Armory). */
 export async function postBusSnapshot(page: Page, snapshot: Snapshot): Promise<void> {
   await page.evaluate(
-    ({ channelName, snapshot: snap }) => {
+    ({ channelName, snapshot: snap, legality }) => {
       const channel = new BroadcastChannel(channelName);
-      channel.postMessage({ type: "snapshot", snapshot: snap, legality: EMPTY_SERIALIZED_LEGALITY });
+      channel.postMessage({ type: "snapshot", snapshot: snap, legality });
       channel.close();
     },
-    { channelName: NIGHTGLASS_BUS_CHANNEL, snapshot },
+    { channelName: NIGHTGLASS_BUS_CHANNEL, snapshot, legality: EMPTY_SERIALIZED_LEGALITY },
   );
 }
