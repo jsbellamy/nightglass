@@ -8,7 +8,7 @@ import { fixtureContent } from "../core/testing/fixture-content";
 import { buildContent } from "../data";
 import * as presentationModule from "./presentation";
 import * as sfxModule from "./sfx";
-import { CUE_IDS, type PlayableAudio } from "./sfx";
+import { type CuePlayer, type OneShotSfxCueId } from "./sfx";
 import {
   BATTLEFIELD_HEIGHT,
   STATUS_LINE_HEIGHT,
@@ -278,22 +278,17 @@ describe("Battle Tile renderer", () => {
   });
 
   it("queues SFX on applyEvents but plays on render with the presentation clock", async () => {
-    const instances: PlayableAudio[] = [];
-    const createAudio = vi.fn((src: string): PlayableAudio => {
-      const audio: PlayableAudio = {
-        src,
-        volume: 1,
-        loop: false,
-        currentTime: 0,
-        play: vi.fn().mockResolvedValue(undefined),
-        pause: vi.fn(),
-      };
-      instances.push(audio);
-      return audio;
-    });
+    const cuePlays: OneShotSfxCueId[] = [];
+    const createCuePlayer = vi.fn((): CuePlayer => ({
+      preload: vi.fn(),
+      play: vi.fn((cue: OneShotSfxCueId) => {
+        cuePlays.push(cue);
+      }),
+      destroy: vi.fn(),
+    }));
     const { createSfx: realCreateSfx } = await vi.importActual<typeof sfxModule>("./sfx");
     const createSfxSpy = vi.spyOn(sfxModule, "createSfx").mockImplementation((deps) =>
-      realCreateSfx({ ...deps, createAudio }),
+      realCreateSfx({ ...deps, createCuePlayer }),
     );
 
     const root = document.createElement("main");
@@ -326,21 +321,10 @@ describe("Battle Tile renderer", () => {
     };
 
     tile.applyEvents([impact], snapshot);
-    const impactPlaysAfterApply = instances.filter(
-      (audio) =>
-        audio.src.includes(CUE_IDS["impact-physical"]) &&
-        vi.mocked(audio.play).mock.calls.length > 0,
-    );
-    expect(impactPlaysAfterApply).toHaveLength(0);
+    expect(cuePlays).toHaveLength(0);
 
     tile.render(snapshot, 4_500);
-    expect(
-      instances.some(
-        (audio) =>
-          audio.src.includes(CUE_IDS["impact-physical"]) &&
-          vi.mocked(audio.play).mock.calls.length > 0,
-      ),
-    ).toBe(true);
+    expect(cuePlays).toContain("impact-physical");
 
     createSfxSpy.mockRestore();
   });

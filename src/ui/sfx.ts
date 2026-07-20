@@ -13,7 +13,18 @@ import { PUMP_INTERVAL_MS } from "./pump";
 export const AUDIO_PREFS_KEY = "nightglass-audio-v1";
 
 export const MAX_CUES_PER_RELEASE = 4;
-const POOL_SIZE_PER_CUE = 4;
+
+const ONE_SHOT_CUE_IDS = [
+  "impact-physical",
+  "impact-elemental",
+  "knockout",
+  "wave-started",
+  "stage-cleared",
+  "party-defeat",
+  "drop-awarded",
+] as const;
+
+export type OneShotSfxCueId = (typeof ONE_SHOT_CUE_IDS)[number];
 
 export interface AudioPrefs {
   muted: boolean;
@@ -58,20 +69,26 @@ export interface PlayableAudio {
   pause(): void;
 }
 
+export interface CuePlayer {
+  /** Starts background decode of every cue. Called once during createSfx. */
+  preload(): void;
+  /** Plays `cue` at `volume` (0..1). No-op if that cue is not decoded yet. */
+  play(cue: OneShotSfxCueId, volume: number): void;
+  /** Releases decoded buffers and closes the audio context. */
+  destroy(): void;
+}
+
 export interface SfxDeps {
   storage?: Pick<Storage, "getItem" | "setItem">;
   document?: Document;
+  /** Ambient loop only. Cues no longer use this. */
   createAudio?: (src: string) => PlayableAudio;
+  createCuePlayer?: () => CuePlayer;
 }
 
 interface QueuedCue {
   atMs: number;
-  cue: SfxCueId;
-}
-
-interface PoolEntry {
-  audio: PlayableAudio;
-  lastStartedAt: number;
+  cue: OneShotSfxCueId;
 }
 
 export interface SfxController {
@@ -128,8 +145,8 @@ function impactChannelsForEvent(event: Extract<EngineEvent, { type: "impact" }>)
 function cuesForEvent(
   event: EngineEvent,
   impactKeys: Set<string>,
-): { atMs: number; cue: SfxCueId }[] {
-  const queued: { atMs: number; cue: SfxCueId }[] = [];
+): { atMs: number; cue: OneShotSfxCueId }[] {
+  const queued: { atMs: number; cue: OneShotSfxCueId }[] = [];
   switch (event.type) {
     case "impact": {
       for (const channel of impactChannelsForEvent(event)) {
@@ -166,6 +183,75 @@ function cuesForEvent(
   return queued;
 }
 
+interface DefaultCuePlayer extends CuePlayer {
+  resumeIfSuspended(): Promise<void>;
+}
+
+function createDefaultCuePlayer(): DefaultCuePlayer {
+  let ctx: AudioContext | null = null;
+  const buffers = new Map<OneShotSfxCueId, AudioBuffer>();
+
+  function getContext(): AudioContext {
+    if (!ctx) {
+      ctx = new AudioContext();
+    }
+    return ctx;
+  }
+
+  return {
+    preload(): void {
+      for (const cue of ONE_SHOT_CUE_IDS) {
+        const url = CUE_URLS[cue];
+        void fetch(url)
+          .then((response) => response.arrayBuffer())
+          .then((arrayBuffer) => getContext().decodeAudioData(arrayBuffer))
+          .then((buffer) => {
+            buffers.set(cue, buffer);
+          })
+          .catch(() => {
+            /* skip failed decode */
+          });
+      }
+    },
+
+    play(cue: OneShotSfxCueId, volume: number): void {
+      const buffer = buffers.get(cue);
+      if (!buffer || !ctx) {
+        return;
+      }
+      const source = ctx.createBufferSource();
+      source.buffer = buffer;
+      const gain = ctx.createGain();
+      gain.gain.value = volume;
+      source.connect(gain);
+      gain.connect(ctx.destination);
+      source.onended = () => {
+        source.disconnect();
+        gain.disconnect();
+      };
+      source.start();
+    },
+
+    async resumeIfSuspended(): Promise<void> {
+      if (ctx?.state === "suspended") {
+        await ctx.resume();
+      }
+    },
+
+    destroy(): void {
+      buffers.clear();
+      if (ctx) {
+        void ctx.close();
+        ctx = null;
+      }
+    },
+  };
+}
+
+function isDefaultCuePlayer(player: CuePlayer): player is DefaultCuePlayer {
+  return "resumeIfSuspended" in player;
+}
+
 export function createSfx(deps: SfxDeps = {}): SfxController {
   const storage = deps.storage ?? localStorage;
   const doc = deps.document ?? document;
@@ -175,6 +261,7 @@ export function createSfx(deps: SfxDeps = {}): SfxController {
       const audio = new Audio(src);
       return audio;
     });
+  const cuePlayer = deps.createCuePlayer?.() ?? createDefaultCuePlayer();
 
   let prefs = readPrefs(storage);
   let ambient: PlayableAudio | null = null;
@@ -182,8 +269,8 @@ export function createSfx(deps: SfxDeps = {}): SfxController {
   let popoverOpen = false;
   let onDocumentClick: ((event: MouseEvent) => void) | null = null;
   const cueQueue: QueuedCue[] = [];
-  const pools = new Map<SfxCueId, PoolEntry[]>();
-  let playGeneration = 0;
+
+  cuePlayer.preload();
 
   function applyVolume(audio: PlayableAudio): void {
     audio.volume = prefs.muted ? 0 : prefs.volume;
@@ -193,33 +280,18 @@ export function createSfx(deps: SfxDeps = {}): SfxController {
     writePrefs(storage, prefs);
   }
 
-  function acquirePooledAudio(cue: SfxCueId): PlayableAudio {
-    let pool = pools.get(cue);
-    if (!pool) {
-      pool = Array.from({ length: POOL_SIZE_PER_CUE }, () => ({
-        audio: createAudio(CUE_URLS[cue]),
-        lastStartedAt: -1,
-      }));
-      pools.set(cue, pool);
+  function applyVolumePreference(volume: number): void {
+    prefs = { ...prefs, volume: clampVolume(volume) };
+    if (ambient) {
+      applyVolume(ambient);
     }
-    let chosen = pool[0]!;
-    for (const entry of pool) {
-      if (entry.lastStartedAt < chosen.lastStartedAt) {
-        chosen = entry;
-      }
-    }
-    chosen.lastStartedAt = ++playGeneration;
-    chosen.audio.currentTime = 0;
-    return chosen.audio;
   }
 
-  function playCue(cue: SfxCueId): void {
+  function playCue(cue: OneShotSfxCueId): void {
     if (prefs.muted) {
       return;
     }
-    const audio = acquirePooledAudio(cue);
-    applyVolume(audio);
-    void audio.play();
+    cuePlayer.play(cue, prefs.volume);
   }
 
   function stopAmbient(): void {
@@ -312,6 +384,9 @@ export function createSfx(deps: SfxDeps = {}): SfxController {
     setMuted(muted: boolean): void {
       prefs = { ...prefs, muted };
       persistPrefs();
+      if (!muted && isDefaultCuePlayer(cuePlayer)) {
+        void cuePlayer.resumeIfSuspended();
+      }
       syncAmbient();
       const muteButton = controlsRoot?.querySelector<HTMLButtonElement>(".audio-mute-toggle");
       if (muteButton) {
@@ -320,11 +395,8 @@ export function createSfx(deps: SfxDeps = {}): SfxController {
     },
 
     setVolume(volume: number): void {
-      prefs = { ...prefs, volume: clampVolume(volume) };
+      applyVolumePreference(volume);
       persistPrefs();
-      if (ambient) {
-        applyVolume(ambient);
-      }
     },
 
     toggleMuted(): void {
@@ -409,8 +481,12 @@ export function createSfx(deps: SfxDeps = {}): SfxController {
 
       slider.addEventListener("input", () => {
         const volume = Number(slider.value) / 100;
-        this.setVolume(volume);
+        applyVolumePreference(volume);
         slider.setAttribute("aria-valuenow", slider.value);
+      });
+
+      slider.addEventListener("change", () => {
+        persistPrefs();
       });
 
       onDocumentClick = (event: MouseEvent) => {
@@ -441,6 +517,7 @@ export function createSfx(deps: SfxDeps = {}): SfxController {
       stopAmbient();
       ambient = null;
       controlsRoot = null;
+      cuePlayer.destroy();
     },
   };
 }
