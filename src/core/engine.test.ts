@@ -11,6 +11,40 @@ const DURATION_MS = 30_000;
 const FIXTURE_NOW_MS = 1_000;
 const fixtureNow = () => FIXTURE_NOW_MS;
 
+function dropIdsWhileClearingEncounter(
+  engine: ReturnType<typeof createEngine>,
+  encounter: 1 | 2 | 3,
+): number[] {
+  const drops: number[] = [];
+  for (let ms = 0; ms < 300_000; ms += 1) {
+    const events = engine.advanceBy(1);
+    for (const event of events) {
+      if (event.type === "drop-awarded") {
+        drops.push(event.dropId);
+      }
+      if (event.type === "wave-cleared" && event.encounter === encounter) {
+        return drops;
+      }
+    }
+  }
+  throw new Error(`encounter ${encounter} never cleared`);
+}
+
+function eventsWhileClearingEncounter(
+  engine: ReturnType<typeof createEngine>,
+  encounter: 1 | 2 | 3,
+): EngineEvent[] {
+  const collected: EngineEvent[] = [];
+  for (let ms = 0; ms < 300_000; ms += 1) {
+    const events = engine.advanceBy(1);
+    collected.push(...events);
+    if (events.some((event) => event.type === "wave-cleared" && event.encounter === encounter)) {
+      return collected;
+    }
+  }
+  throw new Error(`encounter ${encounter} never cleared`);
+}
+
 const fixtureTalents = defaultTalentsForClasses(fixtureContent.classes);
 
 function progressionState(
@@ -2112,38 +2146,88 @@ describe("progression", () => {
 });
 
 describe("Equipment and Drops", () => {
-  it("awards one Drop per ordinary Wave clear and two sequential Boss Drops", () => {
+  it("awards zero Drops on encounter 1, one on encounters 2 and 3 per stage cycle", () => {
     const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
     engine.advanceBy(1);
 
-    const drops: number[] = [];
-    for (let ms = 0; ms < 300_000; ms += 1) {
-      const events = engine.advanceBy(1);
-      for (const event of events) {
-        if (event.type === "drop-awarded") {
-          drops.push(event.dropId);
-        }
-      }
-      const snap = engine.snapshot();
-      if (snap.attempt?.encounter === 3 && snap.attempt.phase === "fighting") {
-        break;
-      }
-    }
+    const encounterOneEvents = eventsWhileClearingEncounter(engine, 1);
+    expect(encounterOneEvents.filter((event) => event.type === "drop-awarded")).toEqual([]);
+    expect(engine.snapshot().nextDropId).toBe(1);
 
-    for (let ms = 0; ms < 300_000; ms += 1) {
-      const events = engine.advanceBy(1);
-      for (const event of events) {
-        if (event.type === "drop-awarded") {
-          drops.push(event.dropId);
-        }
-      }
-      if (drops.length >= 4) {
-        break;
-      }
-    }
+    const encounterTwoDrops = dropIdsWhileClearingEncounter(engine, 2);
+    expect(encounterTwoDrops).toEqual([1]);
+    expect(engine.snapshot().nextDropId).toBe(2);
 
-    expect(drops).toEqual([1, 2, 3, 4]);
-    expect(engine.snapshot().progression.armory).toHaveLength(4);
+    const encounterThreeDrops = dropIdsWhileClearingEncounter(engine, 3);
+    expect(encounterThreeDrops).toEqual([2]);
+    expect(engine.snapshot().nextDropId).toBe(3);
+    expect(engine.snapshot().progression.armory).toHaveLength(2);
+    expect(engine.snapshot().progression.armory.map((drop) => drop.dropId)).toEqual([1, 2]);
+  });
+
+  it("rolls encounter 2 without uncommonFloor while encounter 3 enforces it", () => {
+    let sawCommonOnEncounter2 = false;
+    for (let seed = 0; seed < 500; seed += 1) {
+      const engine = createEngine(fixtureContent, undefined, seed);
+      engine.advanceBy(1);
+      dropIdsWhileClearingEncounter(engine, 1);
+      dropIdsWhileClearingEncounter(engine, 2);
+      const encounterTwoDrop = engine.snapshot().progression.armory[0];
+      if (encounterTwoDrop?.rarity === "common") {
+        sawCommonOnEncounter2 = true;
+      }
+      dropIdsWhileClearingEncounter(engine, 3);
+      const encounterThreeDrop =
+        engine.snapshot().progression.armory[engine.snapshot().progression.armory.length - 1];
+      expect(encounterThreeDrop?.rarity).not.toBe("common");
+    }
+    expect(sawCommonOnEncounter2).toBe(true);
+  });
+
+  it("produces identical Drops for the same loot seed across two Engines", () => {
+    const runCycle = () => {
+      const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
+      engine.advanceBy(1);
+      dropIdsWhileClearingEncounter(engine, 1);
+      dropIdsWhileClearingEncounter(engine, 2);
+      dropIdsWhileClearingEncounter(engine, 3);
+      return structuredClone(engine.snapshot().progression.armory);
+    };
+
+    expect(runCycle()).toEqual(runCycle());
+  });
+
+  it("pins fixture loot alignment for LOOT_SEED after one stage cycle", () => {
+    const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
+    engine.advanceBy(1);
+    dropIdsWhileClearingEncounter(engine, 1);
+    dropIdsWhileClearingEncounter(engine, 2);
+    dropIdsWhileClearingEncounter(engine, 3);
+
+    expect(engine.snapshot().progression.armory).toEqual([
+      {
+        dropId: 1,
+        baseId: "fixture-armor",
+        itemLevel: 1,
+        rarity: "uncommon",
+        affixes: [{ id: "percent-max-health", value: 0.04 }],
+        awardedAtMs: expect.any(Number),
+        seen: false,
+        locked: false,
+        assignedTo: null,
+      },
+      {
+        dropId: 2,
+        baseId: "fixture-charm",
+        itemLevel: 1,
+        rarity: "uncommon",
+        affixes: [{ id: "flat-physical", value: 3 }],
+        awardedAtMs: expect.any(Number),
+        seen: false,
+        locked: false,
+        assignedTo: null,
+      },
+    ]);
   });
 
   it("keeps committed Drops through Party Defeat", () => {
