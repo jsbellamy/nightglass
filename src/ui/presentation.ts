@@ -250,7 +250,7 @@ function statusIconKey(entityId: string, statusId: string): string {
 
 function damageNumberKey(entry: MergedDamageNumber): string {
   const channel = entry.channel ?? "";
-  return `${entry.targetId}:${entry.atMs}:${entry.kind}:${channel}`;
+  return `${entry.targetId}:${entry.stableAtMs}:${entry.kind}:${channel}`;
 }
 
 function setImageSrcIfChanged(img: HTMLImageElement, url: string): void {

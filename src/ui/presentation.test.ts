@@ -648,10 +648,9 @@ describe("batched anchor geometry reads", () => {
     presentation.render(950, snapshot);
 
     expect(readsBeforeEffectAppend).toBeGreaterThan(0);
-    if (appendSpy.mock.calls.length > 0) {
-      const lastReadOrder = Math.max(...offsetLeftSpy.mock.invocationCallOrder);
-      expect(lastReadOrder).toBeLessThan(appendSpy.mock.invocationCallOrder[0]!);
-    }
+    expect(appendSpy).toHaveBeenCalled();
+    const lastReadOrder = Math.max(...offsetLeftSpy.mock.invocationCallOrder);
+    expect(lastReadOrder).toBeLessThan(appendSpy.mock.invocationCallOrder[0]!);
     offsetLeftSpy.mockRestore();
     appendSpy.mockRestore();
     presentation.destroy();
@@ -765,6 +764,41 @@ describe("keyed DOM reconciliation", () => {
     presentation.render(2_100, snapshot);
     const second = document.body.querySelector<HTMLElement>(".damage-number");
     expect(first).toBe(second);
+    presentation.destroy();
+  });
+
+  it("reuses the same damage-number span when impacts merge within the merge window", () => {
+    const { presentation, addCombatant } = mountPresentationHarness();
+    addCombatant("opp:1:0", "100px");
+    const snapshot = createEngine(buildContent(), undefined, LOOT_SEED).snapshot();
+    snapshot.simNowMs = 2_000;
+    presentation.applyEvents(
+      [
+        {
+          seq: 1,
+          atMs: 2_000,
+          type: "impact",
+          entityId: "party:knight:front",
+          abilityId: "steel-cut",
+          results: [{ targetId: "opp:1:0", kind: "damage", channel: "physical", amount: 2, healthAfter: 10 }],
+        },
+        {
+          seq: 2,
+          atMs: 2_100,
+          type: "impact",
+          entityId: "party:knight:front",
+          abilityId: "steel-cut",
+          results: [{ targetId: "opp:1:0", kind: "damage", channel: "physical", amount: 3, healthAfter: 7 }],
+        },
+      ],
+      snapshot,
+    );
+    presentation.render(2_150, snapshot);
+    const first = document.body.querySelector<HTMLElement>(".damage-number");
+    presentation.render(2_200, snapshot);
+    const second = document.body.querySelector<HTMLElement>(".damage-number");
+    expect(first).toBe(second);
+    expect(second?.textContent).toBe("5");
     presentation.destroy();
   });
 

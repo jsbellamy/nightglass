@@ -36,6 +36,7 @@ describe("damage numbers", () => {
         channel: "physical",
         amount: 10,
         atMs: 1180,
+        stableAtMs: 1000,
         mergedCount: 2,
       },
       {
@@ -44,6 +45,7 @@ describe("damage numbers", () => {
         channel: "physical",
         amount: 3,
         atMs: 1450,
+        stableAtMs: 1450,
         mergedCount: 1,
       },
     ]);

@@ -18,6 +18,8 @@ export interface MergedDamageNumber {
   channel?: DamageChannel;
   amount: number;
   atMs: number;
+  /** First impact time in a merge group — stable DOM key for the presentation lifetime. */
+  stableAtMs: number;
   mergedCount: number;
 }
 
@@ -66,6 +68,7 @@ export function mergeDamageNumbers(
       ...(entry.channel !== undefined ? { channel: entry.channel } : {}),
       amount: entry.amount,
       atMs: entry.atMs,
+      stableAtMs: entry.atMs,
       mergedCount: 1,
     });
   }
