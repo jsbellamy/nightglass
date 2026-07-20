@@ -143,7 +143,6 @@ describe("Management Dock shell pump coalescing", () => {
     };
     const root = document.createElement("main");
     const renderSpy = vi.fn();
-    const setArmoryBadgeSpy = vi.fn();
     const { mountManagementDock: realMount } = dockModule;
     vi.spyOn(dockModule, "mountManagementDock").mockImplementation((mountRoot, options) => {
       const dock = realMount(mountRoot, options);
@@ -151,11 +150,6 @@ describe("Management Dock shell pump coalescing", () => {
       dock.render = (...args) => {
         renderSpy();
         return originalRender(...args);
-      };
-      const originalSetBadge = dock.setArmoryBadge.bind(dock);
-      dock.setArmoryBadge = (visible) => {
-        setArmoryBadgeSpy(visible);
-        return originalSetBadge(visible);
       };
       return dock;
     });
@@ -170,7 +164,6 @@ describe("Management Dock shell pump coalescing", () => {
       root,
       publisher,
       renderSpy,
-      setArmoryBadgeSpy,
       engine,
       content,
       runRaf() {
@@ -222,16 +215,6 @@ describe("Management Dock shell pump coalescing", () => {
     expect(harness.renderSpy).toHaveBeenCalledTimes(1);
     harness.runRaf();
     expect(harness.renderSpy).toHaveBeenCalledTimes(1);
-    harness.shell.destroy();
-  });
-
-  it("delivers armory-badge without waiting for pump coalescing", () => {
-    const harness = createDockShellHarness();
-    harness.setArmoryBadgeSpy.mockClear();
-
-    harness.publisher.publish({ type: "armory-badge" });
-
-    expect(harness.setArmoryBadgeSpy).toHaveBeenCalledWith(true);
     harness.shell.destroy();
   });
 

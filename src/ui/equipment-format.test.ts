@@ -6,7 +6,6 @@ import {
   filterArmoryDrops,
   formatRarityLabel,
   equipmentBaseInitials,
-  hasUnseenArmoryDrops,
   rareOrEpicDropNames,
   sortArmoryDrops,
 } from "./equipment-format";
@@ -133,9 +132,7 @@ describe("equipment-format filters and sorts", () => {
     ]);
   });
 
-  it("detects unseen drops and rare/epic discard names", () => {
-    expect(hasUnseenArmoryDrops(armory)).toBe(true);
-    expect(hasUnseenArmoryDrops(armory.map((entry) => ({ ...entry, seen: true })))).toBe(false);
+  it("detects rare/epic discard names", () => {
     expect(rareOrEpicDropNames(armory, fixtureContent)).toEqual([
       "Fixture Armor",
       "Fixture Blade II",

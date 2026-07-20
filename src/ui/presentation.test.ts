@@ -6,7 +6,6 @@ import type { Snapshot } from "../core/snapshot";
 import { fixtureContent } from "../core/testing/fixture-content";
 import { buildContent } from "../data";
 import { mountBattleTile } from "./battle-tile";
-import { ARMORY_BADGE_EVENT } from "./bus";
 import {
   ACTOR_POOL,
   BANNER_DURATION_MS,
@@ -333,7 +332,7 @@ describe("presentation mapping", () => {
     expect(root.querySelector<HTMLElement>(".lane-banner")?.hidden).toBe(true);
   });
 
-  it("shows a drop toast and emits the Armory badge hook", () => {
+  it("shows a drop toast on drop-awarded", () => {
     const tile = mountBattleTile(root, buildContent());
     const engine = createEngine(buildContent(), undefined, LOOT_SEED);
     const snapshot = structuredClone(engine.snapshot());
@@ -350,8 +349,6 @@ describe("presentation mapping", () => {
     });
     snapshot.simNowMs = 4_000;
 
-    const badge = vi.fn();
-    root.addEventListener(ARMORY_BADGE_EVENT, badge);
     tile.applyEvents([{ seq: 4, atMs: 4_000, type: "drop-awarded", dropId: 99 }], snapshot);
 
     const toast = root.querySelector<HTMLElement>(".status-notification-layer .drop-toast");
@@ -360,7 +357,6 @@ describe("presentation mapping", () => {
     expect(toast?.querySelector(".equipment-icon-img--content")).not.toBeNull();
     expect(toast?.classList.contains("rarity-rare")).toBe(true);
     expect(toast?.classList.contains("interim-drop-toast")).toBe(false);
-    expect(badge).toHaveBeenCalledTimes(1);
 
     snapshot.simNowMs = 4_000 + DROP_TOAST_MS + 1;
     tile.render(snapshot);

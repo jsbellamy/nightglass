@@ -405,10 +405,6 @@ export function statModifiersForSlotSwap(
   };
 }
 
-export function hasUnseenArmoryDrops(armory: DropInstance[]): boolean {
-  return armory.some((drop) => !drop.seen);
-}
-
 export function discardableDrop(drop: DropInstance): boolean {
   return !drop.assignedTo && !drop.locked;
 }

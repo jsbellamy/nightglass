@@ -19,7 +19,6 @@ const TEST_HOOKS_ENABLED =
   import.meta.env.DEV || import.meta.env.MODE === "evidence";
 import { createFrameMetrics } from "./ui/frame-metrics";
 import type { TileShell } from "./ui/tile-shell-types";
-import { ARMORY_BADGE_EVENT } from "./ui/bus";
 import type { EngineEvent } from "./core/events";
 import type { Snapshot } from "./core/snapshot";
 
@@ -144,9 +143,6 @@ export function mountDockShell(
     pump(message) {
       scheduleCoalescedPumpRender(message.snapshot, message.legality);
     },
-    "armory-badge"() {
-      dock.setArmoryBadge(true);
-    },
     "dock-closed"() {
       dock.setOpen(false);
     },
@@ -219,10 +215,6 @@ export function mountTileShell(root: HTMLElement, options: TileShellOptions = {}
       // events, so without this it renders blank until combat next ticks.
       publishSnapshot();
     },
-  });
-
-  root.addEventListener(ARMORY_BADGE_EVENT, () => {
-    bus?.publish({ type: "armory-badge" });
   });
 
   const clockNow = options.now ?? Date.now;

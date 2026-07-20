@@ -590,17 +590,6 @@ html.dock-window body {
   border-color: rgba(255, 249, 233, 0.32);
 }
 
-.dock-tab-badge {
-  position: absolute;
-  top: -3px;
-  right: -3px;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #6fe3ad;
-  border: 1px solid #0f1118;
-}
-
 .dock-close {
   width: 24px;
   height: 24px;

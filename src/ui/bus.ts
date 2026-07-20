@@ -5,8 +5,6 @@ import type { SerializedEngineLegality } from "./engine-legality";
 
 export const NIGHTGLASS_BUS_CHANNEL = "nightglass";
 
-export const ARMORY_BADGE_EVENT = "nightglass:armory-badge";
-
 /** Engine methods dispatchable across the bus. Excludes the tick/read seam and legality queries. */
 export type TileCommandName = Exclude<
   keyof Engine,
@@ -38,7 +36,6 @@ export type BusMessage =
   | { type: "command"; command: TileCommand }
   | { type: "snapshot"; snapshot: Snapshot; legality: SerializedEngineLegality }
   | { type: "pump"; events: EngineEvent[]; snapshot: Snapshot; legality: SerializedEngineLegality }
-  | { type: "armory-badge" }
   | { type: "dock-opened" }
   | { type: "dock-closed" };
 

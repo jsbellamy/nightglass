@@ -14,7 +14,6 @@ import {
 import { effectImageUrl, statusEffectGlyphUrl } from "./effect-images";
 import { equipmentBaseForDrop } from "./equipment-format";
 import { createEquipmentIconElement } from "./icons";
-import { ARMORY_BADGE_EVENT } from "./bus";
 
 /** Contract constants — source: prototype/presentation-contract/present.py */
 export const LUNGE = {
@@ -374,7 +373,6 @@ export function createPresentation(options: PresentationOptions): Presentation {
               iconKey: base.iconKey,
               startedAtMs: event.atMs,
             };
-            battlefield.dispatchEvent(new CustomEvent(ARMORY_BADGE_EVENT, { bubbles: true }));
           }
           break;
         }
