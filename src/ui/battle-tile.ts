@@ -4,7 +4,7 @@ import backdrop3Url from "../assets/backdrops/backdrop-3.png";
 import { opponentCombatants, partyCombatants } from "../core/combat";
 import { FORMATION_SLOT_BY_INDEX, parseEntityId } from "../core/entity-id";
 import type { EngineEvent } from "../core/events";
-import type { CombatantState, Snapshot } from "../core/snapshot";
+import type { CombatantState, ReadonlySnapshot } from "../core/snapshot";
 import type { Content, StageDef } from "../core/types";
 import { createPresentation, type Presentation } from "./presentation";
 import { createSfx, type SfxController } from "./sfx";
@@ -27,8 +27,8 @@ export interface BattleTileMountOptions {
 }
 
 export interface BattleTile {
-  render(snapshot: Snapshot): void;
-  applyEvents(events: EngineEvent[], snapshot?: Snapshot): void;
+  render(snapshot: ReadonlySnapshot): void;
+  applyEvents(events: EngineEvent[], snapshot?: ReadonlySnapshot): void;
   destroy(): void;
 }
 
@@ -73,7 +73,7 @@ function healthFillPercent(health: number, maxHealth: number): number {
   return Math.max(0, Math.min(100, Math.round((health / maxHealth) * 100)));
 }
 
-function stageWaveLabel(snapshot: Snapshot, content: Content): string {
+function stageWaveLabel(snapshot: ReadonlySnapshot, content: Content): string {
   const attempt = snapshot.attempt;
   if (!attempt) {
     return "No Attempt";
@@ -340,9 +340,9 @@ export function mountBattleTile(
   syncReducedMotion();
   motionQuery?.addEventListener("change", syncReducedMotion);
 
-  let lastSnapshot: Snapshot | null = null;
+  let lastSnapshot: ReadonlySnapshot | null = null;
 
-  function render(snapshot: Snapshot): void {
+  function render(snapshot: ReadonlySnapshot): void {
     lastSnapshot = snapshot;
     stageWaveText.textContent = stageWaveLabel(snapshot, content);
 
@@ -377,7 +377,7 @@ export function mountBattleTile(
     presentation.render(snapshot.simNowMs, snapshot);
   }
 
-  function applyEvents(events: EngineEvent[], snapshot?: Snapshot): void {
+  function applyEvents(events: EngineEvent[], snapshot?: ReadonlySnapshot): void {
     const activeSnapshot = snapshot ?? lastSnapshot;
     if (!activeSnapshot) {
       return;

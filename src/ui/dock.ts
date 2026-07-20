@@ -1,4 +1,4 @@
-import type { Snapshot } from "../core/snapshot";
+import type { ReadonlySnapshot } from "../core/snapshot";
 import type { Content } from "../core/types";
 import type { TileCommand } from "./bus";
 import { mountArmorySurface } from "./armory-surface";
@@ -18,7 +18,7 @@ export const DOCK_TABS: { id: DockTabId; label: string }[] = [
 ];
 
 export interface ManagementDock {
-  render(snapshot: Snapshot | null): void;
+  render(snapshot: ReadonlySnapshot | null): void;
   setArmoryBadge(visible: boolean): void;
   setOpen(open: boolean): void;
   destroy(): void;

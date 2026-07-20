@@ -86,6 +86,8 @@ export interface Snapshot {
   pendingEdits: PendingEdit[];
 }
 
+export type ReadonlySnapshot = Readonly<Snapshot>;
+
 export function cloneSnapshot(snapshot: Snapshot): Snapshot {
   return structuredClone(snapshot);
 }
