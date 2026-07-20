@@ -10,7 +10,7 @@ import type { BusMessage, createBusEndpoint } from "./ui/bus";
 import type { DockWindowPort } from "./ui/dock-window";
 import * as battleTile from "./ui/battle-tile";
 import { serializeEngineLegality } from "./ui/engine-legality";
-import { PUMP_INTERVAL_MS, RENDER_FRAME_MS } from "./ui/pump";
+import { PUMP_INTERVAL_MS } from "./ui/pump";
 
 describe("Battle Tile shell", () => {
   it("mounts the live Battle Tile with status line and battlefield on the root element", () => {
@@ -172,7 +172,7 @@ describe("tick snapshot cache", () => {
     vi.advanceTimersByTime(PUMP_INTERVAL_MS);
 
     for (let frame = 0; frame < 5; frame++) {
-      pump.runRafAt((frame + 1) * RENDER_FRAME_MS);
+      pump.runRafAt((frame + 1) * 17);
     }
 
     expect(snapshotSpy).toHaveBeenCalledTimes(1);
@@ -254,7 +254,7 @@ describe("tick snapshot cache", () => {
     });
 
     shell.startPump();
-    pump.runRafAt(RENDER_FRAME_MS);
+    pump.runRafAt(17);
 
     expect(root.querySelectorAll(".combatant").length).toBeGreaterThan(0);
     shell.stop();
@@ -336,14 +336,14 @@ describe("tick snapshot cache", () => {
 
     shell.startPump();
     vi.advanceTimersByTime(PUMP_INTERVAL_MS);
-    pump.runRafAt(RENDER_FRAME_MS);
+    pump.runRafAt(17);
     renderedPending.length = 0;
 
     handlers.command?.({
       type: "command",
       command: { cmd: "setParty", args: [["priest", "wizard", "knight"], "hunter"] },
     });
-    pump.runRafAt(RENDER_FRAME_MS * 2);
+    pump.runRafAt(34);
 
     expect(renderedPending[renderedPending.length - 1]).toEqual({
       members: ["priest", "wizard", "knight"],
