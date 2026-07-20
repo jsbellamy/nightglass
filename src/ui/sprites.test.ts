@@ -6,7 +6,7 @@ import { fixtureContent } from "../core/testing/fixture-content";
 import { collectContentSpriteKeys, isRegisteredSpriteKey, resolveSprite } from "./sprites";
 
 describe("sprite registry", () => {
-  it("resolves every Content spriteKey including interim Class and Boss fallbacks", () => {
+  it("resolves every Content spriteKey including all acquired Class and Boss stills", () => {
     const keys = collectContentSpriteKeys(buildContent());
     expect(keys).toContain("priest");
     expect(keys).toContain("hunter");
@@ -37,10 +37,17 @@ describe("sprite registry", () => {
     expect(hunter.url).toContain("hunter");
   });
 
-  it("maps boss-2 and boss-3 to boss-1 interim fallbacks for asset slice #57", () => {
-    const boss2 = resolveSprite("boss-2");
-    expect(boss2.interim?.issue).toBe("#57");
-    expect(boss2.url).toBe(resolveSprite("boss-1").url);
+  it("resolves the acquired Boss stills without interim fallbacks", () => {
+    for (const key of ["boss-1", "boss-2", "boss-3"] as const) {
+      const boss = resolveSprite(key);
+      expect(boss.interim).toBeUndefined();
+      expect(boss.interimLabel).toBeUndefined();
+      expect(boss.width).toBe(32);
+      expect(boss.height).toBe(48);
+      expect(boss.url).toContain(key);
+    }
+    expect(resolveSprite("boss-2").url).not.toBe(resolveSprite("boss-1").url);
+    expect(resolveSprite("boss-3").url).not.toBe(resolveSprite("boss-1").url);
   });
 
   it("covers fixture opponent spriteKeys used in Engine tests", () => {

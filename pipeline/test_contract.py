@@ -25,6 +25,8 @@ RUNTIME_SPRITES = {
     "hunter": "hunter.png",
     "pipcap": "pipcap.png",
     "boss": "boss-1.png",
+    "boss-2": "boss-2.png",
+    "boss-3": "boss-3.png",
 }
 
 
@@ -58,6 +60,10 @@ check("Pipcap ordinary opponent grid is recoverable without reduction",
       reports["pipcap"]["grid"] == [29, 40], str(reports["pipcap"]))
 check("Boss opponent grid is recoverable without reduction",
       reports["boss"]["grid"] == [32, 41], str(reports["boss"]))
+check("Boss-2 Gloomcap Matron grid is recoverable without reduction",
+      reports["boss-2"]["grid"] == [29, 43], str(reports["boss-2"]))
+check("Boss-3 Thornmother Vane grid is recoverable without reduction",
+      reports["boss-3"]["grid"] == [21, 40], str(reports["boss-3"]))
 check("Priest grid is recoverable without reduction",
       reports["priest"]["grid"] == [27, 46], str(reports["priest"]))
 check("Hunter grid is recoverable without reduction",

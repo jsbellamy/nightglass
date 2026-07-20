@@ -47,8 +47,13 @@ OUTPUT_NAMES = {
     "hunter": "hunter",
     "pipcap": "pipcap",
     "boss": "boss-1",
+    # Stage 2/3 Boss stills (#57): raw tags match runtime names (unlike boss→boss-1).
+    "boss-2": "boss-2",
+    "boss-3": "boss-3",
 }
-DEFAULT_TAGS = ("knight", "wizard", "priest", "hunter", "pipcap", "boss")
+DEFAULT_TAGS = (
+    "knight", "wizard", "priest", "hunter", "pipcap", "boss", "boss-2", "boss-3",
+)
 
 PALETTE = [tuple(c["rgb"]) for c in
            json.loads((HERE / "palette.json").read_text())["colors"]]

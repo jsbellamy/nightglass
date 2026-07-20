@@ -69,17 +69,17 @@ test.describe("accessibility contrast floor", () => {
     ).toBe(true);
 
     await postBusSnapshot(dock, armoryColourSnapshot());
+    await tile.close();
+
     await focusDockTab(dock, "armory");
-    await expect(dock.locator(".armory-collection .equipment-card").first()).toBeVisible({
-      timeout: 5_000,
-    });
-    const raritySignals = await dock.evaluate(() => {
-      const card = document.querySelector(".armory-collection .equipment-card.rarity-epic");
-      const name = card?.querySelector(".equipment-name")?.textContent?.trim();
-      const meta = card?.querySelector(".equipment-meta")?.textContent?.trim();
+    const epicCard = dock.locator(".armory-collection .equipment-card.rarity-epic");
+    await expect(epicCard).toBeVisible({ timeout: 5_000 });
+    const raritySignals = await epicCard.evaluate((card) => {
+      const name = card.querySelector(".equipment-name")?.textContent?.trim();
+      const meta = card.querySelector(".equipment-meta")?.textContent?.trim();
       const locked =
-        card?.querySelector(".locked-marker")?.textContent?.trim() ??
-        card?.querySelector(".equipment-lock-toggle")?.textContent?.trim();
+        card.querySelector(".locked-marker")?.textContent?.trim() ??
+        card.querySelector(".equipment-lock-toggle")?.textContent?.trim();
       return {
         hasName: (name?.length ?? 0) > 0,
         hasMeta: (meta?.length ?? 0) > 0,
