@@ -67,6 +67,12 @@ const REVIVAL_RECOVERY_MS = 1_000;
 
 export interface Engine {
   advanceBy(ms: number): EngineEvent[];
+  /**
+   * Advances the simulation like advanceBy, but awards no equipment drops.
+   * Used for offline catch-up, where unattended time should progress combat
+   * and XP without generating loot.
+   */
+  advanceOffline(ms: number): EngineEvent[];
   snapshot(): Snapshot;
   beginFreshAttempt(): EngineEvent[];
   selectStage(stage: 1 | 2 | 3): EngineEvent[];
@@ -582,7 +588,12 @@ function queueStatusFromOutcome(
   }
 }
 
-function resolveImpacts(state: EngineState, index: ContentIndex, events: EngineEvent[]): void {
+function resolveImpacts(
+  state: EngineState,
+  index: ContentIndex,
+  events: EngineEvent[],
+  awardDrops: boolean,
+): void {
   const attempt = state.attempt;
   if (!attempt) {
     return;
@@ -736,7 +747,7 @@ function resolveImpacts(state: EngineState, index: ContentIndex, events: EngineE
 
   cancelStunnedWindUps(state, index);
   resolveKnockouts(state, index, events);
-  evaluateEncounterOutcome(state, index, events);
+  evaluateEncounterOutcome(state, index, events, awardDrops);
 }
 
 function cancelStunnedWindUps(state: EngineState, index: ContentIndex): void {
@@ -848,6 +859,7 @@ function evaluateEncounterOutcome(
   state: EngineState,
   index: ContentIndex,
   events: EngineEvent[],
+  awardDrops: boolean,
 ): void {
   const attempt = state.attempt;
   if (!attempt || attempt.phase !== "fighting") {
@@ -858,7 +870,9 @@ function evaluateEncounterOutcome(
   const livingOpponents = livingCombatants(opponentCombatants(attempt.combatants));
 
   if (livingOpponents.length === 0) {
-    awardEncounterDrops(state, index, events, attempt.stage, attempt.encounter);
+    if (awardDrops) {
+      awardEncounterDrops(state, index, events, attempt.stage, attempt.encounter);
+    }
     emit(state, events, {
       type: "wave-cleared",
       stage: attempt.stage,
@@ -1110,9 +1124,14 @@ function nextBoundaryMs(state: EngineState): number | null {
   return boundaries.length > 0 ? Math.min(...boundaries) : null;
 }
 
-function resolveBatch(state: EngineState, index: ContentIndex, events: EngineEvent[]): void {
+function resolveBatch(
+  state: EngineState,
+  index: ContentIndex,
+  events: EngineEvent[],
+  awardDrops: boolean,
+): void {
   resolveStatusExpiries(state, events);
-  resolveImpacts(state, index, events);
+  resolveImpacts(state, index, events, awardDrops);
   completeRecoveries(state);
   finishWaveTransition(state, index, events);
   finishDefeatHold(state, index, events);
@@ -1208,11 +1227,13 @@ export function createEngine(
   }
   let bootEventsPending = bootEvents.length > 0;
 
-  function advanceBy(ms: number): EngineEvent[] {
+  function assertNonNegativeIntegerMs(ms: number, method: "advanceBy" | "advanceOffline"): void {
     if (!Number.isInteger(ms) || ms < 0) {
-      throw new Error(`advanceBy expects a non-negative integer ms, got ${ms}`);
+      throw new Error(`${method} expects a non-negative integer ms, got ${ms}`);
     }
+  }
 
+  function advanceElapsed(ms: number, awardDrops: boolean): EngineEvent[] {
     const events: EngineEvent[] = [];
     if (bootEventsPending) {
       events.push(...bootEvents);
@@ -1228,12 +1249,22 @@ export function createEngine(
         break;
       }
       state.simNowMs = boundaryMs;
-      resolveBatch(state, index, events);
+      resolveBatch(state, index, events, awardDrops);
       chooseActions(state, index, events);
     }
 
     state.simNowMs = targetMs;
     return events;
+  }
+
+  function advanceBy(ms: number): EngineEvent[] {
+    assertNonNegativeIntegerMs(ms, "advanceBy");
+    return advanceElapsed(ms, true);
+  }
+
+  function advanceOffline(ms: number): EngineEvent[] {
+    assertNonNegativeIntegerMs(ms, "advanceOffline");
+    return advanceElapsed(ms, false);
   }
 
   function beginFreshAttemptCommand(): EngineEvent[] {
@@ -1384,6 +1415,7 @@ export function createEngine(
 
   return {
     advanceBy,
+    advanceOffline,
     snapshot: () => toSnapshot(state, now),
     beginFreshAttempt: beginFreshAttemptCommand,
     selectStage,
