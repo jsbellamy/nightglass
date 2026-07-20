@@ -34,6 +34,24 @@ Validator: <command or explicit checks>
 The declaration is complete when every field has a concrete value or an explicit
 context pointer. A missing value is a decision to resolve before generation.
 
+### Battlefield facing rule
+
+Facing is fixed by combatant role and is not an art-direction choice:
+
+| Combatant role | Required facing |
+| --- | --- |
+| Party Character (Knight, Wizard, Priest, Hunter) | **RIGHT** |
+| Opponent (ordinary monster, elite, or Boss) | **LEFT** |
+
+Use the role from the runtime destination or owning data record. Do not infer
+facing from the word `Character` in an image-model prompt: providers often use
+that generic word for any full-body game sprite. Write the literal required
+direction into every submitted prompt; no `<FACING>` placeholder may remain.
+If an issue prompt, copied shell, reference pose, or older note disagrees with
+this table, this table wins. Correct the prompt before generation. A candidate
+facing the wrong direction is rejected even if every dimensional and palette
+gate passes; do not mirror a generated raw as a substitute for reacquisition.
+
 ### Contract pointers
 
 - For Characters and opponents that enter the Battle Tile, pick the acquisition
@@ -87,8 +105,9 @@ geometry, background, and acceptance constraints. For Battle Tile bodies, paste
 the **chosen tier** acquisition contract's **grid shell** (exact logical canvas,
 flat-block pixels, conservative **safe box**, magenta clearance, outline/palette
 bans) around the subject description — do not paraphrase the shell into softer
-art direction, and do not borrow another tier's geometry. Request the safe box;
-never ask the subject to fill the runtime canvas.
+art direction, and do not borrow another tier's geometry. Resolve the shell's
+`<FACING>` token from the Battlefield facing rule above before submitting the
+prompt. Request the safe box; never ask the subject to fill the runtime canvas.
 
 For Equipment Base icons, use this **icon grid shell**
 around a concrete subject noun — same discipline as the Character shell, resized
@@ -114,10 +133,11 @@ map rather than a second generation unless the silhouette itself must change for
 identification.
 
 This step is complete when (a) the prompt names every identity-bearing feature
-and every geometric constraint, (b) Battle Tile body prompts contain the
-contract grid shell verbatim or by an explicit quote of its clauses (Equipment
-icon prompts contain the icon grid shell above), and (c) every direct image
-input has a recorded role.
+and every geometric constraint, including the literal role-correct facing,
+(b) Battle Tile body prompts contain the contract grid shell verbatim or by an
+explicit quote of its clauses with no unresolved placeholders (Equipment icon
+prompts contain the icon grid shell above), and (c) every direct image input has
+a recorded role.
 
 ## 3. Generate and archive the raw
 

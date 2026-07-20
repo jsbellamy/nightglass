@@ -36,11 +36,15 @@ but may not enter `grid_raw/` or any shipped asset.
 
 ## Prompt contract
 
-Use the following fixed shell around a Class-specific subject description:
+Use the following fixed shell around a body-specific subject description.
+Before submitting it, replace `<FACING>` from combatant role: **RIGHT for a
+Party Character; LEFT for an Opponent, including every ordinary monster and
+Boss.** No other value is valid, and the submitted prompt must not retain the
+placeholder.
 
 > A full-body game Character sprite of **<SUBJECT>**, strict side profile facing
-> right, chunky pixel art. Drawn on an **exact 48×72 logical pixel grid rendered
-> large**; every logical pixel is one clean flat square block, with no smaller
+> **<FACING>**, chunky pixel art. Drawn on an **exact 48×72 logical pixel grid
+> rendered large**; every logical pixel is one clean flat square block, with no smaller
 > detail, smooth gradient, anti-aliasing, blur, or dithering. Keep the complete
 > silhouette, including equipment, within a conservative **40×60 logical-cell
 > safe box**, with at least one logical cell of clearance on every edge. Flat solid
@@ -67,8 +71,10 @@ band.
 tier is added detail at the same pixel density. A large still that is visibly an
 upscaled medium still fails the contract — reject and reprompt.
 
-Class prompts must name the identity-bearing silhouette, equipment, facing, and
-palette. The exact accepted prompts and raw hashes live beside the raws in
+Body prompts must name the identity-bearing silhouette, equipment,
+role-correct facing, and palette. Wrong-facing candidates are rejected; do not
+mirror the raw to repair them. The exact accepted prompts and raw hashes live
+beside the raws in
 [`assets-raw/grid_raw/`](../assets-raw/grid_raw/).
 
 ## Chroma-key alpha
