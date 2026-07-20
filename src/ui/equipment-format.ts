@@ -1,9 +1,9 @@
 import {
-  dropStatModifiers,
   equipmentModifiersForLoadout,
   snapshotEquipmentLoadouts,
   validateEquip,
 } from "../core/equipment";
+import { characterStats } from "../core/stats";
 import type { DropInstance, EquipmentLoadout } from "../core/snapshot";
 import type { ClassTalentState } from "../core/talents";
 import type {
@@ -19,9 +19,9 @@ import type {
 } from "../core/types";
 import {
   abilityRawDisplay,
-  characterBaseStats,
   formatAbilityRawLine,
   formatStatModifierPerRank,
+  statLines,
 } from "./ability-format";
 
 export const RARITY_LABELS: Record<Rarity, string> = {
@@ -273,36 +273,20 @@ export interface StatDeltaLine {
   delta: string;
 }
 
-function flattenStatLines(modifiers: StatModifiers[]): Map<string, number> {
-  const totals = new Map<string, number>();
-  const add = (key: string, value: number) => {
-    totals.set(key, (totals.get(key) ?? 0) + value);
-  };
+function numericStatValue(value: string): number {
+  return Number(value.replace("%", ""));
+}
 
+function aggregationLabel(line: { label: string; value: string }): string {
+  return line.value.includes("%") ? `${line.label} %` : line.label;
+}
+
+function statTotalsFromModifiers(modifiers: StatModifiers[]): Map<string, number> {
+  const totals = new Map<string, number>();
   for (const modifier of modifiers) {
-    if (modifier.flat?.physical) {
-      add("Physical", modifier.flat.physical);
-    }
-    if (modifier.flat?.elemental) {
-      add("Elemental", modifier.flat.elemental);
-    }
-    if (modifier.flat?.maxHealth) {
-      add("Max Health", modifier.flat.maxHealth);
-    }
-    if (modifier.flat?.armor) {
-      add("Armor", modifier.flat.armor);
-    }
-    if (modifier.flat?.elementalResistance) {
-      add("Elemental Resistance", modifier.flat.elementalResistance);
-    }
-    if (modifier.percent?.physicalPower) {
-      add("Physical %", modifier.percent.physicalPower * 100);
-    }
-    if (modifier.percent?.elementalPower) {
-      add("Elemental %", modifier.percent.elementalPower * 100);
-    }
-    if (modifier.percent?.maxHealth) {
-      add("Max Health %", modifier.percent.maxHealth * 100);
+    for (const line of statLines(modifier)) {
+      const key = aggregationLabel(line);
+      totals.set(key, (totals.get(key) ?? 0) + numericStatValue(line.value));
     }
   }
   return totals;
@@ -327,8 +311,8 @@ export function compareEquipmentStatDeltas(
   currentMods: StatModifiers[],
   candidateMods: StatModifiers[],
 ): StatDeltaLine[] {
-  const before = flattenStatLines(currentMods);
-  const after = flattenStatLines(candidateMods);
+  const before = statTotalsFromModifiers(currentMods);
+  const after = statTotalsFromModifiers(candidateMods);
   const labels = new Set([...before.keys(), ...after.keys()]);
   const lines: StatDeltaLine[] = [];
 
@@ -407,7 +391,7 @@ export function statsForEquipmentLoadout(
   content: Content,
 ): BaseStats {
   const equipmentMods = equipmentModifiersForLoadout(loadout, armory, content);
-  return characterBaseStats(classKit, talentState, equipmentMods);
+  return characterStats(classKit, talentState, equipmentMods);
 }
 
 export function statModifiersForSlotSwap(
@@ -420,14 +404,11 @@ export function statModifiersForSlotSwap(
 ): { current: StatModifiers[]; candidate: StatModifiers[] } {
   const loadouts = snapshotEquipmentLoadouts(armory, roster);
   const currentLoadout = loadouts[classId] ?? {};
-  const currentDropId = currentLoadout[slot];
-  const currentDrop = currentDropId
-    ? armory.find((entry) => entry.dropId === currentDropId)
-    : undefined;
-
-  const currentMods = currentDrop ? dropStatModifiers(currentDrop, content) : [];
-  const candidateMods = dropStatModifiers(candidateDrop, content);
-  return { current: currentMods, candidate: candidateMods };
+  const candidateLoadout = { ...currentLoadout, [slot]: candidateDrop.dropId };
+  return {
+    current: equipmentModifiersForLoadout(currentLoadout, armory, content),
+    candidate: equipmentModifiersForLoadout(candidateLoadout, armory, content),
+  };
 }
 
 export function hasUnseenArmoryDrops(armory: DropInstance[]): boolean {

@@ -1,29 +1,15 @@
 import {
-  applyStatModifiers,
   healAmount,
   powerForStats,
   rawDamageFromEffect,
 } from "../core/combat";
 import type { CombatActionState } from "../core/snapshot";
-import { talentStatModifiers, type ClassTalentState } from "../core/talents";
 import type {
   AbilityDef,
   AbilityEffect,
   BaseStats,
-  ClassKitDef,
   StatModifiers,
 } from "../core/types";
-
-export function characterBaseStats(
-  classKit: ClassKitDef,
-  talentState: ClassTalentState,
-  equipmentMods: StatModifiers[] = [],
-): BaseStats {
-  return applyStatModifiers(classKit.base, [
-    ...talentStatModifiers(talentState, classKit),
-    ...equipmentMods,
-  ]);
-}
 
 export interface AbilityRawDisplay {
   kind: "damage" | "heal";
@@ -98,33 +84,78 @@ export function actionCyclePhase(
   return null;
 }
 
-export function formatStatModifierPerRank(modifier: StatModifiers): string {
-  const parts: string[] = [];
+export interface StatLine {
+  label: string;
+  value: string;
+}
+
+function formatSignedStatAmount(amount: number, asPercent: boolean): string {
+  const rounded = asPercent ? Math.round(amount) : amount;
+  if (rounded === 0) {
+    return asPercent ? "+0%" : "+0";
+  }
+  const prefix = rounded > 0 ? `+${rounded}` : String(rounded);
+  return asPercent ? `${prefix}%` : prefix;
+}
+
+/** One walk over StatModifiers. `ranks` multiplies both flat and percent entries. */
+export function statLines(modifier: StatModifiers, ranks = 1): StatLine[] {
+  const lines: StatLine[] = [];
   if (modifier.percent?.maxHealth) {
-    parts.push(`+${Math.round(modifier.percent.maxHealth * 100)}% Max Health`);
+    lines.push({
+      label: "Max Health",
+      value: formatSignedStatAmount(modifier.percent.maxHealth * ranks * 100, true),
+    });
   }
   if (modifier.percent?.physicalPower) {
-    parts.push(`+${Math.round(modifier.percent.physicalPower * 100)}% Physical`);
+    lines.push({
+      label: "Physical",
+      value: formatSignedStatAmount(modifier.percent.physicalPower * ranks * 100, true),
+    });
   }
   if (modifier.percent?.elementalPower) {
-    parts.push(`+${Math.round(modifier.percent.elementalPower * 100)}% Elemental`);
+    lines.push({
+      label: "Elemental",
+      value: formatSignedStatAmount(modifier.percent.elementalPower * ranks * 100, true),
+    });
   }
   if (modifier.flat?.maxHealth) {
-    parts.push(`+${modifier.flat.maxHealth} Max Health`);
+    lines.push({
+      label: "Max Health",
+      value: formatSignedStatAmount(modifier.flat.maxHealth * ranks, false),
+    });
   }
   if (modifier.flat?.physical) {
-    parts.push(`+${modifier.flat.physical} Physical`);
+    lines.push({
+      label: "Physical",
+      value: formatSignedStatAmount(modifier.flat.physical * ranks, false),
+    });
   }
   if (modifier.flat?.elemental) {
-    parts.push(`+${modifier.flat.elemental} Elemental`);
+    lines.push({
+      label: "Elemental",
+      value: formatSignedStatAmount(modifier.flat.elemental * ranks, false),
+    });
   }
   if (modifier.flat?.armor) {
-    parts.push(`+${modifier.flat.armor} Armor`);
+    lines.push({
+      label: "Armor",
+      value: formatSignedStatAmount(modifier.flat.armor * ranks, false),
+    });
   }
   if (modifier.flat?.elementalResistance) {
-    parts.push(`+${modifier.flat.elementalResistance} Elemental Resistance`);
+    lines.push({
+      label: "Elemental Resistance",
+      value: formatSignedStatAmount(modifier.flat.elementalResistance * ranks, false),
+    });
   }
-  return parts.join(", ");
+  return lines;
+}
+
+export function formatStatModifierPerRank(modifier: StatModifiers): string {
+  return statLines(modifier)
+    .map((line) => `${line.value} ${line.label}`)
+    .join(", ");
 }
 
 export function formatStatTalentDelta(
@@ -134,32 +165,10 @@ export function formatStatTalentDelta(
   if (ranks <= 0) {
     return null;
   }
-  const parts: string[] = [];
-  if (modifier.percent?.maxHealth) {
-    parts.push(`+${Math.round(modifier.percent.maxHealth * ranks * 100)}% Max Health`);
-  }
-  if (modifier.percent?.physicalPower) {
-    parts.push(`+${Math.round(modifier.percent.physicalPower * ranks * 100)}% Physical`);
-  }
-  if (modifier.percent?.elementalPower) {
-    parts.push(`+${Math.round(modifier.percent.elementalPower * ranks * 100)}% Elemental`);
-  }
-  if (modifier.flat?.maxHealth) {
-    parts.push(`+${modifier.flat.maxHealth * ranks} Max Health`);
-  }
-  if (modifier.flat?.physical) {
-    parts.push(`+${modifier.flat.physical * ranks} Physical`);
-  }
-  if (modifier.flat?.elemental) {
-    parts.push(`+${modifier.flat.elemental * ranks} Elemental`);
-  }
-  if (modifier.flat?.armor) {
-    parts.push(`+${modifier.flat.armor * ranks} Armor`);
-  }
-  if (modifier.flat?.elementalResistance) {
-    parts.push(`+${modifier.flat.elementalResistance * ranks} Elemental Resistance`);
-  }
-  return parts.length > 0 ? parts.join(", ") : null;
+  const joined = statLines(modifier, ranks)
+    .map((line) => `${line.value} ${line.label}`)
+    .join(", ");
+  return joined.length > 0 ? joined : null;
 }
 
 export function primaryEffectKind(effects: AbilityEffect[]): "damage" | "heal" | "other" {
