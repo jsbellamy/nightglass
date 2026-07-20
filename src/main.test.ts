@@ -4,11 +4,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createEngine } from "./core/engine";
 import { buildContent } from "./data";
 import type { EngineEvent } from "./core/events";
-import { mountTileShell, type TileShellPumpSchedule } from "./main";
+import { mountTileShell } from "./main";
 import { BATTLEFIELD_HEIGHT, STATUS_LINE_HEIGHT, TILE_HEIGHT, TILE_WIDTH } from "./ui/battle-tile";
 import type { BusMessage, createBusEndpoint } from "./ui/bus";
 import type { DockWindowPort } from "./ui/dock-window";
 import * as battleTile from "./ui/battle-tile";
+import { serializeEngineLegality } from "./ui/engine-legality";
 import { PUMP_INTERVAL_MS, RENDER_FRAME_MS } from "./ui/pump";
 
 describe("Battle Tile shell", () => {
@@ -133,7 +134,7 @@ describe("tick snapshot cache", () => {
         },
         cancelAnimationFrame: vi.fn(),
         document: doc,
-      } satisfies TileShellPumpSchedule,
+      } satisfies NonNullable<Parameters<typeof mountTileShell>[1]>["pumpSchedule"],
       runRafAt(at: number): void {
         clock.ms = at;
         const callbacks = rafCallbacks.splice(0);
@@ -144,7 +145,7 @@ describe("tick snapshot cache", () => {
     };
   }
 
-  it("calls engine.snapshot once per sim tick across subsequent renders", () => {
+  it("clones the Engine snapshot once per sim tick while re-rendering between ticks", () => {
     const content = buildContent();
     const engine = createEngine(content, undefined, 42);
     const snapshotSpy = vi.spyOn(engine, "snapshot");
@@ -178,7 +179,7 @@ describe("tick snapshot cache", () => {
     shell.stop();
   });
 
-  it("reuses one snapshot object for applyEvents and the pump bus publish", async () => {
+  it("publishes the same Snapshot on the pump bus that combat events were applied with", async () => {
     const content = buildContent();
     const engine = createEngine(content, undefined, 42);
     const clock = { ms: 0 };
@@ -228,8 +229,61 @@ describe("tick snapshot cache", () => {
     expect(pumpMessage?.type).toBe("pump");
     expect(capturedApplySnapshots).toHaveLength(1);
     expect(pumpMessage?.snapshot).toBe(capturedApplySnapshots[0]);
+    expect(pumpMessage?.legality).toEqual(
+      serializeEngineLegality(engine, pumpMessage!.snapshot, content),
+    );
     shell.stop();
     vi.mocked(battleTile.mountBattleTile).mockRestore();
+  });
+
+  it("still draws the Battle Tile before the first sim tick when only the render pump is running", () => {
+    const content = buildContent();
+    const engine = createEngine(content, undefined, 42);
+    const clock = { ms: 0 };
+    const pump = createControlledPumpSchedule(clock);
+    vi.spyOn(engine, "advanceBy").mockReturnValue([]);
+
+    const root = document.createElement("main");
+    const shell = mountTileShell(root, {
+      engine,
+      content,
+      dockWindow: createMockDockWindow(),
+      deferPump: true,
+      now: () => clock.ms,
+      pumpSchedule: pump.schedule,
+    });
+
+    shell.startPump();
+    pump.runRafAt(RENDER_FRAME_MS);
+
+    expect(root.querySelectorAll(".combatant").length).toBeGreaterThan(0);
+    shell.stop();
+  });
+
+  it("records wall-clock ms when the cached tick snapshot is taken", () => {
+    const content = buildContent();
+    const engine = createEngine(content, undefined, 42);
+    const clock = { ms: 5_000 };
+    const pump = createControlledPumpSchedule(clock);
+    vi.spyOn(engine, "advanceBy").mockReturnValue([
+      { seq: 1, atMs: 250, type: "config-applied" },
+    ] satisfies EngineEvent[]);
+
+    const root = document.createElement("main");
+    const shell = mountTileShell(root, {
+      engine,
+      content,
+      dockWindow: createMockDockWindow(),
+      deferPump: true,
+      now: () => clock.ms,
+      pumpSchedule: pump.schedule,
+    });
+
+    shell.startPump();
+    vi.advanceTimersByTime(PUMP_INTERVAL_MS);
+
+    expect(shell.tickSnapshotAtMs()).toBe(5_000);
+    shell.stop();
   });
 
   it("renders on demand before the first sim tick", () => {
@@ -243,7 +297,7 @@ describe("tick snapshot cache", () => {
     shell.stop();
   });
 
-  it("reflects post-command state on the next render without waiting for a tick", async () => {
+  it("reflects pending party edits on the next render without waiting for a sim tick", async () => {
     const content = buildContent();
     const engine = createEngine(content, undefined, 42);
     const clock = { ms: 0 };

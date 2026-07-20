@@ -20,7 +20,7 @@ import type { Snapshot } from "./core/snapshot";
 
 export { TILE_HEIGHT, TILE_WIDTH } from "./ui/battle-tile";
 
-export type TileShellPumpSchedule = Partial<
+type TileShellPumpSchedule = Partial<
   Pick<
     PumpDeps,
     | "now"
