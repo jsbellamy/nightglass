@@ -3,8 +3,8 @@
 Frozen by [#21](https://github.com/jsbellamy/nightglass/issues/21) and amended
 by [#29](https://github.com/jsbellamy/nightglass/issues/29) after the provider
 decision in [#22](https://github.com/jsbellamy/nightglass/issues/22). Reference
-implementation: [`prototype/comfyui-fit/acquire.py`](../prototype/comfyui-fit/acquire.py),
-tests: [`test_contract.py`](../prototype/comfyui-fit/test_contract.py).
+implementation: [`pipeline/acquire.py`](../pipeline/acquire.py),
+tests: [`pipeline/test_contract.py`](../pipeline/test_contract.py).
 
 ## Shape of the pipeline
 
@@ -54,7 +54,7 @@ grid reports. There is no resolution-side rescue and no reduction fallback.
 
 Class prompts must name the identity-bearing silhouette, equipment, facing, and
 palette. The exact accepted prompts and raw hashes live beside the raws in
-[`grid_raw/`](../prototype/comfyui-fit/grid_raw/).
+[`assets-raw/grid_raw/`](../assets-raw/grid_raw/).
 
 ## Chroma-key alpha
 
@@ -87,7 +87,7 @@ Deterministic, in order:
    **The raw is never resized.**
 4. **Bottom-center foot-anchor** the recovered cells 1:1 on the 32×48 canvas.
 5. **Quantize** opaque cells nearest-in-RGB to
-   [`palette.json`](../prototype/comfyui-fit/palette.json) (`moonberry-16`). No
+   [`pipeline/palette.json`](../pipeline/palette.json) (`moonberry-16`). No
    dithering—stochastic or ordered—is permitted.
 
 Step 3 is ported from SideScape's
@@ -139,8 +139,8 @@ shield device, and dark-plum contour language while fixing the old canonical
 source's weak pose: it is a right-facing compact guard with sword and shield both
 deployed. The Wizard keeps the pointed berry hat, mint robe/scarf, cream hair,
 berry ornaments, wand, and right-facing Class silhouette. Their evidence and
-raw/runtime hashes are recorded in
-[`grid_raw/MANIFEST.md`](../prototype/comfyui-fit/grid_raw/MANIFEST.md).
+raw/runtime hashes are recorded in the `*.source.json` sidecars beside each
+archived raw under [`assets-raw/grid_raw/`](../assets-raw/grid_raw/).
 
 ## Known limits
 
@@ -152,5 +152,7 @@ raw/runtime hashes are recorded in
   `moonberry-glow` ramp but cannot identify an effect drawn entirely in
   `moonberry-16`.
 - `moonberry-16` still derives from two Class identities. [#30](https://github.com/jsbellamy/nightglass/issues/30)
-  confirmed ordinary opponents and Bosses can stay on the same palette; extending
-  it for the Priest and Hunter remains future work.
+  confirmed ordinary opponents and Bosses can stay on the same palette. Priest and
+  Hunter Class stills ship at 32×48 with acceptance evidence at
+  [`docs/research/evidence/55-priest-canonical/`](research/evidence/55-priest-canonical/)
+  and [`docs/research/evidence/56-hunter-canonical/`](research/evidence/56-hunter-canonical/).

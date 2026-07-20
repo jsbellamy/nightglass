@@ -455,7 +455,7 @@ What content data and assets the slice must author, derived from §§3–8:
 | Class Kits (bases, basic attacks, 4 Core Abilities, Talent Tier each) | 4 | [#7](https://github.com/jsbellamy/nightglass/issues/7) |
 | Stages (2 Waves + Boss, opponent rosters, XP allocation) | 3 | [#5](https://github.com/jsbellamy/nightglass/issues/5) |
 | Opponent stills: one ordinary family (Pipcap-class, reused across Waves) + one distinct Boss silhouette per Stage | 1 + 3 (Pipcap and one Boss accepted) | [#30](https://github.com/jsbellamy/nightglass/issues/30) |
-| Canonical Character references | 4 (Knight, Wizard accepted; Priest, Hunter to acquire) | [#29](https://github.com/jsbellamy/nightglass/issues/29) |
+| Canonical Character references | 4 (Knight, Wizard, Priest, Hunter accepted at 32×48) | [#29](https://github.com/jsbellamy/nightglass/issues/29), [#55](https://github.com/jsbellamy/nightglass/issues/55), [#56](https://github.com/jsbellamy/nightglass/issues/56) |
 | Ability effect stills + derivation recipes | one still per distinct effect | [#20](https://github.com/jsbellamy/nightglass/issues/20), [#4](https://github.com/jsbellamy/nightglass/issues/4) |
 | Hand-authored idle micro-loops (optional) and downed poses | up to 4 + 4 | [#4](https://github.com/jsbellamy/nightglass/issues/4) |
 | Equipment Bases with names and icons | 12 | [#8](https://github.com/jsbellamy/nightglass/issues/8) |
@@ -482,8 +482,8 @@ an implementer or orchestrator ticks to publish a PR.
 | Art direction at native scale | [art-direction prototype](../prototype/art-direction/NOTES.md) ([#3](https://github.com/jsbellamy/nightglass/issues/3)) |
 | Management Dock never disturbs the tile | [management-fanout prototype](../prototype/management-fanout/README.md) ([#12](https://github.com/jsbellamy/nightglass/issues/12)) |
 | Simulation equivalence: live = accelerated = save/reload; Offline Progress path | [simulation-boundary prototype](../prototype/simulation-boundary/NOTES.md) — byte-equivalent Snapshots, 198 identical events ([#10](https://github.com/jsbellamy/nightglass/issues/10)) |
-| Acquisition: byte-identical offline rebuild, provider-neutral, validator gates | `prototype/comfyui-fit/test_contract.py` all-green with no provider/network; accepted Knight/Wizard hashes ([#29](https://github.com/jsbellamy/nightglass/issues/29), [#21](https://github.com/jsbellamy/nightglass/issues/21)) |
-| Effects read at 1× under stress; separation enforced; deterministic | `prototype/comfyui-fit/effects/verify.py` 6/6 gates ([#20](https://github.com/jsbellamy/nightglass/issues/20)) |
+| Acquisition: byte-identical offline rebuild, provider-neutral, validator gates | `pipeline/test_contract.py` / `npm run assets:verify` all-green with no provider/network; accepted Class still hashes ([#29](https://github.com/jsbellamy/nightglass/issues/29), [#21](https://github.com/jsbellamy/nightglass/issues/21)) |
+| Effects read at 1× under stress; separation enforced; deterministic | `pipeline/effects/verify.py` 6/6 gates ([#20](https://github.com/jsbellamy/nightglass/issues/20)) |
 | Animation contract: attribution, cue alignment, 30fps legibility, anchors | [presentation-contract prototype](../prototype/presentation-contract/NOTES.md) `verify.py` 7/7 gates ([#4](https://github.com/jsbellamy/nightglass/issues/4)) |
 | Opponent art through grid recovery: Pipcap (29×40) and Boss (32×41) accepted, shared `moonberry-16`, byte-identical offline rebuild | [opponent-art prototype](../prototype/comfyui-fit/opponents/NOTES.md) ([#30](https://github.com/jsbellamy/nightglass/issues/30)) |
 | Body-motion rejections (closed evidence, not dependencies) | [#13](https://github.com/jsbellamy/nightglass/issues/13), [#19](https://github.com/jsbellamy/nightglass/issues/19), [#26](https://github.com/jsbellamy/nightglass/issues/26), [#24](https://github.com/jsbellamy/nightglass/issues/24) |
