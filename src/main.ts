@@ -12,6 +12,7 @@ import {
   serializeEngineLegality,
 } from "./ui/engine-legality";
 import { startPump, type PumpController } from "./ui/pump";
+import { createFrameMetrics } from "./ui/frame-metrics";
 import type { TileShell } from "./ui/tile-shell-types";
 import { ARMORY_BADGE_EVENT } from "./ui/bus";
 import type { EngineEvent } from "./core/events";
@@ -138,6 +139,8 @@ export function mountTileShell(root: HTMLElement, options: TileShellOptions = {}
     bus?.publish({ type: "armory-badge" });
   });
 
+  const frameMetrics = createFrameMetrics();
+
   const pumpDeps = {
     advanceBy: (ms: number) => engine.advanceBy(ms),
     onAdvance: (events: EngineEvent[]) => {
@@ -151,6 +154,7 @@ export function mountTileShell(root: HTMLElement, options: TileShellOptions = {}
       });
     },
     render: () => tile.render(engine.snapshot()),
+    frameMetrics,
   };
 
   let pump: PumpController | null = null;
@@ -165,6 +169,11 @@ export function mountTileShell(root: HTMLElement, options: TileShellOptions = {}
     startLivePump();
   }
 
+  if (import.meta.env.DEV) {
+    (window as unknown as Record<string, unknown>)["__nightglassFrameMetrics"] = () =>
+      pump?.frameMetrics() ?? null;
+  }
+
   publishSnapshot();
 
   const onBeforeUnload = options.onBeforeUnload;
@@ -177,6 +186,9 @@ export function mountTileShell(root: HTMLElement, options: TileShellOptions = {}
     stop() {
       pump?.stop();
       pump = null;
+    },
+    frameMetrics() {
+      return pump?.frameMetrics() ?? null;
     },
     destroy() {
       pump?.stop();

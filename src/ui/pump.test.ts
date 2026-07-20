@@ -2,6 +2,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { EngineEvent } from "../core/events";
+import { createFrameMetrics } from "./frame-metrics";
 import { HIDDEN_HEARTBEAT_MS, PUMP_INTERVAL_MS, RENDER_FRAME_MS, startPump } from "./pump";
 
 describe("live pump loop", () => {
@@ -122,6 +123,78 @@ describe("live pump loop", () => {
     for (let index = 1; index < renderTimes.length; index++) {
       expect(renderTimes[index]! - renderTimes[index - 1]!).toBeGreaterThanOrEqual(RENDER_FRAME_MS);
     }
+
+    pump.stop();
+  });
+});
+
+describe("frame metrics wiring", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("returns null from frameMetrics when no recorder was supplied", () => {
+    const doc = document;
+    Object.defineProperty(doc, "hidden", { configurable: true, value: false });
+
+    const pump = startPump({
+      advanceBy: vi.fn(() => [] as EngineEvent[]),
+      onAdvance: vi.fn(),
+      render: vi.fn(),
+      document: doc,
+    });
+
+    expect(pump.frameMetrics()).toBeNull();
+    pump.stop();
+  });
+
+  it("records one sample per render the pump performs when a recorder is supplied", () => {
+    let clock = 0;
+    const render = vi.fn();
+    const rafCallbacks: FrameRequestCallback[] = [];
+    const doc = {
+      hidden: false,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    } as unknown as Document;
+    const frameMetrics = createFrameMetrics({ now: () => clock });
+
+    const pump = startPump({
+      advanceBy: vi.fn(() => [] as EngineEvent[]),
+      onAdvance: vi.fn(),
+      render,
+      frameMetrics,
+      now: () => clock,
+      requestAnimationFrame: (callback) => {
+        rafCallbacks.push(callback);
+        return rafCallbacks.length;
+      },
+      cancelAnimationFrame: vi.fn(),
+      setInterval: vi.fn(),
+      clearInterval: vi.fn(),
+      document: doc,
+    });
+
+    function runRafAt(at: number): void {
+      clock = at;
+      const callbacks = rafCallbacks.splice(0);
+      for (const callback of callbacks) {
+        callback(at);
+      }
+    }
+
+    for (let at = 0; at <= 100; at += RENDER_FRAME_MS) {
+      runRafAt(at);
+    }
+
+    const report = pump.frameMetrics();
+    expect(report).not.toBeNull();
+    expect(report!.sampleCount).toBe(render.mock.calls.length);
+    expect(render.mock.calls.length).toBeGreaterThanOrEqual(2);
 
     pump.stop();
   });
