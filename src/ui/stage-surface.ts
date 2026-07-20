@@ -1,14 +1,7 @@
 import type { Snapshot } from "../core/snapshot";
+import type { Content } from "../core/types";
 import type { TileCommand } from "./bus";
 import { bindPressable } from "./keyboard";
-
-const STAGE_LABELS: Record<1 | 2 | 3, string> = {
-  1: "Orchard Understory",
-  2: "Moonlit Bramble",
-  3: "Nightbloom Terrace",
-};
-
-const STAGE_IDS = [1, 2, 3] as const;
 
 export interface StageSurface {
   render(snapshot: Snapshot | null): void;
@@ -16,6 +9,7 @@ export interface StageSurface {
 }
 
 export interface StageSurfaceOptions {
+  content: Content;
   onCommand?: (command: TileCommand) => void;
 }
 
@@ -28,7 +22,7 @@ function encounterLabel(encounter: 1 | 2 | 3): string {
 
 export function mountStageSurface(
   root: HTMLElement,
-  options: StageSurfaceOptions = {},
+  options: StageSurfaceOptions,
 ): StageSurface {
   root.classList.add("stage-surface");
   let pendingStage: 1 | 2 | 3 | null = null;
@@ -112,7 +106,8 @@ export function mountStageSurface(
     list.className = "stage-list";
     list.setAttribute("role", "list");
 
-    for (const stageId of STAGE_IDS) {
+    for (const stageDef of options.content.stages) {
+      const stageId = stageDef.id;
       const unlocked = stageId <= snapshot.progression.unlockedStage;
       const isCurrent = attempt?.stage === stageId;
 
@@ -126,7 +121,7 @@ export function mountStageSurface(
 
       const name = document.createElement("span");
       name.className = "stage-name";
-      name.textContent = STAGE_LABELS[stageId];
+      name.textContent = stageDef.name;
 
       row.append(name);
 

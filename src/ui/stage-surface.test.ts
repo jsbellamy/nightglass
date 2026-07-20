@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { createEngine } from "../core/engine";
 import { cloneSnapshot, type DropInstance } from "../core/snapshot";
+import { fixtureContent } from "../core/testing/fixture-content";
 import { buildContent } from "../data";
 import { createBusEndpoint } from "./bus";
 import { mountStageSurface } from "./stage-surface";
@@ -30,11 +31,41 @@ function activateFocused(): void {
   active.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
 }
 
+const customStageNamesContent: typeof fixtureContent = {
+  ...fixtureContent,
+  stages: [
+    { ...fixtureContent.stages[0]!, id: 1 as const, name: "Renamed Stage Alpha" },
+    { ...fixtureContent.stages[0]!, id: 2 as const, name: "Renamed Stage Beta" },
+    { ...fixtureContent.stages[0]!, id: 3 as const, name: "Renamed Stage Gamma" },
+  ],
+};
+
 describe("Stage surface", () => {
+  it("renders Stage names from Content, not hardcoded labels", () => {
+    const root = document.createElement("div");
+    const engine = createEngine(customStageNamesContent, undefined, LOOT_SEED);
+    const surface = mountStageSurface(root, { content: customStageNamesContent });
+
+    surface.render(engine.snapshot());
+
+    expect(root.querySelector('[data-stage-id="1"] .stage-name')?.textContent).toBe(
+      "Renamed Stage Alpha",
+    );
+    expect(root.querySelector('[data-stage-id="2"] .stage-name')?.textContent).toBe(
+      "Renamed Stage Beta",
+    );
+    expect(root.querySelector('[data-stage-id="3"] .stage-name')?.textContent).toBe(
+      "Renamed Stage Gamma",
+    );
+    expect(root.textContent).not.toMatch(/Orchard/);
+
+    surface.destroy();
+  });
+
   it("lists Stages with unlock state and the live Attempt position", () => {
     const root = document.createElement("div");
     const engine = createEngine(content, undefined, LOOT_SEED);
-    const surface = mountStageSurface(root);
+    const surface = mountStageSurface(root, { content });
 
     surface.render(engine.snapshot());
 
@@ -72,6 +103,7 @@ describe("Stage surface", () => {
     );
 
     const surface = mountStageSurface(root, {
+      content,
       onCommand: (command) => {
         dockBus.publish({ type: "command", command });
       },
@@ -122,6 +154,7 @@ describe("Stage surface", () => {
     expect(awardedDrop).not.toBeNull();
 
     const surface = mountStageSurface(root, {
+      content,
       onCommand: (command) => {
         if (command.cmd === "selectStage") {
           engine.selectStage(command.args[0]);
@@ -155,6 +188,7 @@ describe("Stage surface", () => {
     const engine = createEngine(content, saved, LOOT_SEED);
     const commands: unknown[] = [];
     const surface = mountStageSurface(root, {
+      content,
       onCommand: (command) => {
         commands.push(command);
       },
@@ -191,5 +225,7 @@ describe("Stage surface source boundary", () => {
       "utf8",
     );
     expect(source).not.toMatch(/from\s+["']\.\.\/core\/engine["']/);
+    expect(source).not.toMatch(/STAGE_LABELS/);
+    expect(source).not.toMatch(/Orchard/);
   });
 });
