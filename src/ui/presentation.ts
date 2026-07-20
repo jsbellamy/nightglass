@@ -11,7 +11,7 @@ import {
 } from "./damage-numbers";
 import { effectImageUrl, statusEffectGlyphUrl } from "./effect-images";
 import { equipmentBaseForDrop } from "./equipment-format";
-import { resolveIcon } from "./icons";
+import { createEquipmentIconElement } from "./icons";
 
 /** Contract constants — source: prototype/presentation-contract/present.py */
 export const LUNGE = {
@@ -584,15 +584,9 @@ export function createPresentation(options: PresentationOptions): Presentation {
     dropToastEl.className = `drop-toast rarity-${dropToast.rarity}`;
     dropToastEl.setAttribute("aria-label", `${dropToast.itemName} drop`);
 
-    const icon = resolveIcon(dropToast.iconKey);
-    const img = document.createElement("img");
-    img.className = "equipment-icon-img equipment-icon-img--content drop-toast-icon";
-    img.src = icon.url;
-    img.alt = "";
-    img.width = 34;
-    img.height = 34;
-    img.decoding = "async";
-    dropToastEl.replaceChildren(img);
+    dropToastEl.replaceChildren(
+      createEquipmentIconElement(dropToast.iconKey, "content", { extraClass: "drop-toast-icon" }),
+    );
   }
 
   function render(nowMs: number, snapshot: Snapshot): void {

@@ -106,15 +106,14 @@ export type EquipmentIconTier = "content" | "chrome";
 export function createEquipmentIconElement(
   iconKey: string,
   tier: EquipmentIconTier,
-  options?: { ariaLabel?: string },
+  options?: { ariaLabel?: string; extraClass?: string },
 ): HTMLImageElement {
   const source = resolveIcon(iconKey);
   const size = tier === "content" ? CONTENT_ICON_SIZE : CHROME_ICON_SIZE;
+  const tierClass =
+    tier === "content" ? "equipment-icon-img--content" : "equipment-icon-img--chrome";
   const img = document.createElement("img");
-  img.className =
-    tier === "content"
-      ? "equipment-icon equipment-icon--content"
-      : "equipment-icon equipment-icon--chrome";
+  img.className = [ "equipment-icon-img", tierClass, options?.extraClass ].filter(Boolean).join(" ");
   img.src = source.url;
   img.alt = "";
   img.width = size;

@@ -22,7 +22,7 @@ import {
   statsForEquipmentLoadout,
 } from "./equipment-format";
 import { bindPressable } from "./keyboard";
-import { resolveIcon } from "./icons";
+import { createEquipmentIconElement } from "./icons";
 import { effectiveLoadout, effectiveTalentState } from "./loadout-surface";
 
 const ROSTER: ClassId[] = ["knight", "wizard", "priest", "hunter"];
@@ -105,34 +105,18 @@ export function mountArmorySurface(
   }
 
   function appendContentTierIcon(container: HTMLElement, iconKey: string, name: string): void {
-    const icon = resolveIcon(iconKey);
     const wrap = document.createElement("span");
     wrap.className = "equipment-icon-content";
     wrap.setAttribute("aria-label", `${name} icon`);
-    const img = document.createElement("img");
-    img.className = "equipment-icon-img equipment-icon-img--content";
-    img.src = icon.url;
-    img.alt = "";
-    img.width = 34;
-    img.height = 34;
-    img.decoding = "async";
-    wrap.append(img);
+    wrap.append(createEquipmentIconElement(iconKey, "content"));
     container.append(wrap);
   }
 
   function appendChromeTierIcon(container: HTMLElement, iconKey: string, name: string): void {
-    const icon = resolveIcon(iconKey);
     const wrap = document.createElement("span");
     wrap.className = "equipment-icon-chrome";
     wrap.setAttribute("aria-label", `${name} icon`);
-    const img = document.createElement("img");
-    img.className = "equipment-icon-img equipment-icon-img--chrome";
-    img.src = icon.url;
-    img.alt = "";
-    img.width = 16;
-    img.height = 16;
-    img.decoding = "async";
-    wrap.append(img);
+    wrap.append(createEquipmentIconElement(iconKey, "chrome"));
     container.append(wrap);
   }
 

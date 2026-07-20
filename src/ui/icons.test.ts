@@ -40,12 +40,12 @@ describe("equipment icon registry", () => {
 
   it("creates content-tier and chrome-tier icon elements at integer logical sizes", () => {
     const content = createEquipmentIconElement("thornquill-blade", "content");
-    expect(content.className).toContain("equipment-icon--content");
+    expect(content.className).toContain("equipment-icon-img--content");
     expect(content.width).toBe(CONTENT_ICON_SIZE);
     expect(content.height).toBe(CONTENT_ICON_SIZE);
 
     const chrome = createEquipmentIconElement("thornquill-blade", "chrome");
-    expect(chrome.className).toContain("equipment-icon--chrome");
+    expect(chrome.className).toContain("equipment-icon-img--chrome");
     expect(chrome.width).toBe(CHROME_ICON_SIZE);
     expect(chrome.height).toBe(CHROME_ICON_SIZE);
   });
