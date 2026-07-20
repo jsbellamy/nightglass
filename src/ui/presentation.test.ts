@@ -145,6 +145,36 @@ describe("presentation mapping", () => {
     expect(body?.style.getPropertyValue("--hurt-flash-strength")).toBe("0.6");
   });
 
+  it("mirrors party-facing-right and opponent-facing-left motion from Presentation Events", () => {
+    const tile = mountBattleTile(root, buildContent());
+    const engine = createEngine(buildContent(), undefined, LOOT_SEED);
+    const snapshot = snapshotWithAction(engine.snapshot(), 1_000);
+    tile.render(snapshot);
+
+    const partyActor = root.querySelector<HTMLElement>('[data-entity-id="party:knight:front"]');
+    expect(Number(partyActor?.dataset["bodyOffsetX"])).toBeGreaterThan(0);
+
+    const opponentId = snapshot.attempt?.combatants.find((entry) => entry.side === "opponent")?.entityId;
+    if (!opponentId) {
+      throw new Error("missing opponent");
+    }
+    tile.applyEvents(
+      [
+        {
+          seq: 1,
+          atMs: 1_000,
+          type: "impact",
+          entityId: "party:knight:front",
+          abilityId: "steel-cut",
+          results: [{ targetId: opponentId, kind: "damage", channel: "physical", amount: 1, healthAfter: 10 }],
+        },
+      ],
+      snapshot,
+    );
+    const opponentActor = root.querySelector<HTMLElement>(`[data-entity-id="${opponentId}"]`);
+    expect(Number(opponentActor?.dataset["bodyOffsetX"])).toBeGreaterThan(0);
+  });
+
   it("drops lunge offsets under reduced motion but keeps the actor pool and damage numbers", () => {
     const tile = mountBattleTile(root, buildContent(), { reducedMotion: true });
     const engine = createEngine(buildContent(), undefined, LOOT_SEED);

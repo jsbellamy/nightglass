@@ -18,11 +18,14 @@ import {
 import type { CombatantState } from "./snapshot";
 import { buildContent } from "../data";
 import { fixtureContent } from "./testing/fixture-content";
-import type { AbilityDef, BaseStats } from "./types";
+import { opponentEntityId, partyEntityId } from "./entity-id";
+import type { AbilityDef, BaseStats, ClassId } from "./types";
 
 const abilitiesById = new Map(fixtureContent.abilities.map((ability) => [ability.id, ability]));
 const statusesById = new Map(fixtureContent.statuses.map((status) => [status.id, status]));
 const knightKit = fixtureContent.classes.find((entry) => entry.id === "knight")!;
+
+const SLOT_INDEX = { front: 0, middle: 1, back: 2 } as const;
 
 function partyCombatant(
   classId: string,
@@ -30,7 +33,7 @@ function partyCombatant(
   overrides: Partial<CombatantState> = {},
 ): CombatantState {
   return {
-    entityId: `party:${classId}:${slot}`,
+    entityId: partyEntityId(classId as ClassId, SLOT_INDEX[slot]),
     side: "party",
     defId: classId,
     health: 100,
@@ -45,7 +48,7 @@ function partyCombatant(
 
 function opponentCombatant(id: string, overrides: Partial<CombatantState> = {}): CombatantState {
   return {
-    entityId: `opp:1:0`,
+    entityId: opponentEntityId("1", 0),
     side: "opponent",
     defId: id,
     health: 40,
