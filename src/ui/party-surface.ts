@@ -1,18 +1,10 @@
 import type { Snapshot } from "../core/snapshot";
-import type { ClassId } from "../core/types";
-import { levelFromXp } from "../core/xp";
+import type { ClassId, Content } from "../core/types";
 import type { TileCommand } from "./bus";
 import { bindPressable } from "./keyboard";
+import { CLASS_LABELS, combatantForClass, levelFor } from "./snapshot-view";
 
 const FORMATION_SLOTS = ["Front", "Middle", "Back"] as const;
-const XP_THRESHOLDS = [0, 100, 250, 450, 650, 850];
-
-const CLASS_LABELS: Record<ClassId, string> = {
-  knight: "Knight",
-  wizard: "Wizard",
-  priest: "Priest",
-  hunter: "Hunter",
-};
 
 export interface PartySurface {
   render(snapshot: Snapshot | null): void;
@@ -20,6 +12,7 @@ export interface PartySurface {
 }
 
 export interface PartySurfaceOptions {
+  content: Content;
   onCommand?: (command: TileCommand) => void;
 }
 
@@ -46,12 +39,7 @@ function effectiveFormation(snapshot: Snapshot): [ClassId, ClassId, ClassId] {
 }
 
 function combatHealth(snapshot: Snapshot, classId: ClassId): { health: number; maxHealth: number } | null {
-  if (!snapshot.attempt) {
-    return null;
-  }
-  const combatant = snapshot.attempt.combatants.find(
-    (entry) => entry.side === "party" && entry.defId === classId,
-  );
+  const combatant = combatantForClass(snapshot, classId);
   if (!combatant) {
     return null;
   }
@@ -90,8 +78,9 @@ function swapPartyMember(
 
 export function mountPartySurface(
   root: HTMLElement,
-  options: PartySurfaceOptions = {},
+  options: PartySurfaceOptions,
 ): PartySurface {
+  const { content } = options;
   root.classList.add("party-surface");
 
   function render(snapshot: Snapshot | null): void {
@@ -155,8 +144,7 @@ export function mountPartySurface(
 
       const level = document.createElement("p");
       level.className = "character-level";
-      const xp = snapshot.progression.characterXp[classId] ?? 0;
-      level.textContent = `Level ${levelFromXp(xp, XP_THRESHOLDS)}`;
+      level.textContent = `Level ${levelFor(snapshot, content, classId)}`;
 
       const health = combatHealth(snapshot, classId);
       if (health) {
@@ -229,8 +217,7 @@ export function mountPartySurface(
 
     const reserveLevel = document.createElement("p");
     reserveLevel.className = "character-level";
-    const reserveXp = snapshot.progression.characterXp[reserve] ?? 0;
-    reserveLevel.textContent = `Level ${levelFromXp(reserveXp, XP_THRESHOLDS)}`;
+    reserveLevel.textContent = `Level ${levelFor(snapshot, content, reserve)}`;
     reserveCard.append(reserveName, reserveLevel);
     reserveSection.append(reserveCard);
 
