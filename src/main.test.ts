@@ -737,7 +737,7 @@ describe("frame metrics dev hooks", () => {
     vi.useRealTimers();
   });
 
-  it("__nightglassFrameMetricsReset clears tick and frame samples under DEV", () => {
+  it("DEV instrumentation reset clears tick and frame samples", () => {
     const root = document.createElement("main");
     const shell = mountTileShell(root, { dockWindow: createMockDockWindow() });
     const devWindow = window as unknown as Record<string, unknown>;

@@ -274,7 +274,7 @@ describe("frame metrics wiring", () => {
     pump.stop();
   });
 
-  it("records one tick sample when the live interval pumps with a recorder", () => {
+  it("records tick duration when the live pump interval fires with a recorder", () => {
     const doc = document;
     Object.defineProperty(doc, "hidden", { configurable: true, value: false });
     const frameMetrics = createFrameMetrics();

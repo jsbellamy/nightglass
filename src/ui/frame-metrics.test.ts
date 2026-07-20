@@ -117,7 +117,7 @@ describe("createFrameMetrics", () => {
     expect(metrics.report().durationP50Ms).toBe(3);
   });
 
-  it("records one tick sample per measureTick call in tickSampleCount", () => {
+  it("reports tickSampleCount matching the number of completed sim ticks", () => {
     let clock = 0;
     const metrics = createFrameMetrics({ now: () => clock });
 
@@ -134,7 +134,7 @@ describe("createFrameMetrics", () => {
     expect(report.tickTotal.maxMs).toBe(6);
   });
 
-  it("reports exact per-phase durations for advance, legality, and publish with an injected clock", () => {
+  it("attributes injected advance, legality, and publish costs to their tick phases", () => {
     let clock = 0;
     const metrics = createFrameMetrics({ now: () => clock });
 
@@ -176,7 +176,7 @@ describe("createFrameMetrics", () => {
     expect(report.tickPhases.publish.p50Ms).toBe(3);
   });
 
-  it("returns the wrapped value from time() and records duration when the function throws", () => {
+  it("returns phase work unchanged and still records duration when phase work throws", () => {
     let clock = 0;
     const metrics = createFrameMetrics({ now: () => clock });
 
@@ -199,7 +199,7 @@ describe("createFrameMetrics", () => {
     expect(report.tickPhases.advance.p50Ms).toBe(7);
   });
 
-  it("never keeps more than FRAME_METRICS_WINDOW tick samples after many measureTick calls", () => {
+  it("drops the oldest tick sample once the rolling window is full", () => {
     let clock = 0;
     const metrics = createFrameMetrics({ now: () => clock });
 
@@ -236,7 +236,7 @@ describe("createFrameMetrics", () => {
     expect(report.intervalP50Ms).toBe(0);
   });
 
-  it("keeps flat intervalP50Ms and durationP95Ms report keys for existing console workflows", () => {
+  it("still exposes frame interval and duration percentiles on the instrumentation report", () => {
     let clock = 0;
     const metrics = createFrameMetrics({ now: () => clock });
 
