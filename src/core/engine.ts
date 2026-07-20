@@ -825,23 +825,23 @@ function awardEncounterDrops(
   encounter: 1 | 2 | 3,
 ): void {
   const stageDef = stageDefFor(index, stage);
-  const dropCount = encounter === 3 ? 2 : 1;
-
-  for (let awardIndex = 0; awardIndex < dropCount; awardIndex += 1) {
-    const rolled = rollDrop({
-      content: index.content,
-      stage: stageDef,
-      itemLevel: stage,
-      lootRng: { state: state.lootRngState },
-      dropId: state.nextDropId,
-      awardedAtMs: state.simNowMs,
-      uncommonFloor: encounter === 3 && awardIndex === 1,
-    });
-    state.lootRngState = rolled.lootRng.state;
-    state.nextDropId += 1;
-    state.progression.armory.push(rolled.drop);
-    emit(state, events, { type: "drop-awarded", dropId: rolled.drop.dropId });
+  if (encounter === 1) {
+    return;
   }
+
+  const rolled = rollDrop({
+    content: index.content,
+    stage: stageDef,
+    itemLevel: stage,
+    lootRng: { state: state.lootRngState },
+    dropId: state.nextDropId,
+    awardedAtMs: state.simNowMs,
+    uncommonFloor: encounter === 3,
+  });
+  state.lootRngState = rolled.lootRng.state;
+  state.nextDropId += 1;
+  state.progression.armory.push(rolled.drop);
+  emit(state, events, { type: "drop-awarded", dropId: rolled.drop.dropId });
 }
 
 function evaluateEncounterOutcome(
