@@ -6,20 +6,15 @@ reviewable asset and a reproducible path back to its source.
 
 ## Reading discipline
 
-Read the report, not the render.
+Read the report, not the render — see `AGENTS.md` → "Reading discipline" for
+the rule and why it holds. In this loop it means:
 
-Steps 1-5 are answerable entirely from JSON reports, sidecars, and validator
-output. Every measurement you would go looking for has already been recorded as
-text, at roughly a hundredth of the cost of the image it describes — read those.
-
-Step 6 is the single visual step: open one composite, the contact sheet or the
-native-scale review surface, and judge it. Run that review in a subagent, which
-opens the image, answers the asset class's questions, and returns its verdict as
-text — the image stays out of the main task's context, so its cost is bounded by
-the subagent's own turns rather than by every remaining request of the task.
-
-Guardrail: no candidate PNG is opened during steps 1-5, and no step opens a
-directory of images.
+- Steps 1-5 are answered from `ingest-report.json`, sidecars, and validator
+  output.
+- Step 6 is the single visual step: one composite, reviewed in a subagent that
+  returns its verdict as text.
+- Guardrail: no candidate PNG is opened during steps 1-5, and no step opens a
+  directory of images.
 
 ## 1. Declare the asset contract
 

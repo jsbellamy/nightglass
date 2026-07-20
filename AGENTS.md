@@ -23,6 +23,28 @@ The standard `needs-triage`, `needs-info`, `ready-for-agent`,
 This is a single-context project with `CONTEXT.md` at the root and architectural
 decisions under `docs/adr/`. See `docs/agents/domain.md`.
 
+### Reading discipline
+
+Read the report, not the render.
+
+Nearly everything an agent needs to judge is already recorded as text: a
+validator report, a manifest, a sidecar, an evidence table, a doc index. The
+text costs a fraction of the artifact it describes, and an image or a large
+document read early in a task is re-read on every later request of that task —
+in an agentic loop a "request" is a tool-call round trip, not a user prompt, so
+a long task pays that cost dozens of times over.
+
+Open the artifact itself when judgement genuinely requires seeing it — a
+native-scale visual review, a rendering question no measurement answers. Open
+one composite rather than a directory, and open it late. Where a runtime
+supports subagents, run that review in one: it opens the artifact, answers the
+question, and returns text, so the artifact never enters the main task's
+context.
+
+Applications of this rule live with the work they govern:
+`docs/agents/asset-generation.md` (the acquisition loop),
+`docs/research/archive/README.md` (settled research).
+
 ### Research archive
 
 `docs/research/archive/` holds settled investigations: fit studies, audits, and
