@@ -35,6 +35,7 @@ describe("domain content types", () => {
 
     const opponent: OpponentDef = fixtureContent.opponents[0]!;
     expect(opponent).toMatchObject({
+      size: "medium",
       xpAward: expect.any(Number),
       spriteKey: expect.any(String),
     });

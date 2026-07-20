@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
+import { buildContent } from "../data";
 import { validateContent } from "./validate-content";
 import { fixtureContent } from "./testing/fixture-content";
-import type { Content } from "./types";
+import type { Content, OpponentDef } from "./types";
 
 describe("validateContent", () => {
   it("returns [] for fixture Content with cardinality relaxation", () => {
@@ -69,5 +70,71 @@ describe("validateContent", () => {
     expect(validateContent(sparseEquipment)).toContain(
       "equipmentBases defines 2 entries, expected exactly 12",
     );
+  });
+
+  it('rejects a wave with a "large" opponent alongside others', () => {
+    const largeGrunt: OpponentDef = {
+      ...fixtureContent.opponents[0]!,
+      id: "fixture-large-grunt",
+      size: "large",
+    };
+    const content: Content = {
+      ...fixtureContent,
+      opponents: [...fixtureContent.opponents, largeGrunt],
+      stages: [
+        {
+          ...fixtureContent.stages[0]!,
+          waves: [
+            { opponents: ["fixture-large-grunt", "fixture-stunner"] },
+            fixtureContent.stages[0]!.waves[1]!,
+          ],
+        },
+      ],
+    };
+
+    expect(validateContent(content, { fixture: true })).toContain(
+      'stage 1 wave 1 has a "large" opponent "fixture-large-grunt" alongside 1 other opponent(s); large opponents must be solo',
+    );
+  });
+
+  it('allows a solo "large" opponent wave and multi-opponent waves of smaller tiers', () => {
+    const largeBoss: OpponentDef = {
+      ...fixtureContent.opponents[1]!,
+      size: "large",
+    };
+    const smallGrunt: OpponentDef = {
+      ...fixtureContent.opponents[0]!,
+      id: "fixture-small-grunt",
+      size: "small",
+    };
+    const content: Content = {
+      ...fixtureContent,
+      opponents: [
+        smallGrunt,
+        largeBoss,
+        fixtureContent.opponents[2]!,
+      ],
+      stages: [
+        {
+          ...fixtureContent.stages[0]!,
+          waves: [
+            { opponents: ["fixture-small-grunt", "fixture-stunner"] },
+            { opponents: ["fixture-small-grunt"] },
+          ],
+          boss: { opponents: ["fixture-boss"] },
+        },
+      ],
+    };
+
+    const violations = validateContent(content, { fixture: true });
+    expect(violations).not.toEqual(
+      expect.arrayContaining([
+        expect.stringMatching(/"large" opponent/),
+      ]),
+    );
+  });
+
+  it("returns [] for shipped Content assembled from data modules", () => {
+    expect(validateContent(buildContent())).toEqual([]);
   });
 });
