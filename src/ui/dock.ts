@@ -1,22 +1,38 @@
 import type { ReadonlySnapshot } from "../core/snapshot";
 import type { Content } from "../core/types";
-import type { TileCommand } from "./bus";
-import { EMPTY_ENGINE_LEGALITY, type EngineLegalityView } from "./engine-legality";
 import { mountArmorySurface } from "./armory-surface";
 import { mountLoadoutSurface } from "./loadout-surface";
 import { mountPartySurface } from "./party-surface";
 import { mountStageSurface } from "./stage-surface";
 import { mountTalentsSurface } from "./talents-surface";
+import type { TileCommand } from "./bus";
+import { EMPTY_ENGINE_LEGALITY, type EngineLegalityView } from "./engine-legality";
+import type { MountedSurface } from "./surface-shell";
 
 export type DockTabId = "party" | "loadout" | "talents" | "armory" | "stage";
 
-export const DOCK_TABS: { id: DockTabId; label: string }[] = [
-  { id: "party", label: "Party" },
-  { id: "loadout", label: "Loadout" },
-  { id: "talents", label: "Talents" },
-  { id: "armory", label: "Armory" },
-  { id: "stage", label: "Stage" },
+export interface DockSurfaceMountOptions {
+  content: Content;
+  onCommand(command: TileCommand): void;
+  /** Armory only — the Unseen Equipment badge; other surfaces ignore this. */
+  onBadgeChange?(visible: boolean): void;
+}
+
+export interface DockSurfaceEntry {
+  id: DockTabId;
+  label: string;
+  mount(root: HTMLElement, options: DockSurfaceMountOptions): MountedSurface;
+}
+
+export const DOCK_SURFACES: DockSurfaceEntry[] = [
+  { id: "party", label: "Party", mount: mountPartySurface },
+  { id: "loadout", label: "Loadout", mount: mountLoadoutSurface },
+  { id: "talents", label: "Talents", mount: mountTalentsSurface as DockSurfaceEntry["mount"] },
+  { id: "armory", label: "Armory", mount: mountArmorySurface as DockSurfaceEntry["mount"] },
+  { id: "stage", label: "Stage", mount: mountStageSurface },
 ];
+
+export const DOCK_TABS = DOCK_SURFACES.map(({ id, label }) => ({ id, label }));
 
 export interface ManagementDock {
   render(snapshot: ReadonlySnapshot | null, legality?: EngineLegalityView): void;
@@ -32,12 +48,8 @@ export interface ManagementDockOptions {
   onCommand?: (command: TileCommand) => void;
 }
 
-function tabIndex(tab: DockTabId): number {
-  return DOCK_TABS.findIndex((entry) => entry.id === tab);
-}
-
 function cycleTab(current: DockTabId, delta: number): DockTabId {
-  const index = tabIndex(current);
+  const index = DOCK_TABS.findIndex((entry) => entry.id === current);
   const next = (index + delta + DOCK_TABS.length) % DOCK_TABS.length;
   return DOCK_TABS[next]!.id;
 }
@@ -75,21 +87,37 @@ export function mountManagementDock(
 
   const panels = new Map<DockTabId, HTMLElement>();
   const tabButtons = new Map<DockTabId, HTMLButtonElement>();
-  let partyRoot: HTMLElement | null = null;
-  let loadoutRoot: HTMLElement | null = null;
-  let talentsRoot: HTMLElement | null = null;
-  let armoryRoot: HTMLElement | null = null;
-  let stageRoot: HTMLElement | null = null;
+  const mountedSurfaces = new Map<DockTabId, MountedSurface>();
 
-  for (const tab of DOCK_TABS) {
+  if (!options.content) {
+    throw new Error("Management Dock requires content for Loadout and Talents surfaces");
+  }
+
+  function syncArmoryTabBadge(): void {
+    const badge = tabButtons.get("armory")?.querySelector<HTMLElement>(".dock-tab-badge");
+    if (badge) {
+      badge.hidden = !armoryBadge;
+    }
+  }
+
+  const mountOptions: DockSurfaceMountOptions = {
+    content: options.content,
+    onCommand: (command) => options.onCommand?.(command),
+    onBadgeChange: (visible) => {
+      armoryBadge = visible;
+      syncArmoryTabBadge();
+    },
+  };
+
+  for (const entry of DOCK_SURFACES) {
     const tabButton = document.createElement("button");
     tabButton.type = "button";
     tabButton.className = "dock-tab focus-ring";
-    tabButton.dataset["dockTab"] = tab.id;
+    tabButton.dataset["dockTab"] = entry.id;
     tabButton.setAttribute("role", "tab");
-    tabButton.setAttribute("aria-controls", `dock-panel-${tab.id}`);
-    tabButton.id = `dock-tab-${tab.id}`;
-    tabButton.textContent = tab.label;
+    tabButton.setAttribute("aria-controls", `dock-panel-${entry.id}`);
+    tabButton.id = `dock-tab-${entry.id}`;
+    tabButton.textContent = entry.label;
 
     const badge = document.createElement("span");
     badge.className = "dock-tab-badge";
@@ -98,95 +126,32 @@ export function mountManagementDock(
     tabButton.append(badge);
 
     tabList.append(tabButton);
-    tabButtons.set(tab.id, tabButton);
+    tabButtons.set(entry.id, tabButton);
 
     const panel = document.createElement("div");
     panel.className = "dock-panel";
-    panel.dataset["dockPanel"] = tab.id;
-    panel.id = `dock-panel-${tab.id}`;
+    panel.dataset["dockPanel"] = entry.id;
+    panel.id = `dock-panel-${entry.id}`;
     panel.setAttribute("role", "tabpanel");
     panel.setAttribute("aria-labelledby", tabButton.id);
 
-    if (tab.id === "party") {
-      partyRoot = document.createElement("div");
-      partyRoot.className = "dock-surface-root";
-      panel.append(partyRoot);
-    } else if (tab.id === "loadout") {
-      loadoutRoot = document.createElement("div");
-      loadoutRoot.className = "dock-surface-root";
-      panel.append(loadoutRoot);
-    } else if (tab.id === "talents") {
-      talentsRoot = document.createElement("div");
-      talentsRoot.className = "dock-surface-root";
-      panel.append(talentsRoot);
-    } else if (tab.id === "armory") {
-      armoryRoot = document.createElement("div");
-      armoryRoot.className = "dock-surface-root";
-      panel.append(armoryRoot);
-    } else if (tab.id === "stage") {
-      stageRoot = document.createElement("div");
-      stageRoot.className = "dock-surface-root";
-      panel.append(stageRoot);
-    }
+    const surfaceRoot = document.createElement("div");
+    surfaceRoot.className = "dock-surface-root";
+    panel.append(surfaceRoot);
+    mountedSurfaces.set(entry.id, entry.mount(surfaceRoot, mountOptions));
 
-    panels.set(tab.id, panel);
+    panels.set(entry.id, panel);
     surface.append(panel);
   }
-
-  if (!partyRoot || !loadoutRoot || !talentsRoot || !armoryRoot || !stageRoot) {
-    throw new Error("Party, Loadout, Talents, Armory, and Stage dock panels are required");
-  }
-
-  if (!options.content) {
-    throw new Error("Management Dock requires content for Loadout and Talents surfaces");
-  }
-
-  const partySurface = mountPartySurface(partyRoot, {
-    content: options.content,
-    onCommand: (command) => {
-      options.onCommand?.(command);
-    },
-  });
-  const loadoutSurface = mountLoadoutSurface(loadoutRoot, {
-    content: options.content,
-    onCommand: (command) => {
-      options.onCommand?.(command);
-    },
-  });
-  const talentsSurface = mountTalentsSurface(talentsRoot, {
-    content: options.content,
-    onCommand: (command) => {
-      options.onCommand?.(command);
-    },
-  });
-  const armorySurface = mountArmorySurface(armoryRoot, {
-    content: options.content,
-    onCommand: (command) => {
-      options.onCommand?.(command);
-    },
-    onBadgeChange: (visible) => {
-      armoryBadge = visible;
-      const badge = tabButtons.get("armory")?.querySelector<HTMLElement>(".dock-tab-badge");
-      if (badge) {
-        badge.hidden = !armoryBadge;
-      }
-    },
-  });
-  const stageSurface = mountStageSurface(stageRoot, {
-    content: options.content,
-    onCommand: (command) => {
-      options.onCommand?.(command);
-    },
-  });
 
   root.append(header, surface);
 
   function setActiveTab(next: DockTabId): void {
     activeTab = next;
-    for (const tab of DOCK_TABS) {
-      const selected = tab.id === activeTab;
-      const button = tabButtons.get(tab.id);
-      const panel = panels.get(tab.id);
+    for (const { id } of DOCK_SURFACES) {
+      const selected = id === activeTab;
+      const button = tabButtons.get(id);
+      const panel = panels.get(id);
       if (button) {
         button.classList.toggle("active", selected);
         button.setAttribute("aria-selected", selected ? "true" : "false");
@@ -240,22 +205,16 @@ export function mountManagementDock(
     }
   }
 
-  for (const tab of DOCK_TABS) {
-    const button = tabButtons.get(tab.id);
+  for (const { id } of DOCK_SURFACES) {
+    const button = tabButtons.get(id);
     if (!button) {
       continue;
     }
-    button.addEventListener("click", () => {
-      onTabActivate(tab.id);
-    });
-    button.addEventListener("keydown", (event) => {
-      onTabKeydown(event, tab.id);
-    });
+    button.addEventListener("click", () => onTabActivate(id));
+    button.addEventListener("keydown", (event) => onTabKeydown(event, id));
   }
 
-  closeButton.addEventListener("click", () => {
-    requestClose();
-  });
+  closeButton.addEventListener("click", () => requestClose());
 
   root.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
@@ -274,29 +233,30 @@ export function mountManagementDock(
           }`
         : "No Attempt";
       root.dataset["stageLabel"] = stageLabel;
-      partySurface.render(snapshot);
-      loadoutSurface.render(snapshot);
-      talentsSurface.render(snapshot, legality);
-      armorySurface.render(snapshot, legality);
-      stageSurface.render(snapshot);
+      for (const { id } of DOCK_SURFACES) {
+        const mounted = mountedSurfaces.get(id)!;
+        if (id === "talents" || id === "armory") {
+          (mounted as { render(s: typeof snapshot, l: typeof legality): void }).render(
+            snapshot,
+            legality,
+          );
+        } else {
+          mounted.render(snapshot);
+        }
+      }
     },
     setArmoryBadge(visible) {
       armoryBadge = visible;
-      const badge = tabButtons.get("armory")?.querySelector<HTMLElement>(".dock-tab-badge");
-      if (badge) {
-        badge.hidden = !armoryBadge;
-      }
+      syncArmoryTabBadge();
     },
     setOpen(open) {
       root.hidden = !open;
       root.setAttribute("aria-hidden", open ? "false" : "true");
     },
     destroy() {
-      partySurface.destroy();
-      loadoutSurface.destroy();
-      talentsSurface.destroy();
-      armorySurface.destroy();
-      stageSurface.destroy();
+      for (const mounted of mountedSurfaces.values()) {
+        mounted.destroy();
+      }
       root.replaceChildren();
       root.classList.remove("dock-shell", "management-dock");
       root.removeAttribute("role");
