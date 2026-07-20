@@ -10,7 +10,7 @@ import {
   STATUS_LINE_HEIGHT,
   TILE_HEIGHT,
   TILE_WIDTH,
-} from "../src/ui/tile-geometry";
+} from "../src/ui/battle-tile-layout";
 import { postBusCommand, postBusSnapshot } from "./helpers/bus";
 import { contrastRatio, parseRGB } from "./helpers/contrast";
 

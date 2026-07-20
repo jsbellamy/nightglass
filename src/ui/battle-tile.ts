@@ -15,7 +15,7 @@ export {
   STATUS_LINE_HEIGHT,
   TILE_HEIGHT,
   TILE_WIDTH,
-} from "./tile-geometry";
+} from "./battle-tile-layout";
 
 const FORMATION_ORDER = ["back", "middle", "front"] as const;
 

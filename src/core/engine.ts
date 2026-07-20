@@ -29,13 +29,14 @@ import {
 } from "./equipment";
 import type { EngineEvent, EngineEventInput } from "./events";
 import { initialLootRngState } from "./rng";
-import type {
-  AttemptState,
-  CombatantState,
-  DropInstance,
-  EquipmentLoadout,
-  ProgressionState,
-  Snapshot,
+import {
+  cloneSnapshot,
+  type AttemptState,
+  type CombatantState,
+  type DropInstance,
+  type EquipmentLoadout,
+  type ProgressionState,
+  type Snapshot,
 } from "./snapshot";
 import { createDefaultProgression } from "./load-state";
 import {
@@ -1082,7 +1083,7 @@ function resolveBatch(state: EngineState, index: ContentIndex, events: EngineEve
 }
 
 function toSnapshot(state: EngineState, now: () => number): Snapshot {
-  return {
+  return cloneSnapshot({
     schemaVersion: state.schemaVersion,
     savedAtMs: now(),
     simNowMs: state.simNowMs,
@@ -1090,26 +1091,27 @@ function toSnapshot(state: EngineState, now: () => number): Snapshot {
     nextEventSeq: state.nextEventSeq,
     nextAttemptId: state.nextAttemptId,
     nextDropId: state.nextDropId,
-    progression: structuredClone(state.progression),
-    attempt: state.attempt ? structuredClone(state.attempt) : null,
-    pendingEdits: structuredClone(state.pendingEdits),
-  };
+    progression: state.progression,
+    attempt: state.attempt,
+    pendingEdits: state.pendingEdits,
+  });
 }
 
 function fromSnapshot(saved: Snapshot): EngineState {
   if (saved.schemaVersion !== SCHEMA_VERSION) {
     throw new Error(`Unsupported Snapshot schemaVersion: ${saved.schemaVersion}`);
   }
+  const cloned = cloneSnapshot(saved);
   return {
-    schemaVersion: saved.schemaVersion,
-    simNowMs: saved.simNowMs,
-    lootRngState: saved.lootRngState,
-    nextEventSeq: saved.nextEventSeq,
-    nextAttemptId: saved.nextAttemptId,
-    nextDropId: saved.nextDropId,
-    progression: structuredClone(saved.progression),
-    attempt: saved.attempt ? structuredClone(saved.attempt) : null,
-    pendingEdits: structuredClone(saved.pendingEdits),
+    schemaVersion: cloned.schemaVersion,
+    simNowMs: cloned.simNowMs,
+    lootRngState: cloned.lootRngState,
+    nextEventSeq: cloned.nextEventSeq,
+    nextAttemptId: cloned.nextAttemptId,
+    nextDropId: cloned.nextDropId,
+    progression: cloned.progression,
+    attempt: cloned.attempt,
+    pendingEdits: cloned.pendingEdits,
   };
 }
 

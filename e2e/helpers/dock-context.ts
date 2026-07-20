@@ -1,6 +1,6 @@
 import { expect, type Browser, type Page } from "@playwright/test";
 import { DOCK_HEIGHT, DOCK_WIDTH } from "../../src/ui/dock-geometry";
-import { TILE_HEIGHT, TILE_WIDTH } from "../../src/ui/tile-geometry";
+import { TILE_HEIGHT, TILE_WIDTH } from "../../src/ui/battle-tile-layout";
 
 export async function openTilePage(
   browser: Browser,

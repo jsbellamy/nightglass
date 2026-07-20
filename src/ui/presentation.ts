@@ -13,6 +13,7 @@ import {
 import { effectImageUrl, statusEffectGlyphUrl } from "./effect-images";
 import { equipmentBaseForDrop } from "./equipment-format";
 import { createEquipmentIconElement } from "./icons";
+import { ARMORY_BADGE_EVENT } from "./bus";
 
 /** Contract constants — source: prototype/presentation-contract/present.py */
 export const LUNGE = {
@@ -46,8 +47,6 @@ export const STRIKE_DY = -26;
 export const BANNER_DURATION_MS = 1500;
 export const DAMAGE_FLOAT_MS = 900;
 export const DROP_TOAST_MS = 2000;
-
-export const ARMORY_BADGE_EVENT = "nightglass:armory-badge";
 
 interface EffectManifestEntry {
   frame_size: [number, number];

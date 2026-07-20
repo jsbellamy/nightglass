@@ -6,9 +6,9 @@ import type { Snapshot } from "../core/snapshot";
 import { fixtureContent } from "../core/testing/fixture-content";
 import { buildContent } from "../data";
 import { mountBattleTile } from "./battle-tile";
+import { ARMORY_BADGE_EVENT } from "./bus";
 import {
   ACTOR_POOL,
-  ARMORY_BADGE_EVENT,
   BANNER_DURATION_MS,
   DOWNED,
   DROP_TOAST_MS,

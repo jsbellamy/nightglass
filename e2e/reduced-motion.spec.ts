@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { TILE_HEIGHT, TILE_WIDTH } from "../src/ui/tile-geometry";
+import { TILE_HEIGHT, TILE_WIDTH } from "../src/ui/battle-tile-layout";
 import { openTilePage } from "./helpers/dock-context";
 
 async function waitForActorPool(tile: import("@playwright/test").Page): Promise<void> {
