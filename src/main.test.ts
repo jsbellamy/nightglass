@@ -4,11 +4,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createEngine } from "./core/engine";
 import { buildContent } from "./data";
 import type { EngineEvent } from "./core/events";
-import { mountTileShell } from "./main";
+import { mountDockShell, mountTileShell } from "./main";
 import { BATTLEFIELD_HEIGHT, STATUS_LINE_HEIGHT, TILE_HEIGHT, TILE_WIDTH } from "./ui/battle-tile";
 import type { BusMessage, createBusEndpoint } from "./ui/bus";
 import type { DockWindowPort } from "./ui/dock-window";
 import * as battleTile from "./ui/battle-tile";
+import * as dockModule from "./ui/dock";
 import { serializeEngineLegality } from "./ui/engine-legality";
 import { PUMP_INTERVAL_MS } from "./ui/pump";
 
@@ -97,6 +98,158 @@ describe("dock handshake", () => {
 
     expect(published.some((message) => message.type === "snapshot")).toBe(true);
     shell.stop();
+  });
+});
+
+describe("Management Dock shell pump coalescing", () => {
+  const fanoutHandlers: Parameters<typeof createBusEndpoint>[0][] = [];
+
+  function createFanoutBus(handlers: Parameters<typeof createBusEndpoint>[0]) {
+    fanoutHandlers.push(handlers);
+    return {
+      publish(message: BusMessage) {
+        for (const listener of fanoutHandlers) {
+          const handler = listener[message.type];
+          if (handler) {
+            handler(message as never);
+          }
+        }
+      },
+      close() {
+        const index = fanoutHandlers.indexOf(handlers);
+        if (index >= 0) {
+          fanoutHandlers.splice(index, 1);
+        }
+      },
+    };
+  }
+
+  afterEach(() => {
+    fanoutHandlers.length = 0;
+    vi.restoreAllMocks();
+  });
+
+  function createDockShellHarness() {
+    const rafCallbacks: FrameRequestCallback[] = [];
+    const schedule = {
+      requestAnimationFrame: (callback: FrameRequestCallback) => {
+        rafCallbacks.push(callback);
+        return rafCallbacks.length;
+      },
+      cancelAnimationFrame: vi.fn(),
+    };
+    const root = document.createElement("main");
+    const renderSpy = vi.fn();
+    const setArmoryBadgeSpy = vi.fn();
+    const { mountManagementDock: realMount } = dockModule;
+    vi.spyOn(dockModule, "mountManagementDock").mockImplementation((mountRoot, options) => {
+      const dock = realMount(mountRoot, options);
+      const originalRender = dock.render.bind(dock);
+      dock.render = (...args) => {
+        renderSpy();
+        return originalRender(...args);
+      };
+      const originalSetBadge = dock.setArmoryBadge.bind(dock);
+      dock.setArmoryBadge = (visible) => {
+        setArmoryBadgeSpy(visible);
+        return originalSetBadge(visible);
+      };
+      return dock;
+    });
+
+    const shell = mountDockShell(root, { schedule, busFactory: createFanoutBus });
+    const publisher = createFanoutBus({});
+    const content = buildContent();
+    const engine = createEngine(content, undefined, 42);
+
+    return {
+      shell,
+      root,
+      publisher,
+      renderSpy,
+      setArmoryBadgeSpy,
+      engine,
+      content,
+      runRaf() {
+        const callbacks = rafCallbacks.splice(0);
+        for (const callback of callbacks) {
+          callback(0);
+        }
+      },
+      pumpPayload() {
+        const snapshot = engine.snapshot();
+        return {
+          type: "pump" as const,
+          events: [] as EngineEvent[],
+          snapshot,
+          legality: serializeEngineLegality(engine, snapshot, content),
+        };
+      },
+    };
+  }
+
+  it("coalesces three pump messages in one animation frame into one dock render", () => {
+    const harness = createDockShellHarness();
+    harness.renderSpy.mockClear();
+
+    const message = harness.pumpPayload();
+    harness.publisher.publish(message);
+    harness.publisher.publish(message);
+    harness.publisher.publish(message);
+
+    expect(harness.renderSpy).toHaveBeenCalledTimes(0);
+
+    harness.runRaf();
+
+    expect(harness.renderSpy).toHaveBeenCalledTimes(1);
+    harness.shell.destroy();
+  });
+
+  it("renders synchronously on snapshot without waiting for animation frame", () => {
+    const harness = createDockShellHarness();
+    harness.renderSpy.mockClear();
+
+    const snapshot = harness.engine.snapshot();
+    harness.publisher.publish({
+      type: "snapshot",
+      snapshot,
+      legality: serializeEngineLegality(harness.engine, snapshot, harness.content),
+    });
+
+    expect(harness.renderSpy).toHaveBeenCalledTimes(1);
+    harness.runRaf();
+    expect(harness.renderSpy).toHaveBeenCalledTimes(1);
+    harness.shell.destroy();
+  });
+
+  it("delivers armory-badge without waiting for pump coalescing", () => {
+    const harness = createDockShellHarness();
+    harness.setArmoryBadgeSpy.mockClear();
+
+    harness.publisher.publish({ type: "armory-badge" });
+
+    expect(harness.setArmoryBadgeSpy).toHaveBeenCalledWith(true);
+    harness.shell.destroy();
+  });
+
+  it("keeps dock focus until coalesced pump renders flush on the next animation frame", () => {
+    const harness = createDockShellHarness();
+    document.body.append(harness.root);
+
+    const tab = harness.root.querySelector<HTMLElement>('[data-dock-tab="party"]');
+    tab?.focus();
+    expect(document.activeElement).toBe(tab);
+
+    const message = harness.pumpPayload();
+    harness.publisher.publish(message);
+    harness.publisher.publish(message);
+    harness.publisher.publish(message);
+
+    expect(document.activeElement).toBe(tab);
+
+    harness.runRaf();
+    harness.shell.destroy();
+    harness.root.remove();
   });
 });
 

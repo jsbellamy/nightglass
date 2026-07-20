@@ -78,20 +78,17 @@ describe("Management Dock shell", () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it("renders all management surfaces without interim placeholders", () => {
+  it("renders each management surface without interim placeholders when its tab is active", () => {
     const root = document.createElement("main");
     const dock = mountDock(root);
     const engine = createEngine(fixtureContent, undefined, 3);
     dock.render(engine.snapshot());
 
     for (const tab of DOCK_TABS) {
+      root.querySelector<HTMLButtonElement>(`[data-dock-tab="${tab.id}"]`)?.click();
       const panel = root.querySelector<HTMLElement>(`[data-dock-panel="${tab.id}"]`);
       expect(panel?.querySelector(".dock-placeholder-copy")).toBeNull();
     }
-
-    expect(root.querySelector(".loadout-surface")).not.toBeNull();
-    expect(root.querySelector(".talents-surface")).not.toBeNull();
-    expect(root.querySelector(".armory-surface")).not.toBeNull();
 
     dock.destroy();
   });
@@ -111,6 +108,7 @@ describe("Management Dock shell", () => {
 
     dock.render(snapshot);
     battleTile.render(snapshot);
+    dockRoot.querySelector<HTMLButtonElement>('[data-dock-tab="stage"]')?.click();
 
     const dockLabel = dockRoot.dataset["stageLabel"] ?? "";
     const battleLabel = battleRoot.querySelector(".stage-wave-text")?.textContent ?? "";
@@ -136,6 +134,89 @@ describe("Management Dock shell", () => {
     dock.setArmoryBadge(true);
     expect(root.querySelector<HTMLElement>('[data-dock-tab="armory"] .dock-tab-badge')?.hidden).toBe(false);
 
+    dock.destroy();
+  });
+});
+
+describe("Management Dock active-surface rendering", () => {
+  it("renders only the active surface on pump-driven updates", () => {
+    const root = document.createElement("main");
+    const dock = mountDock(root);
+    const engine = createEngine(fixtureContent, undefined, 3);
+
+    dock.render(engine.snapshot());
+
+    expect(root.querySelector(".party-surface")?.childElementCount).toBeGreaterThan(0);
+    expect(root.querySelector(".loadout-surface")?.childElementCount).toBe(0);
+    expect(root.querySelector(".talents-surface")?.childElementCount).toBe(0);
+    expect(root.querySelector(".armory-surface")?.childElementCount).toBe(0);
+    expect(root.querySelector(".stage-surface")?.childElementCount).toBe(0);
+
+    dock.destroy();
+  });
+
+  it("renders a never-before-seen tab from held state on first activation", () => {
+    const root = document.createElement("main");
+    document.body.append(root);
+    const dock = mountDock(root);
+    const engine = createEngine(fixtureContent, undefined, 3);
+    const snapshot = structuredClone(engine.snapshot());
+    dock.render(snapshot);
+
+    expect(root.querySelector(".loadout-surface .dock-surface-title")).toBeNull();
+
+    root.querySelector<HTMLButtonElement>('[data-dock-tab="loadout"]')?.click();
+
+    expect(root.querySelector(".loadout-surface .dock-surface-title")).not.toBeNull();
+
+    root.remove();
+    dock.destroy();
+  });
+
+  it("shows the latest pump state when returning to a previously rendered tab", () => {
+    const root = document.createElement("main");
+    document.body.append(root);
+    const dock = mountDock(root);
+    const engine = createEngine(fixtureContent, undefined, 3);
+    const first = structuredClone(engine.snapshot());
+    if (!first.attempt) {
+      throw new Error("missing Attempt");
+    }
+    first.attempt.encounter = 1;
+    dock.render(first);
+
+    root.querySelector<HTMLButtonElement>('[data-dock-tab="stage"]')?.click();
+    expect(root.querySelector(".stage-surface .attempt-position")?.textContent).toContain("Wave 1");
+
+    const second = structuredClone(first);
+    second.attempt!.encounter = 2;
+    dock.render(second);
+
+    root.querySelector<HTMLButtonElement>('[data-dock-tab="party"]')?.click();
+    root.querySelector<HTMLButtonElement>('[data-dock-tab="stage"]')?.click();
+
+    expect(root.querySelector(".stage-surface .attempt-position")?.textContent).toContain("Wave 2");
+
+    root.remove();
+    dock.destroy();
+  });
+
+  it("keeps focus inside the active surface across coalesced pump renders", () => {
+    const root = document.createElement("main");
+    document.body.append(root);
+    const dock = mountDock(root);
+    const engine = createEngine(fixtureContent, undefined, 3);
+    dock.render(engine.snapshot());
+
+    const focusTarget = root.querySelector<HTMLElement>('[data-dock-tab="party"]');
+    focusTarget?.focus();
+    expect(document.activeElement).toBe(focusTarget);
+
+    dock.render(engine.snapshot());
+
+    expect(document.activeElement).toBe(focusTarget);
+
+    root.remove();
     dock.destroy();
   });
 });
