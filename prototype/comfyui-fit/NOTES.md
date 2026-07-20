@@ -10,7 +10,7 @@ core-only local ComfyUI produce **static** Moonberry Character references that
 survive reduction to a deterministic **32×48 RGBA** frame and read at 1× in the
 480×112 Battle Tile — passing the identity, readability, alpha, license,
 provenance, and headless-ingest gates? These are the gates that, per the
-[production-fit research](../../docs/research/comfyui-production-fit.md) decision
+[production-fit research](../../docs/research/archive/comfyui-production-fit.md) decision
 tree, can kill the whole approach on their own.
 
 Scope deliberately excludes body motion (idle/attack/cast/hurt/knockout),

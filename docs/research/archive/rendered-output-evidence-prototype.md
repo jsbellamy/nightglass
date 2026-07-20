@@ -1,7 +1,7 @@
 # Rendered-output evidence: prototype findings
 
 > **Historical.** Point-in-time record from 2026-07-19. Superseded by
-> [`docs/agents/acceptance-evidence.md`](../agents/acceptance-evidence.md) and the
+> [`docs/agents/acceptance-evidence.md`](../../agents/acceptance-evidence.md) and the
 > production harness at `e2e/` (`npm run test:evidence`). Findings here may describe
 > a state that no longer exists; do not action them without re-verifying against the
 > current tree.
@@ -16,9 +16,9 @@ the harness choice, and the native residual to this ticket. This document
 records what a working prototype demonstrated, not a proposal.
 
 Prototype harness (throwaway; promoted by nightglass#96 to the runnable seam
-at [`e2e/`](../../e2e/) via `npm run test:evidence`):
+at [`e2e/`](../../../e2e/) via `npm run test:evidence`):
 formerly `prototype/rendered-evidence/`.
-Screenshots from the prototype run: [`evidence/91-prototype/`](./evidence/91-prototype/).
+Screenshots from the prototype run: [`evidence/91-prototype/`](../evidence/91-prototype/).
 Measured against `main` at `3528abf`.
 
 ## The evidence path

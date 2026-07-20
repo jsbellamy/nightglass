@@ -23,6 +23,22 @@ The standard `needs-triage`, `needs-info`, `ready-for-agent`,
 This is a single-context project with `CONTEXT.md` at the root and architectural
 decisions under `docs/adr/`. See `docs/agents/domain.md`.
 
+### Research archive
+
+`docs/research/archive/` holds settled investigations: fit studies, audits, and
+option comparisons whose conclusions already live in the contracts under `docs/`.
+Read `docs/research/archive/README.md` to decide whether an entry is worth
+opening; open the entry itself only to answer a question about *why* a settled
+decision went the way it did.
+
+Implementation work never needs the archive. If an issue cannot be completed
+without reading an archived audit, the finding it depends on belongs in the
+owning contract — file that gap rather than routing future agents through the
+archive.
+
+`docs/research/evidence/` is not archive. It is live acceptance evidence, cited
+by the contracts and by `docs/agents/acceptance-evidence.md`.
+
 ### Code style and test seams
 
 `docs/agents/code-style.md` is this repo's documented coding standard: the

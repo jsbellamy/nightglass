@@ -1,0 +1,15 @@
+# Research archive
+
+Settled fit studies, audits, and option comparisons whose conclusions already
+live in the contracts under `docs/`. Open a file only to learn *why* a decision
+went the way it did; implementation work should read the contract, not these notes.
+
+- **[vertical-slice-foundation-audit.md](vertical-slice-foundation-audit.md)** — Which engine-foundation slice issues (#33–#42) were proven on `main`? → Superseded by [`docs/vertical-slice-spec.md`](../../vertical-slice-spec.md) §§12–13 and [`docs/agents/acceptance-evidence.md`](../../agents/acceptance-evidence.md).
+- **[vertical-slice-application-audit.md](vertical-slice-application-audit.md)** — Which application-layer slice issues (#43–#52) had evidence at the right seam? → Same publication gate as the foundation audit; live criteria live in the vertical-slice spec and acceptance-evidence doc.
+- **[equipment-icon-pipeline-audit.md](equipment-icon-pipeline-audit.md)** — What from SideScape's icon pipeline survives after rejecting 16×16 acquisition? → Shipped 34×34 Equipment Base workflow in [`docs/acquisition-contract.md`](../../acquisition-contract.md) and `src/assets/icon-sources/`.
+- **[comfyui-production-fit.md](comfyui-production-fit.md)** — Can local ComfyUI back the offline ingestion pipeline on an RTX 5090? → Conditional go as the preferred local experimentation workbench, not sole production animation source (`prototype/comfyui-fit/`).
+- **[autosprite-production-fit.md](autosprite-production-fit.md)** — Can AutoSprite be the first generator behind vendor-neutral offline ingest? → Conditional go for a bounded paid trial; no runtime or direct-to-game dependency ([`docs/acquisition-contract.md`](../../acquisition-contract.md)).
+- **[local-body-motion-alternatives.md](local-body-motion-alternatives.md)** — After #19, which local routes could produce 32×48 body motion? → Shortlist (Qwen-Image-Edit-2511 first) for bounded trials; body motion still governed by [`docs/animation-contract.md`](../../animation-contract.md) and closed prototype issues.
+- **[acceptance-evidence-seams.md](acceptance-evidence-seams.md)** — What could existing test seams actually prove for publication? → [`docs/agents/acceptance-evidence.md`](../../agents/acceptance-evidence.md) and `.agents/issue-implementer.md` step 5.
+- **[rendered-output-evidence-prototype.md](rendered-output-evidence-prototype.md)** — What did the throwaway rendered-output prototype demonstrate? → Production harness at `e2e/` via `npm run test:evidence` ([#96](https://github.com/jsbellamy/nightglass/issues/96)).
+- **[sidescape-foundation.md](sidescape-foundation.md)** — What should Nightglass reuse vs reject from SideScape? → Architectural reference and release scaffold patterns; domain and geometry owned here ([#9](https://github.com/jsbellamy/nightglass/issues/9), ADRs).
