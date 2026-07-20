@@ -138,8 +138,9 @@ Run the earliest deterministic ingest or validator immediately. Use its report a
 feedback for the next candidate. Provider-resolution prettiness is not a gate.
 
 For logical-grid art, read the ingest report rather than the candidate image.
-`pipeline/icons/ingest.py` writes `ingest-report.json` beside the raws; each entry
-carries the measurement the failure table below is keyed on:
+Equipment icon evidence commits `ingest-report.json` beside the provider raws;
+each entry matches the structure `pipeline/icons/ingest.py` returns from ingest
+(`recovered`, `ramp`) and carries the measurement the failure table below is keyed on:
 
 | Failure | Report key |
 | --- | --- |
