@@ -341,6 +341,7 @@ export function mountBattleTile(
   motionQuery?.addEventListener("change", syncReducedMotion);
 
   let lastSnapshot: ReadonlySnapshot | null = null;
+  let appliedBackdropKey: string | null = null;
 
   function render(snapshot: ReadonlySnapshot, nowMs?: number): void {
     lastSnapshot = snapshot;
@@ -352,16 +353,17 @@ export function mountBattleTile(
       partyZone.replaceChildren();
       opponentZone.replaceChildren();
       bossHealthBar.hidden = true;
+      appliedBackdropKey = null;
       return;
     }
 
     const stage = stageDefFor(content, attempt.stage);
     const backdropKey = stage?.backdropKey ?? "backdrop-1";
-    battlefield.dataset["backdropKey"] = backdropKey;
-    backdrop.style.backgroundImage = `url(${backdropUrl(backdropKey)})`;
-    backdrop.style.backgroundSize = "100% 100%";
-    backdrop.style.backgroundRepeat = "no-repeat";
-    backdrop.style.backgroundPosition = "center";
+    if (backdropKey !== appliedBackdropKey) {
+      appliedBackdropKey = backdropKey;
+      battlefield.dataset["backdropKey"] = backdropKey;
+      backdrop.style.backgroundImage = `url(${backdropUrl(backdropKey)})`;
+    }
 
     const party = partyCombatants(attempt.combatants).sort((left, right) => {
       const leftSlot = FORMATION_ORDER.indexOf(formationSlotFromEntityId(left.entityId));
