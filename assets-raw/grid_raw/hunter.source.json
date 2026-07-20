@@ -1,13 +1,14 @@
 {
   "provider": "Cursor GenerateImage",
   "acquisition_tool": "GenerateImage",
-  "raw_sha256": "226f5e361ce3186628730f2911beafe6481690604e94fe1ebc8631530a3c680a",
+  "raw_sha256": "d5cdbb892abeeedac796e1a48a136cefe2eb55bda72be7f04e37748ce45ffc97",
   "asset_class": "Character",
   "runtime_destination": "src/assets/sprites/hunter.png",
-  "style_reference": "assets-raw/grid_raw/priest.png",
-  "style_reference_sha256": "34712fbd19213319951ec00330e88242de4a6ba7b5b0822a43eb90a80478d635",
-  "candidate": "hunter-n",
+  "style_reference": "assets-raw/grid_raw/knight.png",
+  "style_reference_sha256": "9dfcdd69592cec858d9ff4d53429a2a3b48815918f4b463083e7201d69546cb5",
+  "candidate": "hunter-compact-prompt",
   "facing": "right",
   "role": "party_class",
-  "prompt": "TRUE chunky pixel art sprite ONLY. Canvas is exactly 32 logical columns by 48 logical rows rendered large — the 1024x1536 output represents exactly 32 logical columns by 48 logical rows; every logical pixel is one uniform 32x32 rendered-pixel square and every boundary aligns to that grid. One full-body chibi Hunter of a storybook night-garden fantasy guild, strict side profile facing RIGHT: fitted mint-green stitched tunic with leaf-scale shoulder, plum hood down on the back, berry-pink scarf tail, cream trousers tucked into short boots, dark-plum one-cell outline, alert stance drawing a curved bramble-wood shortbow held forward-right with the string pulled and one thorn arrow nocked, small quiver at the hip. Keep the combined silhouette within 26x40 logical cells, centered, with at least TWO full magenta cells of clearance on LEFT, RIGHT, TOP, and BOTTOM — do not touch or crop any edge. Use 10-12 flat colors, one-cell outlines, bow limbs at least two cells thick. Every unused cell is flat #ff00ff. No smaller pixels, gradients, anti-aliasing, dithering, floor, shadow, glow, particles, extra characters, text, watermark, transparency, cropped equipment, or hot magenta in the Hunter."
+  "retry_of": "hunter-n",
+  "prompt": "TRUE chunky pixel art sprite ONLY. Canvas is exactly 32 logical columns by 48 logical rows, rendered at 1024\u00d71536. Every logical pixel is one uniform 32\u00d732 square aligned to the grid.\n\nDraw one SMALL, COMPACT, full-body chibi Hunter in strict side profile facing RIGHT. The complete non-magenta silhouette\u2014including hood, scarf, bow, bowstring, arrow, quiver, boots, and outline\u2014must fit inside a centered box no larger than 24 logical cells wide \u00d7 34 logical cells tall.\n\nLeave at least 7 completely empty magenta rows in total above and below the Hunter, with at least 3 empty rows on each side. Leave at least 4 empty magenta columns on both left and right. Do not use the clearance area for equipment or clothing.\n\nCompact pose: knees slightly bent, head lowered, feet close together. Hold a short, tightly curved bow diagonally across the torso. Keep the entire bow, arrow, scarf, and quiver inside the body's vertical extent. No raised arms, tall ears, upright bow, trailing clothing, or projecting equipment.\n\nFitted mint-green stitched tunic, small leaf-scale shoulder, plum hood resting tightly against the back, very short berry-pink scarf tail, cream trousers, short boots, dark-plum one-cell outline. Use 10\u201312 flat colors. Every unused cell is flat #ff00ff.\n\nNo gradients, anti-aliasing, dithering, shadows, floor, glow, particles, text, watermark, transparency, cropped equipment, or hot magenta inside the Hunter."
 }
