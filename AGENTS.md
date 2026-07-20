@@ -89,6 +89,32 @@ keyboard, and cross-page bus delivery under `vite preview`. The residual that
 must be observed in `npm run tauri dev` is listed in
 `docs/agents/native-observation.md` (window lifecycle and close semantics only).
 
+**Fast evidence-test iteration.** While fixing a failure, target the run instead
+of paying the full suite on every edit. Playwright supports:
+
+```bash
+npx playwright test --last-failed          # re-run only what failed
+npx playwright test e2e/stress.spec.ts     # one spec file
+npx playwright test -g "test name"         # one test by name
+npx playwright test --only-changed         # specs touched in the working tree
+```
+
+The full `npm run test:evidence` suite still gates every PR — use the commands
+above to reach green faster, not to skip the gate.
+
+`playwright.config.ts` sets `reuseExistingServer: !process.env.CI`, so a preview
+server already listening on port 4173 is reused and later runs skip build and
+boot. Rebuild (`npm run build` or restart preview) only after changing `src/`.
+
+While iterating, call `npx playwright test` directly. `test:evidence` prefixes
+`playwright install chromium`, which re-checks the browser download every
+invocation (~0.6 s when cached). Reserve the npm script for the final full run.
+
+Measured setup costs on this repo: `npm run build` ~1.6 s; cached
+`playwright install chromium` ~0.6 s; the full evidence suite ~90 s. The suite is
+slow because tests wait on real-time simulation, not because of build overhead —
+running fewer tests matters more than shaving setup.
+
 ## Git workflow
 
 One branch per issue (`issue-<N>-<slug>`, based on `main`); never work
