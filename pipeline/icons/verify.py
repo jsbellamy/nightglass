@@ -31,14 +31,29 @@ from icons.text_source import parse_text  # noqa: E402
 
 OUT_DIR = ROOT / "src" / "assets" / "icons"
 FAILURES: list[str] = []
+RESULTS: list[dict[str, str]] = []
+VERIFY_REPORT = HERE / "verify-report.json"
 
 
 def check(label: str, condition: bool, detail: str = "") -> None:
     status = "PASS" if condition else "FAIL"
+    RESULTS.append({"label": label, "status": status, "detail": detail})
     if not condition:
         FAILURES.append(label)
     suffix = f" -- {detail}" if detail else ""
     print(f"  [{status}] {label}{suffix}")
+
+
+def write_verify_report() -> None:
+    passed = not FAILURES
+    report = {
+        "script": "pipeline/icons/verify.py",
+        "passed": passed,
+        "failure_count": len(FAILURES),
+        "failures": list(FAILURES),
+        "checks": RESULTS,
+    }
+    VERIFY_REPORT.write_text(json.dumps(report, indent=2) + "\n")
 
 
 def _acquire_names_imported(module_path: pathlib.Path) -> set[str]:
@@ -212,5 +227,7 @@ else:
 print()
 if FAILURES:
     print(f"{len(FAILURES)} FAILED: {FAILURES}")
+    write_verify_report()
     sys.exit(1)
 print("all icon contract tests passed")
+write_verify_report()

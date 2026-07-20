@@ -192,6 +192,8 @@ onto 34×34. Approve the **preview**, not the provider PNG. Family Tier II is a
 `recolor` of the same compact source — rebuild both variants after any source edit.
 `npm run assets:build` runs `pipeline/icons/build.py`; `npm run assets:verify` runs
 `pipeline/icons/verify.py` with the acquisition and effects gates.
+Read Equipment icon gate results from `pipeline/icons/verify-report.json` rather
+than by re-running the script and parsing stdout or opening the built PNG.
 
 Rebuild once more from the archived raw with the provider absent. Compare the
 encoded runtime file byte-for-byte with the accepted output.
