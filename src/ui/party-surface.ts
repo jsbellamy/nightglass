@@ -3,6 +3,7 @@ import type { ClassId, Content } from "../core/types";
 import type { TileCommand } from "./bus";
 import { bindPressable } from "./keyboard";
 import { CLASS_LABELS, combatantForClass, levelFor } from "./snapshot-view";
+import { el, mountSurfaceShell, pendingMarker } from "./surface-shell";
 
 const FORMATION_SLOTS = ["Front", "Middle", "Back"] as const;
 
@@ -81,175 +82,127 @@ export function mountPartySurface(
   options: PartySurfaceOptions,
 ): PartySurface {
   const { content } = options;
-  root.classList.add("party-surface");
 
-  function render(snapshot: ReadonlySnapshot | null): void {
-    root.replaceChildren();
-    if (!snapshot) {
-      const empty = document.createElement("p");
-      empty.className = "surface-empty";
-      empty.textContent = "No Snapshot yet.";
-      root.append(empty);
-      return;
-    }
+  const shell = mountSurfaceShell(root, "party-surface", {
+    title: "Party",
+    body(snapshot) {
+      const hasFormationPending = snapshot.pendingEdits.some((edit) => edit.kind === "formation");
+      const hasPartyPending = snapshot.progression.pendingParty !== null;
 
-    const title = document.createElement("h2");
-    title.className = "dock-surface-title";
-    title.textContent = "Party";
-    root.append(title);
+      const { members, reserve } = effectiveParty(snapshot);
+      const formation = effectiveFormation(snapshot);
 
-    const hasFormationPending = snapshot.pendingEdits.some((edit) => edit.kind === "formation");
-    const hasPartyPending = snapshot.progression.pendingParty !== null;
+      const formationSlots = formation.map((classId, slotIndex) => {
+        const health = combatHealth(snapshot, classId);
 
-    if (hasFormationPending) {
-      const marker = document.createElement("p");
-      marker.className = "pending-marker pending-wave";
-      marker.dataset["pendingKind"] = "formation";
-      marker.textContent = "Applies at next Wave";
-      root.append(marker);
-    }
+        const moveUp = el("button", {
+          class: "formation-action focus-ring",
+          data: { formationAction: "move-up", slot: String(slotIndex) },
+          props: { type: "button", disabled: slotIndex === 0 },
+          text: "Move up",
+        });
+        bindPressable(moveUp, () => {
+          options.onCommand?.({
+            cmd: "setFormation",
+            args: [swapFormationOrder(formation, slotIndex, "up")],
+          });
+        });
 
-    if (hasPartyPending) {
-      const marker = document.createElement("p");
-      marker.className = "pending-marker pending-attempt";
-      marker.dataset["pendingKind"] = "party";
-      marker.textContent = "Applies next Attempt";
-      root.append(marker);
-    }
+        const moveDown = el("button", {
+          class: "formation-action focus-ring",
+          data: { formationAction: "move-down", slot: String(slotIndex) },
+          props: { type: "button", disabled: slotIndex === formation.length - 1 },
+          text: "Move down",
+        });
+        bindPressable(moveDown, () => {
+          options.onCommand?.({
+            cmd: "setFormation",
+            args: [swapFormationOrder(formation, slotIndex, "down")],
+          });
+        });
 
-    const { members, reserve } = effectiveParty(snapshot);
-    const formation = effectiveFormation(snapshot);
+        return el("article", { class: "formation-slot character-card", data: { slot: String(slotIndex) } }, [
+          el("p", { class: "slot-label", text: FORMATION_SLOTS[slotIndex] ?? "Slot" }),
+          el("p", { class: "character-name", text: CLASS_LABELS[classId] }),
+          el("p", {
+            class: "character-level",
+            text: `Level ${levelFor(snapshot, content, classId)}`,
+          }),
+          health
+            ? el("p", {
+                class: "character-health",
+                text: `Health ${health.health}/${health.maxHealth}`,
+              })
+            : null,
+          el("div", { class: "formation-controls" }, [moveUp, moveDown]),
+        ]);
+      });
 
-    const formationSection = document.createElement("section");
-    formationSection.className = "party-formation";
-    formationSection.setAttribute("aria-label", "Formation");
+      const formationSection = el(
+        "section",
+        { class: "party-formation", aria: { label: "Formation" } },
+        [
+          el("h3", { class: "surface-section-title", text: "Formation" }),
+          ...formationSlots,
+        ],
+      );
 
-    const formationHeading = document.createElement("h3");
-    formationHeading.className = "surface-section-title";
-    formationHeading.textContent = "Formation";
-    formationSection.append(formationHeading);
+      const swapButtons = members.map((classId) => {
+        const swapButton = el("button", {
+          class: "party-swap focus-ring",
+          data: { partySwap: classId },
+          props: { type: "button" },
+          text: `Swap ${CLASS_LABELS[classId]} with Reserve`,
+        });
+        bindPressable(swapButton, () => {
+          const swapped = swapPartyMember(members, reserve, classId);
+          options.onCommand?.({
+            cmd: "setParty",
+            args: [swapped.members, swapped.reserve],
+          });
+        });
+        return swapButton;
+      });
 
-    formation.forEach((classId, slotIndex) => {
-      const slot = document.createElement("article");
-      slot.className = "formation-slot character-card";
-      slot.dataset["slot"] = String(slotIndex);
+      const reserveSection = el("section", { class: "party-reserve", aria: { label: "Reserve" } }, [
+        el("h3", { class: "surface-section-title", text: "Reserve" }),
+        el("p", { class: "reserve-note", text: "Earns 50% XP" }),
+        el("article", { class: "character-card reserve-card" }, [
+          el("p", { class: "character-name", text: CLASS_LABELS[reserve] }),
+          el("p", {
+            class: "character-level",
+            text: `Level ${levelFor(snapshot, content, reserve)}`,
+          }),
+        ]),
+        el("h3", { class: "surface-section-title", text: "Party swaps" }),
+        ...swapButtons,
+      ]);
 
-      const slotLabel = document.createElement("p");
-      slotLabel.className = "slot-label";
-      slotLabel.textContent = FORMATION_SLOTS[slotIndex] ?? "Slot";
+      const body: (HTMLElement | null)[] = [];
 
-      const name = document.createElement("p");
-      name.className = "character-name";
-      name.textContent = CLASS_LABELS[classId];
-
-      const level = document.createElement("p");
-      level.className = "character-level";
-      level.textContent = `Level ${levelFor(snapshot, content, classId)}`;
-
-      const health = combatHealth(snapshot, classId);
-      if (health) {
-        const healthLine = document.createElement("p");
-        healthLine.className = "character-health";
-        healthLine.textContent = `Health ${health.health}/${health.maxHealth}`;
-        slot.append(slotLabel, name, level, healthLine);
-      } else {
-        slot.append(slotLabel, name, level);
+      if (hasFormationPending) {
+        const marker = pendingMarker();
+        marker.dataset["pendingKind"] = "formation";
+        body.push(marker);
       }
 
-      const controls = document.createElement("div");
-      controls.className = "formation-controls";
+      if (hasPartyPending) {
+        body.push(
+          el("p", {
+            class: "pending-marker pending-attempt",
+            data: { pendingKind: "party" },
+            text: "Applies next Attempt",
+          }),
+        );
+      }
 
-      const moveUp = document.createElement("button");
-      moveUp.type = "button";
-      moveUp.className = "formation-action focus-ring";
-      moveUp.dataset["formationAction"] = "move-up";
-      moveUp.dataset["slot"] = String(slotIndex);
-      moveUp.textContent = "Move up";
-      moveUp.disabled = slotIndex === 0;
-      bindPressable(moveUp, () => {
-        options.onCommand?.({
-          cmd: "setFormation",
-          args: [swapFormationOrder(formation, slotIndex, "up")],
-        });
-      });
-
-      const moveDown = document.createElement("button");
-      moveDown.type = "button";
-      moveDown.className = "formation-action focus-ring";
-      moveDown.dataset["formationAction"] = "move-down";
-      moveDown.dataset["slot"] = String(slotIndex);
-      moveDown.textContent = "Move down";
-      moveDown.disabled = slotIndex === formation.length - 1;
-      bindPressable(moveDown, () => {
-        options.onCommand?.({
-          cmd: "setFormation",
-          args: [swapFormationOrder(formation, slotIndex, "down")],
-        });
-      });
-
-      controls.append(moveUp, moveDown);
-      slot.append(controls);
-      formationSection.append(slot);
-    });
-
-    root.append(formationSection);
-
-    const reserveSection = document.createElement("section");
-    reserveSection.className = "party-reserve";
-    reserveSection.setAttribute("aria-label", "Reserve");
-
-    const reserveHeading = document.createElement("h3");
-    reserveHeading.className = "surface-section-title";
-    reserveHeading.textContent = "Reserve";
-    reserveSection.append(reserveHeading);
-
-    const reserveNote = document.createElement("p");
-    reserveNote.className = "reserve-note";
-    reserveNote.textContent = "Earns 50% XP";
-    reserveSection.append(reserveNote);
-
-    const reserveCard = document.createElement("article");
-    reserveCard.className = "character-card reserve-card";
-
-    const reserveName = document.createElement("p");
-    reserveName.className = "character-name";
-    reserveName.textContent = CLASS_LABELS[reserve];
-
-    const reserveLevel = document.createElement("p");
-    reserveLevel.className = "character-level";
-    reserveLevel.textContent = `Level ${levelFor(snapshot, content, reserve)}`;
-    reserveCard.append(reserveName, reserveLevel);
-    reserveSection.append(reserveCard);
-
-    const rosterHeading = document.createElement("h3");
-    rosterHeading.className = "surface-section-title";
-    rosterHeading.textContent = "Party swaps";
-    reserveSection.append(rosterHeading);
-
-    for (const classId of members) {
-      const swapButton = document.createElement("button");
-      swapButton.type = "button";
-      swapButton.className = "party-swap focus-ring";
-      swapButton.dataset["partySwap"] = classId;
-      swapButton.textContent = `Swap ${CLASS_LABELS[classId]} with Reserve`;
-      bindPressable(swapButton, () => {
-        const swapped = swapPartyMember(members, reserve, classId);
-        options.onCommand?.({
-          cmd: "setParty",
-          args: [swapped.members, swapped.reserve],
-        });
-      });
-      reserveSection.append(swapButton);
-    }
-
-    root.append(reserveSection);
-  }
+      body.push(formationSection, reserveSection);
+      return body;
+    },
+  });
 
   return {
-    render,
-    destroy() {
-      root.replaceChildren();
-      root.classList.remove("party-surface");
-    },
+    render: (snapshot) => shell.render(snapshot),
+    destroy: () => shell.destroy(),
   };
 }
