@@ -1,6 +1,6 @@
 import { equipmentModifiersForLoadout } from "../core/equipment";
 import { characterStats } from "../core/stats";
-import type { Snapshot } from "../core/snapshot";
+import type { ReadonlySnapshot } from "../core/snapshot";
 import type { AbilityDef, ClassId, Content } from "../core/types";
 import {
   abilityRawDisplay,
@@ -23,7 +23,7 @@ import {
 } from "./snapshot-view";
 
 export interface LoadoutSurface {
-  render(snapshot: Snapshot | null): void;
+  render(snapshot: ReadonlySnapshot | null): void;
   destroy(): void;
 }
 
@@ -55,7 +55,7 @@ export function mountLoadoutSurface(
     container: HTMLElement,
     ability: AbilityDef,
     stats: ReturnType<typeof characterStats>,
-    snapshot: Snapshot,
+    snapshot: ReadonlySnapshot,
     classId: ClassId,
     slotIndex: number | "basic",
     activationDelayPending: boolean,
@@ -108,7 +108,7 @@ export function mountLoadoutSurface(
     container.append(card);
   }
 
-  function render(snapshot: Snapshot | null): void {
+  function render(snapshot: ReadonlySnapshot | null): void {
     root.replaceChildren();
     if (!snapshot) {
       const empty = document.createElement("p");
@@ -280,7 +280,3 @@ export function mountLoadoutSurface(
   };
 }
 
-// INTERIM: peer surfaces still import these through loadout-surface.
-// Removed by the seam-contract slice once every consumer imports snapshot-view directly.
-export { effectiveLoadout, effectiveTalentState } from "./snapshot-view";
-export { unlockableAbilityIds as unlockableAbilityIdsForClass } from "./snapshot-view";

@@ -234,6 +234,27 @@ describe("Armory surface", () => {
     surface.destroy();
   });
 
+  it("marks unseen equipment seen without mutating the Snapshot", () => {
+    const root = document.createElement("div");
+    const snapshot = armorySnapshot([
+      drop({ dropId: 1, baseId: "fixture-blade", seen: false }),
+    ]);
+    for (const entry of snapshot.progression.armory) {
+      Object.freeze(entry);
+    }
+    Object.freeze(snapshot.progression.armory);
+
+    const surface = mountArmorySurface(root, { content: fixtureContent });
+    surface.render(snapshot);
+    root.querySelector<HTMLButtonElement>('[data-open-detail="1"]')?.click();
+    surface.render(snapshot);
+
+    expect(snapshot.progression.armory[0]!.seen).toBe(false);
+    expect(root.querySelector('[data-unseen-marker="true"]')).toBeNull();
+
+    surface.destroy();
+  });
+
   it("marks pieces seen from detail and clears the dock badge when none remain", () => {
     const dockRoot = document.createElement("main");
     const commands: unknown[] = [];

@@ -1,4 +1,4 @@
-import type { Snapshot } from "../core/snapshot";
+import type { ReadonlySnapshot } from "../core/snapshot";
 import type { ClassId, Content } from "../core/types";
 import type { TileCommand } from "./bus";
 import { bindPressable } from "./keyboard";
@@ -7,7 +7,7 @@ import { CLASS_LABELS, combatantForClass, levelFor } from "./snapshot-view";
 const FORMATION_SLOTS = ["Front", "Middle", "Back"] as const;
 
 export interface PartySurface {
-  render(snapshot: Snapshot | null): void;
+  render(snapshot: ReadonlySnapshot | null): void;
   destroy(): void;
 }
 
@@ -16,7 +16,7 @@ export interface PartySurfaceOptions {
   onCommand?: (command: TileCommand) => void;
 }
 
-function effectiveParty(snapshot: Snapshot): {
+function effectiveParty(snapshot: ReadonlySnapshot): {
   members: [ClassId, ClassId, ClassId];
   reserve: ClassId;
 } {
@@ -30,7 +30,7 @@ function effectiveParty(snapshot: Snapshot): {
   };
 }
 
-function effectiveFormation(snapshot: Snapshot): [ClassId, ClassId, ClassId] {
+function effectiveFormation(snapshot: ReadonlySnapshot): [ClassId, ClassId, ClassId] {
   const pending = snapshot.pendingEdits.find((edit) => edit.kind === "formation");
   if (pending?.kind === "formation") {
     return pending.order;
@@ -38,7 +38,7 @@ function effectiveFormation(snapshot: Snapshot): [ClassId, ClassId, ClassId] {
   return snapshot.progression.party;
 }
 
-function combatHealth(snapshot: Snapshot, classId: ClassId): { health: number; maxHealth: number } | null {
+function combatHealth(snapshot: ReadonlySnapshot, classId: ClassId): { health: number; maxHealth: number } | null {
   const combatant = combatantForClass(snapshot, classId);
   if (!combatant) {
     return null;
@@ -83,7 +83,7 @@ export function mountPartySurface(
   const { content } = options;
   root.classList.add("party-surface");
 
-  function render(snapshot: Snapshot | null): void {
+  function render(snapshot: ReadonlySnapshot | null): void {
     root.replaceChildren();
     if (!snapshot) {
       const empty = document.createElement("p");

@@ -1,4 +1,4 @@
-import type { Snapshot } from "../core/snapshot";
+import type { ReadonlySnapshot } from "../core/snapshot";
 import {
   allocateTalentPoint,
   deallocateTalentPoint,
@@ -23,7 +23,7 @@ import {
 } from "./snapshot-view";
 
 export interface TalentsSurface {
-  render(snapshot: Snapshot | null): void;
+  render(snapshot: ReadonlySnapshot | null): void;
   destroy(): void;
 }
 
@@ -32,7 +32,7 @@ export interface TalentsSurfaceOptions {
   onCommand?: (command: TileCommand) => void;
 }
 
-function availableTalentPoints(snapshot: Snapshot, classId: ClassId, content: Content): number {
+function availableTalentPoints(snapshot: ReadonlySnapshot, classId: ClassId, content: Content): number {
   const level = levelFor(snapshot, content, classId);
   const talentState = effectiveTalentState(snapshot, classId);
   return Math.max(0, level - spentTalentPoints(talentState));
@@ -68,7 +68,7 @@ function canDeallocateStat(
   }
 }
 
-function abilityTalentSlotted(snapshot: Snapshot, classId: ClassId, abilityId: string): boolean {
+function abilityTalentSlotted(snapshot: ReadonlySnapshot, classId: ClassId, abilityId: string): boolean {
   const loadout = effectiveLoadout(snapshot, classId);
   return loadout.includes(abilityId);
 }
@@ -93,7 +93,7 @@ export function mountTalentsSurface(
   const { content } = options;
   root.classList.add("talents-surface");
 
-  function render(snapshot: Snapshot | null): void {
+  function render(snapshot: ReadonlySnapshot | null): void {
     root.replaceChildren();
     if (!snapshot) {
       const empty = document.createElement("p");

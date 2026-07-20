@@ -1,5 +1,5 @@
 import { dropStatModifiers, snapshotEquipmentLoadouts } from "../core/equipment";
-import type { DropInstance, Snapshot } from "../core/snapshot";
+import type { DropInstance, ReadonlySnapshot } from "../core/snapshot";
 import type { ClassId, Content, EquipmentSlotId } from "../core/types";
 import type { TileCommand } from "./bus";
 import {
@@ -13,7 +13,6 @@ import {
   formatAffix,
   formatAssignment,
   formatGuaranteedStat,
-  hasUnseenArmoryDrops,
   isCompatibleWithSlot,
   rareOrEpicDropNames,
   SLOT_LABELS,
@@ -33,7 +32,7 @@ import {
 const SLOTS: EquipmentSlotId[] = ["weapon", "armor", "charm"];
 
 export interface ArmorySurface {
-  render(snapshot: Snapshot | null): void;
+  render(snapshot: ReadonlySnapshot | null): void;
   destroy(): void;
 }
 
@@ -83,7 +82,8 @@ export function mountArmorySurface(
     fromClassId: ClassId;
     fromSlot: EquipmentSlotId;
   } | null = null;
-  let lastSnapshot: Snapshot | null = null;
+  let lastSnapshot: ReadonlySnapshot | null = null;
+  let optimisticallySeenDropIds = new Set<number>();
 
   root.classList.add("armory-surface");
 
@@ -91,12 +91,28 @@ export function mountArmorySurface(
     options.onCommand?.(command);
   }
 
+  function isDropSeen(drop: DropInstance): boolean {
+    return drop.seen || optimisticallySeenDropIds.has(drop.dropId);
+  }
+
+  function syncOptimisticSeen(armory: readonly DropInstance[]): void {
+    for (const drop of armory) {
+      if (drop.seen) {
+        optimisticallySeenDropIds.delete(drop.dropId);
+      }
+    }
+  }
+
+  function hasUnseenDrops(armory: readonly DropInstance[]): boolean {
+    return armory.some((drop) => !isDropSeen(drop));
+  }
+
   function markDropSeen(dropId: number): void {
     const drop = lastSnapshot ? dropById(lastSnapshot.progression.armory, dropId) : undefined;
-    if (!drop || drop.seen) {
+    if (!drop || isDropSeen(drop)) {
       return;
     }
-    drop.seen = true;
+    optimisticallySeenDropIds.add(dropId);
     publish({ cmd: "markSeen", args: [[dropId]] });
   }
 
@@ -163,7 +179,7 @@ export function mountArmorySurface(
 
     const markers = document.createElement("div");
     markers.className = "equipment-markers";
-    if (!drop.seen) {
+    if (!isDropSeen(drop)) {
       const unseen = document.createElement("span");
       unseen.className = "equipment-marker unseen-marker";
       unseen.dataset["unseenMarker"] = "true";
@@ -188,7 +204,7 @@ export function mountArmorySurface(
     }
   }
 
-  function renderFilterBar(snapshot: Snapshot, container: HTMLElement): void {
+  function renderFilterBar(snapshot: ReadonlySnapshot, container: HTMLElement): void {
     const bar = document.createElement("div");
     bar.className = "armory-filters";
     bar.setAttribute("role", "group");
@@ -245,7 +261,7 @@ export function mountArmorySurface(
     container.append(bar);
   }
 
-  function renderSortBar(snapshot: Snapshot, container: HTMLElement): void {
+  function renderSortBar(snapshot: ReadonlySnapshot, container: HTMLElement): void {
     const bar = document.createElement("div");
     bar.className = "armory-sort";
     const label = document.createElement("label");
@@ -278,7 +294,7 @@ export function mountArmorySurface(
     container.append(bar);
   }
 
-  function renderSlotStrip(snapshot: Snapshot, container: HTMLElement): void {
+  function renderSlotStrip(snapshot: ReadonlySnapshot, container: HTMLElement): void {
     const strip = document.createElement("div");
     strip.className = "armory-slot-strip";
     strip.setAttribute("role", "group");
@@ -338,7 +354,7 @@ export function mountArmorySurface(
     container.append(strip);
   }
 
-  function renderCollection(snapshot: Snapshot, container: HTMLElement): void {
+  function renderCollection(snapshot: ReadonlySnapshot, container: HTMLElement): void {
     const toolbar = document.createElement("div");
     toolbar.className = "armory-toolbar";
     renderFilterBar(snapshot, toolbar);
@@ -473,7 +489,7 @@ export function mountArmorySurface(
     container.append(list);
   }
 
-  function renderCompare(snapshot: Snapshot, container: HTMLElement): void {
+  function renderCompare(snapshot: ReadonlySnapshot, container: HTMLElement): void {
     if (!compareContext) {
       return;
     }
@@ -706,7 +722,7 @@ export function mountArmorySurface(
     container.append(comparePanel);
   }
 
-  function renderDetail(snapshot: Snapshot, container: HTMLElement): void {
+  function renderDetail(snapshot: ReadonlySnapshot, container: HTMLElement): void {
     if (detailDropId === null) {
       return;
     }
@@ -736,7 +752,10 @@ export function mountArmorySurface(
     container.append(card);
   }
 
-  function render(snapshot: Snapshot | null): void {
+  function render(snapshot: ReadonlySnapshot | null): void {
+    if (snapshot) {
+      syncOptimisticSeen(snapshot.progression.armory);
+    }
     lastSnapshot = snapshot;
     root.replaceChildren();
 
@@ -748,7 +767,7 @@ export function mountArmorySurface(
       return;
     }
 
-    if (!hasUnseenArmoryDrops(snapshot.progression.armory)) {
+    if (!hasUnseenDrops(snapshot.progression.armory)) {
       options.onBadgeChange?.(false);
     }
 

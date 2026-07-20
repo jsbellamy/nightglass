@@ -1,10 +1,10 @@
-import type { Snapshot } from "../core/snapshot";
+import type { ReadonlySnapshot } from "../core/snapshot";
 import type { Content } from "../core/types";
 import type { TileCommand } from "./bus";
 import { bindPressable } from "./keyboard";
 
 export interface StageSurface {
-  render(snapshot: Snapshot | null): void;
+  render(snapshot: ReadonlySnapshot | null): void;
   destroy(): void;
 }
 
@@ -72,7 +72,7 @@ export function mountStageSurface(
     yes.focus();
   }
 
-  function render(snapshot: Snapshot | null): void {
+  function render(snapshot: ReadonlySnapshot | null): void {
     const confirmStage = pendingStage;
     root.replaceChildren();
     pendingStage = confirmStage;
