@@ -2,6 +2,7 @@
 
 import { describe, expect, it } from "vitest";
 import { buildContent } from "../data";
+import { MONSTER_FRAMES } from "../core/types";
 import { fixtureContent } from "../core/testing/fixture-content";
 import { collectContentSpriteKeys, isRegisteredSpriteKey, resolveSprite } from "./sprites";
 
@@ -23,8 +24,9 @@ describe("sprite registry", () => {
     const priest = resolveSprite("priest");
     expect(priest.interim).toBeUndefined();
     expect(priest.interimLabel).toBeUndefined();
-    expect(priest.width).toBe(32);
-    expect(priest.height).toBe(48);
+    expect(priest.size).toBe("medium");
+    expect(priest.width).toBe(MONSTER_FRAMES.medium[0]);
+    expect(priest.height).toBe(MONSTER_FRAMES.medium[1]);
     expect(priest.url).toContain("priest");
   });
 
@@ -32,8 +34,9 @@ describe("sprite registry", () => {
     const hunter = resolveSprite("hunter");
     expect(hunter.interim).toBeUndefined();
     expect(hunter.interimLabel).toBeUndefined();
-    expect(hunter.width).toBe(32);
-    expect(hunter.height).toBe(48);
+    expect(hunter.size).toBe("medium");
+    expect(hunter.width).toBe(MONSTER_FRAMES.medium[0]);
+    expect(hunter.height).toBe(MONSTER_FRAMES.medium[1]);
     expect(hunter.url).toContain("hunter");
   });
 
@@ -42,8 +45,9 @@ describe("sprite registry", () => {
       const boss = resolveSprite(key);
       expect(boss.interim).toBeUndefined();
       expect(boss.interimLabel).toBeUndefined();
-      expect(boss.width).toBe(32);
-      expect(boss.height).toBe(48);
+      expect(boss.size).toBe("medium");
+      expect(boss.width).toBe(MONSTER_FRAMES.medium[0]);
+      expect(boss.height).toBe(MONSTER_FRAMES.medium[1]);
       expect(boss.url).toContain(key);
     }
     expect(resolveSprite("boss-2").url).not.toBe(resolveSprite("boss-1").url);

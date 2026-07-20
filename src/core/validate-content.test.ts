@@ -99,20 +99,18 @@ describe("validateContent", () => {
 
   it('allows a solo "large" opponent wave and multi-opponent waves of smaller tiers', () => {
     const largeBoss: OpponentDef = {
-      ...fixtureContent.opponents[1]!,
+      ...fixtureContent.opponents.find((opponent) => opponent.id === "fixture-boss")!,
       size: "large",
     };
-    const smallGrunt: OpponentDef = {
-      ...fixtureContent.opponents[0]!,
-      id: "fixture-small-grunt",
-      size: "small",
-    };
+    const smallGrunt = fixtureContent.opponents.find(
+      (opponent) => opponent.id === "fixture-small-grunt",
+    )!;
     const content: Content = {
       ...fixtureContent,
       opponents: [
         smallGrunt,
         largeBoss,
-        fixtureContent.opponents[2]!,
+        fixtureContent.opponents.find((opponent) => opponent.id === "fixture-stunner")!,
       ],
       stages: [
         {

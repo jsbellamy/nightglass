@@ -419,6 +419,17 @@ export const fixtureContent: Content = {
       spriteKey: "fixture-grunt",
     },
     {
+      id: "fixture-small-grunt",
+      name: "Fixture Small Grunt",
+      family: "test",
+      boss: false,
+      size: "small",
+      base: { maxHealth: 25, physical: 5, elemental: 0, armor: 2, elementalResistance: 2 },
+      abilityIds: ["grunt-attack"],
+      xpAward: 10,
+      spriteKey: "fixture-small-grunt",
+    },
+    {
       id: "fixture-boss",
       name: "Fixture Boss",
       family: "test",

@@ -19,6 +19,8 @@ export const UI_CORE_VALUE_IMPORT_ALLOWLIST: Record<string, string> = {
     "dropStatModifiers / snapshotEquipmentLoadouts removed by armory stat-derivation slice (#159)",
   "offline-summary.ts": "levelFromXp moves behind snapshot-view in offline-summary slice (#163)",
   "boot.ts": "Composition root owns Engine wiring until shell/bootstrap slice (#163)",
+  "sprites.ts":
+    "MONSTER_FRAMES tier dimensions until sprite registry moves behind snapshot-view or a UI-local tier table slice",
 };
 
 const VALUE_IMPORT_PATTERN =

@@ -158,6 +158,41 @@ describe("Battle Tile renderer", () => {
 
     const sprite = root.querySelector<HTMLImageElement>(".combatant-sprite");
     expect(sprite?.style.imageRendering).toBe("pixelated");
+    expect(sprite?.width).toBe(32);
+    expect(sprite?.height).toBe(48);
+    expect(root.querySelector(".combatant.size-medium")).not.toBeNull();
+  });
+
+  it("mounts a small fixture opponent with size-small and a 24×32 sprite box", () => {
+    const root = document.createElement("main");
+    const tile = mountBattleTile(root, fixtureContent);
+    const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
+    const snapshot = structuredClone(engine.snapshot());
+    const attempt = snapshot.attempt;
+    if (!attempt) {
+      throw new Error("missing attempt");
+    }
+    attempt.combatants = [
+      ...attempt.combatants.filter((entry) => entry.side === "party"),
+      {
+        entityId: "opp:1:0",
+        side: "opponent",
+        defId: "fixture-small-grunt",
+        health: 25,
+        maxHealth: 25,
+        knockedOut: false,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+    ];
+    tile.render(snapshot);
+
+    const opponent = root.querySelector<HTMLElement>(".combatant.opponent.size-small");
+    expect(opponent).not.toBeNull();
+    const sprite = opponent?.querySelector<HTMLImageElement>(".combatant-sprite");
+    expect(sprite?.width).toBe(24);
+    expect(sprite?.height).toBe(32);
   });
 
   it("updates health bar width after an impact event", () => {

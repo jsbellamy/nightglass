@@ -209,6 +209,38 @@ body {
   image-rendering: pixelated;
 }
 
+.combatant.size-small {
+  width: 24px;
+}
+.combatant.size-small .combatant-stack {
+  width: 24px;
+  height: 32px;
+}
+.combatant.size-small .combatant-sprite {
+  width: 24px;
+  height: 32px;
+}
+.combatant.size-small .health-bar {
+  width: 24px;
+}
+
+.combatant.size-large {
+  width: 48px;
+}
+.combatant.size-large .combatant-stack {
+  width: 48px;
+  height: 72px;
+}
+.combatant.size-large .combatant-sprite {
+  width: 48px;
+  height: 72px;
+}
+
+.combatant.opponent.size-large {
+  right: 50%;
+  transform: translateX(50%);
+}
+
 .facing-left .combatant-sprite {
   transform: scaleX(-1);
 }
