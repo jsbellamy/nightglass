@@ -1,7 +1,7 @@
 # Audit: SideScape's icon pipeline and Nightglass's 16×16 experiment
 
 > **Historical.** Point-in-time record from 2026-07-19. Superseded by the shipped
-> 34×34 Equipment Base workflow in [`docs/acquisition-contract.md`](../acquisition-contract.md)
+> 34×34 Equipment Base workflow in [`docs/acquisition-contract.md`](../../acquisition-contract.md)
 > and `src/assets/icon-sources/`. Findings here may describe a state that no longer
 > exists; do not action them without re-verifying against the current tree.
 
@@ -222,7 +222,7 @@ Flagged, not decided.
    ring outside the drawable area. If Nightglass keeps its prompted outline instead of deriving one,
    the +2 margin buys nothing and 32×32 is the honest number.
 3. **Consumer geometry is less frozen than the map implies.** On `main` the only Equipment icon
-   consumer is `renderDropIconChip` in [`armory-surface.ts:108`](../../src/ui/armory-surface.ts) —
+   consumer is `renderDropIconChip` in [`armory-surface.ts:108`](../../../src/ui/armory-surface.ts) —
    an explicitly interim text chip, CSS-sized **28×28** at `styles.css:1002`, marked
    `data-interim-icon="issue-58"`. There is **no Drop-notification icon consumer at all** yet. So
    "reopen the consumer geometry" is cheaper than expected: one call site, one CSS rule, one

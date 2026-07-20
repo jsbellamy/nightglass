@@ -1,8 +1,8 @@
 # Acceptance evidence seams
 
 > **Historical.** Point-in-time record from 2026-07-19. Superseded by
-> [`docs/agents/acceptance-evidence.md`](../agents/acceptance-evidence.md) and
-> Nightglass [`.agents/issue-implementer.md`](../../.agents/issue-implementer.md)
+> [`docs/agents/acceptance-evidence.md`](../../agents/acceptance-evidence.md) and
+> Nightglass [`.agents/issue-implementer.md`](../../../.agents/issue-implementer.md)
 > step 5. Findings here may describe a state that no longer exists; do not action
 > them without re-verifying against the current tree.
 
@@ -49,19 +49,19 @@ build`, `npm run assets:verify`, and `cargo check` all pass.
 
 | # | Seam | How it is reached | What it genuinely proves | Hard limit |
 | --- | --- | --- | --- | --- |
-| S1 | **Engine** | `createEngine(content, saved?, lootSeed?)` → commands → `advanceBy` → `snapshot()`, fixture Content from [`src/core/testing/fixture-content.ts`](../../src/core/testing/fixture-content.ts) | Deterministic combat numbers, event order/timestamps, chunk neutrality, command rejection | Nothing about presentation; by design it cannot name an asset |
-| S2 | **Pure functions** | Direct unit tests ([`dock-geometry.test.ts`](../../src/ui/dock-geometry.test.ts), `xp`, `combat`, `equipment`, `presentation` math) | Worked-example math independent of the implementation | Proves the *number*, never that anything applied it on screen |
-| S3 | **Content validator** | [`src/core/validate-content.test.ts`](../../src/core/validate-content.test.ts) over the whole assembled `Content` | Aggregate id resolution, registry completeness, encounter budgets | Content shape only |
+| S1 | **Engine** | `createEngine(content, saved?, lootSeed?)` → commands → `advanceBy` → `snapshot()`, fixture Content from [`src/core/testing/fixture-content.ts`](../../../src/core/testing/fixture-content.ts) | Deterministic combat numbers, event order/timestamps, chunk neutrality, command rejection | Nothing about presentation; by design it cannot name an asset |
+| S2 | **Pure functions** | Direct unit tests ([`dock-geometry.test.ts`](../../../src/ui/dock-geometry.test.ts), `xp`, `combat`, `equipment`, `presentation` math) | Worked-example math independent of the implementation | Proves the *number*, never that anything applied it on screen |
+| S3 | **Content validator** | [`src/core/validate-content.test.ts`](../../../src/core/validate-content.test.ts) over the whole assembled `Content` | Aggregate id resolution, registry completeness, encounter budgets | Content shape only |
 | S4 | **DOM integration** | Vitest + happy-dom via `// @vitest-environment happy-dom` (12 of 27 files) | Element structure, classes, `data-` attributes, text, event wiring, keyboard traversal, fake-timer pump/render gating | **No layout engine**, and `styles.css` is a `<link href>` no test loads, so the project's actual cascade is absent: `getBoundingClientRect()` is zeroed and only inline/authored values are visible. Overlap, fit, contrast, and readability are all unreachable |
-| S5 | **In-process bus** | [`src/ui/bus.test.ts`](../../src/ui/bus.test.ts) + [`src/main.test.ts`](../../src/main.test.ts) over a happy-dom `BroadcastChannel` | Message vocabulary, handler dispatch, the `dock-opened` → fresh-Snapshot handshake | One process, one channel implementation. Says nothing about delivery between two real webviews |
-| S6 | **Dock window port** | [`src/ui/dock-window.ts`](../../src/ui/dock-window.ts) `DockWindowPort` with injected `deps` (mock `createDockWindow`, `getTileOuterPosition`, `getMonitorForTile`, `onTileMoved`) | Call sequencing, open/close/toggle state, reposition math wiring, tile-move subscription/cleanup | The port is *the* mock boundary — nothing beyond it is exercised. This is Nightglass's closest analogue to SideScape's port-injected `manual-check:` scenarios, but it is not named or routed as acceptance evidence |
-| S7 | **Asset pipeline** | `npm run assets:verify` → `pipeline/test_contract.py` + [`pipeline/effects/verify.py`](../../pipeline/effects/verify.py); wired in CI | Acquisition contract, byte-level determinism (94 files), effect/body separation (78/78 frames) | The **body-free gate is vacuous**: it computes `canon = digest_dir(SPRITES)` *after* the rebuild and compares it to a second post-rebuild digest, so a mutation performed by the rebuild is present in both operands. Carried forward from the #43 audit row |
-| S8 | **Rust / native** | `cargo check` in CI; [`src-tauri/capabilities/default.json`](../../src-tauri/capabilities/default.json) reviewed by hand | Compilation, capability scope | No native run, no window observation, no cross-webview traffic. `npm run tauri dev` is unrouted and unrecorded |
-| S9 | **Release** | Static inspection of [`.github/workflows/release.yml`](../../.github/workflows/release.yml) + `scripts/set-version.mjs` | Workflow shape, stamping | Dispatch-only, so no green run is ever produced by CI |
+| S5 | **In-process bus** | [`src/ui/bus.test.ts`](../../../src/ui/bus.test.ts) + [`src/main.test.ts`](../../../src/main.test.ts) over a happy-dom `BroadcastChannel` | Message vocabulary, handler dispatch, the `dock-opened` → fresh-Snapshot handshake | One process, one channel implementation. Says nothing about delivery between two real webviews |
+| S6 | **Dock window port** | [`src/ui/dock-window.ts`](../../../src/ui/dock-window.ts) `DockWindowPort` with injected `deps` (mock `createDockWindow`, `getTileOuterPosition`, `getMonitorForTile`, `onTileMoved`) | Call sequencing, open/close/toggle state, reposition math wiring, tile-move subscription/cleanup | The port is *the* mock boundary — nothing beyond it is exercised. This is Nightglass's closest analogue to SideScape's port-injected `manual-check:` scenarios, but it is not named or routed as acceptance evidence |
+| S7 | **Asset pipeline** | `npm run assets:verify` → `pipeline/test_contract.py` + [`pipeline/effects/verify.py`](../../../pipeline/effects/verify.py); wired in CI | Acquisition contract, byte-level determinism (94 files), effect/body separation (78/78 frames) | The **body-free gate is vacuous**: it computes `canon = digest_dir(SPRITES)` *after* the rebuild and compares it to a second post-rebuild digest, so a mutation performed by the rebuild is present in both operands. Carried forward from the #43 audit row |
+| S8 | **Rust / native** | `cargo check` in CI; [`src-tauri/capabilities/default.json`](../../../src-tauri/capabilities/default.json) reviewed by hand | Compilation, capability scope | No native run, no window observation, no cross-webview traffic. `npm run tauri dev` is unrouted and unrecorded |
+| S9 | **Release** | Static inspection of [`.github/workflows/release.yml`](../../../.github/workflows/release.yml) + `scripts/set-version.mjs` | Workflow shape, stamping | Dispatch-only, so no green run is ever produced by CI |
 
 Two structural facts shape everything: `vite.config.ts` sets
 `test.environment: "node"`, so DOM is opt-in per file; and
-[`index.html`](../../index.html) hosts **both** `#tile` and `#dock` in one
+[`index.html`](../../../index.html) hosts **both** `#tile` and `#dock` in one
 document, selected by the `?window=dock` query — meaning a browser seam could
 mount either surface, and could mount *both* on a shared `BroadcastChannel`.
 
@@ -87,7 +87,7 @@ explains the #46 contrast row.
 **B3 — Sprite scaling is unasserted at any seam, and the prior audit row is
 wrong (severity: high).** The #44 integer-scale row is checked only by reading
 the inline `imageRendering` value in
-[`battle-tile.test.ts`](../../src/ui/battle-tile.test.ts). No test relates
+[`battle-tile.test.ts`](../../../src/ui/battle-tile.test.ts). No test relates
 `styles.css` to sprite dimensions, and `styles.css` is a `<link href>` that no
 test loads, so happy-dom never cascades it — a mismatch *cannot* fail.
 
@@ -96,7 +96,7 @@ test loads, so happy-dom never cascades it — a mismatch *cannot* fail.
 [`vertical-slice-application-audit.md`](./vertical-slice-application-audit.md))
 marked this row **Regressed / current failure**, citing Pipcap as 29×40 and Boss
 1 as 32×41 against a 32×48 CSS box. On `3528abf` that is not so:
-[`src/ui/sprites.ts`](../../src/ui/sprites.ts) declares all four sprites 32×48,
+[`src/ui/sprites.ts`](../../../src/ui/sprites.ts) declares all four sprites 32×48,
 and the PNG IHDR headers of `knight`, `wizard`, `pipcap`, and `boss-1` are each
 32×48. Declared, intrinsic, and CSS dimensions agree; the render is 1×. The
 sprite file has not changed since #78, so this was an audit error, not a later

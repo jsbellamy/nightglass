@@ -491,7 +491,7 @@ an implementer or orchestrator ticks to publish a PR.
 | Animation contract: attribution, cue alignment, 30fps legibility, anchors | [presentation-contract prototype](../prototype/presentation-contract/NOTES.md) `verify.py` 7/7 gates ([#4](https://github.com/jsbellamy/nightglass/issues/4)) |
 | Opponent art through grid recovery: 32×48 canvas contract; recovered ink measurements Pipcap ~29×40 and Boss ~32×41; shared `moonberry-16`; byte-identical offline rebuild | [opponent-art prototype](../prototype/comfyui-fit/opponents/NOTES.md) ([#30](https://github.com/jsbellamy/nightglass/issues/30)) |
 | Body-motion rejections (closed evidence, not dependencies) | [#13](https://github.com/jsbellamy/nightglass/issues/13), [#19](https://github.com/jsbellamy/nightglass/issues/19), [#26](https://github.com/jsbellamy/nightglass/issues/26), [#24](https://github.com/jsbellamy/nightglass/issues/24) |
-| SideScape reuse/reject inventory | [foundation research](research/sidescape-foundation.md) ([#9](https://github.com/jsbellamy/nightglass/issues/9)) |
+| SideScape reuse/reject inventory | [foundation research](research/archive/sidescape-foundation.md) ([#9](https://github.com/jsbellamy/nightglass/issues/9)) |
 
 Slice sign-off still includes the §10 manual performance checklist, the CI
 Offline Progress timing test, and every shipped asset passing its contract
