@@ -23,8 +23,8 @@ function baseSnapshot() {
   return engine.snapshot();
 }
 
-describe("snapshot-view effectiveTalentState", () => {
-  it("returns applied talents when no pendingEdit", () => {
+describe("Snapshot view Talent state", () => {
+  it("reflects applied Talents when no Talent pendingEdit is open", () => {
     const snapshot = baseSnapshot();
     const applied = snapshot.progression.talents.knight!;
 
@@ -34,7 +34,7 @@ describe("snapshot-view effectiveTalentState", () => {
     expect(result).not.toBe(applied);
   });
 
-  it("returns pending talent edit when present", () => {
+  it("includes an uncommitted Talent pendingEdit", () => {
     const snapshot = baseSnapshot();
     snapshot.pendingEdits.push({
       kind: "talent",
@@ -50,8 +50,8 @@ describe("snapshot-view effectiveTalentState", () => {
   });
 });
 
-describe("snapshot-view effectiveLoadout", () => {
-  it("returns applied loadout when no pendingEdit", () => {
+describe("Snapshot view Ability Loadout", () => {
+  it("reflects applied slots when no Loadout pendingEdit is open", () => {
     const snapshot = baseSnapshot();
 
     expect(effectiveLoadout(snapshot, "knight")).toEqual([
@@ -61,7 +61,7 @@ describe("snapshot-view effectiveLoadout", () => {
     ]);
   });
 
-  it("returns pending loadout edit when present", () => {
+  it("includes an uncommitted Loadout pendingEdit", () => {
     const snapshot = baseSnapshot();
     const pending: [string, string, string] = ["k-pommel", "k-shield-brace", "k-sweep"];
     snapshot.pendingEdits.push({
@@ -79,8 +79,8 @@ describe("snapshot-view effectiveLoadout", () => {
   });
 });
 
-describe("snapshot-view levelFor", () => {
-  it("reads xpThresholds from Content, not hardcoded production values", () => {
+describe("Snapshot view Character Level", () => {
+  it("derives Level from Character XP using Content thresholds", () => {
     const snapshot = baseSnapshot();
     snapshot.progression.characterXp.knight = 25;
 
@@ -95,7 +95,7 @@ describe("snapshot-view levelFor", () => {
   });
 });
 
-describe("snapshot-view roster and combatant", () => {
+describe("Snapshot view Party roster and Combatants", () => {
   it("lists party members then reserve", () => {
     const snapshot = baseSnapshot();
     const { party, reserve } = snapshot.progression;
@@ -137,14 +137,14 @@ describe("snapshot-view roster and combatant", () => {
   });
 });
 
-describe("snapshot-view classKitFor and unlockableAbilityIds", () => {
-  it("resolves Class Kits from Content", () => {
+describe("Snapshot view Class Kit and unlockable Abilities", () => {
+  it("resolves a Class Kit from Content", () => {
     const kit = classKitFor(fixtureContent, "knight");
     expect(kit.id).toBe("knight");
     expect(kit.basicAbilityId).toBe("knight-basic");
   });
 
-  it("throws when a Class Kit is missing from Content", () => {
+  it("throws when Content omits a Class Kit", () => {
     const broken: Content = {
       ...fixtureContent,
       classes: fixtureContent.classes.filter((entry) => entry.id !== "knight"),
@@ -152,7 +152,7 @@ describe("snapshot-view classKitFor and unlockableAbilityIds", () => {
     expect(() => classKitFor(broken, "knight")).toThrow(/Missing Class Kit knight/);
   });
 
-  it("lists basic, core, and unlocked ability talent ids", () => {
+  it("lists basic, Core, and unlocked Ability Talent ids for the Loadout picker", () => {
     const kit = classKitFor(fixtureContent, "knight");
     const withoutTalent = unlockableAbilityIds(kit, {
       statRanks: {},
@@ -175,8 +175,8 @@ describe("snapshot-view classKitFor and unlockableAbilityIds", () => {
   });
 });
 
-describe("snapshot-view CLASS_LABELS", () => {
-  it("maps every Class to a display label", () => {
+describe("Snapshot view Class labels", () => {
+  it("maps each Class id to a player-facing label", () => {
     expect(CLASS_LABELS).toEqual({
       knight: "Knight",
       wizard: "Wizard",
@@ -186,8 +186,8 @@ describe("snapshot-view CLASS_LABELS", () => {
   });
 });
 
-describe("snapshot-view immutability", () => {
-  it("does not mutate the Snapshot when calling every accessor", () => {
+describe("Snapshot view immutability", () => {
+  it("leaves the Snapshot unchanged after reading every derived field", () => {
     const snapshot = baseSnapshot();
     snapshot.pendingEdits.push(
       {
