@@ -569,7 +569,10 @@ function queueStatusFromOutcome(
   if (statusDef.kind === "stun" && !shouldApplyStun(target, index.opponentsById)) {
     return;
   }
-  const durationMs = outcome.statusToApply?.durationMs ?? outcome.statusToRefresh!.durationMs;
+  const durationMs = outcome.statusToApply?.durationMs ?? outcome.statusToRefresh?.durationMs;
+  if (durationMs === undefined) {
+    return;
+  }
   const expiresAtMs = simNowMs + durationMs;
   const pending = ensurePending(target.entityId);
   if (outcome.statusToRefresh) {

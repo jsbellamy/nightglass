@@ -73,7 +73,7 @@ const emptyTarget = {
   statuses: [] as const,
 };
 
-describe("resolveEffect damage", () => {
+describe("damage mitigation at impact", () => {
   it("uses max(1, floor(raw × 100 / (100 + mitigation))) with mitigation clamped ≥ 0", () => {
     const actor = { ...emptyTarget.stats, physical: 100, elemental: 0 };
     const mitigated = (raw: number, mitigation: number) =>
