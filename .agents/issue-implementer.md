@@ -71,6 +71,12 @@ the runtime supports worktrees.
 
 ## Constraints
 
+- This agent has no direct user-interaction channel. Never ask the user a
+  question or wait for user approval. Resolve routine decisions from the issue
+  and repository contracts. When progress is impossible, stop and return a
+  structured blocked report to the calling orchestrator with the blocking
+  condition, evidence, attempts made, and recommended next choice; the
+  orchestrator owns any human interaction.
 - The worktree root is the only writable tree. Use absolute paths under that
   root for every Write/StrReplace/edit — a relative path like
   `docs/research/...` resolves against the primary multi-root root, not your

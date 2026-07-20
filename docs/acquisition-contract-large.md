@@ -60,6 +60,25 @@ logical cells. Future tasks start from the conservative safe box and retry from
 measured grid reports. There is no resolution-side rescue and no reduction
 fallback.
 
+### Autonomous large-candidate envelope
+
+An agent may advance a large candidate to visual review only when all of these
+are true:
+
+- raw provenance, PNG, and magenta-border gates pass;
+- the complete subject clears all four raw-canvas edges;
+- both pitch scores are at least `0.04`;
+- recovered width is at most **40** logical cells;
+- recovered height is exactly **60** logical cells: the tier minimum is 60 and
+  the safe-box maximum is 60;
+- the submitted prompt and visible result use role-correct facing; large Bosses
+  therefore face **LEFT**.
+
+A recovered grid that fits 48×72 but exceeds 40×60 is still an overshoot retry,
+not a discretionary accept. Examples: 42×72 and 29×69 both fit the runtime
+canvas but fail the prompt envelope. Use the acquisition loop's failure priority
+and continue the retry loop autonomously.
+
 **The top 8 logical rows are a soft dead zone.** A large monster stands on the
 battlefield floor at `bottom: 6px` and rises to y=8, while `.boss-health-bar`
 renders at `top: 4px` with `z-index: 5` — above the combatant's `z-index: 3`.
