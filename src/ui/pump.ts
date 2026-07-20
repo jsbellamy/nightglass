@@ -1,4 +1,5 @@
 import type { EngineEvent } from "../core/events";
+import type { FrameMetrics, FrameMetricsReport } from "./frame-metrics";
 
 export const PUMP_INTERVAL_MS = 250;
 export const RENDER_FRAME_MS = 33;
@@ -6,12 +7,14 @@ export const HIDDEN_HEARTBEAT_MS = 5000;
 
 export interface PumpController {
   stop(): void;
+  frameMetrics(): FrameMetricsReport | null;
 }
 
 export interface PumpDeps {
   advanceBy: (ms: number) => EngineEvent[];
   onAdvance: (events: EngineEvent[]) => void;
   render: () => void;
+  frameMetrics?: FrameMetrics;
   now?: () => number;
   setInterval?: typeof setInterval;
   clearInterval?: typeof clearInterval;
@@ -57,7 +60,11 @@ export function startPump(deps: PumpDeps): PumpController {
       return;
     }
     lastRenderAtMs = at;
-    deps.render();
+    if (deps.frameMetrics) {
+      deps.frameMetrics.measure(deps.render);
+    } else {
+      deps.render();
+    }
   }
 
   function scheduleRender(): void {
@@ -158,6 +165,8 @@ export function startPump(deps: PumpDeps): PumpController {
     scheduleRender();
   }
 
+  const frameMetricsRecorder = deps.frameMetrics ?? null;
+
   return {
     stop() {
       stopped = true;
@@ -165,6 +174,9 @@ export function startPump(deps: PumpDeps): PumpController {
       stopLivePump();
       stopHeartbeat();
       doc.removeEventListener("visibilitychange", onVisibilityChange);
+    },
+    frameMetrics() {
+      return frameMetricsRecorder ? frameMetricsRecorder.report() : null;
     },
   };
 }
