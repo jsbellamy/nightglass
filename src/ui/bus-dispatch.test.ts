@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { Engine } from "../core/engine";
 import type { EngineEvent } from "../core/events";
 import { applyTileCommand } from "../main";
-import type { TileCommand } from "./bus";
+import type { TileCommand, TileCommandName } from "./bus";
 
 const SAMPLE_COMMANDS = [
   { cmd: "selectStage", args: [1] },
@@ -22,6 +22,17 @@ const SAMPLE_COMMANDS = [
   { cmd: "setLocked", args: [1, true] },
   { cmd: "markSeen", args: [[1, 2]] },
 ] as const satisfies readonly TileCommand[];
+
+type SampledCommand = (typeof SAMPLE_COMMANDS)[number];
+type Assert<T extends true> = T;
+type _EveryDispatchableCommandSampled = Assert<
+  [TileCommandName] extends [SampledCommand["cmd"]]
+    ? [SampledCommand["cmd"]] extends [TileCommandName]
+      ? true
+      : false
+    : false
+>;
+void (0 as unknown as _EveryDispatchableCommandSampled);
 
 function createStubEngine(): Engine {
   return {
