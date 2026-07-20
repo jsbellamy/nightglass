@@ -9,6 +9,7 @@ import {
   formatDamageNumber,
   mergeDamageNumbers,
   type DamageNumberInput,
+  type MergedDamageNumber,
 } from "./damage-numbers";
 import { effectImageUrl, statusEffectGlyphUrl } from "./effect-images";
 import { equipmentBaseForDrop } from "./equipment-format";
@@ -241,6 +242,21 @@ function markLayer(element: HTMLElement): HTMLElement | null {
 
 function bodyLayer(element: HTMLElement): HTMLElement | null {
   return element.querySelector<HTMLElement>(".layer-body");
+}
+
+function statusIconKey(entityId: string, statusId: string): string {
+  return `${entityId}:${statusId}`;
+}
+
+function damageNumberKey(entry: MergedDamageNumber): string {
+  const channel = entry.channel ?? "";
+  return `${entry.targetId}:${entry.stableAtMs}:${entry.kind}:${channel}`;
+}
+
+function setImageSrcIfChanged(img: HTMLImageElement, url: string): void {
+  if (img.getAttribute("src") !== url) {
+    img.src = url;
+  }
 }
 
 function bannerLabel(event: EngineEvent, content: Content): string | null {
@@ -484,28 +500,46 @@ export function createPresentation(options: PresentationOptions): Presentation {
       element.append(row);
     }
 
-    row.replaceChildren();
+    const seen = new Set<string>();
     const visible = unique.slice(0, 2);
     for (const statusId of visible) {
-      const icon = document.createElement("img");
-      icon.className = "status-icon";
-      icon.src = statusEffectGlyphUrl(statusId);
-      icon.alt = "";
-      icon.width = 7;
-      icon.height = 7;
-      icon.draggable = false;
-      row.append(icon);
+      const key = statusIconKey(entityId, statusId);
+      seen.add(key);
+      let icon = row.querySelector<HTMLImageElement>(`[data-status-key="${key}"]`);
+      if (!icon) {
+        icon = document.createElement("img");
+        icon.className = "status-icon";
+        icon.dataset["statusKey"] = key;
+        icon.alt = "";
+        icon.width = 7;
+        icon.height = 7;
+        icon.draggable = false;
+        row.append(icon);
+      }
+      setImageSrcIfChanged(icon, statusEffectGlyphUrl(statusId));
     }
+    const overflowKey = `${entityId}:overflow`;
     if (unique.length > 2) {
-      const chip = document.createElement("span");
-      chip.className = "status-overflow-chip";
+      seen.add(overflowKey);
+      let chip = row.querySelector<HTMLElement>(`[data-status-key="${overflowKey}"]`);
+      if (!chip) {
+        chip = document.createElement("span");
+        chip.className = "status-overflow-chip";
+        chip.dataset["statusKey"] = overflowKey;
+        row.append(chip);
+      }
       chip.textContent = `+${unique.length - 2}`;
-      row.append(chip);
+    }
+    for (const child of [...row.querySelectorAll<HTMLElement>("[data-status-key]")]) {
+      const key = child.dataset["statusKey"] ?? "";
+      if (!seen.has(key)) {
+        child.remove();
+      }
     }
   }
 
   function renderEffects(nowMs: number, anchorGeometry: Map<string, AnchorGeometry>): void {
-    effectLane.replaceChildren();
+    const seen = new Set<string>();
     for (const effect of activeEffects) {
       if (nowMs >= effect.impactAtMs + 400) {
         continue;
@@ -535,23 +569,32 @@ export function createPresentation(options: PresentationOptions): Presentation {
           if (!anchor) {
             continue;
           }
-          const img = document.createElement("img");
-          img.className = "effect-frame strike-target";
-          img.src = frameUrl;
+          const key = `${effect.id}:strike:${targetId}`;
+          seen.add(key);
+          let host = effectLane.querySelector<HTMLElement>(`[data-effect-key="${key}"]`);
+          let img: HTMLImageElement;
+          if (!host) {
+            host = document.createElement("div");
+            host.className = "effect-host";
+            host.dataset["effectKey"] = key;
+            img = document.createElement("img");
+            img.className = "effect-frame strike-target";
+            img.alt = "";
+            img.draggable = false;
+            host.append(img);
+            effectLane.append(host);
+          } else {
+            img = host.querySelector<HTMLImageElement>(".effect-frame.strike-target")!;
+          }
           img.width = frameW;
           img.height = frameH;
-          img.alt = "";
-          img.draggable = false;
           img.dataset["strikeX"] = String(strike.x);
           img.dataset["strikeY"] = String(strike.y);
           img.style.left = `calc(50% + ${strike.x - frameW / 2}px)`;
           img.style.top = `calc(100% + ${strike.y - frameH}px)`;
-          const host = document.createElement("div");
-          host.className = "effect-host";
           host.style.left = `${anchor.offsetLeft}px`;
           host.style.bottom = `${anchor.bottomPx}px`;
-          host.append(img);
-          effectLane.append(host);
+          setImageSrcIfChanged(img, frameUrl);
         }
       } else if (recipe.anchor === "lane_travel") {
         const actorAnchor = anchorGeometry.get(effect.actorId);
@@ -565,16 +608,22 @@ export function createPresentation(options: PresentationOptions): Presentation {
         const startX = actorAnchor.offsetLeft + 16;
         const endX = targetAnchor.offsetLeft + 16;
         const x = startX + (endX - startX) * progress;
-        const img = document.createElement("img");
-        img.className = "effect-frame lane-travel";
-        img.src = frameUrl;
+        const key = `${effect.id}:lane`;
+        seen.add(key);
+        let img = effectLane.querySelector<HTMLImageElement>(`[data-effect-key="${key}"]`);
+        if (!img) {
+          img = document.createElement("img");
+          img.className = "effect-frame lane-travel";
+          img.dataset["effectKey"] = key;
+          img.alt = "";
+          img.draggable = false;
+          effectLane.append(img);
+        }
         img.width = frameW;
         img.height = frameH;
-        img.alt = "";
-        img.draggable = false;
         img.style.left = `${x - frameW / 2}px`;
         img.style.bottom = `${30 - frameH / 2}px`;
-        effectLane.append(img);
+        setImageSrcIfChanged(img, frameUrl);
       } else if (recipe.anchor === "band") {
         const bandTargetId = effect.targetIds[0] ?? effect.actorId;
         const anchor = anchorGeometry.get(bandTargetId);
@@ -585,22 +634,38 @@ export function createPresentation(options: PresentationOptions): Presentation {
           ? 1
           : Math.min(1, Math.max(0, (nowMs - effect.startedAtMs) / recipe.durationMs));
         const bandHi = Math.round(frameH * reveal);
-        const img = document.createElement("img");
-        img.className = "effect-frame heal-band";
-        img.src = frameUrl;
+        const key = `${effect.id}:band`;
+        seen.add(key);
+        let host = effectLane.querySelector<HTMLElement>(`[data-effect-key="${key}"]`);
+        let img: HTMLImageElement;
+        if (!host) {
+          host = document.createElement("div");
+          host.className = "effect-host";
+          host.dataset["effectKey"] = key;
+          img = document.createElement("img");
+          img.className = "effect-frame heal-band";
+          img.alt = "";
+          img.draggable = false;
+          host.append(img);
+          effectLane.append(host);
+        } else {
+          img = host.querySelector<HTMLImageElement>(".effect-frame.heal-band")!;
+        }
         img.width = frameW;
         img.height = frameH;
-        img.alt = "";
-        img.draggable = false;
         img.style.clipPath = `inset(${frameH - bandHi}px 0 0 0)`;
         img.style.left = `calc(50% - ${frameW / 2}px)`;
         img.style.bottom = `${24 - frameH}px`;
-        const host = document.createElement("div");
-        host.className = "effect-host";
         host.style.left = `${anchor.offsetLeft}px`;
         host.style.bottom = `${anchor.bottomPx}px`;
-        host.append(img);
-        effectLane.append(host);
+        setImageSrcIfChanged(img, frameUrl);
+      }
+    }
+
+    for (const child of [...effectLane.children]) {
+      const key = (child as HTMLElement).dataset["effectKey"] ?? "";
+      if (!key || !seen.has(key)) {
+        child.remove();
       }
     }
 
@@ -611,19 +676,31 @@ export function createPresentation(options: PresentationOptions): Presentation {
   }
 
   function renderDamageNumbers(nowMs: number, anchorGeometry: Map<string, AnchorGeometry>): void {
-    damageLayer.replaceChildren();
     const merged = mergeDamageNumbers(pendingDamage.filter((entry) => nowMs - entry.atMs <= DAMAGE_FLOAT_MS));
+    const seen = new Set<string>();
     for (const entry of merged) {
       const anchor = anchorGeometry.get(entry.targetId);
       if (!anchor) {
         continue;
       }
-      const float = document.createElement("span");
+      const key = damageNumberKey(entry);
+      seen.add(key);
+      let float = damageLayer.querySelector<HTMLElement>(`[data-damage-key="${key}"]`);
+      if (!float) {
+        float = document.createElement("span");
+        float.dataset["damageKey"] = key;
+        damageLayer.append(float);
+      }
       float.className = `${damageNumberClass(entry)} floating`;
       float.textContent = formatDamageNumber(entry.amount, entry.kind);
       float.style.left = `${anchor.offsetLeft + 8}px`;
       float.style.bottom = `${anchor.offsetHeight + 18}px`;
-      damageLayer.append(float);
+    }
+    for (const child of [...damageLayer.children]) {
+      const key = (child as HTMLElement).dataset["damageKey"] ?? "";
+      if (!seen.has(key)) {
+        child.remove();
+      }
     }
     while (pendingDamage.length > 0 && pendingDamage[0]!.atMs < nowMs - DAMAGE_FLOAT_MS) {
       pendingDamage.shift();
