@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it, vi } from "vitest";
 import { createEngine } from "../core/engine";
 import { fixtureContent } from "../core/testing/fixture-content";
+import { mountBattleTile } from "./battle-tile";
 import { DOCK_TABS, mountManagementDock } from "./dock";
 
 function mountDock(root: HTMLElement, options: Parameters<typeof mountManagementDock>[1] = {}) {
@@ -77,6 +78,38 @@ describe("Management Dock shell", () => {
     expect(root.querySelector(".armory-surface")).not.toBeNull();
 
     dock.destroy();
+  });
+
+  it("labels encounter 3 as Boss consistently with the Battle Tile and Stage surface", () => {
+    const dockRoot = document.createElement("main");
+    const battleRoot = document.createElement("main");
+    const dock = mountDock(dockRoot);
+    const battleTile = mountBattleTile(battleRoot, fixtureContent);
+    const engine = createEngine(fixtureContent, undefined, 3);
+    const snapshot = structuredClone(engine.snapshot());
+    if (!snapshot.attempt) {
+      throw new Error("missing Attempt");
+    }
+    snapshot.attempt.encounter = 3;
+    snapshot.progression.unlockedStage = 3;
+
+    dock.render(snapshot);
+    battleTile.render(snapshot);
+
+    const dockLabel = dockRoot.dataset["stageLabel"] ?? "";
+    const battleLabel = battleRoot.querySelector(".stage-wave-text")?.textContent ?? "";
+    const stagePosition =
+      dockRoot.querySelector(".stage-surface .attempt-position")?.textContent ?? "";
+
+    expect(dockLabel).toContain("Boss");
+    expect(dockLabel).not.toContain("Wave 3");
+    expect(battleLabel).toContain("Boss");
+    expect(battleLabel).not.toContain("Wave 3");
+    expect(stagePosition).toContain("Boss");
+    expect(stagePosition).not.toContain("Wave 3");
+
+    dock.destroy();
+    battleTile.destroy();
   });
 
   it("shows the Armory tab badge when the drop-toast hook fires", () => {

@@ -171,6 +171,7 @@ export function mountManagementDock(
     },
   });
   const stageSurface = mountStageSurface(stageRoot, {
+    content: options.content,
     onCommand: (command) => {
       options.onCommand?.(command);
     },
@@ -266,7 +267,9 @@ export function mountManagementDock(
   return {
     render(snapshot) {
       const stageLabel = snapshot?.attempt
-        ? `Stage ${snapshot.attempt.stage} · Wave ${snapshot.attempt.encounter}`
+        ? `Stage ${snapshot.attempt.stage} · ${
+            snapshot.attempt.encounter === 3 ? "Boss" : `Wave ${snapshot.attempt.encounter}`
+          }`
         : "No Attempt";
       root.dataset["stageLabel"] = stageLabel;
       partySurface.render(snapshot);
