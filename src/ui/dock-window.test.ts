@@ -480,7 +480,7 @@ describe("dock window port", () => {
     expect(host.currentMonitor).toHaveBeenCalledTimes(4);
   });
 
-  it("uses TILE_WIDTH and TILE_HEIGHT instead of outerSize in cached geometry readers", async () => {
+  it("reports fixed Battle Tile logical size when reading tile geometry without querying outerSize", async () => {
     const host = {
       scaleFactor: vi.fn(async () => 2),
       outerPosition: vi.fn(async () => ({ x: 440, y: 1464 })),
