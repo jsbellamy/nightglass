@@ -297,11 +297,26 @@ export const DOCK_WINDOW_SIZE = {
   height: DOCK_HEIGHT,
 } as const;
 
-function wrapDockWebviewWindow(
+export function wrapDockWebviewWindow(
   windowRef: Pick<WebviewWindow, "show" | "hide" | "setPosition" | "once">,
   LogicalPosition: new (x: number, y: number) => object,
   options: { awaitCreated: boolean },
 ): DockWebviewWindow {
+  const readinessPromise = options.awaitCreated
+    ? new Promise<void>((resolve, reject) => {
+        windowRef.once("tauri://created", () => {
+          resolve();
+        });
+        windowRef.once("tauri://error", () => {
+          reject(new Error("tauri://error"));
+        });
+      })
+    : null;
+
+  if (readinessPromise) {
+    readinessPromise.catch(() => {});
+  }
+
   return {
     show: () => windowRef.show(),
     hide: () => windowRef.hide(),
@@ -310,19 +325,7 @@ function wrapDockWebviewWindow(
         new LogicalPosition(x, y) as Parameters<WebviewWindow["setPosition"]>[0],
       );
     },
-    ready: () => {
-      if (!options.awaitCreated) {
-        return Promise.resolve();
-      }
-      return new Promise<void>((resolve, reject) => {
-        windowRef.once("tauri://created", () => {
-          resolve();
-        });
-        windowRef.once("tauri://error", () => {
-          reject(new Error("tauri://error"));
-        });
-      });
-    },
+    ready: () => readinessPromise ?? Promise.resolve(),
   };
 }
 
