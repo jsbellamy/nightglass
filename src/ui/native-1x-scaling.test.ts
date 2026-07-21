@@ -1,3 +1,5 @@
+// @vitest-environment happy-dom
+
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -69,6 +71,13 @@ describe("native-1× sprite dimensions", () => {
 
       const ihdr = pngIhdrSize(readFileSync(join(spritesDir, `${key}.png`)));
       expect(ihdr, `${key} PNG IHDR`).toEqual({ width: frameWidth, height: frameHeight });
+
+      const rendered = document.createElement("img");
+      rendered.width = frameWidth;
+      rendered.height = frameHeight;
+      expect(rendered.width, `${key} rendered width`).toBe(ihdr.width);
+      expect(rendered.height, `${key} rendered height`).toBe(ihdr.height);
+
       expect(source.url).toBeTruthy();
     }
   });
