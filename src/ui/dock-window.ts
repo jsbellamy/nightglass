@@ -405,14 +405,11 @@ export async function createDockWindowWithOptionalParent(
   }
 }
 
-export function createProductionDockWindowPort(
-  options: { isMacOS?: () => boolean } = {},
-): DockWindowPort {
+export function createProductionDockWindowPort(): DockWindowPort {
   if (!isTauriRuntime()) {
     return createDockWindowPort();
   }
 
-  const isMacOS = options.isMacOS ?? (() => isMacOSPlatform());
   let dockChildAttachSupported = false;
 
   const geometry = createCachedDockGeometryDeps({
@@ -462,7 +459,7 @@ export function createProductionDockWindowPort(
       const { WebviewWindow } = await import("@tauri-apps/api/webviewWindow");
       const { LogicalPosition } = await import("@tauri-apps/api/dpi");
       const result = await createDockWindowWithOptionalParent(url, {
-        isMacOS,
+        isMacOS: () => isMacOSPlatform(),
         LogicalPosition,
         createWebviewWindow: (label, windowOptions) =>
           new WebviewWindow(label, windowOptions),

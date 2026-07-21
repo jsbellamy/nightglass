@@ -579,25 +579,33 @@ describe("dock window port", () => {
     expect(dock.callOrder).toEqual([`setPosition:${synced.x},${synced.y}`]);
   });
 
-  it("resets dockChildAttachSupported on destroy so a recreated dock re-probes", async () => {
-    const dock = mockDockWindow();
-    let dockChildAttachSupported = true;
+  it("resets child-attach support on destroy so the next Dock create re-probes", async () => {
+    const onTileMoved = vi.fn(() => () => {});
+    let dockChildAttachSupported = false;
+    let createCount = 0;
     const onDestroy = vi.fn(() => {
       dockChildAttachSupported = false;
     });
-    const onTileMoved = vi.fn(() => () => {});
     const port = createDockWindowPort({
       isTauri: true,
       dockUrl,
       getTileOuterPosition: async () => tile,
       getMonitorForTile: async () => monitor,
-      getDockWindow: async () => dock,
+      getDockWindow: async () => null,
       isDockChildAttached: () => dockChildAttachSupported,
       onDestroy,
       onTileMoved,
+      async createDockWindow() {
+        createCount += 1;
+        dockChildAttachSupported = false;
+        // Probe succeeds on each create (including the recreate after destroy).
+        dockChildAttachSupported = true;
+        return mockDockWindow();
+      },
     });
 
     await port.open();
+    expect(createCount).toBe(1);
     expect(onTileMoved).not.toHaveBeenCalled();
 
     port.destroy();
@@ -605,10 +613,12 @@ describe("dock window port", () => {
     expect(dockChildAttachSupported).toBe(false);
 
     await port.open();
-    expect(onTileMoved).toHaveBeenCalledOnce();
+    expect(createCount).toBe(2);
+    expect(dockChildAttachSupported).toBe(true);
+    expect(onTileMoved).not.toHaveBeenCalled();
   });
 
-  it("never calls Webview.reparent in the dock window adapter", () => {
+  it("does not reparent the Dock webview after create", () => {
     const source = readFileSync(
       join(dirname(fileURLToPath(import.meta.url)), "dock-window.ts"),
       "utf8",
