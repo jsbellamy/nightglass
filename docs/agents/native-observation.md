@@ -38,7 +38,12 @@ creates a Tauri `WebviewWindow` or exercises OS window chrome.
 3. **Native positioning** — The Dock window opens at the geometry implied by
    `dockRect` relative to the tile's outer position on the monitor (above or
    below with the configured gap), not at an arbitrary OS default.
-4. **Native effect-image loading** — In the packaged Tauri webview (not
+4. **Dock geometry not restored from disk** — With `tauri-plugin-window-state`
+   constrained to tile position only and the dock denylisted, a stale `"dock"`
+   entry in `.window-state.json` must not shrink or reposition the dock; it
+   opens at the full `DOCK_WIDTH`×`DOCK_HEIGHT` from `createDockWindow` and
+   `dockRect` on every launch.
+5. **Native effect-image loading** — In the packaged Tauri webview (not
    `vite preview` alone), at least one visible Ability effect frame
    (`img.effect-frame`) and one Status Effect glyph (`img.status-icon`) load
    with real pixels — not broken-image placeholders. Browser
