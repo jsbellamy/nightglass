@@ -26,10 +26,12 @@ the runtime supports worktrees.
      `docs/agents/asset-generation.md` end to end. The issue body carries the
      finished generation prompt and its intended read: run the prompt as
      written, judge the result against the stated read, and keep the archived
-     raw plus provenance sidecar so `assets:verify` proves a byte-identical
-     rebuild. Archived raws, sidecars, and scratch files land at absolute paths
-     inside the worktree; generated images arrive via the `GenerateImage` copy
-     step in the constraints below.
+     raw plus provenance sidecar so the CI `assets` job proves a byte-identical
+     rebuild. Use targeted acquisition and promotion checks locally; do not run
+     the full-catalog `assets:verify` command for an ordinary asset issue.
+     Archived raws, sidecars, and scratch files land at absolute paths inside
+     the worktree; generated images arrive via the `GenerateImage` copy step in
+     the constraints below.
 5. Before publishing, make an **acceptance matrix** containing every checkbox
    from the live issue. Follow `docs/agents/acceptance-evidence.md`: for each
    row, state a disposition plus specific evidence at the seam the criterion
@@ -37,7 +39,8 @@ the runtime supports worktrees.
    apply, a code location, command result, or scenario-keyed review artifact.
    Never infer a rendered, contrast, cross-window, or native criterion from a
    happy-dom or unit test. Readability and review-sheet criteria need the
-   sheet attached; byte-identity criteria need the `assets:verify` result.
+   sheet attached; byte-identity criteria name the CI `assets` job as their
+   evidence source (pending until the branch is pushed).
    Apply that doc's three dispositions: unsupportable → stop (do not open a
    completion PR); agent-blocked native → open the PR and block merge until a
    human adds the row; successor-falsified → flag for editorial disposition,
@@ -55,7 +58,10 @@ the runtime supports worktrees.
    into the verdict table for the merge decision.
 8. Push with `git push -u origin <branch>`, then create a pull request whose
    body includes a summary, verification details, the complete acceptance
-   matrix, and `Closes #<N>`.
+   matrix, and `Closes #<N>`. For an ordinary asset issue, use the PR's CI
+   `assets` job as the authoritative full-catalog result instead of rerunning
+   `assets:verify` locally. Pipeline, contract, palette, manifest-schema, and
+   shared-derivation changes still require the local full verifier before push.
 9. Post the review to the PR with `gh pr comment <N> --body-file <path>`: the
    **verbatim** Standards and Spec sub-agent output under separate headings,
    plus the reworked findings and the commits that resolved them. Paste what the

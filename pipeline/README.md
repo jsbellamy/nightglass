@@ -26,7 +26,7 @@ adding or changing raster assets.
 ```bash
 npm run assets:build   # rebuild runtime sprites + icons + backdrops from committed sources
 npm run assets:effects # author and derive Ability effect frames (when sources change)
-npm run assets:verify  # contract tests + effects + icons + backdrops byte-identity proof
+npm run assets:verify  # CI/full-catalog contract and byte-identity proof
 ```
 
 Measure provider candidates immediately; this command is read-only and does not
@@ -66,8 +66,12 @@ Known tags derive Nightglass asset class, role, facing, and runtime destination;
 sidecars record their size `tier`; the offline build treats older sidecars with
 no tier as `medium` for compatibility.
 
-`assets:verify` runs with no provider, model, GPU, or network. CI runs the same
-job offline after `pip install pillow`.
+`assets:verify` runs with no provider, model, GPU, or network. CI runs this
+authoritative full-catalog job offline after `pip install pillow`. Do not run it
+inside a candidate generation or retry loop. Ordinary asset tasks use `measure`
+and `promote` locally, push the completed asset batch, and read the CI `assets`
+job. Run the full command locally only when changing pipeline code, acquisition
+contracts, the palette, manifest schemas, or shared derivation logic.
 
 ## Adding a new asset
 
@@ -75,5 +79,6 @@ job offline after `pip install pillow`.
 2. Run `acquire.py measure --tier <tier>` and follow its retry/advance result.
 3. After visual review passes, run `acquire.py promote` with the exact prompt and
    direct references.
-4. Run `npm run assets:build` and confirm `npm run assets:verify` is green.
-5. Commit the raw, sidecar, rebuilt runtime PNG, and updated `manifest.json`.
+4. Commit the raw, sidecar, promoted runtime PNG, and updated `manifest.json`.
+5. Push the completed batch; the CI `assets` job performs the full-catalog
+   rebuild and byte-identity proof once.

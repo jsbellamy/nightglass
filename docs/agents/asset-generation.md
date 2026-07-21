@@ -279,22 +279,34 @@ runtime form. Exercise every declared gate, including provenance, dimensions,
 colour mode, alpha, palette, clipping, anchors, layer separation, and manifest
 fields where applicable.
 
+Use the asset class's targeted command during generation and promotion. Never
+run the repository-wide `npm run assets:verify` inside a candidate or retry
+loop, and do not run it locally for an ordinary asset-only task. After the
+accepted asset batch is committed and pushed, the CI `assets` job is the
+authoritative full-catalog rebuild and byte-identity proof. Run the full command
+locally only when the task changes pipeline code, an acquisition contract, the
+palette, a manifest schema, or shared derivation logic that can affect existing
+assets.
+
 For Equipment icons, the transform is **two-stage** via `pipeline/icons/`:
 `ingest.py` recovers a compact 1px/cell source (human-approved via the Stage-2 @8×
 preview), then `build.py` / `paint.py` paint `moonberry-16` plus a derived outline
 onto 34×34. Approve the **preview**, not the provider PNG. Family Tier II is a
 `recolor` of the same compact source — rebuild both variants after any source edit.
-`npm run assets:build` runs `pipeline/icons/build.py`; `npm run assets:verify` runs
-`pipeline/icons/verify.py` with the acquisition and effects gates.
+`npm run assets:build` runs `pipeline/icons/build.py`; the CI `assets` job runs
+`pipeline/icons/verify.py` with the acquisition and effects gates as part of
+`npm run assets:verify`.
 Read Equipment icon gate results from `pipeline/icons/verify-report.json` rather
 than by re-running the script and parsing stdout or opening the built PNG.
 
-Rebuild once more from the archived raw with the provider absent. Compare the
-encoded runtime file byte-for-byte with the accepted output.
+The CI `assets` job rebuilds once more from the archived raw with the provider
+absent and compares the encoded runtime file byte-for-byte with the accepted
+output.
 
-This step is complete when every declared gate passes and the offline rebuild is
-byte-identical. If the asset class has no deterministic encoder yet, the task
-must create one or explicitly resolve why byte identity is outside its contract.
+Local work is ready to push when every targeted declared gate passes. Final
+verification is complete when the CI offline rebuild is byte-identical. If the
+asset class has no deterministic encoder yet, the task must create one or
+explicitly resolve why byte identity is outside its contract.
 
 ## 6. Review in context
 
