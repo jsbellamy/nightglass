@@ -245,7 +245,7 @@ describe("Armory surface", () => {
     surface.destroy();
   });
 
-  it("renders icon-first tiles with rarity chrome, compact badges, and no Unseen/assignment prose", () => {
+  it("renders Armory collection tiles as icon-first Drops with Unseen and Locked badges, omitting assignment prose", () => {
     const root = document.createElement("div");
     const selected = { current: "knight" as ClassId };
     const snapshot = armorySnapshot([
@@ -538,45 +538,6 @@ describe("Armory surface", () => {
 
     surface.destroy();
     root.remove();
-  });
-
-  it("browse-slot intent filters to pieces compatible with that Character and slot and selects the equipped Drop when present", () => {
-    const root = document.createElement("div");
-    const selected = { current: "knight" as ClassId };
-    const snapshot = armorySnapshot([
-      drop({
-        dropId: 1,
-        baseId: "fixture-blade",
-        assignedTo: { classId: "knight", slot: "weapon" },
-      }),
-      drop({ dropId: 2, baseId: "fixture-focus" }),
-      drop({ dropId: 3, baseId: "fixture-armor" }),
-    ]);
-    const engine = createEngine(fixtureContent, snapshot, LOOT_SEED);
-    const surface = mountWithSelection(root, selected);
-    surface.render(snapshot, legalityViewFromEngine(engine), {
-      kind: "browse-slot",
-      classId: "knight",
-      slot: "weapon",
-    });
-
-    expect(
-      root
-        .querySelector<HTMLButtonElement>('[data-slot-filter="weapon"]')
-        ?.getAttribute("aria-pressed"),
-    ).toBe("true");
-    expect(
-      [...root.querySelectorAll<HTMLElement>(".armory-grid .equipment-card")].map(
-        (card) => card.dataset["dropId"],
-      ),
-    ).toEqual(["1"]);
-    expect(
-      root
-        .querySelector<HTMLElement>('.armory-grid .equipment-card[data-drop-id="1"]')
-        ?.getAttribute("aria-selected"),
-    ).toBe("true");
-
-    surface.destroy();
   });
 
   it("lists Rare and Epic pieces in bulk discard confirm and excludes equipped or Locked rows", () => {

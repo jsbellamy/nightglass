@@ -19,7 +19,7 @@ import { contrastRatio, parseRGB } from "./helpers/contrast";
 const SCREENSHOTS = "e2e-screenshots";
 /** Committed review artifact for the knockout-readability judgement (#103). */
 const KNOCKOUT_ARTIFACT = "docs/research/evidence/knockout-readability/tile-combat.png";
-/** Committed review artifact after Armory strip deletion (#271): Character Equipment rows. */
+/** Committed review artifact after Character Equipment removal (#300): Armory worn strip. */
 const EQUIPMENT_CHROME_LEGIBILITY_ARTIFACT =
   "docs/research/evidence/124-equipment-icon-consumers/armory-worn-strip.png";
 

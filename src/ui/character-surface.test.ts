@@ -5,7 +5,7 @@ import { createEngine } from "../core/engine";
 import { fixtureContent } from "../core/testing/fixture-content";
 import type { ClassId } from "../core/types";
 import { mountCharacterSurface } from "./character-surface";
-import type { DockSurfaceMountOptions, DockTabIntent } from "./dock";
+import type { DockSurfaceMountOptions } from "./dock";
 import { EMPTY_ENGINE_LEGALITY, type EngineLegalityView } from "./engine-legality";
 
 const LOOT_SEED = 42;
@@ -14,14 +14,12 @@ function mountOptions(
   selected: { current: ClassId },
   extras: {
     onCommand?: (command: { cmd: string; args: unknown }) => void;
-    requestTab?: (tab: string, intent?: DockTabIntent) => void;
   } = {},
 ): DockSurfaceMountOptions {
   return {
     content: fixtureContent,
     onCommand: (extras.onCommand as DockSurfaceMountOptions["onCommand"]) ?? (() => undefined),
     getSelectedClassId: () => selected.current,
-    requestTab: (extras.requestTab as DockSurfaceMountOptions["requestTab"]) ?? (() => undefined),
   };
 }
 

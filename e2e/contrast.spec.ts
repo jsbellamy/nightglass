@@ -191,7 +191,7 @@ test.describe("accessibility contrast floor", () => {
     await focusDockTab(dock, "armory");
     // Detail needs a selection before name/marker contrast samples run.
     await dock.locator('.armory-grid .equipment-card[data-drop-id="1"]').click();
-    await expect(dock.locator(".armory-detail .equipment-name")).toBeVisible();
+    await expect(dock.locator(".armory-detail .equipment-detail .equipment-name")).toBeVisible();
     const epicCard = dock.locator(".armory-grid .equipment-card.rarity-epic");
     await expect(epicCard).toBeVisible({ timeout: 5_000 });
     const raritySignals = await epicCard.evaluate((card) => {
@@ -215,7 +215,7 @@ test.describe("accessibility contrast floor", () => {
     await expect(detailLock).toBeVisible();
     await expect(detailLock).toContainText(/Unlock/);
     await expect(
-      dock.locator('[data-armory-detail="true"] .locked-marker'),
+      dock.locator('[data-armory-detail="true"] .equipment-detail .locked-marker'),
     ).toContainText(/Locked/);
 
     await focusDockTab(dock, "stage");
