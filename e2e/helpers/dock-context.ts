@@ -1,5 +1,6 @@
 import { expect, type Browser, type Page } from "@playwright/test";
 import { DOCK_HEIGHT, DOCK_WIDTH } from "../../src/ui/dock-geometry";
+import type { DockTabId } from "../../src/ui/dock";
 import { TILE_HEIGHT, TILE_WIDTH } from "../../src/ui/battle-tile-layout";
 
 export async function openTilePage(
@@ -57,7 +58,7 @@ export async function openDockFromTileKeyboard(tile: Page): Promise<void> {
   await tile.keyboard.press("Enter");
 }
 
-export async function focusDockTab(dock: Page, tab: string): Promise<void> {
+export async function focusDockTab(dock: Page, tab: DockTabId): Promise<void> {
   const tabButton = dock.locator(`[data-dock-tab="${tab}"]`);
   const selected = await tabButton.getAttribute("aria-selected");
   if (selected !== "true") {

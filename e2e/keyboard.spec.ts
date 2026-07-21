@@ -30,16 +30,15 @@ test.describe("accessibility keyboard floor", () => {
     await openDockFromTileKeyboard(tile);
     const dock = await attachDockPage(context);
 
-    await focusDockTab(dock, "party");
+    await focusDockTab(dock, "character");
     await dock.locator('[data-character-chip="knight"]').focus();
     await dock.keyboard.press("Enter");
-    await assertFocusRingVisible(dock, ".character-picker-chip[aria-selected=\"true\"]");
+    await assertFocusRingVisible(dock, '.character-picker-chip[aria-selected="true"]');
     await assertFocusRingVisible(dock, '[data-formation-action="move-down"][data-slot="0"]');
     await dock.locator('[data-formation-action="move-down"][data-slot="0"]').focus();
     await dock.keyboard.press("Enter");
     await expect(dock.locator('[data-pending-kind="formation"]')).toContainText(/next Wave/i);
 
-    await focusDockTab(dock, "loadout");
     await dock.locator('[data-character-chip="knight"]').focus();
     await dock.keyboard.press("Enter");
     const loadoutSelect = dock.locator('[data-class-id="knight"] [data-loadout-assign="0"]');
@@ -58,7 +57,6 @@ test.describe("accessibility keyboard floor", () => {
       /next Wave/i,
     );
 
-    await focusDockTab(dock, "talents");
     await dock.locator('[data-character-chip="knight"]').focus();
     await dock.keyboard.press("Enter");
     const allocate = dock.locator(

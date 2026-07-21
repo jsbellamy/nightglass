@@ -45,7 +45,7 @@ The fixed 480×112 logical-pixel, always-on-top surface that contains the live B
 _Avoid_: main window, taskbar, combat window
 
 **Management Dock**:
-The single 800×480 logical-pixel tabbed panel, docked flush above the tile (below it when top-parked). It shows one management surface at a time — Party, Loadout, Talents, Armory, or Stage — and opening or switching it never resizes, moves, or pauses the Battle Tile.
+The single 800×480 logical-pixel tabbed panel, docked flush above the tile (below it when top-parked). It shows one management surface at a time — Character, Armory, or Stage — and opening or switching it never resizes, moves, or pauses the Battle Tile.
 _Avoid_: management windows, card fan, settings panel
 
 **Party Member**:

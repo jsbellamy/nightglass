@@ -8,10 +8,19 @@ import {
 import { attachDockPage, focusDockTab, openTilePage } from "./helpers/dock-context";
 import { armoryColourSnapshot } from "./helpers/snapshots";
 
-const DOCK_PRIMARY_TEXT: { tab: string; selector: string }[] = [
-  { tab: "party", selector: ".party-formation .character-name" },
-  { tab: "loadout", selector: ".loadout-character .surface-section-title" },
-  { tab: "talents", selector: '[data-class-id="knight"] [data-talent-points="true"]' },
+const DOCK_PRIMARY_TEXT: { tab: "character" | "armory" | "stage"; selector: string }[] = [
+  {
+    tab: "character",
+    selector: '[data-character-section="party"] .party-formation .character-name',
+  },
+  {
+    tab: "character",
+    selector: '[data-character-section="loadout"] .loadout-character .surface-section-title',
+  },
+  {
+    tab: "character",
+    selector: '[data-character-section="talents"] [data-class-id="knight"] [data-talent-points="true"]',
+  },
   { tab: "armory", selector: ".equipment-name" },
   { tab: "stage", selector: ".attempt-position" },
 ];
@@ -24,7 +33,7 @@ const CHARACTER_PICKER_TEXT = [
 ] as const;
 
 test.describe("accessibility contrast floor", () => {
-  test("evidence: aa-contrast — status line and all five Dock surfaces meet WCAG AA against resolved glass backgrounds", async ({
+  test("evidence: aa-contrast — status line and all three Dock surfaces meet WCAG AA against resolved glass backgrounds", async ({
     browser,
   }) => {
     const { context, tile } = await openTilePage(browser);
@@ -42,12 +51,12 @@ test.describe("accessibility contrast floor", () => {
     for (const { tab, selector } of DOCK_PRIMARY_TEXT) {
       await focusDockTab(dock, tab);
       const sample = await readTextContrastSample(dock, selector);
-      expect(sample, `sample for ${tab}`).not.toBeNull();
+      expect(sample, `sample for ${selector}`).not.toBeNull();
       const ratio = assertAaContrast(sample!);
-      expect(ratio, `contrast on ${tab}`).toBeGreaterThanOrEqual(4.5);
+      expect(ratio, `contrast on ${selector}`).toBeGreaterThanOrEqual(4.5);
     }
 
-    await focusDockTab(dock, "party");
+    await focusDockTab(dock, "character");
     for (const selector of CHARACTER_PICKER_TEXT) {
       const sample = await readTextContrastSample(dock, selector);
       expect(sample, `picker sample ${selector}`).not.toBeNull();

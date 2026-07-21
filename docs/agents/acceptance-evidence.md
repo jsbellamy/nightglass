@@ -61,7 +61,7 @@ here.
 | Tile geometry (480×112, status line, combatant fit / no overlap, five-opponent stress, status-line Drop notification clearance) | `evidence: tile-geometry` | `e2e/rendered-evidence.spec.ts` via `npm run test:evidence`; orchestrator reviews harness-emitted PNGs under `e2e-screenshots/` (gitignored; CI uploads the folder — no per-scene paths are checked in) |
 | Cross-webview delivery (`dock-opened` → snapshot → populated Dock; in-UI close without disturbing the tile) | `evidence: cross-webview-delivery` | Same suite: two pages in one context (`/` and `/?window=dock`) sharing `BroadcastChannel` |
 | AA contrast (status, dock toggle, health text) | `evidence: aa-contrast` | Same suite: computed-style contrast ≥ WCAG AA floor |
-| Dock surfaces (five tabs, one row, scroll not clip, each surface populated) | `evidence: dock-surfaces` | Same suite; orchestrator reviews harness-emitted `e2e-screenshots/` after `npm run test:evidence` |
+| Dock surfaces (three tabs, one row, scroll not clip, each surface populated) | `evidence: dock-surfaces` | Same suite; orchestrator reviews harness-emitted `e2e-screenshots/` after `npm run test:evidence` |
 | Five-opponent presentation concurrency (Stage 3 stress wave) | `evidence: five-actor-pools` | `e2e/stress.spec.ts` via `npm run test:evidence` |
 | Reduced-motion accessibility floor (actor pool visible; lunge/recoil offsets disabled) | `evidence: reduced-motion` | `e2e/reduced-motion.spec.ts` via `npm run test:evidence` |
 | Equipment icon content tier (collection cards) | `evidence: equipment-icon-content-tier` | `e2e/rendered-evidence.spec.ts` via `npm run test:evidence` (DOM geometry assertions in the shared equipment-icon scenario) |

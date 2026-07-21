@@ -222,7 +222,7 @@ describe("Management Dock shell pump coalescing", () => {
     const harness = createDockShellHarness();
     document.body.append(harness.root);
 
-    const tab = harness.root.querySelector<HTMLElement>('[data-dock-tab="party"]');
+    const tab = harness.root.querySelector<HTMLElement>('[data-dock-tab="character"]');
     tab?.focus();
     expect(document.activeElement).toBe(tab);
 

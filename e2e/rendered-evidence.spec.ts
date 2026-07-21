@@ -444,7 +444,7 @@ test.describe("rendered-output evidence seam", () => {
     await context.close();
   });
 
-  test("evidence: cross-webview-delivery / evidence: dock-surfaces — Management Dock populates from the Battle Tile over a shared bus and cycles its five surfaces", async ({
+  test("evidence: cross-webview-delivery / evidence: dock-surfaces — Management Dock populates from the Battle Tile over a shared bus and cycles its three surfaces", async ({
     browser,
   }) => {
     const { context, tile } = await openTile(browser);
@@ -495,7 +495,7 @@ test.describe("rendered-output evidence seam", () => {
     const tabs = await dock.evaluate(() =>
       [...document.querySelectorAll("[data-dock-tab]")].map((b) => (b as HTMLElement).dataset.dockTab),
     );
-    expect(tabs).toHaveLength(5);
+    expect(tabs).toHaveLength(3);
 
     const tabFit = await dock.evaluate(() => {
       const list = document.querySelector(".dock-tabs");
