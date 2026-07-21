@@ -48,6 +48,12 @@ export const BANNER_DURATION_MS = 1500;
 export const DAMAGE_FLOAT_MS = 900;
 export const DROP_TOAST_MS = 2000;
 
+/** Foot X within the fixed `.effect-host` box (presentation-owned, not body width). */
+const EFFECT_HOST_FOOT_X = 16;
+/** Damage float horizontal offset from the recorded foot (presentation-owned). */
+const DAMAGE_FLOAT_FOOT_OFFSET_X = -8;
+const DAMAGE_FLOAT_ABOVE_FRAME_PX = 18;
+
 interface EffectManifestEntry {
   frame_size: [number, number];
   anchor_dx?: number;
@@ -162,17 +168,36 @@ function combatantElement(root: HTMLElement, entityId: string): HTMLElement | nu
 }
 
 export interface AnchorGeometry {
-  offsetLeft: number;
-  offsetHeight: number;
-  /** Resolved `bottom` in px, defaulting to 6 when unset — preserves today's `|| "6"` fallback. */
-  bottomPx: number;
+  footX: number;
+  floorY: number;
+  frameWidth: number;
+  frameHeight: number;
+}
+
+function readManifestFootLocalX(element: HTMLElement): {
+  footLocalX: number;
+  frameWidth: number;
+  frameHeight: number;
+} {
+  const style = getComputedStyle(element);
+  const frameWidth = parseFloat(style.getPropertyValue("--combatant-frame-w")) || 32;
+  const frameHeight = parseFloat(style.getPropertyValue("--combatant-frame-h")) || 48;
+  const footRaw = style.getPropertyValue("--combatant-foot-x").trim();
+  const footLocalX = footRaw ? parseFloat(footRaw) : frameWidth / 2;
+  return { footLocalX, frameWidth, frameHeight };
 }
 
 function readAnchorFromElement(element: HTMLElement): AnchorGeometry {
+  const style = getComputedStyle(element);
+  const frameWidth = parseFloat(style.getPropertyValue("--combatant-frame-w")) || 32;
+  const frameHeight = parseFloat(style.getPropertyValue("--combatant-frame-h")) || 48;
+  const footRaw = style.getPropertyValue("--combatant-foot-x").trim();
+  const footLocalX = footRaw ? parseFloat(footRaw) : frameWidth / 2;
   return {
-    offsetLeft: element.offsetLeft,
-    offsetHeight: element.offsetHeight,
-    bottomPx: parseInt(getComputedStyle(element).bottom || "6", 10),
+    footX: element.offsetLeft + footLocalX,
+    floorY: parseInt(style.bottom || "6", 10),
+    frameWidth,
+    frameHeight,
   };
 }
 
@@ -384,7 +409,10 @@ export function createPresentation(options: PresentationOptions): Presentation {
 
   function renderActorPool(entityId: string, nowMs: number, snapshot: Snapshot): void {
     const element = combatantElement(battlefield, entityId);
-    const layer = element ? markLayer(element) : null;
+    if (!element) {
+      return;
+    }
+    const layer = markLayer(element);
     if (!layer) {
       return;
     }
@@ -413,6 +441,9 @@ export function createPresentation(options: PresentationOptions): Presentation {
       pool.style.setProperty("--pool-dy", `${ACTOR_POOL.dy}px`);
       layer.append(pool);
     }
+    const { footLocalX } = readManifestFootLocalX(element);
+    pool.style.left = `${footLocalX}px`;
+    pool.style.transform = "translate(-50%, 50%)";
   }
 
   function renderBodyTransforms(entityId: string, nowMs: number, snapshot: Snapshot): void {
@@ -497,6 +528,9 @@ export function createPresentation(options: PresentationOptions): Presentation {
       row.className = "status-icons";
       element.append(row);
     }
+    const { footLocalX } = readManifestFootLocalX(element);
+    row.style.left = `${footLocalX}px`;
+    row.style.transform = "translateX(-50%)";
 
     const seen = new Set<string>();
     const visible = unique.slice(0, 2);
@@ -590,8 +624,8 @@ export function createPresentation(options: PresentationOptions): Presentation {
           img.dataset["strikeY"] = String(strike.y);
           img.style.left = `calc(50% + ${strike.x - frameW / 2}px)`;
           img.style.top = `calc(100% + ${strike.y - frameH}px)`;
-          host.style.left = `${anchor.offsetLeft}px`;
-          host.style.bottom = `${anchor.bottomPx}px`;
+          host.style.left = `${anchor.footX - EFFECT_HOST_FOOT_X}px`;
+          host.style.bottom = `${anchor.floorY}px`;
           setImageSrcIfChanged(img, frameUrl);
         }
       } else if (recipe.anchor === "lane_travel") {
@@ -603,8 +637,8 @@ export function createPresentation(options: PresentationOptions): Presentation {
         const progress = reducedMotion
           ? 1
           : Math.min(1, Math.max(0, (nowMs - effect.startedAtMs) / recipe.durationMs));
-        const startX = actorAnchor.offsetLeft + 16;
-        const endX = targetAnchor.offsetLeft + 16;
+        const startX = actorAnchor.footX;
+        const endX = targetAnchor.footX;
         const x = startX + (endX - startX) * progress;
         const key = `${effect.id}:lane`;
         seen.add(key);
@@ -654,8 +688,8 @@ export function createPresentation(options: PresentationOptions): Presentation {
         img.style.clipPath = `inset(${frameH - bandHi}px 0 0 0)`;
         img.style.left = `calc(50% - ${frameW / 2}px)`;
         img.style.bottom = `${24 - frameH}px`;
-        host.style.left = `${anchor.offsetLeft}px`;
-        host.style.bottom = `${anchor.bottomPx}px`;
+        host.style.left = `${anchor.footX - EFFECT_HOST_FOOT_X}px`;
+        host.style.bottom = `${anchor.floorY}px`;
         setImageSrcIfChanged(img, frameUrl);
       }
     }
@@ -691,8 +725,8 @@ export function createPresentation(options: PresentationOptions): Presentation {
       }
       float.className = `${damageNumberClass(entry)} floating`;
       float.textContent = formatDamageNumber(entry.amount, entry.kind);
-      float.style.left = `${anchor.offsetLeft + 8}px`;
-      float.style.bottom = `${anchor.offsetHeight + 18}px`;
+      float.style.left = `${anchor.footX + DAMAGE_FLOAT_FOOT_OFFSET_X}px`;
+      float.style.bottom = `${anchor.frameHeight + anchor.floorY + DAMAGE_FLOAT_ABOVE_FRAME_PX}px`;
     }
     for (const child of [...damageLayer.children]) {
       const key = (child as HTMLElement).dataset["damageKey"] ?? "";

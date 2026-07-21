@@ -447,6 +447,9 @@ function mountPresentationHarness(): {
     combatant.style.bottom = bottomPx;
     combatant.style.width = "32px";
     combatant.style.height = "40px";
+    combatant.style.setProperty("--combatant-frame-w", "32");
+    combatant.style.setProperty("--combatant-frame-h", "48");
+    combatant.style.setProperty("--combatant-foot-x", "16");
     combatant.innerHTML =
       '<div class="combatant-stack"><div class="layer layer-mark"></div><div class="layer layer-body"></div><div class="layer layer-effect"></div></div>';
     battlefield.append(combatant);
@@ -469,7 +472,7 @@ describe("batched anchor geometry reads", () => {
     document.body.replaceChildren();
   });
 
-  it("resolves bottomPx to 6 when computed bottom is empty", () => {
+  it("defaults combatant floor offset to 6px when bottom is unset", () => {
     const battlefield = document.createElement("section");
     const combatant = document.createElement("div");
     combatant.dataset["entityId"] = "opp:1:0";
@@ -478,7 +481,7 @@ describe("batched anchor geometry reads", () => {
     document.body.append(battlefield);
 
     const geometry = readAnchorGeometry(battlefield, new Set(["opp:1:0"]));
-    expect(geometry.get("opp:1:0")?.bottomPx).toBe(6);
+    expect(geometry.get("opp:1:0")?.floorY).toBe(6);
 
     battlefield.remove();
   });
@@ -650,6 +653,128 @@ describe("batched anchor geometry reads", () => {
     offsetLeftSpy.mockRestore();
     appendSpy.mockRestore();
     presentation.destroy();
+  });
+
+  it("places strike-target effects on the foot of a wider-than-32px body without resizing the effect frame", () => {
+    const { effectLane, presentation, addCombatant } = mountPresentationHarness();
+    const target = addCombatant("opp:1:0", "100px");
+    target.style.setProperty("--combatant-frame-w", "40");
+    target.style.setProperty("--combatant-frame-h", "52");
+    target.style.setProperty("--combatant-foot-x", "20");
+
+    const geometry = readAnchorGeometry(effectLane.parentElement as HTMLElement, new Set(["opp:1:0"]));
+    const footX = geometry.get("opp:1:0")?.footX;
+    expect(footX).toBeDefined();
+    if (footX === undefined) {
+      throw new Error("missing foot geometry");
+    }
+    expect(footX).toBe(target.offsetLeft + 20);
+
+    const snapshot = createEngine(buildContent(), undefined, LOOT_SEED).snapshot();
+    snapshot.simNowMs = 1_000;
+    presentation.applyEvents(
+      [
+        {
+          seq: 1,
+          atMs: 900,
+          type: "action-started",
+          entityId: "party:knight:front",
+          abilityId: "steel-cut",
+          impactAtMs: 1_000,
+          targetIds: ["opp:1:0"],
+        },
+      ],
+      snapshot,
+    );
+    presentation.render(950, snapshot);
+
+    const host = effectLane.querySelector<HTMLElement>(".effect-host");
+    expect(host?.style.left).toBe(`${footX - 16}px`);
+    const effect = host?.querySelector<HTMLImageElement>(".effect-frame.strike-target");
+    expect(effect?.width).toBe(30);
+    presentation.destroy();
+  });
+
+  it("anchors strike-target hosts on a half-pixel foot for an odd-width frame", () => {
+    const { effectLane, presentation, addCombatant } = mountPresentationHarness();
+    const target = addCombatant("opp:1:0", "80px");
+    target.style.setProperty("--combatant-frame-w", "25");
+    target.style.setProperty("--combatant-frame-h", "36");
+    target.style.setProperty("--combatant-foot-x", "12.5");
+
+    const footX = target.offsetLeft + 12.5;
+    const snapshot = createEngine(buildContent(), undefined, LOOT_SEED).snapshot();
+    snapshot.simNowMs = 1_000;
+    presentation.applyEvents(
+      [
+        {
+          seq: 1,
+          atMs: 900,
+          type: "action-started",
+          entityId: "party:knight:front",
+          abilityId: "steel-cut",
+          impactAtMs: 1_000,
+          targetIds: ["opp:1:0"],
+        },
+      ],
+      snapshot,
+    );
+    presentation.render(950, snapshot);
+
+    const host = effectLane.querySelector<HTMLElement>(".effect-host");
+    expect(host?.style.left).toBe(`${footX - 16}px`);
+    presentation.destroy();
+  });
+
+  it("keeps actor pools and damage numbers on the foot for flexible body frames", () => {
+    const { battlefield, presentation, addCombatant, feedbackLayer } = mountPresentationHarness();
+    const actor = addCombatant("party:knight:front", "200px");
+    actor.style.setProperty("--combatant-frame-w", "40");
+    actor.style.setProperty("--combatant-frame-h", "50");
+    actor.style.setProperty("--combatant-foot-x", "18");
+
+    const target = addCombatant("opp:1:0", "64px");
+    target.style.setProperty("--combatant-frame-w", "40");
+    target.style.setProperty("--combatant-frame-h", "50");
+    target.style.setProperty("--combatant-foot-x", "18");
+
+    const snapshot = createEngine(buildContent(), undefined, LOOT_SEED).snapshot();
+    const targetFootX = target.offsetLeft + 18;
+    snapshot.simNowMs = 1_050;
+    const knight = snapshot.attempt?.combatants.find((entry) => entry.entityId === "party:knight:front");
+    if (!knight) {
+      throw new Error("missing knight");
+    }
+    knight.action = {
+      abilityId: "steel-cut",
+      startedAtMs: 900,
+      impactAtMs: 1_000,
+      endsAtMs: 1_800,
+      targetIds: ["opp:1:0"],
+      impactResolved: false,
+    };
+    presentation.applyEvents(
+      [
+        {
+          seq: 1,
+          atMs: 1_000,
+          type: "impact",
+          entityId: "party:knight:front",
+          abilityId: "steel-cut",
+          results: [{ targetId: "opp:1:0", kind: "damage", channel: "physical", amount: 4, healthAfter: 12 }],
+        },
+      ],
+      snapshot,
+    );
+    presentation.render(1_020, snapshot);
+
+    const pool = actor.querySelector<HTMLElement>(".actor-pool");
+    expect(pool?.style.left).toBe("18px");
+    const damage = feedbackLayer.querySelector<HTMLElement>(".damage-number");
+    expect(damage?.style.left).toBe(`${targetFootX - 8}px`);
+    expect(damage?.style.bottom).toBe(`${50 + 6 + 18}px`);
+    presentation.destroy();
+    battlefield.remove();
   });
 });
 

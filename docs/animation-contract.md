@@ -1,9 +1,9 @@
 # The animation asset contract
 
 Frozen by [#4](https://github.com/jsbellamy/nightglass/issues/4). Sits on top of
-[the 32×48 acquisition contract](acquisition-contract.md) (#21, amended by #29), which owns
-anchors, timings, validation, provenance, and deterministic build outputs — this
-document does not restate or re-decide any of that.
+[the body acquisition contract](acquisition-contract.md) (#21, amended by #29 and
+#258), which owns anchors, timings, validation, provenance, and deterministic
+build outputs — this document does not restate or re-decide any of that.
 
 Prototype and gates:
 [`prototype/presentation-contract/`](../prototype/presentation-contract/)
@@ -24,7 +24,7 @@ left, and is settled here:
 ```
   effect layer      Ability effects, moonberry-glow, own canvas   <- #20
   ---------------------------------------------------------------
-  body layer        frozen 32x48 Character, moonberry-16          <- #21
+  body layer        frozen per-asset Character frame, moonberry-16   <- #21/#258
   ---------------------------------------------------------------
   mark layer        actor pool, moonberry-glow                    <- this doc
   ---------------------------------------------------------------
@@ -48,8 +48,12 @@ both gated:
   contract's embedded-effects validator. A transform cannot introduce an
   off-palette pixel, so #20's load-bearing palette disjointness survives here.
 
-Everything is integer-pixel and integer-millisecond. At 32×48 inside a 480×112
-tile there is no subpixel to have.
+Everything is integer-pixel and integer-millisecond. Inside a 480×112 Battle
+Tile, presentation reads each Character's **manifest foot anchor** and native
+`frame_size` from `assets/sprites/manifest.json` (surfaced on the combatant as
+`--combatant-foot-x`, `--combatant-frame-w`, `--combatant-frame-h`). Effect
+hosts, pools, and feedback float at that foot point; effect PNG dimensions and
+transform parameters remain presentation-owned and are not resized by body width.
 
 | Transform | Applies to | Parameters |
 | --- | --- | --- |
@@ -150,11 +154,13 @@ Carried forward unchanged from #20 — **do not re-derive**:
 - One authored/generated **still** per effect; every frame derived by
   deterministic offline transform (`sweep`, `scale`, `fade`, `spin`). No effect
   is generated as a sequence.
-- **Strike point** is `(0, −26)` from the 32×48 bottom-center foot anchor.
+- **Strike point** is `(0, −26)` from the target's manifest bottom-centre foot
+  anchor (legacy 32×48 bodies: bottom-centre at `(16, 48)` in frame space).
 - Effects use **`moonberry-glow`**, disjoint from `moonberry-16`. Preserve the
   disjointness: it is what makes the embedded-effects validator catch a baked-in
   effect.
-- Effects own a canvas independent of 32×48 and composite as separate layers.
+- Effects own a canvas independent of Character `frame_size` and composite as
+  separate layers.
 
 ### Anchor kinds — still exactly two
 
@@ -186,7 +192,7 @@ arrow pair.
 ```
 assets/
   characters/<class>/
-    <class>.png                 canonical frozen 32x48 pose, moonberry-16
+    <class>.png                 canonical frozen per-asset pose, moonberry-16
     idle_0.png .. idle_3.png    OPTIONAL hand-authored micro-loop
     downed.png                  OPTIONAL hand-authored pose; else use `downed`
     manifest.json               baseline_row, per-frame duration_ms + sha256
