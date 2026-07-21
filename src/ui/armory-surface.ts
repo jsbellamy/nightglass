@@ -29,7 +29,7 @@ import {
   effectiveLoadout,
   effectiveTalentState,
 } from "./snapshot-view";
-import { el, mountSurfaceShell } from "./surface-shell";
+import { el, bindScrollOverflowAffordance, mountSurfaceShell } from "./surface-shell";
 
 export interface ArmorySurface {
   render(
@@ -125,6 +125,8 @@ export function mountArmorySurface(
   let lastSnapshot: ReadonlySnapshot | null = null;
   let optimisticallySeenDropIds = new Set<number>();
   let currentLegality: EngineLegalityView = EMPTY_ENGINE_LEGALITY;
+  let unbindGridOverflow: (() => void) | null = null;
+  let unbindDetailOverflow: (() => void) | null = null;
 
   function publish(command: TileCommand): void {
     options.onCommand?.(command);
@@ -485,6 +487,8 @@ export function mountArmorySurface(
     }
 
     container.append(grid);
+    unbindGridOverflow?.();
+    unbindGridOverflow = bindScrollOverflowAffordance(grid);
   }
 
   function renderComparePanel(
@@ -681,6 +685,8 @@ export function mountArmorySurface(
         }),
       );
       container.append(detail);
+      unbindDetailOverflow?.();
+      unbindDetailOverflow = bindScrollOverflowAffordance(detail);
       return;
     }
 
@@ -694,6 +700,8 @@ export function mountArmorySurface(
         }),
       );
       container.append(detail);
+      unbindDetailOverflow?.();
+      unbindDetailOverflow = bindScrollOverflowAffordance(detail);
       return;
     }
 
@@ -721,6 +729,8 @@ export function mountArmorySurface(
     }
 
     container.append(detail);
+    unbindDetailOverflow?.();
+    unbindDetailOverflow = bindScrollOverflowAffordance(detail);
   }
 
   const shell = mountSurfaceShell(root, "armory-surface", {
@@ -764,6 +774,10 @@ export function mountArmorySurface(
 
   return {
     render,
-    destroy: () => shell.destroy(),
+    destroy() {
+      unbindGridOverflow?.();
+      unbindDetailOverflow?.();
+      shell.destroy();
+    },
   };
 }

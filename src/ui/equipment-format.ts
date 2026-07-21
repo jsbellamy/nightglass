@@ -24,8 +24,6 @@ import {
 } from "./ability-format";
 import { CLASS_LABELS } from "./snapshot-view";
 
-export { CLASS_LABELS };
-
 export const RARITY_LABELS: Record<Rarity, string> = {
   common: "Common",
   uncommon: "Uncommon",

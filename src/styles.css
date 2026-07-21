@@ -582,14 +582,6 @@ html.dock-window body {
   overflow-y: auto;
   scrollbar-width: thin;
   border-right: 1px solid rgba(255, 249, 233, 0.14);
-  background:
-    linear-gradient(rgb(17, 19, 27) 30%, rgba(17, 19, 27, 0)) center top,
-    linear-gradient(rgba(17, 19, 27, 0), rgb(17, 19, 27) 70%) center bottom,
-    radial-gradient(farthest-side at 50% 0, rgba(0, 0, 0, 0.55), transparent) center top,
-    radial-gradient(farthest-side at 50% 100%, rgba(0, 0, 0, 0.55), transparent) center bottom;
-  background-repeat: no-repeat;
-  background-size: 100% 28px, 100% 28px, 100% 10px, 100% 10px;
-  background-attachment: local, local, scroll, scroll;
 }
 
 .character-picker-chip {
@@ -653,8 +645,23 @@ html.dock-window body {
   overflow: auto;
   position: relative;
   scrollbar-width: thin;
-  /* CSS-only overflow fade: local covers cancel scroll-attached fades when
-     content fits; when it overflows, the bottom (and top) fade remains. */
+}
+
+.dock-panel:not([hidden]) {
+  position: absolute;
+  inset: 12px;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  scrollbar-width: thin;
+}
+
+/* Overflow fade only when ResizeObserver marks the region as overflowing. */
+.dock-surface[data-overflow="true"],
+.dock-panel[data-overflow="true"],
+.character-picker[data-overflow="true"],
+.armory-grid[data-overflow="true"],
+.armory-detail[data-overflow="true"] {
   background:
     linear-gradient(rgb(17, 19, 27) 30%, rgba(17, 19, 27, 0)) center top,
     linear-gradient(rgba(17, 19, 27, 0), rgb(17, 19, 27) 70%) center bottom,
@@ -666,6 +673,7 @@ html.dock-window body {
 }
 
 .dock-surface::-webkit-scrollbar,
+.dock-panel::-webkit-scrollbar,
 .character-picker::-webkit-scrollbar,
 .armory-grid::-webkit-scrollbar,
 .armory-detail::-webkit-scrollbar {
@@ -673,19 +681,12 @@ html.dock-window body {
 }
 
 .dock-surface::-webkit-scrollbar-thumb,
+.dock-panel::-webkit-scrollbar-thumb,
 .character-picker::-webkit-scrollbar-thumb,
 .armory-grid::-webkit-scrollbar-thumb,
 .armory-detail::-webkit-scrollbar-thumb {
   background: rgba(255, 249, 233, 0.28);
   border-radius: 4px;
-}
-
-.dock-panel:not([hidden]) {
-  position: absolute;
-  inset: 12px;
-  overflow: auto;
-  display: flex;
-  flex-direction: column;
 }
 
 .dock-surface-root {
@@ -1197,14 +1198,6 @@ html.dock-window body {
   grid-auto-rows: min-content;
   align-content: start;
   gap: 6px;
-  background:
-    linear-gradient(rgb(17, 19, 27) 30%, rgba(17, 19, 27, 0)) center top,
-    linear-gradient(rgba(17, 19, 27, 0), rgb(17, 19, 27) 70%) center bottom,
-    radial-gradient(farthest-side at 50% 0, rgba(0, 0, 0, 0.55), transparent) center top,
-    radial-gradient(farthest-side at 50% 100%, rgba(0, 0, 0, 0.55), transparent) center bottom;
-  background-repeat: no-repeat;
-  background-size: 100% 28px, 100% 28px, 100% 10px, 100% 10px;
-  background-attachment: local, local, scroll, scroll;
 }
 
 .armory-detail {
@@ -1216,14 +1209,6 @@ html.dock-window body {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  background:
-    linear-gradient(rgb(17, 19, 27) 30%, rgba(17, 19, 27, 0)) center top,
-    linear-gradient(rgba(17, 19, 27, 0), rgb(17, 19, 27) 70%) center bottom,
-    radial-gradient(farthest-side at 50% 0, rgba(0, 0, 0, 0.55), transparent) center top,
-    radial-gradient(farthest-side at 50% 100%, rgba(0, 0, 0, 0.55), transparent) center bottom;
-  background-repeat: no-repeat;
-  background-size: 100% 28px, 100% 28px, 100% 10px, 100% 10px;
-  background-attachment: local, local, scroll, scroll;
 }
 
 .armory-bulk-actions,

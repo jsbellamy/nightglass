@@ -105,33 +105,63 @@ test.describe("accessibility contrast floor", () => {
       "disabled control contrast",
     ).toBeGreaterThanOrEqual(4.5);
 
-    const scrollAffordance = await dock.evaluate(() => {
-      const surface = document.querySelector(".dock-surface");
-      if (!surface) {
-        return null;
-      }
-      const style = getComputedStyle(surface);
-      const attachment = style.backgroundAttachment;
-      const overflows = surface.scrollHeight > surface.clientHeight + 1;
-      return {
-        overflowY: style.overflowY,
-        scrollbarWidth: style.scrollbarWidth,
-        attachment,
-        overflows,
-        hasLocalAttachment: attachment.includes("local"),
-      };
-    });
-    expect(scrollAffordance).not.toBeNull();
-    expect(scrollAffordance!.overflowY).toMatch(/auto|scroll/);
-    expect(scrollAffordance!.hasLocalAttachment, "CSS-only overflow fade").toBe(true);
-    expect(scrollAffordance!.scrollbarWidth).toBe("thin");
-
     await focusDockTab(dock, "stage");
     const stageFits = await dock.evaluate(() => {
-      const surface = document.querySelector(".dock-surface");
-      return surface ? surface.scrollHeight <= surface.clientHeight + 1 : false;
+      const panel = document.querySelector(".dock-panel:not([hidden])");
+      if (!panel) {
+        return null;
+      }
+      const style = getComputedStyle(panel);
+      return {
+        overflowAttr: (panel as HTMLElement).dataset.overflow,
+        fits: panel.scrollHeight <= panel.clientHeight + 1,
+        overflowY: style.overflowY,
+        scrollbarWidth: style.scrollbarWidth,
+        attachment: style.backgroundAttachment,
+      };
     });
-    expect(stageFits, "short Stage panel does not overflow").toBe(true);
+    expect(stageFits).not.toBeNull();
+    expect(stageFits!.fits, "short Stage panel does not overflow").toBe(true);
+    expect(stageFits!.overflowAttr).toBe("false");
+    expect(stageFits!.overflowY).toMatch(/auto|scroll/);
+    expect(stageFits!.scrollbarWidth).toBe("thin");
+    expect(stageFits!.attachment.includes("local")).toBe(false);
+
+    await dock.evaluate(() => {
+      const panel = document.querySelector(".dock-panel:not([hidden])");
+      if (!panel) {
+        return;
+      }
+      const filler = document.createElement("div");
+      filler.id = "scroll-affordance-probe";
+      filler.style.height = "2000px";
+      filler.style.minHeight = "2000px";
+      filler.style.flexShrink = "0";
+      panel.append(filler);
+    });
+    await expect
+      .poll(async () => {
+        return dock.evaluate(() => {
+          const panel = document.querySelector(".dock-panel:not([hidden])");
+          return (panel as HTMLElement | null)?.dataset.overflow ?? null;
+        });
+      })
+      .toBe("true");
+    const overflowing = await dock.evaluate(() => {
+      const panel = document.querySelector(".dock-panel:not([hidden])");
+      if (!panel) {
+        return null;
+      }
+      const style = getComputedStyle(panel);
+      return {
+        overflowAttr: (panel as HTMLElement).dataset.overflow,
+        attachment: style.backgroundAttachment,
+        canScroll: panel.scrollHeight > panel.clientHeight + 1,
+      };
+    });
+    expect(overflowing?.overflowAttr).toBe("true");
+    expect(overflowing?.canScroll).toBe(true);
+    expect(overflowing?.attachment.includes("local")).toBe(true);
 
     await context.close();
   });
