@@ -893,7 +893,7 @@ describe("dock window port", () => {
     expect(onTileMoved).toHaveBeenCalledOnce();
   });
 
-  it("registers the throttled onTileMoved path when child attach is unsupported", async () => {
+  it("repositions the dock on tile move via coalesced onTileMoved frames", async () => {
     const dock = mockDockWindow();
     const frames = createManualScheduler();
     let moved: (() => void) | undefined;
