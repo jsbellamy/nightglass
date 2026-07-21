@@ -55,7 +55,7 @@ Each manifest entry owns **per-asset** geometry. Example:
 | --- | --- |
 | `frame_size` | `[width, height]` of the runtime canvas in logical pixels |
 | `visual_bounds` | Half-open `[left, top, right, bottom)` over **opaque** runtime pixels |
-| `foot_anchor` | Bottom-centre logical point `[frame_width / 2, frame_height]` |
+| `foot_anchor` | Bottom-centre logical point `[frame_width / 2, frame_height]` — the foot row uses the same bottom-inclusive frame height as `frame_size[1]` (e.g. height 61 → anchor y is 61). |
 
 Rules:
 

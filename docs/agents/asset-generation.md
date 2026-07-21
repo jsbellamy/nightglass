@@ -177,11 +177,35 @@ a fresh acquisition loop with shipping gates declared in step 1.
 
 Run the earliest deterministic ingest or validator immediately. Use its report as
 feedback for the next candidate. Provider-resolution prettiness is not a gate.
-For Battle Tile bodies, use `pipeline/acquire.py measure`; do not write an ad-hoc
-Python harness or measurement-only `.source.json`.
+For Battle Tile bodies, use `pipeline/acquire.py measure` with the body role; do
+not write an ad-hoc Python harness or measurement-only `.source.json`. Read the
+measurement JSON rather than the candidate image.
 
-For logical-grid art, read the ingest report rather than the candidate image.
-Equipment icon evidence commits `ingest-report.json` beside the provider raws;
+### Battle Tile bodies (flexible contract)
+
+Body `measure` reports raw gates (PNG, flat magenta border with
+`KEY_TOLERANCE = 40`, stamp-pixel handling per
+[`../body-sprite-contract.md`](../body-sprite-contract.md)), clipping against
+the raw canvas, opaque bounds after key/crop, and fit against the role ceiling
+(Party **40×68**, ordinary Opponent **30×68**, Boss **160×72**). There is no
+logical-grid recovery, pitch score, safe box, or minimum dimension gate for new
+body work.
+
+| Failure | Signal | Retry move |
+| --- | --- | --- |
+| **Overshoot** | Opaque bounds exceed the role ceiling after crop | Preserve identity; simplify silhouette and redraw with more magenta clearance; do not add grid/canvas/safe-box numbers to the prompt. |
+| **Clip-fail** | Subject touches a raw canvas edge | Preserve identity; add generous magenta clearance on the clipped side(s). |
+| **Raw-gate-fail** | Border magenta, stamp cleanup, or archived-byte checks fail | Regenerate on controlled `#ff00ff`; do not re-export or resize the candidate into acceptance. |
+| **Off-ramp** | Opaque colours far from `moonberry-16` after quantize (when reported) | Keep geometry fixed; retry with exact on-palette material names. |
+
+If multiple signals fire, fix **raw-gate-fail** first unless measurable clipping
+is also present; then **clip-fail**, **overshoot**, then **off-ramp**. A body
+candidate advances only when every raw-level gate passes and opaque bounds fit the
+role ceiling.
+
+### Equipment icons (logical grid)
+
+For Equipment icons, read `ingest-report.json` beside the provider raws;
 each entry matches the structure `pipeline/icons/ingest.py` returns from ingest
 (`recovered`, `ramp`) and carries the measurement the failure table below is keyed on:
 
@@ -193,26 +217,21 @@ each entry matches the structure `pipeline/icons/ingest.py` returns from ingest
 | Clip-fail | `recovered.bbox` touching the raw canvas edge |
 | Off-ramp | `ramp.far_fraction` / `ramp.off_ramp_reject` |
 
-Classify the reject from those values. Do not open the candidate PNG to confirm a
-number the report already states. Classify each reject as exactly one primary
-failure, then retry **prompt-side** with that class's move. Keep render resolution
-constant; never resize a failed candidate into an accepted raw.
+Classify each icon reject as exactly one primary failure, then retry
+**prompt-side** with that class's move. Keep render resolution constant; never
+resize a failed candidate into an accepted raw.
 
 | Failure | Signal | Retry move |
 | --- | --- | --- |
-| **Overshoot** | Recovered grid wider/taller than the acceptance canvas, or above a safe box that the owning contract explicitly promotes to an advancement gate | Preserve identity; shrink silhouette into the safe box; restate magenta clearance on every edge. Template: *"The previous candidate recovered as `<W>×<H>`. Preserve its identity and pose, simplify its detail, and redraw the complete silhouette inside the contract's safe box with clearance on every edge."* |
+| **Overshoot** | Recovered grid wider/taller than the acceptance canvas | Preserve identity; shrink silhouette; restate magenta clearance on every edge. |
 | **Underfill** | Recovered long axis below the icon gate (`MIN_LONG_AXIS = 20` in `pipeline/icons/constants.py`; **preference** 26–30 on a ~32-cell grid) | Regenerate larger in frame, or exaggerate the identity feature. Do not nearest-neighbour upscale a soft generation into an accepted raw. |
-| **Pitch-fail** | X or Y pitch confidence below the acquisition contract gate (soft/anti-aliased blocks, uneven cell size) | Strengthen the grid shell; attach an already-accepted grid-faithful raw as **style reference**; demand uniform square blocks and aligned seams. Do not only ask for "chunkier" art. |
-| **Clip-fail** | Subject touches a raw canvas edge (clipping gate) | Preserve identity; add at least two magenta cells of clearance on the clipped side(s); keep the safe box. |
-| **Off-ramp** | More than ~20% of opaque subject cells are far from every `moonberry-16` swatch (RGB distance), or the Stage-2 preview shows a whole material plane silently recolored. Authoritative Equipment icon threshold: `OFF_RAMP_REJECT` in `pipeline/icons/constants.py` / `docs/icon-contract.md` (retuned in #131 from the provisional 15%). | Keep geometry fixed; retry with **exact on-palette material names** (mint/sage stave, berry vine, cream string — never "brown wood"). The on-palette check after quantize cannot catch this by construction. |
+| **Pitch-fail** | X or Y pitch confidence below the icon contract gate | Strengthen the icon grid shell; attach an already-accepted grid-faithful raw as **style reference**; demand uniform square blocks. |
+| **Clip-fail** | Subject touches a raw canvas edge | Preserve identity; add at least two magenta cells of clearance on the clipped side(s). |
+| **Off-ramp** | More than ~20% of opaque subject cells are far from every `moonberry-16` swatch, or the Stage-2 preview shows a whole material plane silently recolored. Threshold: `OFF_RAMP_REJECT` in `pipeline/icons/constants.py` / `docs/icon-contract.md`. | Keep geometry fixed; retry with **exact on-palette material names** (mint/sage stave, berry vine, cream string — never "brown wood"). |
 
-If two signals fire, fix **raw-gate-fail** first unless measurable clipping is
-also present; then fix **clip-fail**, **overshoot**, **pitch-fail**,
-**off-ramp**, and **underfill** in that order. Prompt safe boxes remain tuning
-targets unless the owning contract explicitly makes one an advancement gate;
-`measure` reports advisory exceedance without rejecting medium/small candidates.
-A candidate advances only when its recovered grid fits and every raw-level gate
-passes.
+For icons, if two signals fire, fix **raw-gate-fail** first unless measurable
+clipping is present; then **clip-fail**, **overshoot**, **pitch-fail**,
+**off-ramp**, and **underfill** in that order.
 
 ### Autonomous candidate decisions
 
@@ -223,17 +242,16 @@ already defines the answer.
 
 For every candidate, record one row before generating the next:
 
-| Candidate | Raw gates | Clipped sides | Recovered grid | Pitch X/Y | Primary result | Next action |
+| Candidate | Asset class | Raw gates | Clipped sides | Measurement | Primary result | Next action |
 | --- | --- | --- | --- | --- | --- | --- |
-| `<name>` | pass/fail | none or sides | `W×H` or failure | scores | one class | advance/retry |
+| `<name>` | body / icon | pass/fail | none or sides | opaque `W×H` vs ceiling, or icon grid | one class | advance/retry |
 
 Apply this state machine:
 
-1. **Reject and retry** when any raw gate fails, any side is clipped, either
-   pitch score is below its gate, the recovered grid exceeds the runtime canvas,
-   or it exceeds a stricter advancement envelope declared by the owning
-   contract. Body sprites use the role opaque ceilings in
-   [`../body-sprite-contract.md`](../body-sprite-contract.md) as hard gates.
+1. **Reject and retry** when any raw gate fails, any side is clipped, or the
+   measurement exceeds the owning contract gate (body: role opaque ceiling in
+   [`../body-sprite-contract.md`](../body-sprite-contract.md); icon: recovered
+   grid vs acceptance canvas and pitch scores).
 2. Choose exactly one primary failure using the priority above. Preserve the
    subject identity and change only the prompt clauses needed by that retry move.
 3. **Advance to visual review** only after every deterministic advancement gate
@@ -268,7 +286,8 @@ For non-grid art, use the equivalent measurable failure—dimensions, crop,
 contrast, alpha coverage, palette count, or layout occupancy—in the retry.
 
 This step is complete when the accepted candidate has a saved validator report
-naming recovered grid (or equivalent) and every raw-level gate result.
+naming opaque bounds or recovered grid (as appropriate) and every raw-level gate
+result.
 
 ## 5. Build and validate
 
