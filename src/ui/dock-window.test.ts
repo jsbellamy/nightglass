@@ -146,6 +146,16 @@ describe("dock window port", () => {
     expect(source).toMatch(/scaleFactor/);
   });
 
+  it("manual-check: dock-geometry-not-persisted — window-state restores tile position only and ignores the dock", () => {
+    const source = readFileSync(
+      join(dirname(fileURLToPath(import.meta.url)), "..", "..", "src-tauri", "src", "lib.rs"),
+      "utf8",
+    );
+    expect(source).toMatch(/with_state_flags\(StateFlags::POSITION\)/);
+    expect(source).toMatch(/with_denylist\(&\["dock"\]\)/);
+    expect(source).not.toMatch(/tauri_plugin_window_state::Builder::default\(\)\.build\(\)/);
+  });
+
   it("does not mark the Dock open when ready rejects on a new window", async () => {
     const dock = mockDockWindow({
       ready: () => Promise.reject(new Error("tauri://error")),
