@@ -187,7 +187,7 @@ describe("Stage surface", () => {
     surface.destroy();
   });
 
-  it("keeps the same confirm Yes node and focus across snapshot re-renders while pending Stage is unchanged", () => {
+  it("keeps Stage confirm open with keyboard focus across snapshot pumps while pending Stage is unchanged", () => {
     const root = document.createElement("div");
     document.body.append(root);
     const engine = createEngine(content, undefined, LOOT_SEED);
@@ -212,7 +212,7 @@ describe("Stage surface", () => {
     root.remove();
   });
 
-  it("remounts confirm when pending Stage id changes", () => {
+  it("updates Stage confirm when the player selects a different unlocked Stage", () => {
     const root = document.createElement("div");
     const saved = cloneSnapshot(createEngine(content, undefined, LOOT_SEED).snapshot());
     saved.progression.unlockedStage = 2;
@@ -228,6 +228,29 @@ describe("Stage surface", () => {
     expect(yesStage2).not.toBeNull();
     expect(yesStage2).not.toBe(yesStage1);
     expect(root.querySelector(".stage-confirm")?.getAttribute("data-pending-stage")).toBe("2");
+
+    surface.destroy();
+  });
+
+  it("still confirms Stage selection after a snapshot pump while confirm is open", () => {
+    const root = document.createElement("div");
+    const commands: unknown[] = [];
+    const engine = createEngine(content, undefined, LOOT_SEED);
+    const surface = mountStageSurface(root, {
+      content,
+      onCommand: (command) => {
+        commands.push(command);
+      },
+    });
+
+    surface.render(engine.snapshot());
+    root.querySelector<HTMLButtonElement>('[data-stage-id="1"]')?.click();
+    engine.advanceBy(1);
+    surface.render(engine.snapshot());
+    root.querySelector<HTMLButtonElement>('[data-stage-confirm="yes"]')?.click();
+
+    expect(commands).toEqual([{ cmd: "selectStage", args: [1] }]);
+    expect(root.querySelector(".stage-confirm")).toBeNull();
 
     surface.destroy();
   });
