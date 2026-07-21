@@ -1,12 +1,14 @@
 import type { ReadonlySnapshot } from "../core/snapshot";
-import type { Content } from "../core/types";
+import type { ClassId, Content } from "../core/types";
 import { mountArmorySurface } from "./armory-surface";
+import { mountCharacterPicker } from "./character-picker";
 import { mountLoadoutSurface } from "./loadout-surface";
 import { mountPartySurface } from "./party-surface";
 import { mountStageSurface } from "./stage-surface";
 import { mountTalentsSurface } from "./talents-surface";
 import type { TileCommand } from "./bus";
 import { EMPTY_ENGINE_LEGALITY, type EngineLegalityView } from "./engine-legality";
+import { rosterClassIds } from "./snapshot-view";
 import type { MountedSurface } from "./surface-shell";
 
 export type DockTabId = "party" | "loadout" | "talents" | "armory" | "stage";
@@ -14,6 +16,8 @@ export type DockTabId = "party" | "loadout" | "talents" | "armory" | "stage";
 export interface DockSurfaceMountOptions {
   content: Content;
   onCommand(command: TileCommand): void;
+  /** The Character the picker has selected. Read at render time, not mount time. */
+  getSelectedClassId(): ClassId | null;
 }
 
 export interface DockSurfaceEntry {
@@ -25,8 +29,8 @@ export interface DockSurfaceEntry {
 export const DOCK_SURFACES: DockSurfaceEntry[] = [
   { id: "party", label: "Party", mount: mountPartySurface },
   { id: "loadout", label: "Loadout", mount: mountLoadoutSurface },
-  { id: "talents", label: "Talents", mount: mountTalentsSurface as DockSurfaceEntry["mount"] },
-  { id: "armory", label: "Armory", mount: mountArmorySurface as DockSurfaceEntry["mount"] },
+  { id: "talents", label: "Talents", mount: mountTalentsSurface as unknown as DockSurfaceEntry["mount"] },
+  { id: "armory", label: "Armory", mount: mountArmorySurface as unknown as DockSurfaceEntry["mount"] },
   { id: "stage", label: "Stage", mount: mountStageSurface },
 ];
 
@@ -59,6 +63,7 @@ export function mountManagementDock(
   let heldSnapshot: ReadonlySnapshot | null = null;
   let heldLegality: EngineLegalityView = EMPTY_ENGINE_LEGALITY;
   let hasHeldState = false;
+  let selectedClassId: ClassId | undefined;
 
   root.classList.add("dock-shell", "management-dock");
   root.setAttribute("role", "dialog");
@@ -80,6 +85,9 @@ export function mountManagementDock(
 
   header.append(tabList, closeButton);
 
+  const body = document.createElement("div");
+  body.className = "dock-body";
+
   const surface = document.createElement("section");
   surface.className = "dock-surface";
   surface.setAttribute("role", "tabpanel");
@@ -95,7 +103,20 @@ export function mountManagementDock(
   const mountOptions: DockSurfaceMountOptions = {
     content: options.content,
     onCommand: (command) => options.onCommand?.(command),
+    getSelectedClassId: () => selectedClassId ?? null,
   };
+
+  const characterPicker = mountCharacterPicker(body, {
+    content: options.content,
+    onSelect(classId) {
+      selectedClassId = classId;
+      characterPicker.render(heldSnapshot, classId);
+      if (hasHeldState) {
+        renderSurface(activeTab);
+      }
+    },
+  });
+  body.append(surface);
 
   for (const entry of DOCK_SURFACES) {
     const tabButton = document.createElement("button");
@@ -126,7 +147,7 @@ export function mountManagementDock(
     surface.append(panel);
   }
 
-  root.append(header, surface);
+  root.append(header, body);
 
   function syncStageLabel(): void {
     const stageLabel = heldSnapshot?.attempt
@@ -135,6 +156,17 @@ export function mountManagementDock(
         }`
       : "No Attempt";
     root.dataset["stageLabel"] = stageLabel;
+  }
+
+  function syncSelectedClassId(snapshot: ReadonlySnapshot | null): ClassId | undefined {
+    if (!snapshot) {
+      return selectedClassId;
+    }
+    const roster = rosterClassIds(snapshot);
+    if (selectedClassId === undefined || !roster.includes(selectedClassId)) {
+      selectedClassId = snapshot.progression.party[0];
+    }
+    return selectedClassId;
   }
 
   function renderSurface(id: DockTabId): void {
@@ -238,6 +270,13 @@ export function mountManagementDock(
       heldLegality = legality;
       hasHeldState = true;
       syncStageLabel();
+      const selected = syncSelectedClassId(snapshot);
+      if (!snapshot || selected === undefined) {
+        // selected is ignored on the empty path; ClassId is required by the picker API.
+        characterPicker.render(null, selected ?? "knight");
+      } else {
+        characterPicker.render(snapshot, selected);
+      }
       renderSurface(activeTab);
     },
     setOpen(open) {
@@ -245,6 +284,7 @@ export function mountManagementDock(
       root.setAttribute("aria-hidden", open ? "false" : "true");
     },
     destroy() {
+      characterPicker.destroy();
       for (const mounted of mountedSurfaces.values()) {
         mounted.destroy();
       }

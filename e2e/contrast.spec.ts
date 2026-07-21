@@ -16,6 +16,13 @@ const DOCK_PRIMARY_TEXT: { tab: string; selector: string }[] = [
   { tab: "stage", selector: ".attempt-position" },
 ];
 
+const CHARACTER_PICKER_TEXT = [
+  '.character-picker-chip[aria-selected="true"] .character-chip-name',
+  '.character-picker-chip[aria-selected="true"] .character-chip-level',
+  '.character-picker-chip[aria-selected="false"] .character-chip-name',
+  '.character-picker-chip[aria-selected="false"] .character-chip-level',
+] as const;
+
 test.describe("accessibility contrast floor", () => {
   test("evidence: aa-contrast — status line and all five Dock surfaces meet WCAG AA against resolved glass backgrounds", async ({
     browser,
@@ -38,6 +45,14 @@ test.describe("accessibility contrast floor", () => {
       expect(sample, `sample for ${tab}`).not.toBeNull();
       const ratio = assertAaContrast(sample!);
       expect(ratio, `contrast on ${tab}`).toBeGreaterThanOrEqual(4.5);
+    }
+
+    await focusDockTab(dock, "party");
+    for (const selector of CHARACTER_PICKER_TEXT) {
+      const sample = await readTextContrastSample(dock, selector);
+      expect(sample, `picker sample ${selector}`).not.toBeNull();
+      const ratio = assertAaContrast(sample!);
+      expect(ratio, `picker contrast ${selector}`).toBeGreaterThanOrEqual(4.5);
     }
 
     await context.close();

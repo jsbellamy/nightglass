@@ -220,6 +220,132 @@ describe("Management Dock active-surface rendering", () => {
   });
 });
 
+describe("Management Dock Character picker", () => {
+  it("renders the picker as a sibling of .dock-surface on every tab", () => {
+    const root = document.createElement("main");
+    const dock = mountDock(root);
+    const engine = createEngine(fixtureContent, undefined, 3);
+    dock.render(engine.snapshot());
+
+    const picker = root.querySelector(".character-picker");
+    const surface = root.querySelector(".dock-surface");
+    expect(picker).not.toBeNull();
+    expect(surface).not.toBeNull();
+    expect(picker?.parentElement).toBe(root.querySelector(".dock-body"));
+    expect(surface?.parentElement).toBe(picker?.parentElement);
+    expect(root.querySelector(".dock-panel .character-picker")).toBeNull();
+
+    for (const tab of DOCK_TABS) {
+      root.querySelector<HTMLButtonElement>(`[data-dock-tab="${tab.id}"]`)?.click();
+      expect(root.querySelector(".character-picker")).toBe(picker);
+    }
+
+    dock.destroy();
+  });
+
+  it("selects progression.party[0] on the first Snapshot and updates aria-selected on chip activation", () => {
+    const root = document.createElement("main");
+    const onCommand = vi.fn();
+    const dock = mountDock(root, { onCommand });
+    const engine = createEngine(fixtureContent, undefined, 3);
+    const snapshot = engine.snapshot();
+    const partyFront = snapshot.progression.party[0]!;
+    const other = snapshot.progression.party[1]!;
+
+    dock.render(snapshot);
+
+    const chips = [...root.querySelectorAll<HTMLElement>("[data-character-chip]")];
+    expect(
+      chips.find((chip) => chip.dataset["characterChip"] === partyFront)?.getAttribute(
+        "aria-selected",
+      ),
+    ).toBe("true");
+    expect(
+      chips
+        .filter((chip) => chip.dataset["characterChip"] !== partyFront)
+        .every((chip) => chip.getAttribute("aria-selected") === "false"),
+    ).toBe(true);
+
+    root.querySelector<HTMLElement>(`[data-character-chip="${other}"]`)?.click();
+    expect(
+      root
+        .querySelector(`[data-character-chip="${other}"]`)
+        ?.getAttribute("aria-selected"),
+    ).toBe("true");
+    expect(
+      root
+        .querySelector(`[data-character-chip="${partyFront}"]`)
+        ?.getAttribute("aria-selected"),
+    ).toBe("false");
+    expect(root.querySelector(".party-surface")?.childElementCount).toBeGreaterThan(0);
+    expect(onCommand).not.toHaveBeenCalled();
+
+    const third = snapshot.progression.party[2]!;
+    const thirdChip = root.querySelector<HTMLElement>(`[data-character-chip="${third}"]`);
+    thirdChip?.focus();
+    thirdChip?.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    expect(
+      root.querySelector(`[data-character-chip="${third}"]`)?.getAttribute("aria-selected"),
+    ).toBe("true");
+    expect(onCommand).not.toHaveBeenCalled();
+
+    dock.destroy();
+  });
+
+  it("keeps picker selection across tab switches without remounting", () => {
+    const root = document.createElement("main");
+    const dock = mountDock(root);
+    const engine = createEngine(fixtureContent, undefined, 3);
+    const snapshot = engine.snapshot();
+    const target = snapshot.progression.party[1]!;
+
+    dock.render(snapshot);
+    const picker = root.querySelector(".character-picker");
+    root.querySelector<HTMLElement>(`[data-character-chip="${target}"]`)?.click();
+
+    root.querySelector<HTMLButtonElement>('[data-dock-tab="loadout"]')?.click();
+    root.querySelector<HTMLButtonElement>('[data-dock-tab="party"]')?.click();
+
+    expect(root.querySelector(".character-picker")).toBe(picker);
+    expect(
+      root
+        .querySelector(`[data-character-chip="${target}"]`)
+        ?.getAttribute("aria-selected"),
+    ).toBe("true");
+
+    dock.destroy();
+  });
+
+  it("destroys the picker with the dock and does not persist selection across remount", () => {
+    const root = document.createElement("main");
+    const engine = createEngine(fixtureContent, undefined, 3);
+    const snapshot = engine.snapshot();
+    const partyFront = snapshot.progression.party[0]!;
+    const other = snapshot.progression.party[1]!;
+
+    const first = mountDock(root);
+    first.render(snapshot);
+    root.querySelector<HTMLElement>(`[data-character-chip="${other}"]`)?.click();
+    first.destroy();
+    expect(root.querySelector(".character-picker")).toBeNull();
+
+    const second = mountDock(root);
+    second.render(snapshot);
+    expect(
+      root
+        .querySelector(`[data-character-chip="${partyFront}"]`)
+        ?.getAttribute("aria-selected"),
+    ).toBe("true");
+    expect(
+      root
+        .querySelector(`[data-character-chip="${other}"]`)
+        ?.getAttribute("aria-selected"),
+    ).toBe("false");
+
+    second.destroy();
+  });
+});
+
 describe("Management Dock source boundary", () => {
   it("does not import the Engine", () => {
     const source = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "dock.ts"), "utf8");

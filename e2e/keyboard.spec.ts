@@ -31,6 +31,7 @@ test.describe("accessibility keyboard floor", () => {
     const dock = await attachDockPage(context);
 
     await focusDockTab(dock, "party");
+    await assertFocusRingVisible(dock, ".character-picker-chip[aria-selected=\"true\"]");
     await assertFocusRingVisible(dock, '[data-formation-action="move-down"][data-slot="0"]');
     await dock.locator('[data-formation-action="move-down"][data-slot="0"]').focus();
     await dock.keyboard.press("Enter");
