@@ -8,7 +8,7 @@ import type { CombatantState, ReadonlySnapshot } from "../core/snapshot";
 import type { Content, StageDef } from "../core/types";
 import { createPresentation, type Presentation } from "./presentation";
 import { createSfx, type SfxController } from "./sfx";
-import { footAnchorXForCombatant } from "./battle-tile-layout";
+import { footAnchorXForCombatant } from "./battle-tile-anchors";
 import { resolveSprite } from "./sprites";
 
 export {
