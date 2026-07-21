@@ -7,8 +7,11 @@ import { TILE_HEIGHT, TILE_WIDTH } from "./battle-tile-layout";
 import {
   createCachedDockGeometryDeps,
   createDockWindowPort,
+  createDockWindowWithOptionalParent,
+  isMacOSPlatform,
   physicalRectToLogical,
   type DockWebviewWindow,
+  type DockWebviewWindowHandle,
 } from "./dock-window";
 
 function createManualScheduler() {
@@ -502,5 +505,260 @@ describe("dock window port", () => {
         2,
       ),
     );
+  });
+
+  it("does not register onTileMoved when the dock is attached as a child window", async () => {
+    const dock = mockDockWindow();
+    const onTileMoved = vi.fn(() => () => {});
+    const port = createDockWindowPort({
+      isTauri: true,
+      dockUrl,
+      getTileOuterPosition: async () => tile,
+      getMonitorForTile: async () => monitor,
+      getDockWindow: async () => dock,
+      isDockChildAttached: () => true,
+      onTileMoved,
+    });
+
+    await port.open();
+
+    expect(onTileMoved).not.toHaveBeenCalled();
+    expect(dock.callOrder.filter((entry) => entry === "show")).toHaveLength(1);
+  });
+
+  it("registers the throttled onTileMoved path when child attach is unsupported", async () => {
+    const dock = mockDockWindow();
+    const frames = createManualScheduler();
+    let moved: (() => void) | undefined;
+    const onTileMoved = vi.fn((listener: () => void) => {
+      moved = listener;
+      return () => {};
+    });
+    const port = createDockWindowPort({
+      isTauri: true,
+      dockUrl,
+      getTileOuterPosition: async () => tile,
+      getMonitorForTile: async () => monitor,
+      getDockWindow: async () => dock,
+      isDockChildAttached: () => false,
+      scheduleFrame: frames.scheduleFrame,
+      onTileMoved,
+    });
+
+    await port.open();
+    expect(onTileMoved).toHaveBeenCalledOnce();
+    const positionsBefore = dock.callOrder.filter((entry) => entry.startsWith("setPosition")).length;
+    moved?.();
+    await frames.flushOne();
+    expect(
+      dock.callOrder.filter((entry) => entry.startsWith("setPosition")).length,
+    ).toBe(positionsBefore + 1);
+  });
+
+  it("reposition and syncPositionFromTile still compute from dockRect when attached", async () => {
+    const dock = mockDockWindow();
+    const port = createDockWindowPort({
+      isTauri: true,
+      dockUrl,
+      getTileOuterPosition: async () => tile,
+      getMonitorForTile: async () => monitor,
+      getDockWindow: async () => dock,
+      isDockChildAttached: () => true,
+    });
+
+    await port.open();
+    dock.callOrder.length = 0;
+    const movedTile = { ...tile, x: 400 };
+    await port.reposition({ tile: movedTile, monitor });
+    const expected = dockRect(movedTile, monitor);
+    expect(dock.callOrder).toEqual([`setPosition:${expected.x},${expected.y}`]);
+
+    dock.callOrder.length = 0;
+    await port.syncPositionFromTile();
+    const synced = dockRect(tile, monitor);
+    expect(dock.callOrder).toEqual([`setPosition:${synced.x},${synced.y}`]);
+  });
+
+  it("resets dockChildAttachSupported on destroy so a recreated dock re-probes", async () => {
+    const dock = mockDockWindow();
+    let dockChildAttachSupported = true;
+    const onDestroy = vi.fn(() => {
+      dockChildAttachSupported = false;
+    });
+    const onTileMoved = vi.fn(() => () => {});
+    const port = createDockWindowPort({
+      isTauri: true,
+      dockUrl,
+      getTileOuterPosition: async () => tile,
+      getMonitorForTile: async () => monitor,
+      getDockWindow: async () => dock,
+      isDockChildAttached: () => dockChildAttachSupported,
+      onDestroy,
+      onTileMoved,
+    });
+
+    await port.open();
+    expect(onTileMoved).not.toHaveBeenCalled();
+
+    port.destroy();
+    expect(onDestroy).toHaveBeenCalledOnce();
+    expect(dockChildAttachSupported).toBe(false);
+
+    await port.open();
+    expect(onTileMoved).toHaveBeenCalledOnce();
+  });
+
+  it("never calls Webview.reparent in the dock window adapter", () => {
+    const source = readFileSync(
+      join(dirname(fileURLToPath(import.meta.url)), "dock-window.ts"),
+      "utf8",
+    );
+    expect(source).not.toMatch(/reparent/);
+  });
+});
+
+describe("isMacOSPlatform", () => {
+  it("detects macOS from platform or userAgent without a Tauri OS plugin", () => {
+    expect(isMacOSPlatform({ platform: "MacIntel", userAgent: "Mozilla/5.0" })).toBe(true);
+    expect(
+      isMacOSPlatform({
+        platform: "Win32",
+        userAgent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)",
+      }),
+    ).toBe(true);
+    expect(isMacOSPlatform({ platform: "Win32", userAgent: "Windows NT 10.0" })).toBe(false);
+    expect(isMacOSPlatform({ platform: "Linux x86_64", userAgent: "X11; Linux" })).toBe(false);
+  });
+});
+
+describe("createDockWindowWithOptionalParent", () => {
+  class FakeLogicalPosition {
+    constructor(
+      readonly x: number,
+      readonly y: number,
+    ) {}
+  }
+
+  function fakeHandle(options: {
+    emit?: "created" | "error";
+    createdOptions?: Record<string, unknown>;
+  }): DockWebviewWindowHandle & { options: Record<string, unknown> } {
+    const listeners = new Map<string, Array<() => void>>();
+    const handle: DockWebviewWindowHandle & { options: Record<string, unknown> } = {
+      options: options.createdOptions ?? {},
+      show: async () => {},
+      hide: async () => {},
+      setPosition: async () => {},
+      once(event, handler) {
+        const list = listeners.get(event) ?? [];
+        list.push(handler);
+        listeners.set(event, list);
+        if (options.emit === "created" && event === "tauri://created") {
+          queueMicrotask(() => handler());
+        }
+        if (options.emit === "error" && event === "tauri://error") {
+          queueMicrotask(() => handler());
+        }
+      },
+    };
+    return handle;
+  }
+
+  it("passes parent: \"tile\" on macOS and omits it otherwise", async () => {
+    const created: Array<Record<string, unknown>> = [];
+    const mac = await createDockWindowWithOptionalParent("http://test/?window=dock", {
+      isMacOS: () => true,
+      LogicalPosition: FakeLogicalPosition,
+      createWebviewWindow: (_label, opts) => {
+        created.push(opts);
+        return fakeHandle({ emit: "created", createdOptions: opts });
+      },
+    });
+    expect(created[0]).toMatchObject({ parent: "tile" });
+    expect(mac.childAttached).toBe(true);
+
+    created.length = 0;
+    const other = await createDockWindowWithOptionalParent("http://test/?window=dock", {
+      isMacOS: () => false,
+      LogicalPosition: FakeLogicalPosition,
+      createWebviewWindow: (_label, opts) => {
+        created.push(opts);
+        return fakeHandle({ emit: "created", createdOptions: opts });
+      },
+    });
+    expect(created[0]).not.toHaveProperty("parent");
+    expect(other.childAttached).toBe(false);
+  });
+
+  it("recreates without parent when creation with parent rejects, and reports unattached", async () => {
+    const created: Array<Record<string, unknown>> = [];
+    let attempts = 0;
+    const result = await createDockWindowWithOptionalParent("http://test/?window=dock", {
+      isMacOS: () => true,
+      LogicalPosition: FakeLogicalPosition,
+      createWebviewWindow: (_label, opts) => {
+        attempts += 1;
+        created.push(opts);
+        if (attempts === 1) {
+          return fakeHandle({ emit: "error", createdOptions: opts });
+        }
+        return fakeHandle({ emit: "created", createdOptions: opts });
+      },
+    });
+
+    expect(attempts).toBe(2);
+    expect(created[0]).toMatchObject({ parent: "tile" });
+    expect(created[1]).not.toHaveProperty("parent");
+    expect(result.childAttached).toBe(false);
+
+    const dock = result.window;
+    const callOrder: string[] = [];
+    const originalShow = dock.show.bind(dock);
+    dock.show = async () => {
+      callOrder.push("show");
+      await originalShow();
+    };
+    await dock.ready();
+    await dock.setPosition(1, 2);
+    await dock.show();
+    expect(callOrder).toEqual(["show"]);
+  });
+
+  it("opens successfully with the throttled listener after a parent-create probe failure", async () => {
+    let dockChildAttachSupported = false;
+    const onTileMoved = vi.fn(() => () => {});
+    const port = createDockWindowPort({
+      isTauri: true,
+      dockUrl: "http://test/?window=dock",
+      getTileOuterPosition: async () => ({ x: 220, y: 732, width: 480, height: 112 }),
+      getMonitorForTile: async () => ({ x: 0, y: 0, width: 1920, height: 1080 }),
+      isDockChildAttached: () => dockChildAttachSupported,
+      onDestroy() {
+        dockChildAttachSupported = false;
+      },
+      onTileMoved,
+      async createDockWindow(url) {
+        dockChildAttachSupported = false;
+        let attempts = 0;
+        const result = await createDockWindowWithOptionalParent(url, {
+          isMacOS: () => true,
+          LogicalPosition: FakeLogicalPosition,
+          createWebviewWindow: (_label, opts) => {
+            attempts += 1;
+            if (attempts === 1) {
+              return fakeHandle({ emit: "error", createdOptions: opts });
+            }
+            return fakeHandle({ emit: "created", createdOptions: opts });
+          },
+        });
+        dockChildAttachSupported = result.childAttached;
+        return result.window;
+      },
+    });
+
+    await port.open();
+    expect(port.isOpen()).toBe(true);
+    expect(dockChildAttachSupported).toBe(false);
+    expect(onTileMoved).toHaveBeenCalledOnce();
   });
 });

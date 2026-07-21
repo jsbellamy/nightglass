@@ -1,7 +1,6 @@
 import { dockRect, type Rect } from "./dock-geometry";
 import { DOCK_HEIGHT, DOCK_WIDTH } from "./dock-geometry";
 import { TILE_HEIGHT, TILE_WIDTH } from "./battle-tile-layout";
-import type { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 
 export const DOCK_WINDOW_LABEL = "dock";
 
@@ -30,6 +29,10 @@ export interface DockWindowDeps {
   getDockWindow?: () => Promise<DockWebviewWindow | null>;
   createDockWindow?: (url: string) => Promise<DockWebviewWindow>;
   onTileMoved?: (listener: () => void) => () => void;
+  /** When true, compositor follow owns tile tracking — skip onTileMoved. */
+  isDockChildAttached?: () => boolean;
+  /** Called from destroy() so production can reset dockChildAttachSupported. */
+  onDestroy?: () => void;
   /** Frame scheduler, injectable so tests can step it. Defaults to requestAnimationFrame. */
   scheduleFrame?: (callback: () => void | Promise<void>) => void;
   /** Clears cached scale-factor / monitor reads. Called from close() and destroy(). */
@@ -238,7 +241,8 @@ export function createDockWindowPort(deps: DockWindowDeps = {}): DockWindowPort 
         await windowRef.show();
       }
       open = true;
-      if (!moveCleanup && deps.onTileMoved) {
+      const childAttached = deps.isDockChildAttached?.() ?? false;
+      if (!moveCleanup && deps.onTileMoved && !childAttached) {
         moveCleanup = deps.onTileMoved(() => {
           onTileMoved();
         });
@@ -284,6 +288,7 @@ export function createDockWindowPort(deps: DockWindowDeps = {}): DockWindowPort 
       pendingMove = false;
       frameScheduled = false;
       deps.invalidateGeometryCache?.();
+      deps.onDestroy?.();
     },
   };
 }
@@ -292,13 +297,41 @@ export function isTauriRuntime(): boolean {
   return typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
 }
 
+export function isMacOSPlatform(
+  nav: Pick<Navigator, "platform" | "userAgent"> | undefined =
+    typeof navigator !== "undefined" ? navigator : undefined,
+): boolean {
+  if (!nav) {
+    return false;
+  }
+  return /Mac/i.test(nav.platform) || /Mac OS|Macintosh/i.test(nav.userAgent);
+}
+
 export const DOCK_WINDOW_SIZE = {
   width: DOCK_WIDTH,
   height: DOCK_HEIGHT,
 } as const;
 
+export interface DockWebviewWindowHandle {
+  show(): Promise<void>;
+  hide(): Promise<void>;
+  setPosition(position: unknown): Promise<void>;
+  once(event: string, handler: () => void): void;
+}
+
+const DOCK_WEBVIEW_BASE_OPTIONS = {
+  width: DOCK_WIDTH,
+  height: DOCK_HEIGHT,
+  decorations: false,
+  transparent: true,
+  alwaysOnTop: true,
+  resizable: false,
+  visible: false,
+  focus: true,
+} as const;
+
 function wrapDockWebviewWindow(
-  windowRef: Pick<WebviewWindow, "show" | "hide" | "setPosition" | "once">,
+  windowRef: DockWebviewWindowHandle,
   LogicalPosition: new (x: number, y: number) => object,
   options: { awaitCreated: boolean },
 ): DockWebviewWindow {
@@ -306,9 +339,7 @@ function wrapDockWebviewWindow(
     show: () => windowRef.show(),
     hide: () => windowRef.hide(),
     setPosition: async (x, y) => {
-      await windowRef.setPosition(
-        new LogicalPosition(x, y) as Parameters<WebviewWindow["setPosition"]>[0],
-      );
+      await windowRef.setPosition(new LogicalPosition(x, y));
     },
     ready: () => {
       if (!options.awaitCreated) {
@@ -326,10 +357,63 @@ function wrapDockWebviewWindow(
   };
 }
 
-export function createProductionDockWindowPort(): DockWindowPort {
+function settleCreatedWindow(
+  windowRef: DockWebviewWindow,
+): DockWebviewWindow {
+  return {
+    show: () => windowRef.show(),
+    hide: () => windowRef.hide(),
+    setPosition: (x, y) => windowRef.setPosition(x, y),
+    ready: () => Promise.resolve(),
+  };
+}
+
+export async function createDockWindowWithOptionalParent(
+  url: string,
+  deps: {
+    isMacOS: () => boolean;
+    createWebviewWindow: (label: string, options: Record<string, unknown>) => DockWebviewWindowHandle;
+    LogicalPosition: new (x: number, y: number) => object;
+  },
+): Promise<{ window: DockWebviewWindow; childAttached: boolean }> {
+  const baseOptions: Record<string, unknown> = {
+    ...DOCK_WEBVIEW_BASE_OPTIONS,
+    url,
+  };
+
+  async function createWithoutParent(): Promise<DockWebviewWindow> {
+    const dock = deps.createWebviewWindow(DOCK_WINDOW_LABEL, { ...baseOptions });
+    const wrapped = wrapDockWebviewWindow(dock, deps.LogicalPosition, { awaitCreated: true });
+    await wrapped.ready();
+    return settleCreatedWindow(wrapped);
+  }
+
+  if (!deps.isMacOS()) {
+    return { window: await createWithoutParent(), childAttached: false };
+  }
+
+  try {
+    const dock = deps.createWebviewWindow(DOCK_WINDOW_LABEL, {
+      ...baseOptions,
+      parent: "tile",
+    });
+    const wrapped = wrapDockWebviewWindow(dock, deps.LogicalPosition, { awaitCreated: true });
+    await wrapped.ready();
+    return { window: settleCreatedWindow(wrapped), childAttached: true };
+  } catch {
+    return { window: await createWithoutParent(), childAttached: false };
+  }
+}
+
+export function createProductionDockWindowPort(
+  options: { isMacOS?: () => boolean } = {},
+): DockWindowPort {
   if (!isTauriRuntime()) {
     return createDockWindowPort();
   }
+
+  const isMacOS = options.isMacOS ?? (() => isMacOSPlatform());
+  let dockChildAttachSupported = false;
 
   const geometry = createCachedDockGeometryDeps({
     async scaleFactor() {
@@ -360,6 +444,10 @@ export function createProductionDockWindowPort(): DockWindowPort {
     getTileOuterPosition: geometry.getTileOuterPosition,
     getMonitorForTile: geometry.getMonitorForTile,
     invalidateGeometryCache: geometry.invalidateGeometryCache,
+    isDockChildAttached: () => dockChildAttachSupported,
+    onDestroy() {
+      dockChildAttachSupported = false;
+    },
     async getDockWindow() {
       const { WebviewWindow } = await import("@tauri-apps/api/webviewWindow");
       const { LogicalPosition } = await import("@tauri-apps/api/dpi");
@@ -370,20 +458,17 @@ export function createProductionDockWindowPort(): DockWindowPort {
       return wrapDockWebviewWindow(existing, LogicalPosition, { awaitCreated: false });
     },
     async createDockWindow(url) {
+      dockChildAttachSupported = false;
       const { WebviewWindow } = await import("@tauri-apps/api/webviewWindow");
       const { LogicalPosition } = await import("@tauri-apps/api/dpi");
-      const dock = new WebviewWindow(DOCK_WINDOW_LABEL, {
-        url,
-        width: DOCK_WIDTH,
-        height: DOCK_HEIGHT,
-        decorations: false,
-        transparent: true,
-        alwaysOnTop: true,
-        resizable: false,
-        visible: false,
-        focus: true,
+      const result = await createDockWindowWithOptionalParent(url, {
+        isMacOS,
+        LogicalPosition,
+        createWebviewWindow: (label, windowOptions) =>
+          new WebviewWindow(label, windowOptions),
       });
-      return wrapDockWebviewWindow(dock, LogicalPosition, { awaitCreated: true });
+      dockChildAttachSupported = result.childAttached;
+      return result.window;
     },
     onTileMoved(listener) {
       let unlisten: (() => void) | null = null;
