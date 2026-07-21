@@ -46,17 +46,18 @@ def good_frame():
 
 
 MONSTER_FRAMES = {
-    "small": (24, 32, 20, 26),
-    "medium": (32, 48, 26, 40),
-    "large": (48, 72, 40, 60),
+    "small": (24, 32, 20, 26, False),
+    "medium": (32, 48, 26, 40, False),
+    "large": (48, 72, 40, 60, True),
 }
 
 
 print("frame tiers")
-for tier, (w, h, safe_w, safe_h) in MONSTER_FRAMES.items():
+for tier, (w, h, safe_w, safe_h, safe_box_gate) in MONSTER_FRAMES.items():
     spec = A.FRAMES[tier]
     check(f"FRAMES[{tier!r}] matches MONSTER_FRAMES",
-          (spec.w, spec.h, spec.safe_w, spec.safe_h) == (w, h, safe_w, safe_h)
+          (spec.w, spec.h, spec.safe_w, spec.safe_h, spec.safe_box_gate)
+          == (w, h, safe_w, safe_h, safe_box_gate)
           and spec.min_logical_height > 0,
           f"w={spec.w} h={spec.h} safe={spec.safe_w}x{spec.safe_h} "
           f"min_h={spec.min_logical_height}")
@@ -113,14 +114,30 @@ with tempfile.TemporaryDirectory() as temp_name:
           str(report))
 
     output = io.StringIO()
+    saved_report = temp / "candidate-report.json"
     with redirect_stdout(output):
-        exit_code = A.main(["measure", "--tier", "medium", str(candidate)])
+        exit_code = A.main([
+            "measure", "--tier", "medium", "--report", str(saved_report),
+            str(candidate),
+        ])
     cli_report = json.loads(output.getvalue())
     check("measure CLI returns machine-readable candidate JSON",
           exit_code == 0
           and cli_report["tier"] == "medium"
           and cli_report["candidates"][0]["grid"] == [21, 40],
           output.getvalue())
+    check("measure CLI saves the same machine-readable report when requested",
+          json.loads(saved_report.read_text()) == cli_report,
+          saved_report.read_text() if saved_report.exists() else "missing report")
+
+    roomy_candidate = temp / "knight-candidate.png"
+    roomy_candidate.write_bytes((RAW_DIR / "knight.png").read_bytes())
+    roomy_report = A.measure_candidate(roomy_candidate, frame=A.FRAMES["medium"])
+    check("medium safe box remains advisory for a runtime-fitting candidate",
+          roomy_report["status"] == "advance"
+          and roomy_report["grid"] == [32, 45]
+          and roomy_report["safe_box_exceeded"],
+          str(roomy_report))
 
     promoted_raw_dir = temp / "raw"
     promoted_out_dir = temp / "runtime"
@@ -148,6 +165,7 @@ with tempfile.TemporaryDirectory() as temp_name:
           and promoted_sidecar["prompt"] == "strict side profile facing LEFT"
           and promoted_sidecar["raw_sha256"] == hashlib.sha256(candidate.read_bytes()).hexdigest()
           and promoted_sidecar["tier"] == "medium"
+          and promoted_sidecar["identity"] == "boss-3"
           and promoted_sidecar["asset_class"] == "opponent"
           and promoted_sidecar["runtime_destination"] == "src/assets/sprites/boss-3.png"
           and promoted_sidecar["facing"] == "left",
@@ -176,6 +194,56 @@ with tempfile.TemporaryDirectory() as temp_name:
           and not rejected_raw_dir.exists()
           and not rejected_out_dir.exists(),
           rejected_error)
+
+    prompt_file = temp / "prompt.txt"
+    prompt_file.write_text("strict side profile facing LEFT")
+    rejected_report_path = temp / "rejected-report.json"
+    output = io.StringIO()
+    with redirect_stdout(output):
+        rejected_exit = A.main([
+            "promote", "--tier", "medium", "--tag", "boss-3",
+            "--raw", str(rejected), "--provider", "Cursor GenerateImage",
+            "--acquisition-tool", "GenerateImage", "--prompt-file", str(prompt_file),
+            "--report", str(rejected_report_path),
+        ])
+    rejected_cli_report = json.loads(output.getvalue())
+    check("failed promote CLI emits and saves machine-readable JSON",
+          rejected_exit == 1
+          and rejected_cli_report["status"] == "error"
+          and json.loads(rejected_report_path.read_text()) == rejected_cli_report,
+          output.getvalue())
+
+    tiered_raw_dir = temp / "tiered-raw"
+    tiered_out_dir = temp / "tiered-runtime"
+    tiered_raw_dir.mkdir()
+    logical = Image.new("RGB", (48, 72), A.MAGENTA)
+    logical_px = logical.load()
+    for y in range(6, 66):
+        for x in range(4, 44):
+            logical_px[x, y] = A.PALETTE[(x + y) % 2]
+    large_raw = logical.resize((768, 1152), Image.Resampling.NEAREST)
+    large_path = tiered_raw_dir / "boss-2.png"
+    large_raw.save(large_path)
+    large_path.with_suffix(".source.json").write_text(json.dumps({
+        "provider": "fixture",
+        "raw_sha256": hashlib.sha256(large_path.read_bytes()).hexdigest(),
+        "tier": "large",
+    }))
+    legacy_path = tiered_raw_dir / "boss-3.png"
+    legacy_path.write_bytes((RAW_DIR / "boss-3.png").read_bytes())
+    legacy_path.with_suffix(".source.json").write_text(json.dumps({
+        "provider": "fixture",
+        "raw_sha256": hashlib.sha256(legacy_path.read_bytes()).hexdigest(),
+    }))
+    A.build_archived_bundle(
+        ["boss-2", "boss-3"], raw_dir=tiered_raw_dir, out_dir=tiered_out_dir)
+    tiered_manifest = json.loads((tiered_out_dir / "manifest.json").read_text())
+    check("offline build honors explicit tier and legacy medium default",
+          Image.open(tiered_out_dir / "boss-2.png").size == (48, 72)
+          and Image.open(tiered_out_dir / "boss-3.png").size == (32, 48)
+          and tiered_manifest["boss-2"]["frame_size"] == [48, 72]
+          and tiered_manifest["boss-3"]["frame_size"] == [32, 48],
+          str({name: entry["frame_size"] for name, entry in tiered_manifest.items()}))
 
 _stub_oversize = [[(200, 200, 200) for _ in range(22)] for _ in range(35)]
 with mock.patch.object(A, "sample_cells", return_value=_stub_oversize):
@@ -240,6 +308,11 @@ clipped.save(tmp)
 errs = A.raw_clipping(tmp)
 check("generator clipping detects bottom and right edges",
       any("bottom/right" in e for e in errs), errs[0] if errs else "")
+clipped_report = A.measure_candidate(tmp)
+check("candidate report keeps clipped sides when the magenta-border gate fails",
+      clipped_report["clipped_sides"] == ["bottom", "right"]
+      and clipped_report["primary_failure"] == "clip-fail",
+      str(clipped_report))
 tmp.unlink()
 
 # whole raw bundle is clean

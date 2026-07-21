@@ -38,7 +38,9 @@ python3 pipeline/acquire.py measure --tier large path/to/boss-1-a.png path/to/bo
 
 The JSON result records raw gates, all clipped sides, recovered grid, pitch
 scores, one primary failure, and the next action. A candidate with
-`"status": "retry"` stays outside the Archived Raw Bundle.
+`"status": "retry"` stays outside the Archived Raw Bundle. Add
+`--report docs/research/evidence/<issue>/candidate-report.json` to save the same
+JSON as durable evidence; no image or sidecar is written by measurement.
 
 After deterministic and visual review both pass, promote the chosen candidate:
 
@@ -50,12 +52,14 @@ python3 pipeline/acquire.py promote \
   --provider "Cursor GenerateImage" \
   --acquisition-tool GenerateImage \
   --prompt-file path/to/boss-1-c.prompt.txt \
-  --reference identity=assets-raw/grid_raw/boss.png
+  --reference identity=assets-raw/grid_raw/boss.png \
+  --report docs/research/evidence/212-boss-stills-large/promotion-report.json
 ```
 
-`promote` remeasures the candidate, refuses a retry result, copies the accepted
-provider bytes into `assets-raw/grid_raw/`, generates the complete provenance
-sidecar, normalizes and validates the runtime PNG, and updates `manifest.json`.
+`promote` remeasures the candidate, returns JSON on success or failure, refuses
+a retry result, copies the accepted provider bytes into `assets-raw/grid_raw/`,
+generates the complete provenance sidecar, normalizes and validates the runtime
+PNG, and updates `manifest.json`.
 Known tags derive Nightglass asset class, role, facing, and runtime destination;
 `boss-1` retains the historical archived raw tag `boss`. Newly promoted
 sidecars record their size `tier`; the offline build treats older sidecars with

@@ -56,12 +56,16 @@ class Frame:
     min_logical_height: int
     safe_w: int
     safe_h: int
+    safe_box_gate: bool
 
 
 FRAMES = {
-    "small": Frame(w=24, h=32, min_logical_height=26, safe_w=20, safe_h=26),
-    "medium": Frame(w=32, h=48, min_logical_height=40, safe_w=26, safe_h=40),
-    "large": Frame(w=48, h=72, min_logical_height=60, safe_w=40, safe_h=60),
+    "small": Frame(w=24, h=32, min_logical_height=26,
+                   safe_w=20, safe_h=26, safe_box_gate=False),
+    "medium": Frame(w=32, h=48, min_logical_height=40,
+                    safe_w=26, safe_h=40, safe_box_gate=False),
+    "large": Frame(w=48, h=72, min_logical_height=60,
+                   safe_w=40, safe_h=60, safe_box_gate=True),
 }
 
 MEDIUM = FRAMES["medium"]
@@ -370,15 +374,15 @@ def measure_candidate(raw_path: pathlib.Path, frame: Frame = MEDIUM) -> dict:
         "grid": None,
         "pitch_x": None,
         "pitch_y": None,
+        "safe_box_exceeded": False,
     }
-    if gates:
-        return result
     try:
         cells, report = _recover_candidate(raw_path, frame)
-    except ValueError as error:
-        result["gates"] = [str(error)]
-        result["primary_failure"] = "raw-gate-fail"
-        result["next_action"] = "redraw a non-empty subject on the magenta background"
+    except (OSError, ValueError) as error:
+        if not result["gates"]:
+            result["gates"] = [str(error)]
+            result["primary_failure"] = "raw-gate-fail"
+            result["next_action"] = "redraw a non-empty subject on the magenta background"
         return result
 
     result.update({
@@ -395,6 +399,8 @@ def measure_candidate(raw_path: pathlib.Path, frame: Frame = MEDIUM) -> dict:
             f"add at least two magenta cells of clearance on {sides}; keep the safe box"
         )
         return result
+    if gates:
+        return result
     if cells is None:
         result["primary_failure"] = "pitch-fail"
         result["next_action"] = (
@@ -403,8 +409,10 @@ def measure_candidate(raw_path: pathlib.Path, frame: Frame = MEDIUM) -> dict:
         return result
 
     grid_w, grid_h = report["grid"]
+    safe_box_exceeded = grid_w > frame.safe_w or grid_h > frame.safe_h
+    result["safe_box_exceeded"] = safe_box_exceeded
     if (grid_w > frame.w or grid_h > frame.h
-            or grid_w > frame.safe_w or grid_h > frame.safe_h):
+            or (frame.safe_box_gate and safe_box_exceeded)):
         result["primary_failure"] = "overshoot"
         result["next_action"] = (
             f"redraw the complete silhouette inside the {frame.safe_w}x{frame.safe_h} "
@@ -642,6 +650,7 @@ def promote_candidate(
         "acquisition_tool": acquisition_tool,
         "raw_sha256": raw_sha256,
         "tier": next(name for name, value in FRAMES.items() if value == frame),
+        "identity": out_name,
         "asset_class": identity["asset_class"],
         "runtime_destination": runtime_destination,
         "candidate": raw_path.name,
@@ -695,12 +704,20 @@ def promote_candidate(
 
 # --------------------------------------------------------------- cli
 
-def _build(tags: Iterable[str]):
-    OUT_DIR.mkdir(parents=True, exist_ok=True)
+def build_archived_bundle(
+    tags: Iterable[str],
+    *,
+    raw_dir: pathlib.Path = RAW_DIR,
+    out_dir: pathlib.Path = OUT_DIR,
+):
+    """Rebuild archived tags, honoring sidecar tier with a legacy medium default."""
+    raw_dir = pathlib.Path(raw_dir)
+    out_dir = pathlib.Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
     built = []
     manifests: dict[str, dict] = {}
     for tag in tags:
-        raw = RAW_DIR / f"{tag}.png"
+        raw = raw_dir / f"{tag}.png"
         sidecar = json.loads(raw.with_suffix(".source.json").read_text())
         tier = sidecar.get("tier", "medium")
         if tier not in FRAMES:
@@ -708,7 +725,7 @@ def _build(tags: Iterable[str]):
         frame_spec = FRAMES[tier]
         frame = normalize(raw, frame=frame_spec)
         out_name = OUTPUT_NAMES.get(tag, tag)
-        save_runtime_png(frame, OUT_DIR / f"{out_name}.png")
+        save_runtime_png(frame, out_dir / f"{out_name}.png")
         built.append((tag, out_name, frame, frame_spec, raw_clipping(raw)))
         manifests[out_name] = manifest(
             "still",
@@ -720,9 +737,9 @@ def _build(tags: Iterable[str]):
             },
             frame=frame_spec,
         )
-    (OUT_DIR / "manifest.json").write_text(
+    (out_dir / "manifest.json").write_text(
         json.dumps(manifests, indent=2) + "\n")
-    return built, OUT_DIR
+    return built, out_dir
 
 
 def _reference(value: str) -> tuple[str, pathlib.Path]:
@@ -742,6 +759,7 @@ def _command_parser() -> argparse.ArgumentParser:
     )
     measure.add_argument("paths", nargs="+", type=pathlib.Path)
     measure.add_argument("--tier", choices=FRAMES, default="medium")
+    measure.add_argument("--report", type=pathlib.Path)
 
     promote = commands.add_parser(
         "promote", help="promote one passing candidate and generate shipping provenance"
@@ -750,11 +768,20 @@ def _command_parser() -> argparse.ArgumentParser:
     promote.add_argument("--tag", required=True)
     promote.add_argument("--raw", required=True, type=pathlib.Path)
     promote.add_argument("--provider", required=True)
-    promote.add_argument("--acquisition-tool")
+    promote.add_argument("--acquisition-tool", required=True)
     promote.add_argument("--prompt-file", required=True, type=pathlib.Path)
     promote.add_argument("--reference", action="append", default=[], type=_reference,
                          metavar="ROLE=PATH")
+    promote.add_argument("--report", type=pathlib.Path)
     return parser
+
+
+def _emit_report(payload: dict, report_path: pathlib.Path | None = None) -> None:
+    encoded = json.dumps(payload, indent=2) + "\n"
+    if report_path is not None:
+        report_path.parent.mkdir(parents=True, exist_ok=True)
+        report_path.write_text(encoded)
+    print(encoded, end="")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -764,7 +791,7 @@ def main(argv: list[str] | None = None) -> int:
         print("\nWith no subcommand, rebuilds the default archived sprite bundle.")
         return 0
     if not argv or argv[0] not in {"measure", "promote"}:
-        built, out = _build(argv or list(DEFAULT_TAGS))
+        built, out = build_archived_bundle(argv or list(DEFAULT_TAGS))
         ok = True
         for tag, out_name, frame, frame_spec, raw_errs in built:
             errs = raw_errs + validate(frame, out_name, frame=frame_spec)
@@ -784,19 +811,29 @@ def main(argv: list[str] | None = None) -> int:
             "tier": args.tier,
             "candidates": [measure_candidate(path, frame=frame) for path in args.paths],
         }
-        print(json.dumps(payload, indent=2))
+        _emit_report(payload, args.report)
         return 0
 
-    result = promote_candidate(
-        args.raw,
-        tag=args.tag,
-        provider=args.provider,
-        acquisition_tool=args.acquisition_tool or args.provider,
-        prompt=args.prompt_file.read_text(),
-        frame=frame,
-        references=args.reference,
-    )
-    print(json.dumps(result, indent=2))
+    try:
+        result = promote_candidate(
+            args.raw,
+            tag=args.tag,
+            provider=args.provider,
+            acquisition_tool=args.acquisition_tool,
+            prompt=args.prompt_file.read_text(),
+            frame=frame,
+            references=args.reference,
+        )
+    except (OSError, ValueError, json.JSONDecodeError) as error:
+        result = {
+            "status": "error",
+            "command": "promote",
+            "candidate": str(args.raw),
+            "error": str(error),
+        }
+        _emit_report(result, args.report)
+        return 1
+    _emit_report(result, args.report)
     return 0
 
 

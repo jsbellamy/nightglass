@@ -146,12 +146,14 @@ provider dump into task-local scratch, then measure it with the owning pipeline;
 for Battle Tile bodies run:
 
 ```bash
-python3 pipeline/acquire.py measure --tier <small|medium|large> <candidate.png>
+python3 pipeline/acquire.py measure --tier <small|medium|large> \
+  --report <task-evidence>/candidate-report.json <candidate.png>
 ```
 
-Measurement is read-only and requires no provenance sidecar. A rejected
-candidate remains scratch evidence and is represented durably by its measurement
-table row, not by a fabricated sidecar or a committed PNG.
+Measurement requires no provenance sidecar. It writes no asset or sidecar; when
+`--report` is supplied, it saves the same JSON emitted on stdout as task
+evidence. A rejected candidate remains scratch evidence and is represented
+durably by its report/table row, not by a fabricated sidecar or committed PNG.
 
 After deterministic gates and visual review both pass, promote the chosen
 provider PNG byte-for-byte into the task's Archived Raw Bundle. For Battle Tile
@@ -199,15 +201,19 @@ constant; never resize a failed candidate into an accepted raw.
 
 | Failure | Signal | Retry move |
 | --- | --- | --- |
-| **Overshoot** | Recovered grid wider/taller than the acceptance canvas, or above the declared safe box | Preserve identity; shrink silhouette into the safe box; restate magenta clearance on every edge. Template: *"The previous candidate recovered as `<W>×<H>`. Preserve its identity and pose, simplify its detail, and redraw the complete silhouette inside the contract's safe box with clearance on every edge."* |
+| **Overshoot** | Recovered grid wider/taller than the acceptance canvas, or above a safe box that the owning contract explicitly promotes to an advancement gate | Preserve identity; shrink silhouette into the safe box; restate magenta clearance on every edge. Template: *"The previous candidate recovered as `<W>×<H>`. Preserve its identity and pose, simplify its detail, and redraw the complete silhouette inside the contract's safe box with clearance on every edge."* |
 | **Underfill** | Recovered long axis below the icon gate (`MIN_LONG_AXIS = 20` in `pipeline/icons/constants.py`; **preference** 26–30 on a ~32-cell grid) | Regenerate larger in frame, or exaggerate the identity feature. Do not nearest-neighbour upscale a soft generation into an accepted raw. |
 | **Pitch-fail** | X or Y pitch confidence below the acquisition contract gate (soft/anti-aliased blocks, uneven cell size) | Strengthen the grid shell; attach an already-accepted grid-faithful raw as **style reference**; demand uniform square blocks and aligned seams. Do not only ask for "chunkier" art. |
 | **Clip-fail** | Subject touches a raw canvas edge (clipping gate) | Preserve identity; add at least two magenta cells of clearance on the clipped side(s); keep the safe box. |
 | **Off-ramp** | More than ~20% of opaque subject cells are far from every `moonberry-16` swatch (RGB distance), or the Stage-2 preview shows a whole material plane silently recolored. Authoritative Equipment icon threshold: `OFF_RAMP_REJECT` in `pipeline/icons/constants.py` / `docs/icon-contract.md` (retuned in #131 from the provisional 15%). | Keep geometry fixed; retry with **exact on-palette material names** (mint/sage stave, berry vine, cream string — never "brown wood"). The on-palette check after quantize cannot catch this by construction. |
 
-If two signals fire, fix **clip-fail** first, then **overshoot**, then
-**pitch-fail**, then **off-ramp**, then **underfill**. A candidate advances only
-when its recovered grid fits and every raw-level gate passes.
+If two signals fire, fix **raw-gate-fail** first unless measurable clipping is
+also present; then fix **clip-fail**, **overshoot**, **pitch-fail**,
+**off-ramp**, and **underfill** in that order. Prompt safe boxes remain tuning
+targets unless the owning contract explicitly makes one an advancement gate;
+`measure` reports advisory exceedance without rejecting medium/small candidates.
+A candidate advances only when its recovered grid fits and every raw-level gate
+passes.
 
 ### Autonomous candidate decisions
 
@@ -226,8 +232,9 @@ Apply this state machine:
 
 1. **Reject and retry** when any raw gate fails, any side is clipped, either
    pitch score is below its gate, the recovered grid exceeds the runtime canvas,
-   or it exceeds the declared prompt safe box. Passing the runtime-canvas check
-   does not waive the smaller safe-box target.
+   or it exceeds a stricter advancement envelope declared by the owning
+   contract. Large bodies use their 40×60 safe box as such an envelope;
+   medium/small safe boxes remain advisory prompt targets.
 2. Choose exactly one primary failure using the priority above. Preserve the
    subject identity and change only the prompt clauses needed by that retry move.
 3. **Advance to visual review** only after every deterministic rule and the
@@ -245,10 +252,11 @@ Apply this state machine:
    choice. The orchestrator decides whether human input is necessary. Otherwise
    continue the loop autonomously.
 
-Candidate measurement has no sidecar. Promotion must generate shipping
+Candidate measurement has no sidecar. Save its JSON with `--report`; this is the
+validator report consumed by later agents. Promotion must generate shipping
 provenance containing provider, acquisition tool, exact prompt, raw SHA-256,
 direct inputs with roles and hashes, asset class, runtime destination, candidate
-name, role, facing, and size tier.
+name, canonical identity, role, facing, and size tier.
 
 **#125 Equipment icon trial (measured).** Brown wood reads as **off-ramp** at
 17% and must be prompted as an on-palette material; grid-faithful style references
