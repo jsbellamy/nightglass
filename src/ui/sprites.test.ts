@@ -41,10 +41,14 @@ describe("sprite registry", () => {
 
   it("resolves the acquired Hunter still without an interim label", () => {
     const hunter = resolveSprite("hunter");
+    const manifest = manifestJson.hunter;
     expect(hunter.interim).toBeUndefined();
     expect(hunter.interimLabel).toBeUndefined();
-    expect(hunter.frameSize).toEqual([32, 48]);
+    expect(hunter.frameSize).toEqual(manifest.frame_size);
+    expect(hunter.visualBounds).toEqual(manifest.visual_bounds);
+    expect(hunter.footAnchor).toEqual(manifest.foot_anchor);
     expect(hunter.url).toContain("hunter");
+    expect(spriteBattlefieldRole("hunter")).toBe("party");
   });
 
   it("resolves the acquired Boss stills without interim fallbacks", () => {

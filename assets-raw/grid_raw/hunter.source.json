@@ -1,14 +1,31 @@
 {
   "provider": "Cursor GenerateImage",
   "acquisition_tool": "GenerateImage",
-  "raw_sha256": "d5cdbb892abeeedac796e1a48a136cefe2eb55bda72be7f04e37748ce45ffc97",
+  "raw_sha256": "7e828a24f02ec992ba65c98d61d3ef1fe617abb3f71754ce1af7d4facb4ae622",
+  "acquisition": "flexible",
+  "identity_profile": {
+    "asset_class": "Character",
+    "role": "party-character",
+    "facing": "right"
+  },
+  "cursor_stamp_removed": false,
+  "identity": "hunter",
   "asset_class": "Character",
   "runtime_destination": "src/assets/sprites/hunter.png",
-  "style_reference": "assets-raw/grid_raw/knight.png",
-  "style_reference_sha256": "9dfcdd69592cec858d9ff4d53429a2a3b48815918f4b463083e7201d69546cb5",
-  "candidate": "hunter-compact-prompt",
+  "candidate": "hunter-flex-a.png",
   "facing": "right",
-  "role": "party_class",
-  "retry_of": "hunter-n",
-  "prompt": "TRUE chunky pixel art sprite ONLY. Canvas is exactly 32 logical columns by 48 logical rows, rendered at 1024\u00d71536. Every logical pixel is one uniform 32\u00d732 square aligned to the grid.\n\nDraw one SMALL, COMPACT, full-body chibi Hunter in strict side profile facing RIGHT. The complete non-magenta silhouette\u2014including hood, scarf, bow, bowstring, arrow, quiver, boots, and outline\u2014must fit inside a centered box no larger than 24 logical cells wide \u00d7 34 logical cells tall.\n\nLeave at least 7 completely empty magenta rows in total above and below the Hunter, with at least 3 empty rows on each side. Leave at least 4 empty magenta columns on both left and right. Do not use the clearance area for equipment or clothing.\n\nCompact pose: knees slightly bent, head lowered, feet close together. Hold a short, tightly curved bow diagonally across the torso. Keep the entire bow, arrow, scarf, and quiver inside the body's vertical extent. No raised arms, tall ears, upright bow, trailing clothing, or projecting equipment.\n\nFitted mint-green stitched tunic, small leaf-scale shoulder, plum hood resting tightly against the back, very short berry-pink scarf tail, cream trousers, short boots, dark-plum one-cell outline. Use 10\u201312 flat colors. Every unused cell is flat #ff00ff.\n\nNo gradients, anti-aliasing, dithering, shadows, floor, glow, particles, text, watermark, transparency, cropped equipment, or hot magenta inside the Hunter."
+  "role": "party-character",
+  "style_references": [
+    {
+      "path": "assets-raw/grid_raw/hunter.png",
+      "sha256": "d5cdbb892abeeedac796e1a48a136cefe2eb55bda72be7f04e37748ce45ffc97",
+      "role": "identity"
+    },
+    {
+      "path": "assets-raw/grid_raw/knight.png",
+      "sha256": "9dfcdd69592cec858d9ff4d53429a2a3b48815918f4b463083e7201d69546cb5",
+      "role": "style"
+    }
+  ],
+  "prompt": "Single full-body Hunter game sprite, strict side profile facing RIGHT. A taut\nmint-and-sage bramble shortbow and one nocked thorn arrow create a distinctive\nwide hunting silhouette; fitted mint stitched tunic, compact plum hood resting\nagainst the back, short berry scarf tail, cream trousers, leaf-scale shoulder,\nsmall quiver, and dark-plum contour. Alert compact stance with bent knees and\nboth feet visible.\n\nChunky, simplified, flat-colour Moonberry night-garden fantasy pixel art with\nlarge readable shapes and a strong silhouette at small native scale. Preserve\nthe attached Hunter's identity and match the attached Knight's palette and\nstorybook cohort.\n\nShow exactly one complete subject with generous empty clearance on every edge\nof an opaque flat solid magenta #ff00ff background. No shadow, floor, glow,\nsparkles, particles, Ability effect, text, watermark, scenery, UI, transparency,\nor other subject.\n"
 }
