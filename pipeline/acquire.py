@@ -1,6 +1,7 @@
-"""Provider-neutral acquisition toolchain — grid recovery, validator, manifest.
+"""Provider-neutral acquisition toolchain — flexible fit, validator, manifest.
 
-Reference implementation of the contract settled in #21 and amended by #29.
+Reference implementation of `docs/body-sprite-contract.md` (#250) with an
+internal legacy-grid-v1 adapter for archived tier raws.
 
 PROVIDER-NEUTRAL BY CONSTRUCTION. This module imports no generator, opens no
 socket, and loads no model. Candidate measurement reads provider PNGs directly;
@@ -8,9 +9,9 @@ promotion creates the archived raw bundle (`assets-raw/grid_raw/*.png` plus
 provenance sidecars). Running the offline build with the provider absent and the
 network down reproduces byte-identical runtime frames.
 
-    measure    candidate PNG -> JSON retry/advance report (no sidecar required)
+    measure    candidate PNG -> JSON retry/advance report (identity via --tag)
     promote    accepted PNG  -> archived raw + sidecar + runtime + manifest
-    normalize  raw PNG  -> key magenta -> recover logical grid -> tier runtime frame
+    normalize  raw PNG  -> flexible fit or legacy-grid-v1 (offline rebuild)
     validate   frame(s)  -> [] or a list of rejection reasons
     manifest   frames    -> integer-ms animation manifest
 
@@ -42,10 +43,28 @@ HERE = pathlib.Path(__file__).parent
 ROOT = HERE.parent
 RAW_DIR = ROOT / "assets-raw" / "grid_raw"
 OUT_DIR = ROOT / "src" / "assets" / "sprites"
+LAYOUT_PATH = OUT_DIR / "layout.json"
 ALPHA_CUT = 128
 MAGENTA = (255, 0, 255)
 KEY_TOLERANCE = 40
 MIN_GRID_SCORE = 0.04
+LEGACY_ADAPTER = "legacy-grid-v1"
+
+ROLE_LAYOUT_KEYS = {
+    "party-character": "party",
+    "ordinary-opponent": "ordinary_opponent",
+    "boss": "boss",
+}
+
+
+@dataclass(frozen=True)
+class BodyProfile:
+    """Identity-derived acquisition ceiling and facing."""
+
+    role: str
+    max_opaque_w: int
+    max_opaque_h: int
+    facing: str
 
 
 @dataclass(frozen=True)
@@ -103,6 +122,54 @@ PALETTE = [tuple(c["rgb"]) for c in
            json.loads((HERE / "palette.json").read_text())["colors"]]
 PALETTE_SET = set(PALETTE)
 
+
+def load_layout() -> dict:
+    return json.loads(LAYOUT_PATH.read_text())
+
+
+def body_profile_for_identity(identity: dict) -> BodyProfile:
+    layout = load_layout()
+    role_key = ROLE_LAYOUT_KEYS[identity["role"]]
+    max_w, max_h = layout["roles"][role_key]["max_opaque"]
+    return BodyProfile(
+        role=identity["role"],
+        max_opaque_w=max_w,
+        max_opaque_h=max_h,
+        facing=identity["facing"],
+    )
+
+
+def body_profile_for_tag(tag: str) -> BodyProfile:
+    _, identity = _asset_identity(tag)
+    return body_profile_for_identity(identity)
+
+
+def geometry_from_image(image: Image.Image) -> dict:
+    """Per-asset geometry from opaque runtime pixels."""
+    w, h = image.size
+    px = image.load()
+    xs: list[int] = []
+    ys: list[int] = []
+    for y in range(h):
+        for x in range(w):
+            if px[x, y][3] == 255:
+                xs.append(x)
+                ys.append(y)
+    if not xs:
+        raise ValueError("empty frame, no opaque pixels")
+    left, top, right, bottom = min(xs), min(ys), max(xs) + 1, max(ys) + 1
+    return {
+        "frame_size": [w, h],
+        "visual_bounds": [left, top, right, bottom],
+        "foot_anchor": [w // 2, h],
+    }
+
+
+def opaque_extent(visual_bounds: list[int]) -> tuple[int, int]:
+    left, top, right, bottom = visual_bounds
+    return right - left, bottom - top
+
+
 # Minimal PNG writer (filter-none rows + zlib level 9). Pillow's adaptive
 # row filters differ across OS/libpng builds for some frames, so we avoid it
 # for committed runtime bytes that CI must rebuild byte-identically.
@@ -156,16 +223,43 @@ def _within_key(pixel: tuple[int, int, int, int]) -> bool:
     return pixel[3] < ALPHA_CUT or _within_magenta(pixel)
 
 
-def _key(raw_path: pathlib.Path) -> tuple[Image.Image, list[bool], tuple[int, int, int, int]]:
-    src = Image.open(raw_path).convert("RGBA")
+def _foreground_mask(
+    src: Image.Image,
+    *,
+    ignore_stamp: bool,
+) -> tuple[list[bool], bool, tuple[int, int, int, int]]:
+    """Row-major foreground mask; optional Cursor stamp at (0, height-1)."""
     w, h = src.size
-    pixels = list(src.getdata())  # row-major, identical to per-pixel getpixel
-    fg = [not _within_key(pixel) for pixel in pixels]
+    pixels = list(src.getdata())
+    stamp_removed = False
+    fg: list[bool] = []
+    for i, pixel in enumerate(pixels):
+        x, y = i % w, i // w
+        if ignore_stamp and x == 0 and y == h - 1:
+            if pixel[3] >= ALPHA_CUT and not _within_magenta(pixel):
+                stamp_removed = True
+            fg.append(False)
+            continue
+        fg.append(not _within_key(pixel))
     points = [(i % w, i // w) for i, opaque in enumerate(fg) if opaque]
     if not points:
-        raise ValueError(f"{raw_path.name}: magenta key removed the entire image")
+        raise ValueError(f"{src}: magenta key removed the entire image")
     xs, ys = zip(*points)
-    return src, fg, (min(xs), min(ys), max(xs), max(ys))
+    return fg, stamp_removed, (min(xs), min(ys), max(xs), max(ys))
+
+
+def _key(raw_path: pathlib.Path) -> tuple[Image.Image, list[bool], tuple[int, int, int, int]]:
+    src = Image.open(raw_path).convert("RGBA")
+    fg, _, bbox = _foreground_mask(src, ignore_stamp=False)
+    return src, fg, bbox
+
+
+def _key_for_measurement(
+    raw_path: pathlib.Path,
+) -> tuple[Image.Image, list[bool], tuple[int, int, int, int], bool]:
+    src = Image.open(raw_path).convert("RGBA")
+    fg, stamp_removed, bbox = _foreground_mask(src, ignore_stamp=True)
+    return src, fg, bbox, stamp_removed
 
 
 def candidate_gates(raw_path: pathlib.Path) -> list[str]:
@@ -180,8 +274,13 @@ def candidate_gates(raw_path: pathlib.Path) -> list[str]:
         return [f"{raw_path.name}: unreadable candidate: {error}"]
     w, h = src.size
     px = src.load()
-    border = [px[x, y] for y in range(h) for x in range(w)
-              if x < 2 or x >= w - 2 or y < 2 or y >= h - 2]
+    border = []
+    for y in range(h):
+        for x in range(w):
+            if x < 2 or x >= w - 2 or y < 2 or y >= h - 2:
+                if x == 0 and y == h - 1:
+                    continue
+                border.append(px[x, y])
     keyed = sum(pixel[3] >= ALPHA_CUT and _within_magenta(pixel) for pixel in border)
     if not border or keyed / len(border) < 0.95:
         errs.append(f"{raw_path.name}: border is not a flat {MAGENTA!r} chroma key "
@@ -362,8 +461,72 @@ def _recover_candidate(
     return cells, report
 
 
-def measure_candidate(raw_path: pathlib.Path, frame: Frame = MEDIUM) -> dict:
+def measure_candidate(
+    raw_path: pathlib.Path,
+    *,
+    tag: str,
+) -> dict:
     """Return a JSON-ready retry/advance decision for a provider candidate."""
+    raw_path = pathlib.Path(raw_path)
+    profile = body_profile_for_tag(tag)
+    result: dict = {
+        "candidate": str(raw_path),
+        "tag": tag,
+        "status": "retry",
+        "primary_failure": None,
+        "next_action": None,
+        "gates": [],
+        "clipped_sides": [],
+        "cursor_stamp_removed": False,
+        "opaque_bounds": None,
+        "fitted_opaque_size": None,
+        "profile": {
+            "role": profile.role,
+            "max_opaque_w": profile.max_opaque_w,
+            "max_opaque_h": profile.max_opaque_h,
+            "facing": profile.facing,
+        },
+    }
+    gates = candidate_gates(raw_path)
+    result["gates"] = gates
+    if gates:
+        result["primary_failure"] = "raw-gate-fail"
+        result["next_action"] = "repair the PNG or flat magenta border"
+        return result
+    try:
+        src, fg, bbox, stamp_removed = _key_for_measurement(raw_path)
+    except (OSError, ValueError) as error:
+        result["gates"] = [str(error)]
+        result["primary_failure"] = "raw-gate-fail"
+        result["next_action"] = "redraw a non-empty subject on the magenta background"
+        return result
+
+    result["cursor_stamp_removed"] = stamp_removed
+    clipped = _clipped_sides(src, bbox)
+    result["clipped_sides"] = clipped
+    if clipped:
+        sides = "/".join(clipped)
+        result["primary_failure"] = "clip-fail"
+        result["next_action"] = (
+            f"add at least two magenta cells of clearance on {sides}"
+        )
+        return result
+
+    cropped = _crop_foreground_rgba(src, fg, bbox)
+    ow, oh = cropped.size
+    result["opaque_bounds"] = [0, 0, ow, oh]
+    fitted = _resize_to_fit(cropped, profile.max_opaque_w, profile.max_opaque_h)
+    result["fitted_opaque_size"] = list(fitted.size)
+    result["status"] = "advance"
+    result["next_action"] = "advance to visual review"
+    return result
+
+
+def measure_candidate_legacy(
+    raw_path: pathlib.Path,
+    frame: Frame = MEDIUM,
+) -> dict:
+    """Legacy tier measurement retained for legacy-grid-v1 regression tests."""
     raw_path = pathlib.Path(raw_path)
     gates = candidate_gates(raw_path)
     result = {
@@ -459,7 +622,74 @@ def recover_grid(
                    "grid": [grid_w, grid_h]}
 
 
-def normalize(raw_path: pathlib.Path, frame: Frame = MEDIUM) -> Image.Image:
+def _crop_foreground_rgba(
+    src: Image.Image,
+    fg: list[bool],
+    bbox: tuple[int, int, int, int],
+) -> Image.Image:
+    x0, y0, x1, y1 = bbox
+    w, h = src.size
+    cropped = Image.new("RGBA", (x1 - x0 + 1, y1 - y0 + 1), (0, 0, 0, 0))
+    spx, dpx = src.load(), cropped.load()
+    for y in range(y0, y1 + 1):
+        for x in range(x0, x1 + 1):
+            if fg[y * w + x]:
+                dpx[x - x0, y - y0] = spx[x, y]
+    return cropped
+
+
+def _resize_to_fit(img: Image.Image, max_w: int, max_h: int) -> Image.Image:
+    w, h = img.size
+    if w <= max_w and h <= max_h:
+        return img
+    scale = min(max_w / w, max_h / h)
+    new_w = max(1, int(math.floor(w * scale + 1e-9)))
+    new_h = max(1, int(math.floor(h * scale + 1e-9)))
+    if (new_w, new_h) == (w, h):
+        return img
+    return img.resize((new_w, new_h), Image.Resampling.NEAREST)
+
+
+def _quantize_and_binarize(img: Image.Image) -> Image.Image:
+    out = Image.new("RGBA", img.size, (0, 0, 0, 0))
+    ipx, opx = img.load(), out.load()
+    for y in range(img.height):
+        for x in range(img.width):
+            r, g, b, a = ipx[x, y]
+            if a < ALPHA_CUT or _within_magenta((r, g, b, a)):
+                continue
+            opx[x, y] = (*_nearest((r, g, b)), 255)
+    return out
+
+
+def _bottom_center_canvas(subject: Image.Image) -> Image.Image:
+    """Tight runtime canvas with opaque subject bottom-centred."""
+    w, h = subject.size
+    canvas = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    canvas.paste(subject, (0, 0))
+    return canvas
+
+
+def normalize_flexible(
+    raw_path: pathlib.Path,
+    profile: BodyProfile,
+) -> tuple[Image.Image, dict, bool]:
+    """Flexible contract path: crop, proportional fit, quantize, bottom-centre."""
+    src, fg, bbox, stamp_removed = _key_for_measurement(raw_path)
+    cropped = _crop_foreground_rgba(src, fg, bbox)
+    fitted = _resize_to_fit(cropped, profile.max_opaque_w, profile.max_opaque_h)
+    runtime = _bottom_center_canvas(_quantize_and_binarize(fitted))
+    geometry = geometry_from_image(runtime)
+    ow, oh = opaque_extent(geometry["visual_bounds"])
+    if ow > profile.max_opaque_w or oh > profile.max_opaque_h:
+        raise ValueError(
+            f"{raw_path.name}: opaque {ow}x{oh} exceeds "
+            f"{profile.max_opaque_w}x{profile.max_opaque_h} ceiling"
+        )
+    return runtime, geometry, stamp_removed
+
+
+def normalize_legacy_grid_v1(raw_path: pathlib.Path, frame: Frame = MEDIUM) -> Image.Image:
     """Archived raw PNG -> deterministic tier runtime frame, with no resize."""
     cells, _ = recover_grid(raw_path, frame=frame)
     grid_h, grid_w = len(cells), len(cells[0])
@@ -475,6 +705,36 @@ def normalize(raw_path: pathlib.Path, frame: Frame = MEDIUM) -> Image.Image:
     return canvas
 
 
+def normalize(raw_path: pathlib.Path, frame: Frame = MEDIUM) -> Image.Image:
+    """Offline rebuild: legacy-grid-v1 for tier sidecars (byte-identical interim)."""
+    return normalize_legacy_grid_v1(raw_path, frame=frame)
+
+
+def normalize_archived(
+    raw_path: pathlib.Path,
+    sidecar: dict,
+    *,
+    out_name: str,
+) -> tuple[Image.Image, dict, str, bool]:
+    """Dispatch flexible vs legacy-grid-v1 from provenance."""
+    if sidecar.get("acquisition") == "flexible":
+        profile = body_profile_for_identity(sidecar["identity_profile"])
+        runtime, geometry, stamp_removed = normalize_flexible(raw_path, profile)
+        return runtime, geometry, "flexible", stamp_removed
+    tier = sidecar.get("tier", "medium")
+    if tier not in FRAMES:
+        raise ValueError(f"{raw_path.name}: unknown acquisition tier {tier!r}")
+    frame_spec = FRAMES[tier]
+    runtime = normalize_legacy_grid_v1(raw_path, frame=frame_spec)
+    geometry = geometry_from_image(runtime)
+    return runtime, geometry, LEGACY_ADAPTER, False
+
+
+def legacy_geometry_for(raw_path: pathlib.Path, frame: Frame) -> dict:
+    runtime = normalize_legacy_grid_v1(raw_path, frame=frame)
+    return geometry_from_image(runtime)
+
+
 def baseline(image: Image.Image, frame: Frame = MEDIUM) -> int | None:
     """Lowest opaque row -- the foot baseline. None if the frame is empty."""
     a = image.getchannel("A").load()
@@ -487,20 +747,29 @@ def baseline(image: Image.Image, frame: Frame = MEDIUM) -> int | None:
 # --------------------------------------------------------------- validator
 
 def validate(image: Image.Image, name: str = "frame",
-             frame: Frame = MEDIUM) -> list[str]:
+             frame: Frame | None = None,
+             geometry: dict | None = None,
+             profile: BodyProfile | None = None) -> list[str]:
     """Per-frame rejection rules. Empty list == accepted."""
     errs: list[str] = []
+    if geometry is not None:
+        expected_size = tuple(geometry["frame_size"])
+    elif frame is not None:
+        expected_size = (frame.w, frame.h)
+    else:
+        expected_size = image.size
 
-    if image.size != (frame.w, frame.h):
+    if image.size != expected_size:
         errs.append(f"{name}: wrong dimensions {image.size}, expected "
-                    f"{(frame.w, frame.h)}")
-        return errs  # every later rule assumes the canvas size
+                    f"{expected_size}")
+        return errs
     if image.mode != "RGBA":
         errs.append(f"{name}: non-RGBA mode {image.mode!r}")
         return errs
 
     px = image.load()
-    alphas = {px[x, y][3] for y in range(frame.h) for x in range(frame.w)}
+    w, h = image.size
+    alphas = {px[x, y][3] for y in range(h) for x in range(w)}
 
     # unapproved alpha -- anything between fully clear and fully opaque
     stray = sorted(a for a in alphas if a not in (0, 255))
@@ -508,11 +777,27 @@ def validate(image: Image.Image, name: str = "frame",
         errs.append(f"{name}: unapproved alpha values {stray[:6]} "
                     f"({len(stray)} distinct); runtime alpha must be 0 or 255")
 
-    opaque = [(x, y) for y in range(frame.h) for x in range(frame.w)
+    opaque = [(x, y) for y in range(h) for x in range(w)
               if px[x, y][3] == 255]
     if not opaque:
         errs.append(f"{name}: empty frame, no opaque pixels")
         return errs
+
+    if geometry is not None:
+        computed = geometry_from_image(image)
+        for key in ("visual_bounds", "foot_anchor"):
+            if computed[key] != geometry[key]:
+                errs.append(
+                    f"{name}: {key} {geometry[key]!r} disagrees with runtime "
+                    f"{computed[key]!r}"
+                )
+        if profile is not None:
+            ow, oh = opaque_extent(computed["visual_bounds"])
+            if ow > profile.max_opaque_w or oh > profile.max_opaque_h:
+                errs.append(
+                    f"{name}: opaque {ow}x{oh} exceeds role ceiling "
+                    f"{profile.max_opaque_w}x{profile.max_opaque_h}"
+                )
 
     # NOTE: clipping is deliberately NOT checked here. normalize() places the
     # recovered cells on the runtime canvas, where an occupied edge no longer
@@ -528,6 +813,20 @@ def validate(image: Image.Image, name: str = "frame",
         errs.append(f"{name}: embedded effects or unapproved colour "
                     f"{sorted(off)[:4]} ({len(off)} off-palette)")
 
+    return errs
+
+
+def validate_manifest_geometry(image: Image.Image, entry: dict, name: str) -> list[str]:
+    """Reject manifest geometry that disagrees with the written runtime PNG."""
+    computed = geometry_from_image(image)
+    errs: list[str] = []
+    for key in ("frame_size", "visual_bounds", "foot_anchor"):
+        recorded = entry.get(key)
+        if recorded != computed[key]:
+            errs.append(
+                f"{name}: manifest {key} {recorded!r} disagrees with runtime "
+                f"{computed[key]!r}"
+            )
     return errs
 
 
@@ -570,7 +869,8 @@ def validate_sequence(frames: list[tuple[str, Image.Image]],
 def manifest(action: str, frames: list[tuple[str, Image.Image]],
              durations_ms: list[int], cues_ms: dict[str, int] | None = None,
              source: dict | None = None,
-             frame: Frame = MEDIUM) -> dict:
+             frame: Frame | None = None,
+             geometry: dict | None = None) -> dict:
     """Build the runtime animation manifest. All timings are integer ms."""
     if len(durations_ms) != len(frames):
         raise ValueError(f"{action}: {len(durations_ms)} durations for "
@@ -585,10 +885,22 @@ def manifest(action: str, frames: list[tuple[str, Image.Image]],
             raise ValueError(f"{action}: cue {label!r}={t!r} must be an int ms "
                              f"within 0..{total}")
 
-    base = baseline(frames[0][1], frame=frame)
+    if geometry is None:
+        if frame is None:
+            frame = MEDIUM
+        geometry = {
+            "frame_size": [frame.w, frame.h],
+            "visual_bounds": [0, 0, frame.w, frame.h],
+            "foot_anchor": [frame.w // 2, frame.h],
+        }
+        base = baseline(frames[0][1], frame=frame)
+    else:
+        base = geometry["foot_anchor"][1] - 1
     return {
         "action": action,
-        "frame_size": [frame.w, frame.h],
+        "frame_size": geometry["frame_size"],
+        "visual_bounds": geometry["visual_bounds"],
+        "foot_anchor": geometry["foot_anchor"],
         "palette": "moonberry-16",
         "baseline_row": base,
         "total_ms": total,
@@ -635,7 +947,6 @@ def promote_candidate(
     provider: str,
     acquisition_tool: str,
     prompt: str,
-    frame: Frame = MEDIUM,
     references: list[tuple[str, pathlib.Path]] | None = None,
     raw_dir: pathlib.Path = RAW_DIR,
     out_dir: pathlib.Path = OUT_DIR,
@@ -647,6 +958,7 @@ def promote_candidate(
     if not provider.strip() or not acquisition_tool.strip() or not prompt.strip():
         raise ValueError("promotion requires provider, acquisition tool, and exact prompt")
     raw_tag, identity = _asset_identity(tag)
+    profile = body_profile_for_identity(identity)
     expected_facing = identity["facing"]
     prompt_facings = _prompt_facings(prompt)
     if prompt_facings != {expected_facing}:
@@ -655,7 +967,7 @@ def promote_candidate(
             f"{tag}: exact prompt must specify only facing {expected_facing.upper()}; "
             f"found {found or 'no explicit facing clause'}"
         )
-    report = measure_candidate(raw_path, frame=frame)
+    report = measure_candidate(raw_path, tag=tag)
     if report["status"] != "advance":
         raise ValueError(
             f"{raw_path.name}: candidate cannot be promoted: "
@@ -673,11 +985,18 @@ def promote_candidate(
             "sha256": hashlib.sha256(reference.read_bytes()).hexdigest(),
             "role": role,
         })
+    identity_profile = {
+        "asset_class": identity["asset_class"],
+        "role": identity["role"],
+        "facing": identity["facing"],
+    }
     sidecar = {
         "provider": provider,
         "acquisition_tool": acquisition_tool,
         "raw_sha256": raw_sha256,
-        "tier": next(name for name, value in FRAMES.items() if value == frame),
+        "acquisition": "flexible",
+        "identity_profile": identity_profile,
+        "cursor_stamp_removed": report["cursor_stamp_removed"],
         "identity": out_name,
         "asset_class": identity["asset_class"],
         "runtime_destination": runtime_destination,
@@ -694,8 +1013,11 @@ def promote_candidate(
         staged_raw.with_suffix(".source.json").write_text(
             json.dumps(sidecar, indent=2) + "\n"
         )
-        runtime = normalize(staged_raw, frame=frame)
-        errors = raw_clipping(staged_raw) + validate(runtime, out_name, frame=frame)
+        runtime, geometry, _stamp_removed = normalize_flexible(staged_raw, profile)
+        errors = (
+            raw_clipping(staged_raw)
+            + validate(runtime, out_name, geometry=geometry, profile=profile)
+        )
         if errors:
             raise ValueError("; ".join(errors))
 
@@ -711,13 +1033,17 @@ def promote_candidate(
     save_runtime_png(runtime, runtime_path)
     manifest_path = out_dir / "manifest.json"
     manifest_data = json.loads(manifest_path.read_text()) if manifest_path.exists() else {}
-    manifest_data[out_name] = manifest(
+    entry = manifest(
         "still",
         [(out_name, runtime)],
         [1],
         source={"provider": provider, "raw_sha256": raw_sha256},
-        frame=frame,
+        geometry=geometry,
     )
+    geom_errs = validate_manifest_geometry(runtime, entry, out_name)
+    if geom_errs:
+        raise ValueError("; ".join(geom_errs))
+    manifest_data[out_name] = entry
     manifest_path.write_text(json.dumps(manifest_data, indent=2) + "\n")
     return {
         "status": "promoted",
@@ -738,7 +1064,7 @@ def build_archived_bundle(
     raw_dir: pathlib.Path = RAW_DIR,
     out_dir: pathlib.Path = OUT_DIR,
 ):
-    """Rebuild archived tags, honoring sidecar tier with a legacy medium default."""
+    """Rebuild archived tags through legacy-grid-v1 or flexible provenance."""
     raw_dir = pathlib.Path(raw_dir)
     out_dir = pathlib.Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -747,23 +1073,20 @@ def build_archived_bundle(
     for tag in tags:
         raw = raw_dir / f"{tag}.png"
         sidecar = json.loads(raw.with_suffix(".source.json").read_text())
-        tier = sidecar.get("tier", "medium")
-        if tier not in FRAMES:
-            raise ValueError(f"{raw.name}: unknown acquisition tier {tier!r}")
-        frame_spec = FRAMES[tier]
-        frame = normalize(raw, frame=frame_spec)
         out_name = OUTPUT_NAMES.get(tag, tag)
-        save_runtime_png(frame, out_dir / f"{out_name}.png")
-        built.append((tag, out_name, frame, frame_spec, raw_clipping(raw)))
+        runtime, geometry, adapter, _stamp = normalize_archived(
+            raw, sidecar, out_name=out_name)
+        save_runtime_png(runtime, out_dir / f"{out_name}.png")
+        built.append((tag, out_name, runtime, geometry, adapter, raw_clipping(raw)))
         manifests[out_name] = manifest(
             "still",
-            [(out_name, frame)],
+            [(out_name, runtime)],
             [1],
             source={
                 "provider": sidecar.get("provider"),
                 "raw_sha256": sidecar.get("raw_sha256"),
             },
-            frame=frame_spec,
+            geometry=geometry,
         )
     (out_dir / "manifest.json").write_text(
         json.dumps(manifests, indent=2) + "\n")
@@ -780,19 +1103,18 @@ def _reference(value: str) -> tuple[str, pathlib.Path]:
 
 
 def _command_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Nightglass logical-grid acquisition")
+    parser = argparse.ArgumentParser(description="Nightglass body sprite acquisition")
     commands = parser.add_subparsers(dest="command", required=True)
     measure = commands.add_parser(
         "measure", help="measure provider candidates without provenance sidecars"
     )
     measure.add_argument("paths", nargs="+", type=pathlib.Path)
-    measure.add_argument("--tier", choices=FRAMES, default="medium")
+    measure.add_argument("--tag", required=True)
     measure.add_argument("--report", type=pathlib.Path)
 
     promote = commands.add_parser(
         "promote", help="promote one passing candidate and generate shipping provenance"
     )
-    promote.add_argument("--tier", choices=FRAMES, default="medium")
     promote.add_argument("--tag", required=True)
     promote.add_argument("--raw", required=True, type=pathlib.Path)
     promote.add_argument("--provider", required=True)
@@ -821,23 +1143,37 @@ def main(argv: list[str] | None = None) -> int:
     if not argv or argv[0] not in {"measure", "promote"}:
         built, out = build_archived_bundle(argv or list(DEFAULT_TAGS))
         ok = True
-        for tag, out_name, frame, frame_spec, raw_errs in built:
-            errs = raw_errs + validate(frame, out_name, frame=frame_spec)
-            digest = hashlib.sha256(frame.tobytes()).hexdigest()[:16]
-            print(f"{out_name:<18} baseline={baseline(frame, frame=frame_spec):<3} "
+        report_rows = []
+        for tag, out_name, runtime, geometry, adapter, raw_errs in built:
+            errs = raw_errs + validate(runtime, out_name, geometry=geometry)
+            digest = hashlib.sha256(runtime.tobytes()).hexdigest()[:16]
+            row = {
+                "tag": tag,
+                "name": out_name,
+                "adapter": adapter,
+                "baseline_row": geometry["foot_anchor"][1] - 1,
+                "sha256_prefix": digest,
+                "status": "pass" if not errs else "fail",
+                "errors": errs,
+            }
+            report_rows.append(row)
+            print(f"{out_name:<18} adapter={adapter:<16} "
+                  f"baseline={row['baseline_row']:<3} "
                   f"sha={digest} {'ACCEPT' if not errs else 'REJECT'}")
             for error in errs:
                 ok = False
                 print(f"   - {error}")
         print(f"\nruntime frames -> {out}")
+        _emit_report({"status": "pass" if ok else "fail", "sprites": report_rows})
         return 0 if ok else 1
 
     args = _command_parser().parse_args(argv)
-    frame = FRAMES[args.tier]
     if args.command == "measure":
         payload = {
-            "tier": args.tier,
-            "candidates": [measure_candidate(path, frame=frame) for path in args.paths],
+            "tag": args.tag,
+            "candidates": [
+                measure_candidate(path, tag=args.tag) for path in args.paths
+            ],
         }
         _emit_report(payload, args.report)
         return 0
@@ -849,7 +1185,6 @@ def main(argv: list[str] | None = None) -> int:
             provider=args.provider,
             acquisition_tool=args.acquisition_tool,
             prompt=args.prompt_file.read_text(),
-            frame=frame,
             references=args.reference,
         )
     except (OSError, ValueError, json.JSONDecodeError) as error:

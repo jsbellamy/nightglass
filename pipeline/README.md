@@ -19,6 +19,7 @@ only.
 - `pipeline/effects/` — Ability effect author, derive, and verify (`author.py`, `derive.py`, `verify.py`)
 - `pipeline/backdrops.py` — Stage backdrop nearest reduce + byte-identity verify
 - `pipeline/palette.json` — `moonberry-16` palette definition
+- `src/assets/sprites/layout.json` — role opaque ceilings and Battlefield anchor X positions
 - `src/assets/sprites/` — committed runtime PNGs and `manifest.json`
 - `src/assets/backdrops/` — committed 480×86 Stage backdrop runtimes
 - `src/assets/icon-sources/` — generated text-grid icon sources (see `docs/icon-contract.md`)
@@ -37,24 +38,19 @@ Measure provider candidates immediately; this command is read-only and does not
 require provenance sidecars:
 
 ```bash
-python3 pipeline/acquire.py measure --role boss path/to/boss-1-a.png path/to/boss-2-a.png
+python3 pipeline/acquire.py measure --tag hunter --report path/to/report.json path/to/candidate.png
 ```
 
-The JSON result records raw gates, clipped sides, opaque bounds against the role
-ceiling, one primary failure, and the next action. A candidate with
-`"status": "retry"` stays outside the Archived Raw Bundle. Add
-`--report docs/research/evidence/<issue>/candidate-report.json` to save the same
-JSON as durable evidence; no image or sidecar is written by measurement.
-
-Until the flexible-body implementation lands, `measure` may still accept legacy
-`--tier small|medium|large` for existing assets; new work targets
-`--role party|opponent|boss` per `docs/body-sprite-contract.md`.
+The JSON result records raw gates, clipped sides, opaque bounds against the
+identity role ceiling, `cursor_stamp_removed`, one primary failure, and the next
+action. A candidate with `"status": "retry"` stays outside the Archived Raw
+Bundle. Add `--report` to save the same JSON as durable evidence; no image or
+sidecar is written by measurement.
 
 After deterministic and visual review both pass, promote the chosen candidate:
 
 ```bash
 python3 pipeline/acquire.py promote \
-  --role boss \
   --tag boss-1 \
   --raw path/to/boss-1-c.png \
   --provider "Cursor GenerateImage" \
@@ -82,8 +78,7 @@ contracts, the palette, manifest schemas, or shared derivation logic.
 ## Adding a new asset
 
 1. Declare the asset contract (see `docs/agents/asset-generation.md`).
-2. Run `acquire.py measure` with the body role (or legacy tier for unchanged
-   tooling) and follow its retry/advance result.
+2. Run `acquire.py measure` with the asset `--tag` and follow its retry/advance result.
 3. After visual review passes, run `acquire.py promote` with the exact prompt and
    direct references.
 4. Commit the raw, sidecar, promoted runtime PNG, and updated `manifest.json`.
