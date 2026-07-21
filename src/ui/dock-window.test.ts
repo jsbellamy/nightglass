@@ -8,6 +8,7 @@ import {
   createCachedDockGeometryDeps,
   createDockWindowPort,
   physicalRectToLogical,
+  wrapDockWebviewWindow,
   type DockWebviewWindow,
 } from "./dock-window";
 
@@ -70,6 +71,69 @@ describe("dock window port", () => {
         await overrides.ready?.();
       },
     };
+  }
+
+  class TestLogicalPosition {
+    constructor(
+      readonly x: number,
+      readonly y: number,
+    ) {}
+  }
+
+  function createTauriCreatedOnceWindow() {
+    const listeners = new Map<string, Array<() => void>>();
+    const once = vi.fn((event: string, handler: () => void) => {
+      const list = listeners.get(event) ?? [];
+      list.push(handler);
+      listeners.set(event, list);
+      return Promise.resolve(() => {});
+    });
+    const windowRef = {
+      show: vi.fn(async () => {}),
+      hide: vi.fn(async () => {}),
+      setPosition: vi.fn(async () => {}),
+      once,
+    };
+    const wrapped = wrapDockWebviewWindow(windowRef, TestLogicalPosition, {
+      awaitCreated: true,
+    });
+    return {
+      wrapped,
+      windowRef,
+      once,
+      emitCreated: () => {
+        for (const handler of listeners.get("tauri://created") ?? []) {
+          handler();
+        }
+      },
+      emitError: () => {
+        for (const handler of listeners.get("tauri://error") ?? []) {
+          handler();
+        }
+      },
+    };
+  }
+
+  function createPortWithWrappedNewWindow(
+    extraDeps: Partial<Parameters<typeof createDockWindowPort>[0]> = {},
+  ) {
+    let tauriWindow: ReturnType<typeof createTauriCreatedOnceWindow> | null = null;
+    const createDockWindow = vi.fn(async () => {
+      tauriWindow = createTauriCreatedOnceWindow();
+      queueMicrotask(() => {
+        tauriWindow?.emitCreated();
+      });
+      return tauriWindow.wrapped;
+    });
+    const port = createDockWindowPort({
+      isTauri: true,
+      dockUrl,
+      getTileOuterPosition: async () => tile,
+      getMonitorForTile: async () => monitor,
+      createDockWindow,
+      ...extraDeps,
+    });
+    return { port, createDockWindow, getTauriWindow: () => tauriWindow };
   }
 
   it("manual-check: dock-no-tile-resize — reads tile geometry without calling tile resize or move APIs", () => {
@@ -501,6 +565,155 @@ describe("dock window port", () => {
         },
         2,
       ),
+    );
+  });
+
+  it("completes open → close → open when tauri://created fires once, calling show on both opens", async () => {
+    const { port, createDockWindow, getTauriWindow } = createPortWithWrappedNewWindow();
+    await port.open();
+    const dock = getTauriWindow()!;
+    expect(dock.windowRef.show).toHaveBeenCalledTimes(1);
+
+    await port.close();
+    await port.open();
+    expect(createDockWindow).toHaveBeenCalledTimes(1);
+    expect(dock.windowRef.show).toHaveBeenCalledTimes(2);
+  });
+
+  it("reuses the same wrapped window across three open/close cycles", async () => {
+    const { port, createDockWindow } = createPortWithWrappedNewWindow();
+    for (let cycle = 0; cycle < 3; cycle += 1) {
+      await port.open();
+      await port.close();
+    }
+    expect(createDockWindow).toHaveBeenCalledTimes(1);
+  });
+
+  it("runs applyPosition before show on the second and third opens after close", async () => {
+    const { port, getTauriWindow } = createPortWithWrappedNewWindow();
+    const expected = dockRect(tile, monitor);
+    await port.open();
+    await port.close();
+
+    const tauri = getTauriWindow()!;
+    tauri.windowRef.setPosition.mockClear();
+    tauri.windowRef.show.mockClear();
+    await port.open();
+    expect(tauri.windowRef.setPosition.mock.invocationCallOrder[0]!).toBeLessThan(
+      tauri.windowRef.show.mock.invocationCallOrder[0]!,
+    );
+    expect(tauri.windowRef.setPosition).toHaveBeenCalledWith(
+      expect.objectContaining({ x: expected.x, y: expected.y }),
+    );
+
+    await port.close();
+    tauri.windowRef.setPosition.mockClear();
+    tauri.windowRef.show.mockClear();
+    await port.open();
+    expect(tauri.windowRef.setPosition.mock.invocationCallOrder[0]!).toBeLessThan(
+      tauri.windowRef.show.mock.invocationCallOrder[0]!,
+    );
+  });
+
+  it("registers onTileMoved after a second open and repositions on move", async () => {
+    const frames = createManualScheduler();
+    let moved: (() => void) | undefined;
+    const { port, getTauriWindow } = createPortWithWrappedNewWindow({
+      scheduleFrame: frames.scheduleFrame,
+      onTileMoved: (listener) => {
+        moved = listener;
+        return () => {};
+      },
+    });
+    await port.open();
+    await port.close();
+    await port.open();
+    const dock = getTauriWindow()!;
+    const positionsBefore = dock.windowRef.setPosition.mock.calls.length;
+    moved?.();
+    await frames.flushOne();
+    expect(dock.windowRef.setPosition.mock.calls.length).toBeGreaterThan(positionsBefore);
+  });
+
+  it("subscribes to tauri://created only once when ready is called twice on the same wrap", async () => {
+    const tauri = createTauriCreatedOnceWindow();
+    queueMicrotask(() => {
+      tauri.emitCreated();
+    });
+    const first = tauri.wrapped.ready();
+    const second = tauri.wrapped.ready();
+    expect(first).toBe(second);
+    await expect(first).resolves.toBeUndefined();
+    expect(tauri.once.mock.calls.filter(([event]) => event === "tauri://created")).toHaveLength(1);
+  });
+
+  it("clears the cached handle when creation fails and recreates on the next open", async () => {
+    let attempt = 0;
+    const createDockWindow = vi.fn(async () => {
+      attempt += 1;
+      const tauri = createTauriCreatedOnceWindow();
+      if (attempt === 1) {
+        queueMicrotask(() => {
+          tauri.emitError();
+        });
+      } else {
+        queueMicrotask(() => {
+          tauri.emitCreated();
+        });
+      }
+      return tauri.wrapped;
+    });
+    const port = createDockWindowPort({
+      isTauri: true,
+      dockUrl,
+      getTileOuterPosition: async () => tile,
+      getMonitorForTile: async () => monitor,
+      createDockWindow,
+    });
+
+    await expect(port.open()).resolves.toBeUndefined();
+    expect(port.isOpen()).toBe(false);
+    expect(createDockWindow).toHaveBeenCalledTimes(1);
+
+    await port.open();
+    expect(createDockWindow).toHaveBeenCalledTimes(2);
+    expect(port.isOpen()).toBe(true);
+  });
+
+  it("does not surface an unhandled rejection when creation fails before ready is awaited", async () => {
+    const unhandled: unknown[] = [];
+    const onUnhandled = (reason: unknown) => {
+      unhandled.push(reason);
+    };
+    process.on("unhandledRejection", onUnhandled);
+    try {
+      const tauri = createTauriCreatedOnceWindow();
+      queueMicrotask(() => {
+        tauri.emitError();
+      });
+      await new Promise((resolve) => {
+        setTimeout(resolve, 10);
+      });
+      expect(unhandled).toEqual([]);
+      await expect(tauri.wrapped.ready()).rejects.toThrow("tauri://error");
+    } finally {
+      process.off("unhandledRejection", onUnhandled);
+    }
+  });
+
+  it("keeps ready → setPosition → show with one show per open across wrapped reopen cycles", async () => {
+    const { port, getTauriWindow } = createPortWithWrappedNewWindow();
+    const expected = dockRect(tile, monitor);
+    await port.open();
+    const dock = getTauriWindow()!;
+    expect(dock.windowRef.show).toHaveBeenCalledTimes(1);
+
+    await port.close();
+    dock.windowRef.show.mockClear();
+    await port.open();
+    expect(dock.windowRef.show).toHaveBeenCalledTimes(1);
+    expect(dock.windowRef.setPosition).toHaveBeenLastCalledWith(
+      expect.objectContaining({ x: expected.x, y: expected.y }),
     );
   });
 });
