@@ -1,6 +1,6 @@
 # ADR-0002: Battle Tile and Management Dock as two windows over a bus
 
-**Status:** Accepted  
+**Status:** Superseded by ADR-0005 (`docs/adr/0005-dock-workspace-geometry.md`).  
 **Date:** 2026-07-19
 
 ## Context

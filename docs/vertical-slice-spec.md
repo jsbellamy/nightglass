@@ -26,7 +26,7 @@ Offline Progress while the app is closed.
   Talent Tier per Class; three Equipment Slots and two Equipment Tiers.
 - Deterministic continuous-time Automatic Combat; per-Character three-slot
   Ability Loadouts; free manual point-by-point Talent respec.
-- The fixed 480×112 Battle Tile plus the single 480×336 tabbed Management Dock.
+- The fixed 480×112 Battle Tile plus the single 800×480 tabbed Management Dock.
 - Snapshot save/reload, capped Offline Progress, the accessibility floor, the
   default-muted audio proof, and the performance budgets of §10.
 - The Moonberry Guild visual language, the grid-recovery acquisition pipeline,
@@ -92,10 +92,11 @@ Decisions: [Battlefield workspace](https://github.com/jsbellamy/nightglass/issue
 
 ### Management Dock
 
-- A single **480×336 logical-pixel** tabbed panel exactly the tile's width,
-  docked flush to the tile with an 8px gap, in the same glass language. It
-  opens **above** a bottom-parked tile and **below** a top-parked one; because
-  it never exceeds the tile's width, no other edge-clamping rules exist.
+- A single **800×480 logical-pixel** tabbed panel, docked flush to the tile with
+  an 8px gap, in the same glass language. It opens **above** a bottom-parked
+  tile and **below** a top-parked one; horizontal placement left-aligns to the
+  tile when there is room and clamps to the monitor so the dock stays fully
+  on-screen (see ADR-0005).
 - One tab per management surface — **Party, Loadout, Talents, Armory, Stage** —
   with a capacity of **one surface at a time**; choosing another surface swaps
   the tab. A status-line button opens the dock; pressing the active surface's
