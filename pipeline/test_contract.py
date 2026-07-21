@@ -95,7 +95,14 @@ gate_errs = [e for p in bundle for e in A.raw_gates(p)]
 check("archived raws match their unmodified provider hashes", not gate_errs,
       str(gate_errs))
 
-reports = {p.stem: A.recover_grid(p)[1] for p in bundle}
+def _sidecar(tag: str) -> dict:
+    return json.loads((RAW_DIR / f"{tag}.png").with_suffix(".source.json").read_text())
+
+flexible_tags = {
+    tag for tag in A.DEFAULT_TAGS if _sidecar(tag).get("acquisition") == "flexible"
+}
+legacy_bundle = [RAW_DIR / f"{tag}.png" for tag in A.DEFAULT_TAGS if tag not in flexible_tags]
+reports = {p.stem: A.recover_grid(p)[1] for p in legacy_bundle}
 check("Knight grid is recoverable without reduction",
       reports["knight"]["grid"] == [32, 45], str(reports["knight"]))
 check("Wizard grid is recoverable without reduction",
@@ -110,11 +117,23 @@ check("Boss-3 Thornmother Vane grid is recoverable without reduction",
       reports["boss-3"]["grid"] == [21, 40], str(reports["boss-3"]))
 check("Priest grid is recoverable without reduction",
       reports["priest"]["grid"] == [27, 46], str(reports["priest"]))
-check("Hunter grid is recoverable without reduction",
-      reports["hunter"]["grid"] == [30, 44], str(reports["hunter"]))
 check("both pitch fits clear the confidence gate",
       all(report[axis]["score"] >= A.MIN_GRID_SCORE
           for report in reports.values() for axis in ("pitch_x", "pitch_y")))
+
+hunter_sidecar = _sidecar("hunter")
+hunter_measure = A.measure_candidate(RAW_DIR / "hunter.png", tag="hunter")
+check("Hunter archived raw uses flexible acquisition provenance",
+      hunter_sidecar.get("acquisition") == "flexible"
+      and hunter_sidecar.get("identity_profile", {}).get("role") == "party-character"
+      and hunter_sidecar.get("facing") == "right",
+      str(hunter_sidecar))
+check("Hunter flexible opaque bounds fit the Party 40x68 ceiling",
+      hunter_measure["status"] == "advance"
+      and hunter_measure["fitted_opaque_size"][0] <= hunter_profile.max_opaque_w
+      and hunter_measure["fitted_opaque_size"][1] <= hunter_profile.max_opaque_h
+      and hunter_measure["clipped_sides"] == [],
+      str(hunter_measure))
 
 
 print("candidate measurement interface")
@@ -470,24 +489,25 @@ check("repeated offline rebuild is byte-identical PNG",
 
 for raw_tag, runtime_name in RUNTIME_SPRITES.items():
     sidecar = json.loads((RAW_DIR / f"{raw_tag}.png").with_suffix(".source.json").read_text())
-    tier = sidecar.get("tier", "medium")
-    rebuilt = png_bytes(A.normalize_legacy_grid_v1(RAW_DIR / f"{raw_tag}.png",
-                                                   frame=A.FRAMES[tier]))
+    sprite_key = pathlib.Path(runtime_name).stem
+    rebuilt_image, _geometry, adapter, _stamp = A.normalize_archived(
+        RAW_DIR / f"{raw_tag}.png", sidecar, out_name=sprite_key)
+    rebuilt = png_bytes(rebuilt_image)
     committed = (RUNTIME_DIR / runtime_name).read_bytes()
     check(f"offline rebuild matches committed {runtime_name} byte-for-byte",
-          rebuilt == committed)
+          rebuilt == committed, f"adapter={adapter}")
 
 manifest_data = json.loads((RUNTIME_DIR / "manifest.json").read_text())
 for raw_tag, runtime_name in RUNTIME_SPRITES.items():
     sprite_key = pathlib.Path(runtime_name).stem
     entry = manifest_data[sprite_key]
     sidecar = json.loads((RAW_DIR / f"{raw_tag}.png").with_suffix(".source.json").read_text())
-    tier = sidecar.get("tier", "medium")
-    rebuilt_image = A.normalize_legacy_grid_v1(RAW_DIR / f"{raw_tag}.png",
-                                               frame=A.FRAMES[tier])
+    rebuilt_image, _geometry, adapter, _stamp = A.normalize_archived(
+        RAW_DIR / f"{raw_tag}.png", sidecar, out_name=sprite_key)
     recorded = entry["frames"][0]["sha256"]
     actual = hashlib.sha256(rebuilt_image.tobytes()).hexdigest()
-    check(f"legacy-grid-v1 rebuild sha256 matches manifest for {sprite_key}",
+    label = ("flexible" if adapter == "flexible" else "legacy-grid-v1")
+    check(f"{label} rebuild sha256 matches manifest for {sprite_key}",
           actual == recorded, f"got {actual[:16]}… expected {recorded[:16]}…")
 
 _p = one.load()
