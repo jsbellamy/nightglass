@@ -19,9 +19,9 @@ import { contrastRatio, parseRGB } from "./helpers/contrast";
 const SCREENSHOTS = "e2e-screenshots";
 /** Committed review artifact for the knockout-readability judgement (#103). */
 const KNOCKOUT_ARTIFACT = "docs/research/evidence/knockout-readability/tile-combat.png";
-/** Committed review artifact for 16px Armory slot icon legibility (#132). */
+/** Committed review artifact after Armory strip deletion (#271): Character Equipment rows. */
 const EQUIPMENT_CHROME_LEGIBILITY_ARTIFACT =
-  "docs/research/evidence/124-equipment-icon-consumers/armory-slot-strip.png";
+  "docs/research/evidence/124-equipment-icon-consumers/character-equipment-rows.png";
 
 type Rect = { x: number; y: number; w: number; h: number; cls?: string };
 
@@ -574,7 +574,7 @@ test.describe("rendered-output evidence seam", () => {
     await context.close();
   });
 
-  test("evidence: equipment-icon-content-tier / evidence: equipment-icon-chrome-legibility — Character Equipment content-tier geometry, no clip across twelve slots, and Armory chrome legibility", async ({
+  test("evidence: equipment-icon-content-tier / evidence: equipment-icon-chrome-legibility — Armory grid content-tier geometry and density; Character Equipment carries the chrome-legibility slug after strip deletion (content tier, explicit change)", async ({
     browser,
   }) => {
     const { context, tile } = await openTile(browser);
@@ -584,23 +584,20 @@ test.describe("rendered-output evidence seam", () => {
     await dock.waitForSelector(".management-dock");
 
     await postBusSnapshot(dock, equipmentIconReviewSnapshot());
-    await dock.click('[data-dock-tab="character"]');
-    await dock.waitForSelector(
-      '[data-character-section="equipment"] .equipment-icon-img--content',
-    );
+    await dock.click('[data-dock-tab="armory"]');
+    await dock.waitForSelector(".armory-grid .equipment-icon-img--content");
 
-    const contentTier = await dock.evaluate(() => {
+    const gridContent = await dock.evaluate(() => {
       const img = document.querySelector<HTMLImageElement>(
-        '[data-character-section="equipment"] .equipment-icon-img--content',
+        ".armory-grid .equipment-icon-img--content",
       );
       const wrap = img?.closest(".equipment-icon-content");
-      const row = img?.closest(".equipment-slot-row");
-      if (!img || !wrap || !row) {
+      const tile = img?.closest(".equipment-card");
+      if (!img || !wrap || !tile) {
         return null;
       }
       const imgBox = img.getBoundingClientRect();
       const wrapBox = wrap.getBoundingClientRect();
-      const rowBox = row.getBoundingClientRect();
       const wrapStyle = getComputedStyle(wrap);
       const imgStyle = getComputedStyle(img);
       return {
@@ -617,27 +614,63 @@ test.describe("rendered-output evidence seam", () => {
           imgBox.right <= wrapBox.right + 0.5 &&
           imgBox.top >= wrapBox.top - 0.5 &&
           imgBox.bottom <= wrapBox.bottom + 0.5,
-        fitsRow:
-          imgBox.left >= rowBox.left - 0.5 &&
-          imgBox.right <= rowBox.right + 0.5 &&
-          imgBox.top >= rowBox.top - 0.5 &&
-          imgBox.bottom <= rowBox.bottom + 0.5,
-        rowHasRarityTint: row.classList.contains("rarity-rare") || row.classList.contains("rarity-common"),
+        hasRarityTint: /(?:^|\s)rarity-/.test(tile.className),
       };
     });
 
-    expect(contentTier, "Character Equipment content-tier icon present").not.toBeNull();
-    expect(contentTier!.imgW, "rendered content width").toBe(34);
-    expect(contentTier!.imgH, "rendered content height").toBe(34);
-    expect(contentTier!.attrW, "logical content width").toBe(34);
-    expect(contentTier!.attrH, "logical content height").toBe(34);
-    expect(contentTier!.imgWidthCss, "CSS content width").toBe("34px");
-    expect(contentTier!.imgHeightCss, "CSS content height").toBe("34px");
-    expect(contentTier!.wrapOverflow, "no overflow clip on wrapper").not.toBe("hidden");
-    expect(Number.parseFloat(contentTier!.wrapBorderWidth), "no wrapper border").toBe(0);
-    expect(contentTier!.fitsWrap, "icon fits wrapper").toBe(true);
-    expect(contentTier!.fitsRow, "icon fits equipment row").toBe(true);
-    expect(contentTier!.rowHasRarityTint, "rarity class on row").toBe(true);
+    expect(gridContent, "Armory grid content-tier icon present").not.toBeNull();
+    expect(gridContent!.imgW, "rendered content width").toBe(34);
+    expect(gridContent!.imgH, "rendered content height").toBe(34);
+    expect(gridContent!.attrW, "logical content width").toBe(34);
+    expect(gridContent!.attrH, "logical content height").toBe(34);
+    expect(gridContent!.imgWidthCss, "CSS content width").toBe("34px");
+    expect(gridContent!.imgHeightCss, "CSS content height").toBe("34px");
+    expect(gridContent!.wrapOverflow, "no overflow clip on wrapper").not.toBe("hidden");
+    expect(Number.parseFloat(gridContent!.wrapBorderWidth), "no wrapper border").toBe(0);
+    expect(gridContent!.fitsWrap, "icon fits wrapper").toBe(true);
+    expect(gridContent!.hasRarityTint, "rarity class on tile").toBe(true);
+
+    const density = await dock.evaluate(() => {
+      const grid = document.querySelector<HTMLElement>(".armory-grid");
+      const tiles = [...document.querySelectorAll<HTMLElement>(".armory-grid .equipment-card")];
+      if (!grid || tiles.length === 0) {
+        return null;
+      }
+      const gridBox = grid.getBoundingClientRect();
+      const tops = new Map<number, HTMLElement[]>();
+      for (const tile of tiles) {
+        const top = Math.round(tile.getBoundingClientRect().top);
+        const row = tops.get(top) ?? [];
+        row.push(tile);
+        tops.set(top, row);
+      }
+      const firstRowTop = Math.min(...tops.keys());
+      const firstRow = tops.get(firstRowTop) ?? [];
+      const firstRowVisible = firstRow.every((tile) => {
+        const box = tile.getBoundingClientRect();
+        return box.bottom <= gridBox.bottom + 1 && box.top >= gridBox.top - 1;
+      });
+      return {
+        columnCount: firstRow.length,
+        firstRowVisible,
+        tileCount: tiles.length,
+        chromeSurvives: document.querySelector(".equipment-icon-img--chrome") !== null,
+        slotStrip: document.querySelector(".armory-slot-strip") !== null,
+      };
+    });
+
+    expect(density, "Armory density sample").not.toBeNull();
+    expect(density!.slotStrip, "slot strip removed").toBe(false);
+    expect(density!.chromeSurvives, "no chrome-tier icon remains in the dock").toBe(false);
+    expect(density!.columnCount, "at least three columns at 800px dock width").toBeGreaterThanOrEqual(
+      3,
+    );
+    expect(density!.firstRowVisible, "at least one full row visible without scrolling").toBe(true);
+
+    await dock.click('[data-dock-tab="character"]');
+    await dock.waitForSelector(
+      '[data-character-section="equipment"] .equipment-icon-img--content',
+    );
 
     const classIds = ["knight", "wizard", "priest", "hunter"] as const;
     for (const classId of classIds) {
@@ -666,7 +699,12 @@ test.describe("rendered-output evidence seam", () => {
             imgBox.bottom <= wrapBox.bottom + 0.5;
           return {
             slot: row.dataset["equipmentSlot"],
-            ok: fitsRow && fitsWrap && overflow !== "hidden" && imgBox.width === 34 && imgBox.height === 34,
+            ok:
+              fitsRow &&
+              fitsWrap &&
+              overflow !== "hidden" &&
+              imgBox.width === 34 &&
+              imgBox.height === 34,
             reason:
               fitsRow && fitsWrap && overflow !== "hidden"
                 ? "ok"
@@ -680,39 +718,9 @@ test.describe("rendered-output evidence seam", () => {
       }
     }
 
-    await dock.click('[data-dock-tab="armory"]');
-    await dock.waitForSelector(".armory-slot-strip .equipment-icon-img--chrome");
-
-    const chromeIcons = await dock.evaluate(() => {
-      return [...document.querySelectorAll(".armory-slot-button .equipment-icon-img--chrome")].map(
-        (el) => {
-          const img = el as HTMLImageElement;
-          const box = img.getBoundingClientRect();
-          const style = getComputedStyle(img);
-          const button = img.closest(".armory-slot-button");
-          const label = button?.querySelector(".armory-slot-label");
-          return {
-            w: box.width,
-            h: box.height,
-            cssW: style.width,
-            cssH: style.height,
-            hasLabel: label !== null && (label.textContent?.length ?? 0) > 0,
-          };
-        },
-      );
-    });
-    expect(chromeIcons, "twelve equipped slot chrome icons").toHaveLength(12);
-    for (const icon of chromeIcons) {
-      expect(icon.w, "chrome rendered width").toBe(16);
-      expect(icon.h, "chrome rendered height").toBe(16);
-      expect(icon.cssW, "chrome CSS width").toBe("16px");
-      expect(icon.cssH, "chrome CSS height").toBe("16px");
-      expect(icon.hasLabel, "slot label present").toBe(true);
-    }
-
     mkdirSync("docs/research/evidence/124-equipment-icon-consumers", { recursive: true });
-    const strip = await dock.locator(".armory-slot-strip");
-    await strip.screenshot({ path: EQUIPMENT_CHROME_LEGIBILITY_ARTIFACT });
+    const equipment = await dock.locator('[data-character-section="equipment"]');
+    await equipment.screenshot({ path: EQUIPMENT_CHROME_LEGIBILITY_ARTIFACT });
 
     await context.close();
   });

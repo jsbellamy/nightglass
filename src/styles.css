@@ -642,6 +642,21 @@ html.dock-window body {
   min-height: 0;
   padding: 12px;
   overflow: auto;
+  position: relative;
+}
+
+.dock-panel:not([hidden]) {
+  position: absolute;
+  inset: 12px;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.dock-surface-root {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .dock-placeholder-title {
@@ -1072,49 +1087,100 @@ html.dock-window body {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  min-height: 100%;
+  height: 100%;
+  overflow: hidden;
 }
 
-.armory-interim-icon-note {
-  margin: 0;
-  font-size: 10px;
-  color: var(--dock-text-muted, #d8d0bf);
+.armory-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 0;
+  flex: 1;
+  overflow: hidden;
 }
 
-.armory-slot-strip,
-.armory-character-slots,
-.armory-slot-row,
-.armory-toolbar,
-.armory-filters,
+.armory-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.armory-slot-segments {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0;
+  border: 1px solid rgba(255, 249, 233, 0.18);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.armory-slot-segment {
+  border: 0;
+  border-right: 1px solid rgba(255, 249, 233, 0.18);
+  border-radius: 0;
+  background: #292d3d;
+  color: var(--dock-text, #fff9e9);
+  cursor: pointer;
+  padding: 4px 8px;
+  font-size: 11px;
+}
+
+.armory-slot-segment:last-child {
+  border-right: 0;
+}
+
+.armory-slot-segment[aria-pressed="true"] {
+  background: #3a4158;
+  border-color: #8ec8ff;
+}
+
+.armory-panes {
+  display: flex;
+  gap: 8px;
+  min-height: 0;
+  flex: 1;
+}
+
+.armory-grid {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+  grid-auto-rows: min-content;
+  align-content: start;
+  gap: 6px;
+}
+
+.armory-detail {
+  flex: 0 0 240px;
+  width: 240px;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
 .armory-bulk-actions,
-.armory-collection,
-.armory-compare-candidates,
 .armory-compare-columns,
 .armory-confirm-actions,
-.equipment-card-actions {
+.armory-detail-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
 }
 
-.armory-character-slots,
-.armory-slot-row,
-.armory-toolbar,
-.armory-collection,
-.armory-compare-panel {
-  flex-direction: column;
-}
-
-.armory-slot-button,
-.armory-filter,
-.armory-filter-clear,
 .armory-discard-button,
-.armory-back,
 .armory-equip-button,
 .equipment-lock-toggle,
-.equipment-detail-button,
 .armory-confirm-yes,
-.armory-confirm-no,
-.armory-compare-candidate {
+.armory-confirm-no {
   border: 1px solid rgba(255, 249, 233, 0.18);
   border-radius: 4px;
   background: #292d3d;
@@ -1125,13 +1191,6 @@ html.dock-window body {
   text-align: left;
 }
 
-.armory-slot-button {
-  min-width: 88px;
-}
-
-.armory-slot-label,
-.armory-slot-equipped,
-.armory-slot-empty,
 .equipment-meta,
 .equipment-guaranteed,
 .armory-attempt-note,
@@ -1142,20 +1201,14 @@ html.dock-window body {
   line-height: 1.4;
 }
 
-.armory-slot-equipped {
-  font-weight: 600;
-}
-
-.armory-slot-empty {
-  color: var(--dock-text-muted, #d8d0bf);
-}
-
-.armory-sort-label {
+.armory-sort-label,
+.armory-state-label {
   font-size: 11px;
   color: var(--dock-text-muted, #d8d0bf);
 }
 
-.armory-sort-select {
+.armory-sort-select,
+.armory-state-select {
   margin-left: 6px;
   padding: 2px 4px;
   border-radius: 4px;
@@ -1173,10 +1226,38 @@ html.dock-window body {
   padding: 6px 8px;
 }
 
+.armory-grid .equipment-card {
+  position: relative;
+  cursor: pointer;
+  min-height: 72px;
+}
+
+.armory-grid .equipment-card.selected {
+  border-color: #8ec8ff;
+}
+
+.armory-grid .armory-discard-checkbox {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  opacity: 0;
+}
+
+.armory-grid .equipment-card:hover .armory-discard-checkbox,
+.armory-grid .equipment-card:focus-within .armory-discard-checkbox {
+  opacity: 1;
+}
+
 .equipment-card-header {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.armory-grid .equipment-card-header {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
 }
 
 .equipment-card-titles {
@@ -1285,17 +1366,9 @@ html.dock-window body {
   color: #9be7c4;
 }
 
-.armory-compare-candidate.selected {
-  border-color: #8ec8ff;
-}
-
 .armory-discard-button:disabled {
   opacity: 0.55;
   cursor: not-allowed;
-}
-
-.armory-filter[aria-pressed="true"] {
-  border-color: #8ec8ff;
 }
 
 .offline-summary {
