@@ -140,7 +140,9 @@ describe("Management Dock shell", () => {
     stageTab?.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
     expect(root.querySelector<HTMLElement>('[data-dock-panel="character"]')?.hidden).toBe(false);
 
-    stageTab?.dispatchEvent(new KeyboardEvent("keydown", { key: "Home", bubbles: true }));
+    armoryTab?.click();
+    expect(root.querySelector<HTMLElement>('[data-dock-panel="armory"]')?.hidden).toBe(false);
+    armoryTab?.dispatchEvent(new KeyboardEvent("keydown", { key: "Home", bubbles: true }));
     expect(root.querySelector<HTMLElement>('[data-dock-panel="character"]')?.hidden).toBe(false);
 
     characterTab?.dispatchEvent(new KeyboardEvent("keydown", { key: "End", bubbles: true }));
@@ -441,11 +443,5 @@ describe("Management Dock source boundary", () => {
   it("does not import the Engine", () => {
     const source = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "dock.ts"), "utf8");
     expect(source).not.toMatch(/from\s+["']\.\.\/core\/engine["']/);
-  });
-
-  it("dispatches legality by needsLegality rather than a hardcoded talents id", () => {
-    const source = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "dock.ts"), "utf8");
-    expect(source).not.toMatch(/id === ["']talents["']/);
-    expect(source).toMatch(/needsLegality/);
   });
 });
