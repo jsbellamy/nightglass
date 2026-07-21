@@ -11,7 +11,6 @@ import {
 import { createEquipmentIconElement } from "./icons";
 import { bindPressable } from "./keyboard";
 import { mountLoadoutSurface } from "./loadout-surface";
-import { mountPartySurface } from "./party-surface";
 import { el } from "./surface-shell";
 import { mountTalentsSurface } from "./talents-surface";
 
@@ -144,10 +143,6 @@ export function mountCharacterSurface(
 ): CharacterSurface {
   root.classList.add("character-surface");
 
-  const partySection = document.createElement("section");
-  partySection.className = "character-section";
-  partySection.dataset["characterSection"] = "party";
-
   const equipmentSection = document.createElement("section");
   equipmentSection.className = "character-section";
   equipmentSection.dataset["characterSection"] = "equipment";
@@ -160,15 +155,13 @@ export function mountCharacterSurface(
   talentsSection.className = "character-section";
   talentsSection.dataset["characterSection"] = "talents";
 
-  root.append(partySection, equipmentSection, loadoutSection, talentsSection);
+  root.append(equipmentSection, loadoutSection, talentsSection);
 
-  const party = mountPartySurface(partySection, options);
   const loadout = mountLoadoutSurface(loadoutSection, options);
   const talents = mountTalentsSurface(talentsSection, options);
 
   return {
     render(snapshot, legality) {
-      party.render(snapshot);
       if (snapshot) {
         renderEquipmentSection(equipmentSection, snapshot, options);
       } else {
@@ -178,7 +171,6 @@ export function mountCharacterSurface(
       talents.render(snapshot, legality);
     },
     destroy() {
-      party.destroy();
       loadout.destroy();
       talents.destroy();
       root.replaceChildren();

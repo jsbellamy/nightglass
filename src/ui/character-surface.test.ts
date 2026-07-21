@@ -57,7 +57,7 @@ function leveledKnightEngine() {
 }
 
 describe("Character surface", () => {
-  it("mounts Party, Equipment, Loadout, and Talents sections in that order", () => {
+  it("mounts Equipment, Loadout, and Talents sections without a Party panel", () => {
     const root = document.createElement("div");
     const selected = { current: "knight" as ClassId };
     const surface = mountCharacterSurface(root, mountOptions(selected));
@@ -68,15 +68,16 @@ describe("Character surface", () => {
     expect(root.classList.contains("character-surface")).toBe(true);
     const sections = [...root.querySelectorAll<HTMLElement>("[data-character-section]")];
     expect(sections.map((section) => section.dataset["characterSection"])).toEqual([
-      "party",
       "equipment",
       "loadout",
       "talents",
     ]);
-    expect(sections[0]?.classList.contains("party-surface")).toBe(true);
-    expect(sections[1]?.querySelector(".character-equipment")).not.toBeNull();
-    expect(sections[2]?.classList.contains("loadout-surface")).toBe(true);
-    expect(sections[3]?.classList.contains("talents-surface")).toBe(true);
+    expect(root.querySelector(".party-surface")).toBeNull();
+    expect(root.querySelector(".formation-slot")).toBeNull();
+    expect(root.querySelector(".party-swap")).toBeNull();
+    expect(sections[0]?.querySelector(".character-equipment")).not.toBeNull();
+    expect(sections[1]?.classList.contains("loadout-surface")).toBe(true);
+    expect(sections[2]?.classList.contains("talents-surface")).toBe(true);
 
     surface.destroy();
   });
@@ -116,14 +117,13 @@ describe("Character surface", () => {
     const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
     surface.render(engine.snapshot(), EMPTY_ENGINE_LEGALITY);
 
-    expect(root.querySelector(".party-surface")).not.toBeNull();
+    expect(root.querySelector(".party-surface")).toBeNull();
     expect(root.querySelector(".character-equipment")).not.toBeNull();
     expect(root.querySelector(".loadout-surface")).not.toBeNull();
     expect(root.querySelector(".talents-surface")).not.toBeNull();
 
     surface.destroy();
 
-    expect(root.querySelector(".party-surface")).toBeNull();
     expect(root.querySelector(".character-equipment")).toBeNull();
     expect(root.querySelector(".loadout-surface")).toBeNull();
     expect(root.querySelector(".talents-surface")).toBeNull();
@@ -139,7 +139,7 @@ describe("Character surface", () => {
 
     surface.render(engine.snapshot(), EMPTY_ENGINE_LEGALITY);
 
-    expect(root.querySelector(".party-surface .dock-surface-title")?.textContent).toBe("Party");
+    expect(root.querySelector(".party-surface")).toBeNull();
     expect(root.querySelector('[data-character-section="equipment"]')).not.toBeNull();
     expect(root.querySelector(".loadout-surface .dock-surface-title")?.textContent).toBe("Loadout");
     expect(root.querySelector(".talents-surface .dock-surface-title")?.textContent).toBe("Talents");

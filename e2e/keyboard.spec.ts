@@ -41,6 +41,21 @@ test.describe("accessibility keyboard floor", () => {
 
     await dock.locator('[data-character-chip="knight"]').focus();
     await dock.keyboard.press("Enter");
+    await assertFocusRingVisible(dock, '[data-party-swap="knight"]');
+    await dock.locator('[data-party-swap="knight"]').focus();
+    await dock.keyboard.press("Enter");
+    await expect(dock.locator('[data-pending-kind="party"]')).toContainText(/next Attempt/i);
+
+    // After the swap, Knight is Reserve — exercise → slot actions on the rail.
+    await dock.locator('[data-character-chip="knight"]').focus();
+    await dock.keyboard.press("Enter");
+    await assertFocusRingVisible(dock, '[data-party-swap-slot="1"]');
+    await dock.locator('[data-party-swap-slot="1"]').focus();
+    await dock.keyboard.press("Enter");
+    await expect(dock.locator('[data-pending-kind="party"]')).toContainText(/next Attempt/i);
+
+    await dock.locator('[data-character-chip="knight"]').focus();
+    await dock.keyboard.press("Enter");
     const loadoutSelect = dock.locator('[data-class-id="knight"] [data-loadout-assign="0"]');
     await loadoutSelect.focus();
     await assertFocusRingVisible(dock, '[data-class-id="knight"] [data-loadout-assign="0"]');
@@ -103,6 +118,8 @@ test.describe("accessibility keyboard floor", () => {
     await assertFocusRingVisible(dock, '[data-stage-id="1"]');
     await dock.keyboard.press("Enter");
     await expect(dock.locator(".stage-confirm")).toBeVisible();
+    await dock.locator('[data-stage-confirm="yes"]').focus();
+    await assertFocusRingVisible(dock, '[data-stage-confirm="yes"]');
     await dock.keyboard.press("Enter");
     await expect(dock.locator(".stage-confirm")).toHaveCount(0);
 

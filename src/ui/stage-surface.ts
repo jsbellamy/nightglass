@@ -81,7 +81,13 @@ export function mountStageSurface(
 
     mountedConfirm = confirm;
     root.append(confirm);
-    yes.focus();
+    // Defer focus so the activating Enter/Space keyup cannot land on Confirm and
+    // immediately dismiss the dialog (keyboard e2e flake under Playwright).
+    queueMicrotask(() => {
+      if (mountedConfirm === confirm) {
+        yes.focus();
+      }
+    });
   }
 
   const shell = mountSurfaceShell(root, "stage-surface", {

@@ -166,6 +166,7 @@ export function mountManagementDock(
       selectedClassId = classId;
       remountPickerAndSurface();
     },
+    onCommand: (command) => options.onCommand?.(command),
   });
   body.append(surface);
 
