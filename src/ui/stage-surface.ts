@@ -77,6 +77,7 @@ export function mountStageSurface(
 
   const shell = mountSurfaceShell(root, "stage-surface", {
     title: "Stage",
+    showTitle: false,
     body(snapshot) {
       const attempt = snapshot.attempt;
 

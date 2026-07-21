@@ -63,6 +63,11 @@ export function el<K extends keyof HTMLElementTagNameMap>(
 export interface SurfaceShellOptions {
   /** Rendered as the h2.dock-surface-title. */
   title: string;
+  /**
+   * Render the h2. False when the surface is a whole dock panel whose tab
+   * already names it. Defaults to true for composed section headings.
+   */
+  showTitle?: boolean;
   /** Body builder. Not called when the Snapshot is null. */
   body(snapshot: ReadonlySnapshot): Child[];
 }
@@ -93,10 +98,12 @@ export function mountSurfaceShell(
       return;
     }
 
-    const title = document.createElement("h2");
-    title.className = "dock-surface-title";
-    title.textContent = options.title;
-    root.append(title);
+    if (options.showTitle !== false) {
+      const title = document.createElement("h2");
+      title.className = "dock-surface-title";
+      title.textContent = options.title;
+      root.append(title);
+    }
 
     for (const child of options.body(snapshot)) {
       appendChild(root, child);
@@ -117,4 +124,42 @@ export function pendingMarker(): HTMLElement {
   marker.className = "pending-marker pending-wave";
   marker.textContent = "Applies at next Wave";
   return marker;
+}
+
+/**
+ * Marks a scroll region with `data-overflow="true|false"` via ResizeObserver +
+ * MutationObserver. CSS can show a fade only when overflowing. No scroll
+ * listeners and no per-frame style writes — observers schedule at most one
+ * rAF sync after a size or content change.
+ */
+export function bindScrollOverflowAffordance(el: HTMLElement): () => void {
+  let scheduled = 0;
+  const sync = (): void => {
+    if (scheduled !== 0) {
+      return;
+    }
+    scheduled = requestAnimationFrame(() => {
+      scheduled = 0;
+      const overflows = el.scrollHeight > el.clientHeight + 1;
+      el.dataset["overflow"] = overflows ? "true" : "false";
+    });
+  };
+  const resizeObserver = new ResizeObserver(() => {
+    sync();
+  });
+  resizeObserver.observe(el);
+  const mutationObserver = new MutationObserver(() => {
+    sync();
+  });
+  mutationObserver.observe(el, { childList: true, subtree: true, characterData: true });
+  sync();
+  return () => {
+    if (scheduled !== 0) {
+      cancelAnimationFrame(scheduled);
+      scheduled = 0;
+    }
+    resizeObserver.disconnect();
+    mutationObserver.disconnect();
+    delete el.dataset["overflow"];
+  };
 }

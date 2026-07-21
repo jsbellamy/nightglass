@@ -7,7 +7,7 @@ import {
   levelFor,
   rosterClassIds,
 } from "./snapshot-view";
-import { el } from "./surface-shell";
+import { bindScrollOverflowAffordance, el } from "./surface-shell";
 
 const POSITION_LABELS = ["Front", "Middle", "Back"] as const;
 const POSITION_KEYS = ["front", "middle", "back"] as const;
@@ -32,6 +32,7 @@ export function mountCharacterPicker(
     props: { role: "tablist" },
   });
   root.append(picker);
+  const unbindOverflow = bindScrollOverflowAffordance(picker);
 
   let chipOrder: ClassId[] = [];
 
@@ -143,6 +144,7 @@ export function mountCharacterPicker(
       renderChips(snapshot, selected);
     },
     destroy() {
+      unbindOverflow();
       chipOrder = [];
       picker.remove();
     },

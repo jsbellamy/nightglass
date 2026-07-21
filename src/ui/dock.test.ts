@@ -264,7 +264,21 @@ describe("Management Dock active-surface rendering", () => {
 
     root.querySelector<HTMLButtonElement>('[data-dock-tab="armory"]')?.click();
 
-    expect(root.querySelector(".armory-surface .dock-surface-title")).not.toBeNull();
+    expect(root.querySelector(".armory-surface .dock-surface-title")).toBeNull();
+    expect(root.querySelector(".armory-surface .armory-body")).not.toBeNull();
+
+    root.querySelector<HTMLButtonElement>('[data-dock-tab="stage"]')?.click();
+    expect(root.querySelector(".stage-surface .dock-surface-title")).toBeNull();
+    expect(root.querySelector(".stage-surface .attempt-position")).not.toBeNull();
+
+    root.querySelector<HTMLButtonElement>('[data-dock-tab="character"]')?.click();
+    expect(root.querySelector(".party-surface .dock-surface-title")?.textContent).toBe("Party");
+    expect(root.querySelector(".loadout-surface .dock-surface-title")?.textContent).toBe(
+      "Loadout",
+    );
+    expect(root.querySelector(".talents-surface .dock-surface-title")?.textContent).toBe(
+      "Talents",
+    );
 
     root.remove();
     dock.destroy();

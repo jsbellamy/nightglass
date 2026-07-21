@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { createEngine } from "../core/engine";
 import { buildContent } from "../data";
 import { mountStageSurface } from "./stage-surface";
-import { el, mountSurfaceShell, pendingMarker } from "./surface-shell";
+import { el, mountSurfaceShell, pendingMarker, bindScrollOverflowAffordance } from "./surface-shell";
 
 const LOOT_SEED = 42;
 const content = buildContent();
@@ -57,6 +57,39 @@ describe("Management surface shell pending Wave marker", () => {
   });
 });
 
+describe("Scroll overflow affordance binding", () => {
+  it('sets data-overflow to "false" when content fits and "true" when it overflows', async () => {
+    const region = document.createElement("div");
+    Object.defineProperty(region, "clientHeight", { configurable: true, get: () => 100 });
+    Object.defineProperty(region, "scrollHeight", {
+      configurable: true,
+      get: () => (region.dataset["probeTall"] === "1" ? 240 : 80),
+    });
+    document.body.append(region);
+
+    const unbind = bindScrollOverflowAffordance(region);
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => resolve());
+    });
+    expect(region.dataset["overflow"]).toBe("false");
+
+    region.dataset["probeTall"] = "1";
+    region.append(document.createElement("div"));
+    await Promise.resolve();
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => resolve());
+    });
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => resolve());
+    });
+    expect(region.dataset["overflow"]).toBe("true");
+
+    unbind();
+    expect(region.dataset["overflow"]).toBeUndefined();
+    region.remove();
+  });
+});
+
 describe("Management surface shell mount", () => {
   it('shows "No Snapshot yet." when the Snapshot is null', () => {
     const root = document.createElement("div");
@@ -84,6 +117,23 @@ describe("Management surface shell mount", () => {
     surface.render(snapshot);
 
     expect(root.querySelector(".dock-surface-title")?.textContent).toBe("Stage");
+    expect(root.querySelector(".attempt-position")?.textContent).toBe("probe body");
+    surface.destroy();
+  });
+
+  it("omits the dock title when showTitle is false", () => {
+    const root = document.createElement("div");
+    const engine = createEngine(content, undefined, LOOT_SEED);
+    const snapshot = engine.snapshot();
+    const surface = mountSurfaceShell(root, "stage-surface", {
+      title: "Stage",
+      showTitle: false,
+      body: () => [el("p", { class: "attempt-position", text: "probe body" })],
+    });
+
+    surface.render(snapshot);
+
+    expect(root.querySelector(".dock-surface-title")).toBeNull();
     expect(root.querySelector(".attempt-position")?.textContent).toBe("probe body");
     surface.destroy();
   });

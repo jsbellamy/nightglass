@@ -580,6 +580,7 @@ html.dock-window body {
   width: 150px;
   padding: 8px;
   overflow-y: auto;
+  scrollbar-width: thin;
   border-right: 1px solid rgba(255, 249, 233, 0.14);
 }
 
@@ -643,6 +644,7 @@ html.dock-window body {
   padding: 12px;
   overflow: auto;
   position: relative;
+  scrollbar-width: thin;
 }
 
 .dock-panel:not([hidden]) {
@@ -651,6 +653,40 @@ html.dock-window body {
   overflow: auto;
   display: flex;
   flex-direction: column;
+  scrollbar-width: thin;
+}
+
+/* Overflow fade only when ResizeObserver marks the region as overflowing. */
+.dock-surface[data-overflow="true"],
+.dock-panel[data-overflow="true"],
+.character-picker[data-overflow="true"],
+.armory-grid[data-overflow="true"],
+.armory-detail[data-overflow="true"] {
+  background:
+    linear-gradient(rgb(17, 19, 27) 30%, rgba(17, 19, 27, 0)) center top,
+    linear-gradient(rgba(17, 19, 27, 0), rgb(17, 19, 27) 70%) center bottom,
+    radial-gradient(farthest-side at 50% 0, rgba(0, 0, 0, 0.55), transparent) center top,
+    radial-gradient(farthest-side at 50% 100%, rgba(0, 0, 0, 0.55), transparent) center bottom;
+  background-repeat: no-repeat;
+  background-size: 100% 36px, 100% 36px, 100% 12px, 100% 12px;
+  background-attachment: local, local, scroll, scroll;
+}
+
+.dock-surface::-webkit-scrollbar,
+.dock-panel::-webkit-scrollbar,
+.character-picker::-webkit-scrollbar,
+.armory-grid::-webkit-scrollbar,
+.armory-detail::-webkit-scrollbar {
+  width: 8px;
+}
+
+.dock-surface::-webkit-scrollbar-thumb,
+.dock-panel::-webkit-scrollbar-thumb,
+.character-picker::-webkit-scrollbar-thumb,
+.armory-grid::-webkit-scrollbar-thumb,
+.armory-detail::-webkit-scrollbar-thumb {
+  background: rgba(255, 249, 233, 0.28);
+  border-radius: 4px;
 }
 
 .dock-surface-root {
@@ -902,9 +938,22 @@ html.dock-window body {
 }
 
 .formation-action:disabled,
+.party-swap:disabled,
+.talent-allocate:disabled,
+.talent-deallocate:disabled,
+.talent-pick:disabled,
+.talent-remove:disabled,
+.armory-discard-button:disabled,
 .stage-row:disabled {
   cursor: not-allowed;
-  opacity: 0.55;
+  opacity: 1;
+  color: #c9c2b2;
+  background: #1a1d27;
+  border-color: rgba(255, 249, 233, 0.1);
+}
+
+.stage-row:disabled .stage-name {
+  color: #c9c2b2;
 }
 
 .party-swap {
@@ -925,6 +974,7 @@ html.dock-window body {
 .stage-name {
   flex: 1;
   font-weight: 600;
+  color: var(--dock-text, #fff9e9);
 }
 
 .stage-lock-glyph {
@@ -1065,14 +1115,6 @@ html.dock-window body {
   padding: 4px 8px;
 }
 
-.talent-allocate:disabled,
-.talent-deallocate:disabled,
-.talent-pick:disabled,
-.talent-remove:disabled {
-  cursor: not-allowed;
-  opacity: 0.55;
-}
-
 .loadout-assign {
   width: 100%;
   margin-top: 6px;
@@ -1150,6 +1192,7 @@ html.dock-window body {
   min-width: 0;
   min-height: 0;
   overflow: auto;
+  scrollbar-width: thin;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
   grid-auto-rows: min-content;
@@ -1162,6 +1205,7 @@ html.dock-window body {
   width: 240px;
   min-height: 0;
   overflow: auto;
+  scrollbar-width: thin;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -1308,30 +1352,6 @@ html.dock-window body {
   color: var(--dock-text, #fff9e9);
 }
 
-.equipment-rarity {
-  margin-left: auto;
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.equipment-rarity.rarity-common {
-  color: #fff9e9;
-}
-
-.equipment-rarity.rarity-uncommon {
-  color: #6fe3ad;
-}
-
-.equipment-rarity.rarity-rare {
-  color: #8ec8ff;
-}
-
-.equipment-rarity.rarity-epic {
-  color: #d9a6ff;
-}
-
 .equipment-affix-list,
 .armory-stat-deltas,
 .armory-ability-deltas ul {
@@ -1367,11 +1387,6 @@ html.dock-window body {
 
 .assigned-marker {
   color: #9be7c4;
-}
-
-.armory-discard-button:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
 }
 
 .offline-summary {

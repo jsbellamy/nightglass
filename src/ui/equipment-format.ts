@@ -22,6 +22,7 @@ import {
   formatStatModifierPerRank,
   statLines,
 } from "./ability-format";
+import { CLASS_LABELS } from "./snapshot-view";
 
 export const RARITY_LABELS: Record<Rarity, string> = {
   common: "Common",
@@ -41,13 +42,6 @@ export const SLOT_LABELS: Record<EquipmentSlotId, string> = {
   weapon: "Weapon",
   armor: "Armor",
   charm: "Charm",
-};
-
-export const CLASS_LABELS: Record<ClassId, string> = {
-  knight: "Knight",
-  wizard: "Wizard",
-  priest: "Priest",
-  hunter: "Hunter",
 };
 
 export type ArmorySortId = "default" | "newest" | "rarity" | "tier" | "name";

@@ -7,7 +7,7 @@ import { mountStageSurface } from "./stage-surface";
 import type { TileCommand } from "./bus";
 import { EMPTY_ENGINE_LEGALITY, type EngineLegalityView } from "./engine-legality";
 import { rosterClassIds } from "./snapshot-view";
-import type { MountedSurface } from "./surface-shell";
+import { bindScrollOverflowAffordance, type MountedSurface } from "./surface-shell";
 
 export type DockTabId = "character" | "armory" | "stage";
 
@@ -104,6 +104,9 @@ export function mountManagementDock(
   const surface = document.createElement("section");
   surface.className = "dock-surface";
   surface.setAttribute("role", "tabpanel");
+  const overflowUnbinds: Array<() => void> = [
+    bindScrollOverflowAffordance(surface),
+  ];
 
   const panels = new Map<DockTabId, HTMLElement>();
   const tabButtons = new Map<DockTabId, HTMLButtonElement>();
@@ -159,6 +162,7 @@ export function mountManagementDock(
 
     panels.set(entry.id, panel);
     surface.append(panel);
+    overflowUnbinds.push(bindScrollOverflowAffordance(panel));
   }
 
   root.append(header, body);
@@ -315,6 +319,9 @@ export function mountManagementDock(
       root.setAttribute("aria-hidden", open ? "false" : "true");
     },
     destroy() {
+      for (const unbind of overflowUnbinds) {
+        unbind();
+      }
       characterPicker.destroy();
       for (const mounted of mountedSurfaces.values()) {
         mounted.destroy();

@@ -53,7 +53,7 @@ const CHARACTER_PICKER_TEXT = [
 ] as const;
 
 test.describe("accessibility contrast floor", () => {
-  test("evidence: aa-contrast — status line and all three Dock surfaces meet WCAG AA against resolved glass backgrounds", async ({
+  test("evidence: aa-contrast / evidence: dock-surfaces — status line and Dock surfaces meet WCAG AA; scroll affordance appears only when a panel overflows", async ({
     browser,
   }) => {
     const { context, tile } = await openTilePage(browser);
@@ -83,6 +83,85 @@ test.describe("accessibility contrast floor", () => {
       const ratio = assertAaContrast(sample!);
       expect(ratio, `picker contrast ${selector}`).toBeGreaterThanOrEqual(4.5);
     }
+
+    await focusDockTab(dock, "stage");
+    const lockedStageSample = await readTextContrastSample(
+      dock,
+      '[data-stage-id="2"] .stage-name',
+    );
+    expect(lockedStageSample, "locked Stage row name").not.toBeNull();
+    expect(assertAaContrast(lockedStageSample!), "locked Stage contrast").toBeGreaterThanOrEqual(
+      4.5,
+    );
+
+    await focusDockTab(dock, "character");
+    const disabledControlSample = await readTextContrastSample(
+      dock,
+      ".formation-action:disabled",
+    );
+    expect(disabledControlSample, "disabled formation action").not.toBeNull();
+    expect(
+      assertAaContrast(disabledControlSample!),
+      "disabled control contrast",
+    ).toBeGreaterThanOrEqual(4.5);
+
+    await focusDockTab(dock, "stage");
+    const stageFits = await dock.evaluate(() => {
+      const panel = document.querySelector(".dock-panel:not([hidden])");
+      if (!panel) {
+        return null;
+      }
+      const style = getComputedStyle(panel);
+      return {
+        overflowAttr: (panel as HTMLElement).dataset.overflow,
+        fits: panel.scrollHeight <= panel.clientHeight + 1,
+        overflowY: style.overflowY,
+        scrollbarWidth: style.scrollbarWidth,
+        attachment: style.backgroundAttachment,
+      };
+    });
+    expect(stageFits).not.toBeNull();
+    expect(stageFits!.fits, "short Stage panel does not overflow").toBe(true);
+    expect(stageFits!.overflowAttr).toBe("false");
+    expect(stageFits!.overflowY).toMatch(/auto|scroll/);
+    expect(stageFits!.scrollbarWidth).toBe("thin");
+    expect(stageFits!.attachment.includes("local")).toBe(false);
+
+    await dock.evaluate(() => {
+      const panel = document.querySelector(".dock-panel:not([hidden])");
+      if (!panel) {
+        return;
+      }
+      const filler = document.createElement("div");
+      filler.id = "scroll-affordance-probe";
+      filler.style.height = "2000px";
+      filler.style.minHeight = "2000px";
+      filler.style.flexShrink = "0";
+      panel.append(filler);
+    });
+    await expect
+      .poll(async () => {
+        return dock.evaluate(() => {
+          const panel = document.querySelector(".dock-panel:not([hidden])");
+          return (panel as HTMLElement | null)?.dataset.overflow ?? null;
+        });
+      })
+      .toBe("true");
+    const overflowing = await dock.evaluate(() => {
+      const panel = document.querySelector(".dock-panel:not([hidden])");
+      if (!panel) {
+        return null;
+      }
+      const style = getComputedStyle(panel);
+      return {
+        overflowAttr: (panel as HTMLElement).dataset.overflow,
+        attachment: style.backgroundAttachment,
+        canScroll: panel.scrollHeight > panel.clientHeight + 1,
+      };
+    });
+    expect(overflowing?.overflowAttr).toBe("true");
+    expect(overflowing?.canScroll).toBe(true);
+    expect(overflowing?.attachment.includes("local")).toBe(true);
 
     await context.close();
   });
