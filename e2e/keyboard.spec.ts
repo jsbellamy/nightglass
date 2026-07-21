@@ -74,6 +74,10 @@ test.describe("accessibility keyboard floor", () => {
       ),
     ).toBeVisible();
 
+    await dock.locator('[data-character-chip="knight"]').focus();
+    await dock.keyboard.press("Enter");
+    await assertFocusRingVisible(dock, '.equipment-slot-browse[data-browse-slot="charm"]');
+
     await focusDockTab(dock, "armory");
     await dock.locator('[data-character-chip="knight"]').focus();
     await dock.keyboard.press("Enter");
@@ -84,6 +88,11 @@ test.describe("accessibility keyboard floor", () => {
     await dock.locator('[data-equip-button="true"]').focus();
     await dock.keyboard.press("Enter");
     await expect(dock.locator(".armory-slot-strip")).toBeVisible();
+
+    await focusDockTab(dock, "character");
+    await dock.locator('[data-character-chip="knight"]').focus();
+    await dock.keyboard.press("Enter");
+    await assertFocusRingVisible(dock, '.equipment-slot-unequip[data-unequip-slot="weapon"]');
 
     await focusDockTab(dock, "stage");
     await dock.locator('[data-stage-id="1"]').focus();

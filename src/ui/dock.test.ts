@@ -56,7 +56,7 @@ describe("Management Dock shell", () => {
     dock.destroy();
   });
 
-  it("places Party, Loadout, and Talents sections inside the Character panel", () => {
+  it("places Party, Equipment, Loadout, and Talents sections inside the Character panel", () => {
     const root = document.createElement("main");
     const dock = mountDock(root);
     const engine = createEngine(fixtureContent, undefined, 3);
@@ -68,6 +68,7 @@ describe("Management Dock shell", () => {
     ];
     expect(sections.map((section) => section.dataset["characterSection"])).toEqual([
       "party",
+      "equipment",
       "loadout",
       "talents",
     ]);
@@ -436,6 +437,118 @@ describe("Management Dock Character picker", () => {
     ).toBe("false");
 
     second.destroy();
+  });
+});
+
+describe("Management Dock Character → Armory jump", () => {
+  it("switches to Armory and applies the browse-slot filter when Choose is activated", () => {
+    const root = document.createElement("main");
+    document.body.append(root);
+    const dock = mountDock(root);
+    const engine = createEngine(fixtureContent, undefined, 3);
+    const snapshot = structuredClone(engine.snapshot());
+    snapshot.progression.armory = [
+      {
+        dropId: 1,
+        baseId: "fixture-blade",
+        itemLevel: 1,
+        rarity: "common",
+        affixes: [],
+        awardedAtMs: 100,
+        seen: true,
+        locked: false,
+        assignedTo: null,
+      },
+      {
+        dropId: 2,
+        baseId: "fixture-armor",
+        itemLevel: 1,
+        rarity: "common",
+        affixes: [],
+        awardedAtMs: 200,
+        seen: true,
+        locked: false,
+        assignedTo: null,
+      },
+    ];
+    dock.render(snapshot);
+
+    root.querySelector<HTMLButtonElement>('[data-browse-slot="armor"]')?.click();
+
+    expect(root.querySelector<HTMLElement>('[data-dock-panel="armory"]')?.hidden).toBe(false);
+    expect(
+      root
+        .querySelector<HTMLButtonElement>(
+          '[data-filter-key="slot"][data-filter-value="armor"]',
+        )
+        ?.getAttribute("aria-pressed"),
+    ).toBe("true");
+    expect(
+      [...root.querySelectorAll<HTMLElement>(".equipment-card")].map((card) => card.dataset["dropId"]),
+    ).toEqual(["2"]);
+
+    root.remove();
+    dock.destroy();
+  });
+
+  it("consumes the browse-slot intent once so a later manual Armory visit does not re-apply it", () => {
+    const root = document.createElement("main");
+    document.body.append(root);
+    const dock = mountDock(root);
+    const engine = createEngine(fixtureContent, undefined, 3);
+    const snapshot = structuredClone(engine.snapshot());
+    snapshot.progression.armory = [
+      {
+        dropId: 1,
+        baseId: "fixture-blade",
+        itemLevel: 1,
+        rarity: "common",
+        affixes: [],
+        awardedAtMs: 100,
+        seen: true,
+        locked: false,
+        assignedTo: null,
+      },
+      {
+        dropId: 2,
+        baseId: "fixture-armor",
+        itemLevel: 1,
+        rarity: "common",
+        affixes: [],
+        awardedAtMs: 200,
+        seen: true,
+        locked: false,
+        assignedTo: null,
+      },
+    ];
+    dock.render(snapshot);
+
+    root.querySelector<HTMLButtonElement>('[data-browse-slot="armor"]')?.click();
+    root.querySelector<HTMLButtonElement>(".armory-filter-clear")?.click();
+    expect(
+      root
+        .querySelector<HTMLButtonElement>(
+          '[data-filter-key="slot"][data-filter-value="armor"]',
+        )
+        ?.getAttribute("aria-pressed"),
+    ).toBe("false");
+
+    root.querySelector<HTMLButtonElement>('[data-dock-tab="character"]')?.click();
+    root.querySelector<HTMLButtonElement>('[data-dock-tab="armory"]')?.click();
+
+    expect(
+      root
+        .querySelector<HTMLButtonElement>(
+          '[data-filter-key="slot"][data-filter-value="armor"]',
+        )
+        ?.getAttribute("aria-pressed"),
+    ).toBe("false");
+    expect(
+      [...root.querySelectorAll<HTMLElement>(".equipment-card")].map((card) => card.dataset["dropId"]),
+    ).toEqual(["2", "1"]);
+
+    root.remove();
+    dock.destroy();
   });
 });
 

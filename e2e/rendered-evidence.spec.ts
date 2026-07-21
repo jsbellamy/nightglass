@@ -574,7 +574,7 @@ test.describe("rendered-output evidence seam", () => {
     await context.close();
   });
 
-  test("evidence: equipment-icon-content-tier / evidence: equipment-icon-chrome-legibility — content-tier geometry and chrome-tier legibility artifact", async ({
+  test("evidence: equipment-icon-content-tier / evidence: equipment-icon-chrome-legibility — Character Equipment content-tier geometry, no clip across twelve slots, and Armory chrome legibility", async ({
     browser,
   }) => {
     const { context, tile } = await openTile(browser);
@@ -584,23 +584,25 @@ test.describe("rendered-output evidence seam", () => {
     await dock.waitForSelector(".management-dock");
 
     await postBusSnapshot(dock, equipmentIconReviewSnapshot());
-    await dock.click('[data-dock-tab="armory"]');
-    await dock.waitForSelector(".armory-slot-strip .equipment-icon-img--chrome");
+    await dock.click('[data-dock-tab="character"]');
+    await dock.waitForSelector(
+      '[data-character-section="equipment"] .equipment-icon-img--content',
+    );
 
     const contentTier = await dock.evaluate(() => {
       const img = document.querySelector<HTMLImageElement>(
-        ".armory-collection .equipment-icon-img--content",
+        '[data-character-section="equipment"] .equipment-icon-img--content',
       );
       const wrap = img?.closest(".equipment-icon-content");
-      if (!img || !wrap) {
+      const row = img?.closest(".equipment-slot-row");
+      if (!img || !wrap || !row) {
         return null;
       }
       const imgBox = img.getBoundingClientRect();
+      const wrapBox = wrap.getBoundingClientRect();
+      const rowBox = row.getBoundingClientRect();
       const wrapStyle = getComputedStyle(wrap);
       const imgStyle = getComputedStyle(img);
-      const card = img.closest(".equipment-card");
-      const header = img.closest(".equipment-card-header");
-      const swatchBehind = header?.querySelector(".equipment-rarity");
       return {
         imgW: imgBox.width,
         imgH: imgBox.height,
@@ -608,16 +610,23 @@ test.describe("rendered-output evidence seam", () => {
         attrH: img.height,
         wrapOverflow: wrapStyle.overflow,
         wrapBorderWidth: wrapStyle.borderTopWidth,
-        wrapBackground: wrapStyle.backgroundColor,
         imgWidthCss: imgStyle.width,
         imgHeightCss: imgStyle.height,
-        headerAlign: header ? getComputedStyle(header).alignItems : null,
-        cardHasRarityTint: card?.classList.contains("rarity-epic") ?? false,
-        swatchBehindIcon: swatchBehind !== null,
+        fitsWrap:
+          imgBox.left >= wrapBox.left - 0.5 &&
+          imgBox.right <= wrapBox.right + 0.5 &&
+          imgBox.top >= wrapBox.top - 0.5 &&
+          imgBox.bottom <= wrapBox.bottom + 0.5,
+        fitsRow:
+          imgBox.left >= rowBox.left - 0.5 &&
+          imgBox.right <= rowBox.right + 0.5 &&
+          imgBox.top >= rowBox.top - 0.5 &&
+          imgBox.bottom <= rowBox.bottom + 0.5,
+        rowHasRarityTint: row.classList.contains("rarity-rare") || row.classList.contains("rarity-common"),
       };
     });
 
-    expect(contentTier, "collection content-tier icon present").not.toBeNull();
+    expect(contentTier, "Character Equipment content-tier icon present").not.toBeNull();
     expect(contentTier!.imgW, "rendered content width").toBe(34);
     expect(contentTier!.imgH, "rendered content height").toBe(34);
     expect(contentTier!.attrW, "logical content width").toBe(34);
@@ -626,9 +635,53 @@ test.describe("rendered-output evidence seam", () => {
     expect(contentTier!.imgHeightCss, "CSS content height").toBe("34px");
     expect(contentTier!.wrapOverflow, "no overflow clip on wrapper").not.toBe("hidden");
     expect(Number.parseFloat(contentTier!.wrapBorderWidth), "no wrapper border").toBe(0);
-    expect(contentTier!.swatchBehindIcon, "no rarity swatch behind icon").toBe(false);
-    expect(contentTier!.cardHasRarityTint, "rarity tint on card").toBe(true);
-    expect(contentTier!.headerAlign, "header vertical alignment").toBe("center");
+    expect(contentTier!.fitsWrap, "icon fits wrapper").toBe(true);
+    expect(contentTier!.fitsRow, "icon fits equipment row").toBe(true);
+    expect(contentTier!.rowHasRarityTint, "rarity class on row").toBe(true);
+
+    const classIds = ["knight", "wizard", "priest", "hunter"] as const;
+    for (const classId of classIds) {
+      await dock.click(`[data-character-chip="${classId}"]`);
+      const slotFits = await dock.evaluate(() => {
+        return [...document.querySelectorAll<HTMLElement>("[data-equipment-slot]")].map((row) => {
+          const img = row.querySelector<HTMLImageElement>(".equipment-icon-img--content");
+          if (!img) {
+            return { slot: row.dataset["equipmentSlot"], ok: false, reason: "missing icon" };
+          }
+          const imgBox = img.getBoundingClientRect();
+          const rowBox = row.getBoundingClientRect();
+          const wrap = img.closest(".equipment-icon-content");
+          const wrapBox = wrap?.getBoundingClientRect();
+          const overflow = wrap ? getComputedStyle(wrap).overflow : null;
+          const fitsRow =
+            imgBox.left >= rowBox.left - 0.5 &&
+            imgBox.right <= rowBox.right + 0.5 &&
+            imgBox.top >= rowBox.top - 0.5 &&
+            imgBox.bottom <= rowBox.bottom + 0.5;
+          const fitsWrap =
+            wrapBox !== undefined &&
+            imgBox.left >= wrapBox.left - 0.5 &&
+            imgBox.right <= wrapBox.right + 0.5 &&
+            imgBox.top >= wrapBox.top - 0.5 &&
+            imgBox.bottom <= wrapBox.bottom + 0.5;
+          return {
+            slot: row.dataset["equipmentSlot"],
+            ok: fitsRow && fitsWrap && overflow !== "hidden" && imgBox.width === 34 && imgBox.height === 34,
+            reason:
+              fitsRow && fitsWrap && overflow !== "hidden"
+                ? "ok"
+                : `clip/overflow row=${fitsRow} wrap=${fitsWrap} overflow=${overflow}`,
+          };
+        });
+      });
+      expect(slotFits, `three slots for ${classId}`).toHaveLength(3);
+      for (const entry of slotFits) {
+        expect(entry.ok, `${classId}/${entry.slot}: ${entry.reason}`).toBe(true);
+      }
+    }
+
+    await dock.click('[data-dock-tab="armory"]');
+    await dock.waitForSelector(".armory-slot-strip .equipment-icon-img--chrome");
 
     const chromeIcons = await dock.evaluate(() => {
       return [...document.querySelectorAll(".armory-slot-button .equipment-icon-img--chrome")].map(

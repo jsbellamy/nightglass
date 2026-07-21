@@ -15,6 +15,22 @@ const DOCK_PRIMARY_TEXT: { tab: "character" | "armory" | "stage"; selector: stri
   },
   {
     tab: "character",
+    selector: '[data-character-section="equipment"] .equipment-slot-label',
+  },
+  {
+    tab: "character",
+    selector: '[data-character-section="equipment"] [data-slot-filled="false"] .equipment-slot-empty',
+  },
+  {
+    tab: "character",
+    selector: '[data-character-section="equipment"] [data-slot-filled="true"] .equipment-name',
+  },
+  {
+    tab: "character",
+    selector: '[data-character-section="equipment"] [data-slot-filled="true"] .equipment-meta',
+  },
+  {
+    tab: "character",
     selector: '[data-character-section="loadout"] .loadout-character .surface-section-title',
   },
   {

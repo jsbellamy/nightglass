@@ -2,6 +2,7 @@ import { dropStatModifiers, snapshotEquipmentLoadouts } from "../core/equipment"
 import type { DropInstance, ReadonlySnapshot } from "../core/snapshot";
 import type { ClassId, Content, EquipmentSlotId } from "../core/types";
 import type { TileCommand } from "./bus";
+import type { DockTabIntent } from "./dock";
 import {
   type ArmoryFilters,
   type ArmorySortId,
@@ -34,7 +35,11 @@ import { el, mountSurfaceShell } from "./surface-shell";
 const SLOTS: EquipmentSlotId[] = ["weapon", "armor", "charm"];
 
 export interface ArmorySurface {
-  render(snapshot: ReadonlySnapshot | null, legality: EngineLegalityView): void;
+  render(
+    snapshot: ReadonlySnapshot | null,
+    legality: EngineLegalityView,
+    intent?: DockTabIntent,
+  ): void;
   destroy(): void;
 }
 
@@ -757,8 +762,15 @@ export function mountArmorySurface(
     },
   });
 
-  function render(snapshot: ReadonlySnapshot | null, legality: EngineLegalityView = currentLegality): void {
+  function render(snapshot: ReadonlySnapshot | null, legality: EngineLegalityView = currentLegality, intent?: DockTabIntent): void {
     currentLegality = legality;
+    if (intent?.kind === "browse-slot") {
+      filters = { ...filters, slot: intent.slot };
+      view = "collection";
+      detailDropId = null;
+      compareContext = null;
+      crossEquipConfirm = null;
+    }
     if (snapshot) {
       syncOptimisticSeen(snapshot.progression.armory);
     }
