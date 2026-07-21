@@ -69,7 +69,7 @@ here.
 | Native-1× scaling (intrinsic ≡ rendered, excluding deliberate knockout transforms) | `evidence: native-1x-scaling` | Browser assertion in the suite **or** a pure test of `SPRITE_SOURCES` / PNG IHDR vs `.combatant-sprite` — either is sufficient; happy-dom alone is not |
 | Knockout readability (non-colour signal readable in the crowded tile) | `evidence: knockout-readability` | Scenario-keyed review artifact only — committed at `docs/research/evidence/knockout-readability/tile-combat.png` (emitted by the harness; judged in the terminal scene review). Harness CSS non-colour signals may support the claim but must not carry this slug and do not retire the judgement |
 | Dock window port (open/close/toggle sequencing, reposition math, tile APIs untouched) | `manual-check: dock-position-only`, `manual-check: dock-pump-continuity`, `manual-check: dock-no-tile-resize` | Vitest over injected `DockWindowPort` deps — proves call sequencing and geometry wiring, **not** native window chrome |
-| Native dock lifecycle / OS close / positioning | checklist items in `docs/agents/native-observation.md` | Manual `npm run tauri dev` only when `src-tauri/**`, `app.windows`, or capabilities change |
+| Native dock lifecycle / OS close / positioning / child-window attachment | checklist items in `docs/agents/native-observation.md` | Manual `npm run tauri dev` when `src-tauri/**`, `app.windows`, capabilities, or Dock child-window attachment (`parent: "tile"` in `src/ui/dock-window.ts`) change |
 | Presentation effect images (Ability frames and Status Effect glyphs load under Vite) | `evidence: effect-image-loading` | `e2e/rendered-evidence.spec.ts` via `npm run test:evidence`: visible `img.effect-frame` and `img.status-icon` with `complete` and non-zero natural dimensions; no page errors |
 | Native effect-image loading (packaged Tauri webview) | `Native effect-image loading` in `docs/agents/native-observation.md` | Manual `npm run tauri dev` when packaged presentation-effect URL resolution changes (`src/ui/effect-images.ts` or its wiring); committed observation under `docs/research/evidence/native-effect-images/` |
 
@@ -81,7 +81,8 @@ a stale or unsupported row gets silently ticked.
 1. **Unsupportable row** — stop; do not open a completion PR. Report the issue
    as incomplete.
 2. **Native check the agent cannot run** (`src-tauri/**`, `app.windows`,
-   capabilities) — open the PR, state the missing native evidence explicitly,
+   capabilities, or Dock child-window attachment in `src/ui/dock-window.ts`) —
+   open the PR, state the missing native evidence explicitly,
    and **block merge** until a human adds the evidence row.
 3. **Row falsified by a landed successor** — do not tick, do not stop; flag in
    the PR for editorial disposition (see Tier-3 policy).
