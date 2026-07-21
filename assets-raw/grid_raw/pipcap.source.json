@@ -12,7 +12,7 @@
   "identity": "pipcap",
   "asset_class": "opponent",
   "runtime_destination": "src/assets/sprites/pipcap.png",
-  "candidate": "pipcap.png",
+  "candidate": "pipcap-flex-a.png",
   "facing": "left",
   "role": "ordinary-opponent",
   "style_references": [

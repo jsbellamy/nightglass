@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Asset class | opponent (ordinary monster — Pipcap) |
-| Status | candidate for shipping |
+| Status | accepted for shipping (agent visual review accept; promote complete) |
 | Runtime destination | `src/assets/sprites/pipcap.png` |
 | Runtime shape | RGBA, binary alpha, `moonberry-16`, native 1×; opaque ≤ 30×68 |
 | Visual vocabulary | `moonberry-16`; accepted Hunter (#255) Moonberry cohort |
