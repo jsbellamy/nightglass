@@ -88,7 +88,9 @@ Decisions: [Battlefield workspace](https://github.com/jsbellamy/nightglass/issue
 - **Five ordinary opponents** is the compact-layout stress case (readability
   gate, not a promise every Wave contains five).
 - Nothing may resize, replace, or implicitly pause the Battle Tile. The fight
-  is continuously visible and live.
+  is continuously visible and live. The Management Dock may translate the tile
+  horizontally only to preserve center-on-dock after monitor clamping (see
+  Management Dock below).
 
 ### Management Dock
 

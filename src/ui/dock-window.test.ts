@@ -439,6 +439,30 @@ describe("dock window port", () => {
     dock2.callOrder.length = 0;
     await portUnclamped.syncPositionFromTile();
     expect(setTilePositionUnclamped).not.toHaveBeenCalled();
+
+    const frames = createManualScheduler();
+    let moved: (() => void) | undefined;
+    const setTilePositionOnMove = vi.fn(async () => {});
+    const dockMove = mockDockWindow();
+    const portMove = createDockWindowPort({
+      isTauri: true,
+      dockUrl,
+      getTileOuterPosition: async () => clampedTile,
+      getMonitorForTile: async () => monitor,
+      getDockWindow: async () => dockMove,
+      scheduleFrame: frames.scheduleFrame,
+      setTilePosition: setTilePositionOnMove,
+      onTileMoved: (listener) => {
+        moved = listener;
+        return () => {};
+      },
+    });
+    await portMove.open();
+    setTilePositionOnMove.mockClear();
+    moved?.();
+    await frames.flushOne();
+    expect(setTilePositionOnMove).toHaveBeenCalledTimes(1);
+    expect(setTilePositionOnMove).toHaveBeenCalledWith(clampedRect.tileX, clampedTile.y);
   });
 
   it("fetches scaleFactor and currentMonitor at most once across a drag, never outerSize", async () => {

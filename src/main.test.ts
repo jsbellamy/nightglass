@@ -61,7 +61,7 @@ describe("Management Dock integration", () => {
     shell.stop();
   });
 
-  it("manual-check: dock-position-only — positions only the dock window, never the tile window APIs", async () => {
+  it("manual-check: dock-shell-port-wiring — shell drives dock reposition without mutating the tile through the shell mock", async () => {
     const root = document.createElement("main");
     const dockWindow = createMockDockWindow();
     const shell = mountTileShell(root, { dockWindow });
