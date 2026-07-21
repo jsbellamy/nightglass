@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Asset class | Character (Party Character — Hunter) |
-| Status | candidate for shipping |
+| Status | accepted for shipping (agent visual review accept; promote complete) |
 | Runtime destination | `src/assets/sprites/hunter.png` |
 | Runtime shape | per-asset RGBA, binary alpha, `moonberry-16`, native 1×; opaque bounds ≤ 40×68 |
 | Visual vocabulary | `moonberry-16`; Moonberry night-garden cohort via Knight style reference |

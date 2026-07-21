@@ -17,7 +17,7 @@
   "role": "party-character",
   "style_references": [
     {
-      "path": "assets-raw/grid_raw/hunter.png",
+      "path": "docs/research/evidence/255-hunter-flex/identity-hunter-pre.png",
       "sha256": "d5cdbb892abeeedac796e1a48a136cefe2eb55bda72be7f04e37748ce45ffc97",
       "role": "identity"
     },

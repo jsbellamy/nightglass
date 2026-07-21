@@ -5,7 +5,7 @@
 | Field | Value |
 | --- | --- |
 | Asset class | Character (Party Character — Hunter) |
-| Status | candidate for shipping |
+| Status | accepted for shipping (agent visual review accept; promote complete) |
 | Runtime destination | `src/assets/sprites/hunter.png` |
 | Runtime shape | 40×46 RGBA, binary alpha, `moonberry-16`, native 1× |
 | Visual vocabulary | `moonberry-16`; Knight-cohort Moonberry night-garden |
@@ -19,7 +19,8 @@ See also `contract.md` and the exact prompt in `prompt.txt`.
 
 | Role | Path | Pre-replacement SHA-256 | Preserved choices |
 | --- | --- | --- | --- |
-| Identity (original sample) | `assets-raw/grid_raw/hunter.png` (pre) / durable copy `identity-hunter-pre.png` | `d5cdbb892abeeedac796e1a48a136cefe2eb55bda72be7f04e37748ce45ffc97` | taut bramble shortbow + nocked thorn arrow; mint tunic; plum hood-down; berry scarf tail; leaf-scale shoulder; cream trousers; compact alert stance |
+| Identity (original sample) | `assets-raw/grid_raw/hunter.png` (pre) / durable copy `identity-hunter-pre.png` | `d5cdbb892abeeedac796e1a48a136cefe2eb55bda72be7f04e37748ce45ffc97` | taut bramble shortbow + nocked thorn arrow; mint tunic; plum hood (pre sample was hood-up; issue prompt requires hood resting against the back); berry scarf tail; leaf-scale shoulder; cream trousers; compact alert stance |
+
 | Style cohort (issue-mandated) | `assets-raw/grid_raw/knight.png` | `9dfcdd69592cec858d9ff4d53429a2a3b48815918f4b463083e7201d69546cb5` | chunky flat Moonberry palette/contour weight and storybook cohort language |
 | Party runtime peers | `src/assets/sprites/knight.png`, `priest.png`, `wizard.png` | — | Formation pitch spacing and silhouette distinctness at 1× |
 
@@ -54,7 +55,18 @@ No rejected candidates. Measurement JSON: `hunter-flex-a-report.json`. Promote r
 
 Manifest geometry: `frame_size [40,46]`, `visual_bounds [0,0,40,46]`, `foot_anchor [20,46]`.
 
-Offline byte-identity: CI `assets` job / local `npm run assets:verify` after push.
+Offline byte-identity: local `npm run assets:verify` passed on this branch (first flexible body); CI `assets` job remains the authoritative full-catalog rebuild after push.
+
+## Foot-anchor / effects alignment
+
+Hunter manifest records `foot_anchor: [20, 46]` (bottom-centre of the 40×46 frame). Evidence:
+
+- `pipeline/test_contract.py` — “manifest geometry matches runtime for hunter”
+- `src/ui/native-1x-scaling.test.ts` — every sprite `footAnchor` equals manifest and is bottom-centre
+- `src/ui/battle-tile.ts` — places bodies using `sprite.footAnchor` with `footAnchorXForCombatant` (#262 per-asset foot geometry)
+- `FORMATION_*_1x.png` / `STRESS_5opp_hunter_1x.png` — feet sit on `layout.json` `floor_y`
+
+Actor pools, strike/travel effects, and feedback therefore align to Hunter’s recorded foot anchor through the shared presentation path; no renderer body mirroring.
 
 ## Review disposition
 
