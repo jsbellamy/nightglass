@@ -54,9 +54,12 @@ describe("sprite registry", () => {
   it("resolves the acquired Boss stills without interim fallbacks", () => {
     for (const key of ["boss-1", "boss-2", "boss-3"] as const) {
       const boss = resolveSprite(key);
+      const manifest = manifestJson[key];
       expect(boss.interim).toBeUndefined();
       expect(boss.interimLabel).toBeUndefined();
-      expect(boss.frameSize).toEqual([32, 48]);
+      expect(boss.frameSize).toEqual(manifest.frame_size);
+      expect(boss.visualBounds).toEqual(manifest.visual_bounds);
+      expect(boss.footAnchor).toEqual(manifest.foot_anchor);
       expect(spriteBattlefieldRole(key)).toBe("boss");
       expect(boss.url).toContain(key);
     }

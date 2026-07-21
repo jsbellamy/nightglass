@@ -1,0 +1,18 @@
+Single full-body Thornmother Vane Boss game sprite, strict side profile facing
+LEFT. A tall sharp regal thorn-queen with a compact cream nightbloom thorn
+crown, elongated berry vine-and-thorn gown rooted at the feet, mint leaf-blade
+arms and long clawed vine fingers, and a dark-plum contour. Upright narrow
+silhouette with the crown, hands, trailing vines, and ground contact all fully
+visible. She reads as the final-stage menace and is unmistakably different from
+a Pipcap or Bramblehorn.
+
+Chunky, simplified, flat-colour Moonberry night-garden fantasy pixel art with
+large readable shapes and a strong silhouette at small native scale. Preserve
+the attached Thornmother's identity, match the accepted Pipcap's current
+palette and outline cohort, and retain the attached Bramblehorn's authored Boss
+weight without copying its shape.
+
+Show exactly one complete subject with generous empty clearance on every edge
+of an opaque flat solid magenta #ff00ff background. No shadow, floor, glow,
+petals, spores, sparkles, particles, Ability effect, text, watermark, scenery,
+UI, transparency, or other subject.
