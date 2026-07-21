@@ -70,10 +70,15 @@ describe("Stage surface", () => {
 
     surface.render(engine.snapshot());
 
+    expect(root.querySelector(".dock-surface-title")).toBeNull();
     expect(root.querySelectorAll(".stage-row")).toHaveLength(3);
     expect(root.querySelector('[data-stage-id="1"]')?.textContent).toMatch(/Orchard Understory/);
     expect(root.querySelector('[data-stage-id="2"]')?.getAttribute("aria-disabled")).toBe("true");
+    expect(root.querySelector('[data-stage-id="2"]')?.hasAttribute("disabled")).toBe(true);
     expect(root.querySelector('[data-stage-id="2"] .stage-lock-glyph')).not.toBeNull();
+    expect(root.querySelector('[data-stage-id="2"] .stage-name')?.textContent?.length).toBeGreaterThan(
+      0,
+    );
     expect(root.querySelector(".attempt-position")?.textContent).toMatch(/Stage 1/);
 
     surface.destroy();

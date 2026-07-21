@@ -63,6 +63,11 @@ export function el<K extends keyof HTMLElementTagNameMap>(
 export interface SurfaceShellOptions {
   /** Rendered as the h2.dock-surface-title. */
   title: string;
+  /**
+   * Render the h2. False when the surface is a whole dock panel whose tab
+   * already names it. Defaults to true for composed section headings.
+   */
+  showTitle?: boolean;
   /** Body builder. Not called when the Snapshot is null. */
   body(snapshot: ReadonlySnapshot): Child[];
 }
@@ -93,10 +98,12 @@ export function mountSurfaceShell(
       return;
     }
 
-    const title = document.createElement("h2");
-    title.className = "dock-surface-title";
-    title.textContent = options.title;
-    root.append(title);
+    if (options.showTitle !== false) {
+      const title = document.createElement("h2");
+      title.className = "dock-surface-title";
+      title.textContent = options.title;
+      root.append(title);
+    }
 
     for (const child of options.body(snapshot)) {
       appendChild(root, child);

@@ -88,6 +88,23 @@ describe("Management surface shell mount", () => {
     surface.destroy();
   });
 
+  it("omits the dock title when showTitle is false", () => {
+    const root = document.createElement("div");
+    const engine = createEngine(content, undefined, LOOT_SEED);
+    const snapshot = engine.snapshot();
+    const surface = mountSurfaceShell(root, "stage-surface", {
+      title: "Stage",
+      showTitle: false,
+      body: () => [el("p", { class: "attempt-position", text: "probe body" })],
+    });
+
+    surface.render(snapshot);
+
+    expect(root.querySelector(".dock-surface-title")).toBeNull();
+    expect(root.querySelector(".attempt-position")?.textContent).toBe("probe body");
+    surface.destroy();
+  });
+
   it("destroy clears the root and removes the surface class", () => {
     const root = document.createElement("div");
     const surface = mountSurfaceShell(root, "talents-surface", {

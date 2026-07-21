@@ -84,6 +84,55 @@ test.describe("accessibility contrast floor", () => {
       expect(ratio, `picker contrast ${selector}`).toBeGreaterThanOrEqual(4.5);
     }
 
+    await focusDockTab(dock, "stage");
+    const lockedStageSample = await readTextContrastSample(
+      dock,
+      '[data-stage-id="2"] .stage-name',
+    );
+    expect(lockedStageSample, "locked Stage row name").not.toBeNull();
+    expect(assertAaContrast(lockedStageSample!), "locked Stage contrast").toBeGreaterThanOrEqual(
+      4.5,
+    );
+
+    await focusDockTab(dock, "character");
+    const disabledControlSample = await readTextContrastSample(
+      dock,
+      ".formation-action:disabled",
+    );
+    expect(disabledControlSample, "disabled formation action").not.toBeNull();
+    expect(
+      assertAaContrast(disabledControlSample!),
+      "disabled control contrast",
+    ).toBeGreaterThanOrEqual(4.5);
+
+    const scrollAffordance = await dock.evaluate(() => {
+      const surface = document.querySelector(".dock-surface");
+      if (!surface) {
+        return null;
+      }
+      const style = getComputedStyle(surface);
+      const attachment = style.backgroundAttachment;
+      const overflows = surface.scrollHeight > surface.clientHeight + 1;
+      return {
+        overflowY: style.overflowY,
+        scrollbarWidth: style.scrollbarWidth,
+        attachment,
+        overflows,
+        hasLocalAttachment: attachment.includes("local"),
+      };
+    });
+    expect(scrollAffordance).not.toBeNull();
+    expect(scrollAffordance!.overflowY).toMatch(/auto|scroll/);
+    expect(scrollAffordance!.hasLocalAttachment, "CSS-only overflow fade").toBe(true);
+    expect(scrollAffordance!.scrollbarWidth).toBe("thin");
+
+    await focusDockTab(dock, "stage");
+    const stageFits = await dock.evaluate(() => {
+      const surface = document.querySelector(".dock-surface");
+      return surface ? surface.scrollHeight <= surface.clientHeight + 1 : false;
+    });
+    expect(stageFits, "short Stage panel does not overflow").toBe(true);
+
     await context.close();
   });
 

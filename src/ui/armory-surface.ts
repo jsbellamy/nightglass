@@ -725,6 +725,7 @@ export function mountArmorySurface(
 
   const shell = mountSurfaceShell(root, "armory-surface", {
     title: "Armory",
+    showTitle: false,
     body(snapshot) {
       const body = el("div", { class: "armory-body" });
       renderToolbar(snapshot, body);
