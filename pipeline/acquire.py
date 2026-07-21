@@ -147,7 +147,9 @@ def _nearest(rgb: tuple[int, int, int]) -> tuple[int, int, int]:
 
 
 def _within_magenta(pixel: tuple[int, int, int, int]) -> bool:
-    return all(abs(pixel[i] - MAGENTA[i]) <= KEY_TOLERANCE for i in range(3))
+    return (abs(pixel[0] - MAGENTA[0]) <= KEY_TOLERANCE
+            and abs(pixel[1] - MAGENTA[1]) <= KEY_TOLERANCE
+            and abs(pixel[2] - MAGENTA[2]) <= KEY_TOLERANCE)
 
 
 def _within_key(pixel: tuple[int, int, int, int]) -> bool:
@@ -157,7 +159,7 @@ def _within_key(pixel: tuple[int, int, int, int]) -> bool:
 def _key(raw_path: pathlib.Path) -> tuple[Image.Image, list[bool], tuple[int, int, int, int]]:
     src = Image.open(raw_path).convert("RGBA")
     w, h = src.size
-    pixels = [src.getpixel((x, y)) for y in range(h) for x in range(w)]
+    pixels = list(src.getdata())  # row-major, identical to per-pixel getpixel
     fg = [not _within_key(pixel) for pixel in pixels]
     points = [(i % w, i // w) for i, opaque in enumerate(fg) if opaque]
     if not points:
@@ -217,7 +219,7 @@ def _axis_extent(fg: list[bool], w: int, h: int, axis: str) -> tuple[int, int]:
 
 def _edge_profile(src: Image.Image, fg: list[bool], axis: str) -> list[float]:
     w, h = src.size
-    px = src.load()
+    pixels = list(src.getdata())
     length = w if axis == "x" else h
     other = h if axis == "x" else w
     profile = [0.0] * length
@@ -228,8 +230,8 @@ def _edge_profile(src: Image.Image, fg: list[bool], axis: str) -> list[float]:
             x0, y0 = (a - 1, b) if axis == "x" else (b, a - 1)
             if not fg[y * w + x] or not fg[y0 * w + x0]:
                 continue
-            p1, p0 = px[x, y], px[x0, y0]
-            energy += sum(abs(p1[i] - p0[i]) for i in range(3))
+            p1, p0 = pixels[y * w + x], pixels[y0 * w + x0]
+            energy += abs(p1[0] - p0[0]) + abs(p1[1] - p0[1]) + abs(p1[2] - p0[2])
         profile[a] = energy
     return profile
 
