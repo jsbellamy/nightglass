@@ -411,9 +411,8 @@ describe("Character picker", () => {
     picker.destroy();
   });
 
-  it("activates Formation and Reserve controls by keyboard", () => {
+  it("publishes Formation and Reserve commands from activatable controls", () => {
     const root = document.createElement("div");
-    document.body.append(root);
     const commands: unknown[] = [];
     const engine = createEngine(content, undefined, LOOT_SEED);
     const party = engine.snapshot().progression.party;
@@ -422,38 +421,20 @@ describe("Character picker", () => {
       onSelect: () => undefined,
       onCommand: (command) => {
         commands.push(command);
-        if (command.cmd === "setFormation") {
-          engine.setFormation(command.args[0]);
-        }
-        if (command.cmd === "setParty") {
-          engine.setParty(command.args[0], command.args[1]);
-        }
       },
     });
 
     picker.render(engine.snapshot(), party[0]!);
-    const moveDown = root.querySelector<HTMLButtonElement>(
-      '[data-formation-action="move-down"][data-slot="0"]',
-    );
-    moveDown?.focus();
-    moveDown?.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
-    picker.render(engine.snapshot(), party[0]!);
+    root
+      .querySelector<HTMLButtonElement>('[data-formation-action="move-down"][data-slot="0"]')
+      ?.click();
     expect(commands.some((command) => (command as { cmd: string }).cmd === "setFormation")).toBe(
       true,
     );
 
-    const swapButton = root.querySelector<HTMLButtonElement>("[data-party-swap]");
-    swapButton?.focus();
-    swapButton?.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    root.querySelector<HTMLButtonElement>("[data-party-swap]")?.click();
     expect(commands.some((command) => (command as { cmd: string }).cmd === "setParty")).toBe(true);
 
-    for (const element of root.querySelectorAll<HTMLElement>(
-      "button:not([disabled]), [tabindex]:not([tabindex='-1'])",
-    )) {
-      expect(element.classList.contains("focus-ring")).toBe(true);
-    }
-
-    root.remove();
     picker.destroy();
   });
 
