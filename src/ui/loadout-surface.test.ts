@@ -143,7 +143,7 @@ describe("Loadout surface", () => {
     surface.destroy();
   });
 
-  it("shows Activation Delay at edit time and live cooldown after the Wave boundary", () => {
+  it("shows Activation Delay at edit time and keeps authored timing without live cooldown telemetry", () => {
     const root = document.createElement("div");
     const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
     engine.advanceBy(1);
@@ -165,18 +165,16 @@ describe("Loadout surface", () => {
       /starts on full cooldown/i,
     );
     expect(pommelCardBefore?.querySelector('[data-cooldown-telemetry="true"]')).toBeNull();
+    expect(pommelCardBefore?.querySelector(".ability-timings")?.textContent).toMatch(/Cooldown/i);
 
     for (let ms = 0; ms < 120_000; ms += 1) {
       const events = engine.advanceBy(1);
       if (events.some((event) => event.type === "config-applied")) {
         surface.render(engine.snapshot());
         const pommelCard = knightSection(root).querySelector('[data-ability-id="k-pommel"]');
-        const cooldown = pommelCard?.querySelector<HTMLElement>(
-          '[data-cooldown-telemetry="true"]',
-        );
-        expect(cooldown?.textContent).toMatch(/remaining|ready/i);
+        expect(pommelCard?.querySelector('[data-cooldown-telemetry="true"]')).toBeNull();
         expect(pommelCard?.querySelector('[data-activation-delay="true"]')).toBeNull();
-        expect(Number(cooldown?.dataset["remainingMs"])).toBeGreaterThan(0);
+        expect(pommelCard?.querySelector(".ability-timings")?.textContent).toMatch(/Cooldown/i);
         surface.destroy();
         return;
       }
@@ -184,35 +182,7 @@ describe("Loadout surface", () => {
     throw new Error("config-applied never emitted");
   });
 
-  it("interpolates cooldown remaining ms from cooldownReadyAtMs vs simNowMs", () => {
-    const root = document.createElement("div");
-    const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
-    const snapshot = structuredClone(engine.snapshot()) as Snapshot;
-    const attempt = snapshot.attempt;
-    if (!attempt) {
-      throw new Error("missing attempt");
-    }
-    const knight = attempt.combatants.find((combatant) => combatant.defId === "knight");
-    if (!knight) {
-      throw new Error("missing knight combatant");
-    }
-    knight.cooldownReadyAtMs["k-sweep"] = 10_500;
-    snapshot.simNowMs = 10_000;
-
-    const selected = { current: "knight" as ClassId };
-    const surface = mountLoadoutSurface(root, mountOptions(fixtureContent, selected));
-    surface.render(snapshot);
-
-    const cooldown = knightSection(root).querySelector<HTMLElement>(
-      '[data-ability-id="k-sweep"] [data-cooldown-telemetry="true"]',
-    );
-    expect(cooldown?.dataset["remainingMs"]).toBe("500");
-    expect(cooldown?.textContent).toBe("500ms remaining");
-
-    surface.destroy();
-  });
-
-  it("shows Action Cycle telemetry only in the Loadout surface, not the Battle Tile", () => {
+  it("never renders live cooldown or Action Cycle telemetry during a Stage Attempt", () => {
     const loadoutRoot = document.createElement("div");
     const tileRoot = document.createElement("main");
     const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
@@ -225,6 +195,7 @@ describe("Loadout surface", () => {
     if (!knight) {
       throw new Error("missing knight combatant");
     }
+    knight.cooldownReadyAtMs["k-sweep"] = 10_500;
     knight.action = {
       abilityId: "k-pommel",
       startedAtMs: 100,
@@ -241,8 +212,9 @@ describe("Loadout surface", () => {
     loadout.render(snapshot);
     tile.render(snapshot);
 
-    expect(loadoutRoot.querySelector('[data-action-cycle-telemetry="true"]')).not.toBeNull();
-    expect(loadoutRoot.querySelector('[data-cooldown-telemetry="true"]')).not.toBeNull();
+    expect(loadoutRoot.querySelector('[data-action-cycle-telemetry="true"]')).toBeNull();
+    expect(loadoutRoot.querySelector('[data-cooldown-telemetry="true"]')).toBeNull();
+    expect(loadoutRoot.querySelector(".ability-timings")?.textContent).toMatch(/Cooldown/i);
     expect(tileRoot.querySelector('[data-action-cycle-telemetry="true"]')).toBeNull();
     expect(tileRoot.querySelector('[data-cooldown-telemetry="true"]')).toBeNull();
 

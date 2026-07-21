@@ -4,7 +4,14 @@ import { describe, expect, it } from "vitest";
 import { createEngine } from "../core/engine";
 import { buildContent } from "../data";
 import { mountStageSurface } from "./stage-surface";
-import { el, mountSurfaceShell, pendingMarker, bindScrollOverflowAffordance } from "./surface-shell";
+import {
+  el,
+  mountSurfaceShell,
+  pendingMarker,
+  bindScrollOverflowAffordance,
+  captureScrollPositions,
+  restoreScrollPositions,
+} from "./surface-shell";
 
 const LOOT_SEED = 42;
 const content = buildContent();
@@ -54,6 +61,26 @@ describe("Management surface shell pending Wave marker", () => {
     expect(marker.tagName).toBe("P");
     expect(marker.className).toBe("pending-marker pending-wave");
     expect(marker.textContent).toBe("Applies at next Wave");
+  });
+});
+
+describe("Scroll position capture and restore", () => {
+  it("restores scrollTop onto the post-rebuild node for the same selector", () => {
+    const root = document.createElement("div");
+    const first = document.createElement("div");
+    first.className = "armory-grid";
+    first.scrollTop = 64;
+    root.append(first);
+
+    const positions = captureScrollPositions(root, [".armory-grid"]);
+    expect(positions[".armory-grid"]).toEqual({ top: 64, left: 0 });
+
+    first.remove();
+    const second = document.createElement("div");
+    second.className = "armory-grid";
+    root.append(second);
+    restoreScrollPositions(root, positions);
+    expect(second.scrollTop).toBe(64);
   });
 });
 

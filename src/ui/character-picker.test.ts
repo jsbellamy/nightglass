@@ -61,7 +61,7 @@ describe("Character picker", () => {
     picker.destroy();
   });
 
-  it("renders health during a Stage Attempt and omits it when there is no Combatant", () => {
+  it("never renders Character chip health, including during a Stage Attempt", () => {
     const root = document.createElement("div");
     const picker = mountCharacterPicker(root, {
       content: fixtureContent,
@@ -75,11 +75,8 @@ describe("Character picker", () => {
 
     const combatant = combatantForClass(snapshot, partyFront);
     expect(combatant).toBeDefined();
-    const health = root.querySelector(
-      `[data-character-chip="${partyFront}"] .character-chip-health`,
-    );
-    expect(health?.textContent).toContain(`${combatant!.health}/${combatant!.maxHealth}`);
-    expect(health?.querySelector(".character-chip-health-fill")).not.toBeNull();
+    expect(root.querySelector(".character-chip-health")).toBeNull();
+    expect(root.querySelector(".character-chip-health-fill")).toBeNull();
 
     const idle = structuredClone(snapshot);
     idle.attempt = null;

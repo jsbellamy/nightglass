@@ -330,6 +330,162 @@ describe("Management Dock active-surface rendering", () => {
     root.remove();
     dock.destroy();
   });
+
+  it("does not remount Armory grid or reset scrollTop on an HP-only Snapshot pump", () => {
+    const root = document.createElement("main");
+    document.body.append(root);
+    const dock = mountDock(root);
+    const engine = createEngine(fixtureContent, undefined, 3);
+    const first = structuredClone(engine.snapshot());
+    first.progression.armory = [
+      {
+        dropId: 1,
+        baseId: "fixture-blade",
+        itemLevel: 1,
+        rarity: "common",
+        affixes: [],
+        awardedAtMs: 100,
+        seen: true,
+        locked: false,
+        assignedTo: null,
+      },
+      {
+        dropId: 2,
+        baseId: "fixture-armor",
+        itemLevel: 1,
+        rarity: "common",
+        affixes: [],
+        awardedAtMs: 200,
+        seen: true,
+        locked: false,
+        assignedTo: null,
+      },
+      {
+        dropId: 3,
+        baseId: "fixture-blade",
+        itemLevel: 1,
+        rarity: "common",
+        affixes: [],
+        awardedAtMs: 300,
+        seen: true,
+        locked: false,
+        assignedTo: null,
+      },
+    ];
+    const legality = legalityViewFromEngine(createEngine(fixtureContent, first, 3));
+    dock.render(first, legality);
+    root.querySelector<HTMLButtonElement>('[data-dock-tab="armory"]')?.click();
+
+    const grid = root.querySelector<HTMLElement>(".armory-grid");
+    expect(grid).not.toBeNull();
+    grid!.scrollTop = 48;
+    expect(grid!.scrollTop).toBe(48);
+
+    const hpOnly = structuredClone(first);
+    const partyCombatant = hpOnly.attempt?.combatants.find((c) => c.side === "party");
+    if (!partyCombatant) {
+      throw new Error("missing party combatant");
+    }
+    partyCombatant.health = Math.max(1, partyCombatant.health - 7);
+    hpOnly.simNowMs += 250;
+
+    dock.render(hpOnly, legality);
+
+    const gridAfter = root.querySelector<HTMLElement>(".armory-grid");
+    expect(gridAfter).toBe(grid);
+    expect(gridAfter!.scrollTop).toBe(48);
+
+    root.remove();
+    dock.destroy();
+  });
+
+  it("does not remount Character panel or reset scrollTop on an HP-only Snapshot pump", () => {
+    const root = document.createElement("main");
+    document.body.append(root);
+    const dock = mountDock(root);
+    const engine = createEngine(fixtureContent, undefined, 3);
+    const first = structuredClone(engine.snapshot());
+    dock.render(first);
+
+    const panel = root.querySelector<HTMLElement>('[data-dock-panel="character"]');
+    expect(panel).not.toBeNull();
+    panel!.scrollTop = 36;
+    expect(panel!.scrollTop).toBe(36);
+
+    const hpOnly = structuredClone(first);
+    const partyCombatant = hpOnly.attempt?.combatants.find((c) => c.side === "party");
+    if (!partyCombatant) {
+      throw new Error("missing party combatant");
+    }
+    partyCombatant.health = Math.max(1, partyCombatant.health - 5);
+    hpOnly.simNowMs += 250;
+
+    dock.render(hpOnly);
+
+    const panelAfter = root.querySelector<HTMLElement>('[data-dock-panel="character"]');
+    expect(panelAfter).toBe(panel);
+    expect(panelAfter!.scrollTop).toBe(36);
+
+    root.remove();
+    dock.destroy();
+  });
+
+  it("remounts the active surface when a management-relevant pendingEdits change arrives", () => {
+    const root = document.createElement("main");
+    document.body.append(root);
+    const dock = mountDock(root);
+    const engine = createEngine(fixtureContent, undefined, 3);
+    const first = structuredClone(engine.snapshot());
+    dock.render(first);
+
+    const partyRoot = root.querySelector(".party-surface");
+    expect(partyRoot).not.toBeNull();
+    expect(root.querySelector('[data-pending-kind="formation"]')).toBeNull();
+
+    const managed = structuredClone(first);
+    const order = [...managed.progression.party].reverse() as typeof managed.progression.party;
+    managed.pendingEdits = [{ kind: "formation", order }];
+
+    dock.render(managed);
+
+    expect(root.querySelector('[data-pending-kind="formation"]')).not.toBeNull();
+    expect(root.querySelector(".party-surface")).not.toBeNull();
+
+    root.remove();
+    dock.destroy();
+  });
+
+  it("restores picker focus onto the selected chip after a management-relevant remount", () => {
+    const root = document.createElement("main");
+    document.body.append(root);
+    const dock = mountDock(root);
+    const engine = createEngine(fixtureContent, undefined, 3);
+    const first = structuredClone(engine.snapshot());
+    dock.render(first);
+
+    const other = first.progression.party[1]!;
+    root.querySelector<HTMLElement>(`[data-character-chip="${other}"]`)?.click();
+    root.querySelector<HTMLElement>(`[data-character-chip="${other}"]`)?.focus();
+    expect(document.activeElement).toBe(
+      root.querySelector(`[data-character-chip="${other}"]`),
+    );
+
+    const managed = structuredClone(first);
+    managed.pendingEdits = [
+      {
+        kind: "formation",
+        order: [...managed.progression.party].reverse() as typeof managed.progression.party,
+      },
+    ];
+    dock.render(managed);
+
+    expect(document.activeElement).toBe(
+      root.querySelector(`[data-character-chip="${other}"]`),
+    );
+
+    root.remove();
+    dock.destroy();
+  });
 });
 
 describe("Management Dock Character picker", () => {

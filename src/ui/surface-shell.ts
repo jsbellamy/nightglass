@@ -126,6 +126,44 @@ export function pendingMarker(): HTMLElement {
   return marker;
 }
 
+/** Selectors for scroll containers the Management Dock may rebuild on remount. */
+export const DOCK_SCROLL_PRESERVE_SELECTORS = [
+  ".character-picker",
+  ".dock-panel:not([hidden])",
+  ".armory-grid",
+  ".armory-detail",
+] as const;
+
+export type ScrollPositionMap = Record<string, { top: number; left: number }>;
+
+/** Capture scroll offsets keyed by selector before a remount replaces those nodes. */
+export function captureScrollPositions(
+  root: ParentNode,
+  selectors: readonly string[] = DOCK_SCROLL_PRESERVE_SELECTORS,
+): ScrollPositionMap {
+  const positions: ScrollPositionMap = {};
+  for (const selector of selectors) {
+    const element = root.querySelector(selector);
+    if (!(element instanceof HTMLElement)) {
+      continue;
+    }
+    positions[selector] = { top: element.scrollTop, left: element.scrollLeft };
+  }
+  return positions;
+}
+
+/** Restore scroll offsets onto the post-remount nodes matching the same selectors. */
+export function restoreScrollPositions(root: ParentNode, positions: ScrollPositionMap): void {
+  for (const [selector, position] of Object.entries(positions)) {
+    const element = root.querySelector(selector);
+    if (!(element instanceof HTMLElement)) {
+      continue;
+    }
+    element.scrollTop = position.top;
+    element.scrollLeft = position.left;
+  }
+}
+
 /**
  * Marks a scroll region with `data-overflow="true|false"` via ResizeObserver +
  * MutationObserver. CSS can show a fade only when overflowing. No scroll

@@ -2,7 +2,7 @@ import type { ReadonlySnapshot } from "../core/snapshot";
 import type { ClassId, Content } from "../core/types";
 import type { TileCommand } from "./bus";
 import { bindPressable } from "./keyboard";
-import { CLASS_LABELS, combatantForClass, levelFor } from "./snapshot-view";
+import { CLASS_LABELS, levelFor } from "./snapshot-view";
 import { el, mountSurfaceShell, pendingMarker } from "./surface-shell";
 
 const FORMATION_SLOTS = ["Front", "Middle", "Back"] as const;
@@ -41,14 +41,6 @@ function effectiveFormation(snapshot: ReadonlySnapshot): [ClassId, ClassId, Clas
   return snapshot.progression.party;
 }
 
-function combatHealth(snapshot: ReadonlySnapshot, classId: ClassId): { health: number; maxHealth: number } | null {
-  const combatant = combatantForClass(snapshot, classId);
-  if (!combatant) {
-    return null;
-  }
-  return { health: combatant.health, maxHealth: combatant.maxHealth };
-}
-
 function swapFormationOrder(
   order: [ClassId, ClassId, ClassId],
   slotIndex: number,
@@ -84,7 +76,6 @@ export function mountPartySurface(
       const selectedIsReserve = selectedClassId === reserve;
 
       const formationSlots = formation.map((classId, slotIndex) => {
-        const health = combatHealth(snapshot, classId);
         const isSelected = classId === selectedClassId;
 
         const moveUp = el("button", {
@@ -125,12 +116,6 @@ export function mountPartySurface(
             class: "character-level",
             text: `Level ${levelFor(snapshot, content, classId)}`,
           }),
-          health
-            ? el("p", {
-                class: "character-health",
-                text: `Health ${health.health}/${health.maxHealth}`,
-              })
-            : null,
           el("div", { class: "formation-controls" }, [moveUp, moveDown]),
         ]);
       });

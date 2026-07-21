@@ -3,7 +3,6 @@ import type { ClassId, Content } from "../core/types";
 import { bindPressable } from "./keyboard";
 import {
   CLASS_LABELS,
-  combatantForClass,
   levelFor,
   rosterClassIds,
 } from "./snapshot-view";
@@ -78,20 +77,6 @@ export function mountCharacterPicker(
       const isSelected = classId === selected;
       const positionKey = index < 3 ? POSITION_KEYS[index]! : "reserve";
       const positionLabel = index < 3 ? POSITION_LABELS[index]! : "Reserve";
-      const combatant = combatantForClass(snapshot, classId);
-      const healthBlock =
-        combatant !== undefined
-          ? (() => {
-              const fill = el("div", { class: "character-chip-health-fill" });
-              const ratio =
-                combatant.maxHealth > 0 ? combatant.health / combatant.maxHealth : 0;
-              fill.style.width = `${Math.max(0, Math.min(1, ratio)) * 100}%`;
-              return el("div", { class: "character-chip-health" }, [
-                `${combatant.health}/${combatant.maxHealth}`,
-                fill,
-              ]);
-            })()
-          : null;
 
       const chip = el(
         "button",
@@ -115,7 +100,6 @@ export function mountCharacterPicker(
             data: { pickerPosition: positionKey },
             text: positionLabel,
           }),
-          healthBlock,
         ],
       );
       chip.setAttribute("aria-selected", isSelected ? "true" : "false");
