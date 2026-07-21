@@ -54,20 +54,15 @@ gate passes; do not mirror a generated raw as a substitute for reacquisition.
 
 ### Contract pointers
 
-- For Characters and opponents that enter the Battle Tile, pick the acquisition
-  contract that matches the target size tier (`MonsterSize` /
-  `MONSTER_FRAMES` in `src/core/types.ts`, `FRAMES` in `pipeline/acquire.py`):
-  - **medium (default)** — [`../acquisition-contract.md`](../acquisition-contract.md)
-    (32×48). Use this when the task does not name a tier, and for every current
-    Class still and ordinary medium opponent.
-  - **small** — [`../acquisition-contract-small.md`](../acquisition-contract-small.md)
-    (24×32).
-  - **large** — [`../acquisition-contract-large.md`](../acquisition-contract-large.md)
-    (48×72), including Boss-scale opponents.
-  Each contract owns that tier's logical grid, conservative prompt safe box,
-  magenta key, Archived Raw Bundle, bottom-center anchor, `moonberry-16`,
-  validator, manifest, and offline rebuild. Do not paraphrase one tier's shell
-  into another's geometry.
+- For every Party Character and Opponent body that enters the Battle Tile, read
+  [`../body-sprite-contract.md`](../body-sprite-contract.md). It owns role-based
+  opaque fit ceilings, per-asset `frame_size` / `visual_bounds` / `foot_anchor`,
+  Cursor opaque-RGB prompts on `#ff00ff`, chroma key and stamp handling,
+  proportional fit, bottom-centre anchoring, `moonberry-16`, binary alpha, the
+  Archived Raw Bundle, validator gates, manifest geometry, offline byte-identical
+  rebuild, and the legacy adapter promise for existing sprites. The retired
+  small/medium/large tier contracts are historical pointers only — do not use
+  their grid shells or fixed canvas sizes.
 - For **Equipment Base icons**, read [`../icon-contract.md`](../icon-contract.md).
   It owns the 34×34 runtime, text-grid sources under `src/assets/icon-sources/`,
   palette scoping, ingest gates, `src/assets/icons/` manifest layout, and the
@@ -101,13 +96,13 @@ style reference, or edit target. Archive any direct input needed to reproduce an
 accepted generation and record its SHA-256.
 
 Write the prompt as a contract: subject and identity, composition, art language,
-geometry, background, and acceptance constraints. For Battle Tile bodies, paste
-the **chosen tier** acquisition contract's **grid shell** (exact logical canvas,
-flat-block pixels, conservative **safe box**, magenta clearance, outline/palette
-bans) around the subject description — do not paraphrase the shell into softer
-art direction, and do not borrow another tier's geometry. Resolve the shell's
-`<FACING>` token from the Battlefield facing rule above before submitting the
-prompt. Request the safe box; never ask the subject to fill the runtime canvas.
+geometry, background, and acceptance constraints. For Battle Tile bodies, follow
+the **Cursor source contract** in
+[`../body-sprite-contract.md`](../body-sprite-contract.md): one complete
+strict-side-profile subject, generous magenta clearance, chunky Moonberry
+flat-colour pixel art, role-correct facing from the Battlefield facing rule
+above, and **no** exact logical grid, canvas dimensions, block dimensions, or
+safe-box measurements in the prompt.
 
 For Equipment Base icons, use this **icon grid shell**
 around a concrete subject noun — same discipline as the Character shell, resized
@@ -134,10 +129,10 @@ identification.
 
 This step is complete when (a) the prompt names every identity-bearing feature
 and every geometric constraint, including the literal role-correct facing,
-(b) Battle Tile body prompts contain the contract grid shell verbatim or by an
-explicit quote of its clauses with no unresolved placeholders (Equipment icon
-prompts contain the icon grid shell above), and (c) every direct image input has
-a recorded role.
+(b) Battle Tile body prompts satisfy the body contract's Cursor source rules and
+contain no forbidden grid/canvas/safe-box measurements (Equipment icon prompts
+contain the icon grid shell above), and (c) every direct image input has a
+recorded role.
 
 ## 3. Generate and archive the raw
 
@@ -146,9 +141,13 @@ provider dump into task-local scratch, then measure it with the owning pipeline;
 for Battle Tile bodies run:
 
 ```bash
-python3 pipeline/acquire.py measure --tier <small|medium|large> \
+python3 pipeline/acquire.py measure --role <party|opponent|boss> \
   --report <task-evidence>/candidate-report.json <candidate.png>
 ```
+
+(Until the flexible-body pipeline lands, the CLI may still accept legacy
+`--tier` flags; new acquisition work targets the body contract and role
+ceilings in [`../body-sprite-contract.md`](../body-sprite-contract.md).)
 
 Measurement requires no provenance sidecar. It writes no asset or sidecar; when
 `--report` is supplied, it saves the same JSON emitted on stdout as task
@@ -178,11 +177,35 @@ a fresh acquisition loop with shipping gates declared in step 1.
 
 Run the earliest deterministic ingest or validator immediately. Use its report as
 feedback for the next candidate. Provider-resolution prettiness is not a gate.
-For Battle Tile bodies, use `pipeline/acquire.py measure`; do not write an ad-hoc
-Python harness or measurement-only `.source.json`.
+For Battle Tile bodies, use `pipeline/acquire.py measure` with the body role; do
+not write an ad-hoc Python harness or measurement-only `.source.json`. Read the
+measurement JSON rather than the candidate image.
 
-For logical-grid art, read the ingest report rather than the candidate image.
-Equipment icon evidence commits `ingest-report.json` beside the provider raws;
+### Battle Tile bodies (flexible contract)
+
+Body `measure` reports raw gates (PNG, flat magenta border with
+`KEY_TOLERANCE = 40`, stamp-pixel handling per
+[`../body-sprite-contract.md`](../body-sprite-contract.md)), clipping against
+the raw canvas, opaque bounds after key/crop, and fit against the role ceiling
+(Party **40×68**, ordinary Opponent **30×68**, Boss **160×72**). There is no
+logical-grid recovery, pitch score, safe box, or minimum dimension gate for new
+body work.
+
+| Failure | Signal | Retry move |
+| --- | --- | --- |
+| **Overshoot** | Opaque bounds exceed the role ceiling after crop | Preserve identity; simplify silhouette and redraw with more magenta clearance; do not add grid/canvas/safe-box numbers to the prompt. |
+| **Clip-fail** | Subject touches a raw canvas edge | Preserve identity; add generous magenta clearance on the clipped side(s). |
+| **Raw-gate-fail** | Border magenta, stamp cleanup, or archived-byte checks fail | Regenerate on controlled `#ff00ff`; do not re-export or resize the candidate into acceptance. |
+| **Off-ramp** | Opaque colours far from `moonberry-16` after quantize (when reported) | Keep geometry fixed; retry with exact on-palette material names. |
+
+If multiple signals fire, fix **raw-gate-fail** first unless measurable clipping
+is also present; then **clip-fail**, **overshoot**, then **off-ramp**. A body
+candidate advances only when every raw-level gate passes and opaque bounds fit the
+role ceiling.
+
+### Equipment icons (logical grid)
+
+For Equipment icons, read `ingest-report.json` beside the provider raws;
 each entry matches the structure `pipeline/icons/ingest.py` returns from ingest
 (`recovered`, `ramp`) and carries the measurement the failure table below is keyed on:
 
@@ -194,26 +217,21 @@ each entry matches the structure `pipeline/icons/ingest.py` returns from ingest
 | Clip-fail | `recovered.bbox` touching the raw canvas edge |
 | Off-ramp | `ramp.far_fraction` / `ramp.off_ramp_reject` |
 
-Classify the reject from those values. Do not open the candidate PNG to confirm a
-number the report already states. Classify each reject as exactly one primary
-failure, then retry **prompt-side** with that class's move. Keep render resolution
-constant; never resize a failed candidate into an accepted raw.
+Classify each icon reject as exactly one primary failure, then retry
+**prompt-side** with that class's move. Keep render resolution constant; never
+resize a failed candidate into an accepted raw.
 
 | Failure | Signal | Retry move |
 | --- | --- | --- |
-| **Overshoot** | Recovered grid wider/taller than the acceptance canvas, or above a safe box that the owning contract explicitly promotes to an advancement gate | Preserve identity; shrink silhouette into the safe box; restate magenta clearance on every edge. Template: *"The previous candidate recovered as `<W>×<H>`. Preserve its identity and pose, simplify its detail, and redraw the complete silhouette inside the contract's safe box with clearance on every edge."* |
+| **Overshoot** | Recovered grid wider/taller than the acceptance canvas | Preserve identity; shrink silhouette; restate magenta clearance on every edge. |
 | **Underfill** | Recovered long axis below the icon gate (`MIN_LONG_AXIS = 20` in `pipeline/icons/constants.py`; **preference** 26–30 on a ~32-cell grid) | Regenerate larger in frame, or exaggerate the identity feature. Do not nearest-neighbour upscale a soft generation into an accepted raw. |
-| **Pitch-fail** | X or Y pitch confidence below the acquisition contract gate (soft/anti-aliased blocks, uneven cell size) | Strengthen the grid shell; attach an already-accepted grid-faithful raw as **style reference**; demand uniform square blocks and aligned seams. Do not only ask for "chunkier" art. |
-| **Clip-fail** | Subject touches a raw canvas edge (clipping gate) | Preserve identity; add at least two magenta cells of clearance on the clipped side(s); keep the safe box. |
-| **Off-ramp** | More than ~20% of opaque subject cells are far from every `moonberry-16` swatch (RGB distance), or the Stage-2 preview shows a whole material plane silently recolored. Authoritative Equipment icon threshold: `OFF_RAMP_REJECT` in `pipeline/icons/constants.py` / `docs/icon-contract.md` (retuned in #131 from the provisional 15%). | Keep geometry fixed; retry with **exact on-palette material names** (mint/sage stave, berry vine, cream string — never "brown wood"). The on-palette check after quantize cannot catch this by construction. |
+| **Pitch-fail** | X or Y pitch confidence below the icon contract gate | Strengthen the icon grid shell; attach an already-accepted grid-faithful raw as **style reference**; demand uniform square blocks. |
+| **Clip-fail** | Subject touches a raw canvas edge | Preserve identity; add at least two magenta cells of clearance on the clipped side(s). |
+| **Off-ramp** | More than ~20% of opaque subject cells are far from every `moonberry-16` swatch, or the Stage-2 preview shows a whole material plane silently recolored. Threshold: `OFF_RAMP_REJECT` in `pipeline/icons/constants.py` / `docs/icon-contract.md`. | Keep geometry fixed; retry with **exact on-palette material names** (mint/sage stave, berry vine, cream string — never "brown wood"). |
 
-If two signals fire, fix **raw-gate-fail** first unless measurable clipping is
-also present; then fix **clip-fail**, **overshoot**, **pitch-fail**,
-**off-ramp**, and **underfill** in that order. Prompt safe boxes remain tuning
-targets unless the owning contract explicitly makes one an advancement gate;
-`measure` reports advisory exceedance without rejecting medium/small candidates.
-A candidate advances only when its recovered grid fits and every raw-level gate
-passes.
+For icons, if two signals fire, fix **raw-gate-fail** first unless measurable
+clipping is present; then **clip-fail**, **overshoot**, **pitch-fail**,
+**off-ramp**, and **underfill** in that order.
 
 ### Autonomous candidate decisions
 
@@ -224,22 +242,20 @@ already defines the answer.
 
 For every candidate, record one row before generating the next:
 
-| Candidate | Raw gates | Clipped sides | Recovered grid | Pitch X/Y | Primary result | Next action |
+| Candidate | Asset class | Raw gates | Clipped sides | Measurement | Primary result | Next action |
 | --- | --- | --- | --- | --- | --- | --- |
-| `<name>` | pass/fail | none or sides | `W×H` or failure | scores | one class | advance/retry |
+| `<name>` | body / icon | pass/fail | none or sides | opaque `W×H` vs ceiling, or icon grid | one class | advance/retry |
 
 Apply this state machine:
 
-1. **Reject and retry** when any raw gate fails, any side is clipped, either
-   pitch score is below its gate, the recovered grid exceeds the runtime canvas,
-   or it exceeds a stricter advancement envelope declared by the owning
-   contract. Large bodies use their 40×60 safe box as such an envelope;
-   medium/small safe boxes remain advisory prompt targets.
+1. **Reject and retry** when any raw gate fails, any side is clipped, or the
+   measurement exceeds the owning contract gate (body: role opaque ceiling in
+   [`../body-sprite-contract.md`](../body-sprite-contract.md); icon: recovered
+   grid vs acceptance canvas and pitch scores).
 2. Choose exactly one primary failure using the priority above. Preserve the
    subject identity and change only the prompt clauses needed by that retry move.
 3. **Advance to visual review** only after every deterministic advancement gate
-   passes. An advisory safe-box exceedance remains visible in the report but
-   does not block medium/small candidates. Visual review then judges role-correct
+   passes. Visual review then judges role-correct
    facing, identity, silhouette, cohort consistency, and runtime obstructions;
    visual appeal never overrides a deterministic failure.
 4. **Accept** only after deterministic validation and visual review both pass.
@@ -257,7 +273,7 @@ Candidate measurement has no sidecar. Save its JSON with `--report`; this is the
 validator report consumed by later agents. Promotion must generate shipping
 provenance containing provider, acquisition tool, exact prompt, raw SHA-256,
 direct inputs with roles and hashes, asset class, runtime destination, candidate
-name, canonical identity, role, facing, and size tier. Promotion rejects prompts
+name, canonical identity, role, and facing. Promotion rejects prompts
 without one explicit canonical subject-facing direction, or with a contradictory
 direction: party Characters specify only **RIGHT** and opponents only **LEFT**.
 
@@ -270,7 +286,8 @@ For non-grid art, use the equivalent measurable failure—dimensions, crop,
 contrast, alpha coverage, palette count, or layout occupancy—in the retry.
 
 This step is complete when the accepted candidate has a saved validator report
-naming recovered grid (or equivalent) and every raw-level gate result.
+naming opaque bounds or recovered grid (as appropriate) and every raw-level gate
+result.
 
 ## 5. Build and validate
 
