@@ -60,7 +60,7 @@ function leveledKnightEngine() {
 }
 
 describe("Talents surface", () => {
-  it("renders exactly one .talents-character for the picker selection", () => {
+  it("renders only the picker's selected Character", () => {
     const root = document.createElement("div");
     const engine = leveledKnightEngine();
     const selected = { current: "knight" as ClassId };

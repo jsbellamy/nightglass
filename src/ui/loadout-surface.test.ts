@@ -45,7 +45,7 @@ function sweepRawText(root: HTMLElement): string | undefined {
 }
 
 describe("Loadout surface", () => {
-  it("renders exactly one .loadout-character for the picker selection", () => {
+  it("renders only the picker's selected Character", () => {
     const root = document.createElement("div");
     const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
     const selected = { current: "knight" as ClassId };
