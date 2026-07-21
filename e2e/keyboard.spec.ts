@@ -31,6 +31,8 @@ test.describe("accessibility keyboard floor", () => {
     const dock = await attachDockPage(context);
 
     await focusDockTab(dock, "party");
+    await dock.locator('[data-character-chip="knight"]').focus();
+    await dock.keyboard.press("Enter");
     await assertFocusRingVisible(dock, ".character-picker-chip[aria-selected=\"true\"]");
     await assertFocusRingVisible(dock, '[data-formation-action="move-down"][data-slot="0"]');
     await dock.locator('[data-formation-action="move-down"][data-slot="0"]').focus();
@@ -38,6 +40,8 @@ test.describe("accessibility keyboard floor", () => {
     await expect(dock.locator('[data-pending-kind="formation"]')).toContainText(/next Wave/i);
 
     await focusDockTab(dock, "loadout");
+    await dock.locator('[data-character-chip="knight"]').focus();
+    await dock.keyboard.press("Enter");
     const loadoutSelect = dock.locator('[data-class-id="knight"] [data-loadout-assign="0"]');
     await loadoutSelect.focus();
     await assertFocusRingVisible(dock, '[data-class-id="knight"] [data-loadout-assign="0"]');
@@ -55,6 +59,8 @@ test.describe("accessibility keyboard floor", () => {
     );
 
     await focusDockTab(dock, "talents");
+    await dock.locator('[data-character-chip="knight"]').focus();
+    await dock.keyboard.press("Enter");
     const allocate = dock.locator(
       '[data-class-id="knight"] [data-talent-id="fortitude"][data-talent-action="allocate"]',
     );
@@ -71,6 +77,8 @@ test.describe("accessibility keyboard floor", () => {
     ).toBeVisible();
 
     await focusDockTab(dock, "armory");
+    await dock.locator('[data-character-chip="knight"]').focus();
+    await dock.keyboard.press("Enter");
     await dock.locator('[data-class-id="knight"][data-compare-slot="weapon"]').focus();
     await dock.keyboard.press("Enter");
     await dock.locator('[data-compare-candidate="1"]').focus();

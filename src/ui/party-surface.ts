@@ -15,6 +15,8 @@ export interface PartySurface {
 export interface PartySurfaceOptions {
   content: Content;
   onCommand?: (command: TileCommand) => void;
+  /** The Character the picker has selected. Read at render time, not mount time. */
+  getSelectedClassId(): ClassId | null;
 }
 
 function effectiveParty(snapshot: ReadonlySnapshot): {
@@ -63,20 +65,6 @@ function swapFormationOrder(
   return next;
 }
 
-function swapPartyMember(
-  members: [ClassId, ClassId, ClassId],
-  reserve: ClassId,
-  classId: ClassId,
-): { members: [ClassId, ClassId, ClassId]; reserve: ClassId } {
-  const index = members.indexOf(classId);
-  if (index === -1) {
-    return { members, reserve };
-  }
-  const nextMembers = [...members] as [ClassId, ClassId, ClassId];
-  nextMembers[index] = reserve;
-  return { members: nextMembers, reserve: classId };
-}
-
 export function mountPartySurface(
   root: HTMLElement,
   options: PartySurfaceOptions,
@@ -86,14 +74,18 @@ export function mountPartySurface(
   const shell = mountSurfaceShell(root, "party-surface", {
     title: "Party",
     body(snapshot) {
+      const selectedClassId = options.getSelectedClassId()!;
       const hasFormationPending = snapshot.pendingEdits.some((edit) => edit.kind === "formation");
       const hasPartyPending = snapshot.progression.pendingParty !== null;
 
       const { members, reserve } = effectiveParty(snapshot);
       const formation = effectiveFormation(snapshot);
+      const selectedPartyIndex = members.indexOf(selectedClassId);
+      const selectedIsReserve = selectedClassId === reserve;
 
       const formationSlots = formation.map((classId, slotIndex) => {
         const health = combatHealth(snapshot, classId);
+        const isSelected = classId === selectedClassId;
 
         const moveUp = el("button", {
           class: "formation-action focus-ring",
@@ -121,7 +113,12 @@ export function mountPartySurface(
           });
         });
 
-        return el("article", { class: "formation-slot character-card", data: { slot: String(slotIndex) } }, [
+        const slotData: Record<string, string> = { slot: String(slotIndex) };
+        if (isSelected) {
+          slotData["formationSelected"] = "true";
+        }
+
+        return el("article", { class: "formation-slot character-card", data: slotData }, [
           el("p", { class: "slot-label", text: FORMATION_SLOTS[slotIndex] ?? "Slot" }),
           el("p", { class: "character-name", text: CLASS_LABELS[classId] }),
           el("p", {
@@ -147,26 +144,57 @@ export function mountPartySurface(
         ],
       );
 
-      const swapButtons = members.map((classId) => {
+      const swapButtons: HTMLElement[] = [];
+      if (selectedIsReserve) {
+        for (let slotIndex = 0; slotIndex < members.length; slotIndex += 1) {
+          const member = members[slotIndex]!;
+          const swapButton = el("button", {
+            class: "party-swap focus-ring",
+            data: { partySwapSlot: String(slotIndex) },
+            props: { type: "button" },
+            text: `Swap into ${FORMATION_SLOTS[slotIndex]} (${CLASS_LABELS[member]})`,
+          });
+          bindPressable(swapButton, () => {
+            const current = effectiveParty(snapshot);
+            const nextMembers = [...current.members] as [ClassId, ClassId, ClassId];
+            nextMembers[slotIndex] = selectedClassId;
+            options.onCommand?.({
+              cmd: "setParty",
+              args: [nextMembers, current.members[slotIndex]!],
+            });
+          });
+          swapButtons.push(swapButton);
+        }
+      } else if (selectedPartyIndex !== -1) {
         const swapButton = el("button", {
           class: "party-swap focus-ring",
-          data: { partySwap: classId },
+          data: { partySwap: selectedClassId },
           props: { type: "button" },
-          text: `Swap ${CLASS_LABELS[classId]} with Reserve`,
+          text: `Swap with Reserve (${CLASS_LABELS[reserve]})`,
         });
         bindPressable(swapButton, () => {
-          const swapped = swapPartyMember(members, reserve, classId);
+          const current = effectiveParty(snapshot);
+          const index = current.members.indexOf(selectedClassId);
+          if (index === -1) {
+            return;
+          }
+          const nextMembers = [...current.members] as [ClassId, ClassId, ClassId];
+          nextMembers[index] = current.reserve;
           options.onCommand?.({
             cmd: "setParty",
-            args: [swapped.members, swapped.reserve],
+            args: [nextMembers, selectedClassId],
           });
         });
-        return swapButton;
-      });
+        swapButtons.push(swapButton);
+      }
 
-      const reserveSection = el("section", { class: "party-reserve", aria: { label: "Reserve" } }, [
+      const reserveChildren: (HTMLElement | null)[] = [
         el("h3", { class: "surface-section-title", text: "Reserve" }),
-        el("p", { class: "reserve-note", text: "Earns 50% XP" }),
+      ];
+      if (selectedIsReserve) {
+        reserveChildren.push(el("p", { class: "reserve-note", text: "Earns 50% XP" }));
+      }
+      reserveChildren.push(
         el("article", { class: "character-card reserve-card" }, [
           el("p", { class: "character-name", text: CLASS_LABELS[reserve] }),
           el("p", {
@@ -176,7 +204,13 @@ export function mountPartySurface(
         ]),
         el("h3", { class: "surface-section-title", text: "Party swaps" }),
         ...swapButtons,
-      ]);
+      );
+
+      const reserveSection = el(
+        "section",
+        { class: "party-reserve", aria: { label: "Reserve" } },
+        reserveChildren,
+      );
 
       const body: (HTMLElement | null)[] = [];
 
