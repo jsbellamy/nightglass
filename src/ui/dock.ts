@@ -70,7 +70,7 @@ export interface ManagementDockOptions {
  * Stable key for Snapshot fields that affect Management Dock surfaces.
  * Combat HP / cooldown / sim clock churn is excluded so pumps do not remount.
  */
-export function managementRelevantKey(snapshot: ReadonlySnapshot | null): string {
+function managementRelevantKey(snapshot: ReadonlySnapshot | null): string {
   if (!snapshot) {
     return "null";
   }
@@ -90,7 +90,6 @@ export function managementRelevantKey(snapshot: ReadonlySnapshot | null): string
           id: attempt.id,
           stage: attempt.stage,
           encounter: attempt.encounter,
-          phase: attempt.phase,
           equipmentLoadouts: attempt.equipmentLoadouts,
         }
       : null,

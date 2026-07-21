@@ -455,6 +455,81 @@ describe("Management Dock active-surface rendering", () => {
     dock.destroy();
   });
 
+  it("restores Armory grid scrollTop after a management-relevant remount", () => {
+    const root = document.createElement("main");
+    document.body.append(root);
+    const dock = mountDock(root);
+    const engine = createEngine(fixtureContent, undefined, 3);
+    const first = structuredClone(engine.snapshot());
+    first.progression.armory = [
+      {
+        dropId: 1,
+        baseId: "fixture-blade",
+        itemLevel: 1,
+        rarity: "common",
+        affixes: [],
+        awardedAtMs: 100,
+        seen: true,
+        locked: false,
+        assignedTo: null,
+      },
+      {
+        dropId: 2,
+        baseId: "fixture-armor",
+        itemLevel: 1,
+        rarity: "common",
+        affixes: [],
+        awardedAtMs: 200,
+        seen: true,
+        locked: false,
+        assignedTo: null,
+      },
+      {
+        dropId: 3,
+        baseId: "fixture-blade",
+        itemLevel: 1,
+        rarity: "common",
+        affixes: [],
+        awardedAtMs: 300,
+        seen: true,
+        locked: false,
+        assignedTo: null,
+      },
+    ];
+    const legality = legalityViewFromEngine(createEngine(fixtureContent, first, 3));
+    dock.render(first, legality);
+    root.querySelector<HTMLButtonElement>('[data-dock-tab="armory"]')?.click();
+
+    const grid = root.querySelector<HTMLElement>(".armory-grid");
+    expect(grid).not.toBeNull();
+    grid!.scrollTop = 48;
+    expect(grid!.scrollTop).toBe(48);
+
+    const managed = structuredClone(first);
+    managed.progression.armory = [
+      ...managed.progression.armory,
+      {
+        dropId: 4,
+        baseId: "fixture-armor",
+        itemLevel: 1,
+        rarity: "common",
+        affixes: [],
+        awardedAtMs: 400,
+        seen: true,
+        locked: false,
+        assignedTo: null,
+      },
+    ];
+    dock.render(managed, legality);
+
+    const gridAfter = root.querySelector<HTMLElement>(".armory-grid");
+    expect(gridAfter).not.toBe(grid);
+    expect(gridAfter!.scrollTop).toBe(48);
+
+    root.remove();
+    dock.destroy();
+  });
+
   it("restores picker focus onto the selected chip after a management-relevant remount", () => {
     const root = document.createElement("main");
     document.body.append(root);

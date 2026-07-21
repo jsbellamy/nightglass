@@ -127,7 +127,7 @@ export function pendingMarker(): HTMLElement {
 }
 
 /** Selectors for scroll containers the Management Dock may rebuild on remount. */
-export const DOCK_SCROLL_PRESERVE_SELECTORS = [
+const DOCK_SCROLL_PRESERVE_SELECTORS = [
   ".character-picker",
   ".dock-panel:not([hidden])",
   ".armory-grid",
