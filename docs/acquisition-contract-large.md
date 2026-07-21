@@ -36,11 +36,15 @@ but may not enter `grid_raw/` or any shipped asset.
 
 ## Prompt contract
 
-Use the following fixed shell around a Class-specific subject description:
+Use the following fixed shell around a body-specific subject description.
+Before submitting it, replace `<FACING>` from combatant role: **RIGHT for a
+Party Character; LEFT for an Opponent, including every ordinary monster and
+Boss.** No other value is valid, and the submitted prompt must not retain the
+placeholder.
 
 > A full-body game Character sprite of **<SUBJECT>**, strict side profile facing
-> right, chunky pixel art. Drawn on an **exact 48×72 logical pixel grid rendered
-> large**; every logical pixel is one clean flat square block, with no smaller
+> **<FACING>**, chunky pixel art. Drawn on an **exact 48×72 logical pixel grid
+> rendered large**; every logical pixel is one clean flat square block, with no smaller
 > detail, smooth gradient, anti-aliasing, blur, or dithering. Keep the complete
 > silhouette, including equipment, within a conservative **40×60 logical-cell
 > safe box**, with at least one logical cell of clearance on every edge. Flat solid
@@ -56,6 +60,25 @@ logical cells. Future tasks start from the conservative safe box and retry from
 measured grid reports. There is no resolution-side rescue and no reduction
 fallback.
 
+### Autonomous large-candidate envelope
+
+An agent may advance a large candidate to visual review only when all of these
+are true:
+
+- raw provenance, PNG, and magenta-border gates pass;
+- the complete subject clears all four raw-canvas edges;
+- both pitch scores are at least `0.04`;
+- recovered width is at most **40** logical cells;
+- recovered height is exactly **60** logical cells: the tier minimum is 60 and
+  the safe-box maximum is 60;
+- the submitted prompt and visible result use role-correct facing; large Bosses
+  therefore face **LEFT**.
+
+A recovered grid that fits 48×72 but exceeds 40×60 is still an overshoot retry,
+not a discretionary accept. Examples: 42×72 and 29×69 both fit the runtime
+canvas but fail the prompt envelope. Use the acquisition loop's failure priority
+and continue the retry loop autonomously.
+
 **The top 8 logical rows are a soft dead zone.** A large monster stands on the
 battlefield floor at `bottom: 6px` and rises to y=8, while `.boss-health-bar`
 renders at `top: 4px` with `z-index: 5` — above the combatant's `z-index: 3`.
@@ -67,8 +90,10 @@ band.
 tier is added detail at the same pixel density. A large still that is visibly an
 upscaled medium still fails the contract — reject and reprompt.
 
-Class prompts must name the identity-bearing silhouette, equipment, facing, and
-palette. The exact accepted prompts and raw hashes live beside the raws in
+Body prompts must name the identity-bearing silhouette, equipment,
+role-correct facing, and palette. Wrong-facing candidates are rejected; do not
+mirror the raw to repair them. The exact accepted prompts and raw hashes live
+beside the raws in
 [`assets-raw/grid_raw/`](../assets-raw/grid_raw/).
 
 ## Chroma-key alpha

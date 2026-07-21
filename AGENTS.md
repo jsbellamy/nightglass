@@ -75,6 +75,10 @@ Before creating or changing any raster asset, follow the acquisition loop in
 `docs/agents/asset-generation.md`. It routes each asset class to its authoritative
 contract and defines the evidence required before an asset task is complete.
 
+Battlefield body facing is fixed by combatant role, not chosen per asset:
+**Party Characters face RIGHT; Opponents (ordinary monsters and Bosses) face
+LEFT.** Prompts, evidence, and visual review must all agree with that rule.
+
 ### Acceptance evidence
 
 Criterion-by-criterion publication gate: which seam proves a rendered,

@@ -34,6 +34,24 @@ Validator: <command or explicit checks>
 The declaration is complete when every field has a concrete value or an explicit
 context pointer. A missing value is a decision to resolve before generation.
 
+### Battlefield facing rule
+
+Facing is fixed by combatant role and is not an art-direction choice:
+
+| Combatant role | Required facing |
+| --- | --- |
+| Party Character (Knight, Wizard, Priest, Hunter) | **RIGHT** |
+| Opponent (ordinary monster, elite, or Boss) | **LEFT** |
+
+Use the role from the runtime destination or owning data record. Do not infer
+facing from the word `Character` in an image-model prompt: providers often use
+that generic word for any full-body game sprite. Write the literal required
+direction into every submitted prompt; no `<FACING>` placeholder may remain.
+If an issue prompt, copied shell, reference pose, or older note disagrees with
+this table, this table wins. Correct the prompt before generation. A candidate
+facing the wrong direction is rejected even if every dimensional and palette
+gate passes; do not mirror a generated raw as a substitute for reacquisition.
+
 ### Contract pointers
 
 - For Characters and opponents that enter the Battle Tile, pick the acquisition
@@ -87,8 +105,9 @@ geometry, background, and acceptance constraints. For Battle Tile bodies, paste
 the **chosen tier** acquisition contract's **grid shell** (exact logical canvas,
 flat-block pixels, conservative **safe box**, magenta clearance, outline/palette
 bans) around the subject description — do not paraphrase the shell into softer
-art direction, and do not borrow another tier's geometry. Request the safe box;
-never ask the subject to fill the runtime canvas.
+art direction, and do not borrow another tier's geometry. Resolve the shell's
+`<FACING>` token from the Battlefield facing rule above before submitting the
+prompt. Request the safe box; never ask the subject to fill the runtime canvas.
 
 For Equipment Base icons, use this **icon grid shell**
 around a concrete subject noun — same discipline as the Character shell, resized
@@ -114,10 +133,11 @@ map rather than a second generation unless the silhouette itself must change for
 identification.
 
 This step is complete when (a) the prompt names every identity-bearing feature
-and every geometric constraint, (b) Battle Tile body prompts contain the
-contract grid shell verbatim or by an explicit quote of its clauses (Equipment
-icon prompts contain the icon grid shell above), and (c) every direct image
-input has a recorded role.
+and every geometric constraint, including the literal role-correct facing,
+(b) Battle Tile body prompts contain the contract grid shell verbatim or by an
+explicit quote of its clauses with no unresolved placeholders (Equipment icon
+prompts contain the icon grid shell above), and (c) every direct image input has
+a recorded role.
 
 ## 3. Generate and archive the raw
 
@@ -171,6 +191,47 @@ constant; never resize a failed candidate into an accepted raw.
 If two signals fire, fix **clip-fail** first, then **overshoot**, then
 **pitch-fail**, then **off-ramp**, then **underfill**. A candidate advances only
 when its recovered grid fits and every raw-level gate passes.
+
+### Autonomous candidate decisions
+
+The implementing agent owns routine acquisition decisions. Implementation
+subagents have no user-interaction channel: never emit a question or wait for
+human approval to classify a measured failure or run a retry when the contract
+already defines the answer.
+
+For every candidate, record one row before generating the next:
+
+| Candidate | Raw gates | Clipped sides | Recovered grid | Pitch X/Y | Primary result | Next action |
+| --- | --- | --- | --- | --- | --- | --- |
+| `<name>` | pass/fail | none or sides | `W×H` or failure | scores | one class | advance/retry |
+
+Apply this state machine:
+
+1. **Reject and retry** when any raw gate fails, any side is clipped, either
+   pitch score is below its gate, the recovered grid exceeds the runtime canvas,
+   or it exceeds the declared prompt safe box. Passing the runtime-canvas check
+   does not waive the smaller safe-box target.
+2. Choose exactly one primary failure using the priority above. Preserve the
+   subject identity and change only the prompt clauses needed by that retry move.
+3. **Advance to visual review** only after every deterministic rule and the
+   safe-box target pass. Visual review then judges role-correct facing, identity,
+   silhouette, cohort consistency, and runtime obstructions; visual appeal never
+   overrides a deterministic failure.
+4. **Accept** only after deterministic validation and visual review both pass.
+   Promote the chosen provider raw byte-for-byte with its complete provenance;
+   record rejected candidates as table rows and remove redundant PNG copies.
+5. **Stop and report blocked to the orchestrator** only when three consecutive
+   candidates fail the same primary class after the prescribed retry move, two
+   written requirements conflict, or multiple gate-passing candidates require a
+   product-level identity choice. The report must include the candidate rows,
+   exact blocking condition, attempted retry moves, and a recommended next
+   choice. The orchestrator decides whether human input is necessary. Otherwise
+   continue the loop autonomously.
+
+Measurement sidecars are not shipping provenance merely because `raw_gates()`
+accepts their hash. Before promotion, require provider, acquisition tool, exact
+prompt, raw SHA-256, direct inputs with roles and hashes, asset class, runtime
+destination, candidate name, role, and facing.
 
 **#125 Equipment icon trial (measured).** Brown wood reads as **off-ramp** at
 17% and must be prompted as an on-palette material; grid-faithful style references
