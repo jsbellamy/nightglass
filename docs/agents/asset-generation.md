@@ -141,8 +141,24 @@ a recorded role.
 
 ## 3. Generate and archive the raw
 
-Generate one candidate per distinct asset. Copy the provider PNG byte-for-byte
-into the task's Archived Raw Bundle, then add a provenance sidecar containing:
+Generate one candidate per distinct asset. Copy the provider PNG out of the
+provider dump into task-local scratch, then measure it with the owning pipeline;
+for Battle Tile bodies run:
+
+```bash
+python3 pipeline/acquire.py measure --tier <small|medium|large> \
+  --report <task-evidence>/candidate-report.json <candidate.png>
+```
+
+Measurement requires no provenance sidecar. It writes no asset or sidecar; when
+`--report` is supplied, it saves the same JSON emitted on stdout as task
+evidence. A rejected candidate remains scratch evidence and is represented
+durably by its report/table row, not by a fabricated sidecar or committed PNG.
+
+After deterministic gates and visual review both pass, promote the chosen
+provider PNG byte-for-byte into the task's Archived Raw Bundle. For Battle Tile
+bodies, `pipeline/acquire.py promote` performs the copy and generates a
+provenance sidecar containing:
 
 - provider and acquisition tool
 - exact prompt
@@ -150,8 +166,9 @@ into the task's Archived Raw Bundle, then add a provenance sidecar containing:
 - direct input paths and SHA-256 values
 - asset class and intended runtime destination
 
-The raw is immutable evidence. Subsequent transforms consume it and write new
-files. This step is complete when recomputing the hash matches the sidecar.
+The accepted raw is immutable evidence. Subsequent transforms consume it and
+write new files. This step is complete when recomputing the hash matches the
+generated sidecar.
 
 Reference-only exploration lives outside the shipped raw bundle and is labelled
 reference-only at its storage location. Promotion to a shipping candidate starts
@@ -161,6 +178,8 @@ a fresh acquisition loop with shipping gates declared in step 1.
 
 Run the earliest deterministic ingest or validator immediately. Use its report as
 feedback for the next candidate. Provider-resolution prettiness is not a gate.
+For Battle Tile bodies, use `pipeline/acquire.py measure`; do not write an ad-hoc
+Python harness or measurement-only `.source.json`.
 
 For logical-grid art, read the ingest report rather than the candidate image.
 Equipment icon evidence commits `ingest-report.json` beside the provider raws;
@@ -182,15 +201,19 @@ constant; never resize a failed candidate into an accepted raw.
 
 | Failure | Signal | Retry move |
 | --- | --- | --- |
-| **Overshoot** | Recovered grid wider/taller than the acceptance canvas, or above the declared safe box | Preserve identity; shrink silhouette into the safe box; restate magenta clearance on every edge. Template: *"The previous candidate recovered as `<W>×<H>`. Preserve its identity and pose, simplify its detail, and redraw the complete silhouette inside the contract's safe box with clearance on every edge."* |
+| **Overshoot** | Recovered grid wider/taller than the acceptance canvas, or above a safe box that the owning contract explicitly promotes to an advancement gate | Preserve identity; shrink silhouette into the safe box; restate magenta clearance on every edge. Template: *"The previous candidate recovered as `<W>×<H>`. Preserve its identity and pose, simplify its detail, and redraw the complete silhouette inside the contract's safe box with clearance on every edge."* |
 | **Underfill** | Recovered long axis below the icon gate (`MIN_LONG_AXIS = 20` in `pipeline/icons/constants.py`; **preference** 26–30 on a ~32-cell grid) | Regenerate larger in frame, or exaggerate the identity feature. Do not nearest-neighbour upscale a soft generation into an accepted raw. |
 | **Pitch-fail** | X or Y pitch confidence below the acquisition contract gate (soft/anti-aliased blocks, uneven cell size) | Strengthen the grid shell; attach an already-accepted grid-faithful raw as **style reference**; demand uniform square blocks and aligned seams. Do not only ask for "chunkier" art. |
 | **Clip-fail** | Subject touches a raw canvas edge (clipping gate) | Preserve identity; add at least two magenta cells of clearance on the clipped side(s); keep the safe box. |
 | **Off-ramp** | More than ~20% of opaque subject cells are far from every `moonberry-16` swatch (RGB distance), or the Stage-2 preview shows a whole material plane silently recolored. Authoritative Equipment icon threshold: `OFF_RAMP_REJECT` in `pipeline/icons/constants.py` / `docs/icon-contract.md` (retuned in #131 from the provisional 15%). | Keep geometry fixed; retry with **exact on-palette material names** (mint/sage stave, berry vine, cream string — never "brown wood"). The on-palette check after quantize cannot catch this by construction. |
 
-If two signals fire, fix **clip-fail** first, then **overshoot**, then
-**pitch-fail**, then **off-ramp**, then **underfill**. A candidate advances only
-when its recovered grid fits and every raw-level gate passes.
+If two signals fire, fix **raw-gate-fail** first unless measurable clipping is
+also present; then fix **clip-fail**, **overshoot**, **pitch-fail**,
+**off-ramp**, and **underfill** in that order. Prompt safe boxes remain tuning
+targets unless the owning contract explicitly makes one an advancement gate;
+`measure` reports advisory exceedance without rejecting medium/small candidates.
+A candidate advances only when its recovered grid fits and every raw-level gate
+passes.
 
 ### Autonomous candidate decisions
 
@@ -209,14 +232,16 @@ Apply this state machine:
 
 1. **Reject and retry** when any raw gate fails, any side is clipped, either
    pitch score is below its gate, the recovered grid exceeds the runtime canvas,
-   or it exceeds the declared prompt safe box. Passing the runtime-canvas check
-   does not waive the smaller safe-box target.
+   or it exceeds a stricter advancement envelope declared by the owning
+   contract. Large bodies use their 40×60 safe box as such an envelope;
+   medium/small safe boxes remain advisory prompt targets.
 2. Choose exactly one primary failure using the priority above. Preserve the
    subject identity and change only the prompt clauses needed by that retry move.
-3. **Advance to visual review** only after every deterministic rule and the
-   safe-box target pass. Visual review then judges role-correct facing, identity,
-   silhouette, cohort consistency, and runtime obstructions; visual appeal never
-   overrides a deterministic failure.
+3. **Advance to visual review** only after every deterministic advancement gate
+   passes. An advisory safe-box exceedance remains visible in the report but
+   does not block medium/small candidates. Visual review then judges role-correct
+   facing, identity, silhouette, cohort consistency, and runtime obstructions;
+   visual appeal never overrides a deterministic failure.
 4. **Accept** only after deterministic validation and visual review both pass.
    Promote the chosen provider raw byte-for-byte with its complete provenance;
    record rejected candidates as table rows and remove redundant PNG copies.
@@ -228,10 +253,13 @@ Apply this state machine:
    choice. The orchestrator decides whether human input is necessary. Otherwise
    continue the loop autonomously.
 
-Measurement sidecars are not shipping provenance merely because `raw_gates()`
-accepts their hash. Before promotion, require provider, acquisition tool, exact
-prompt, raw SHA-256, direct inputs with roles and hashes, asset class, runtime
-destination, candidate name, role, and facing.
+Candidate measurement has no sidecar. Save its JSON with `--report`; this is the
+validator report consumed by later agents. Promotion must generate shipping
+provenance containing provider, acquisition tool, exact prompt, raw SHA-256,
+direct inputs with roles and hashes, asset class, runtime destination, candidate
+name, canonical identity, role, facing, and size tier. Promotion rejects prompts
+without one explicit canonical subject-facing direction, or with a contradictory
+direction: party Characters specify only **RIGHT** and opponents only **LEFT**.
 
 **#125 Equipment icon trial (measured).** Brown wood reads as **off-ramp** at
 17% and must be prompted as an on-palette material; grid-faithful style references
@@ -251,22 +279,34 @@ runtime form. Exercise every declared gate, including provenance, dimensions,
 colour mode, alpha, palette, clipping, anchors, layer separation, and manifest
 fields where applicable.
 
+Use the asset class's targeted command during generation and promotion. Never
+run the repository-wide `npm run assets:verify` inside a candidate or retry
+loop, and do not run it locally for an ordinary asset-only task. After the
+accepted asset batch is committed and pushed, the CI `assets` job is the
+authoritative full-catalog rebuild and byte-identity proof. Run the full command
+locally only when the task changes pipeline code, an acquisition contract, the
+palette, a manifest schema, or shared derivation logic that can affect existing
+assets.
+
 For Equipment icons, the transform is **two-stage** via `pipeline/icons/`:
 `ingest.py` recovers a compact 1px/cell source (human-approved via the Stage-2 @8×
 preview), then `build.py` / `paint.py` paint `moonberry-16` plus a derived outline
 onto 34×34. Approve the **preview**, not the provider PNG. Family Tier II is a
 `recolor` of the same compact source — rebuild both variants after any source edit.
-`npm run assets:build` runs `pipeline/icons/build.py`; `npm run assets:verify` runs
-`pipeline/icons/verify.py` with the acquisition and effects gates.
+`npm run assets:build` runs `pipeline/icons/build.py`; the CI `assets` job runs
+`pipeline/icons/verify.py` with the acquisition and effects gates as part of
+`npm run assets:verify`.
 Read Equipment icon gate results from `pipeline/icons/verify-report.json` rather
 than by re-running the script and parsing stdout or opening the built PNG.
 
-Rebuild once more from the archived raw with the provider absent. Compare the
-encoded runtime file byte-for-byte with the accepted output.
+The CI `assets` job rebuilds once more from the archived raw with the provider
+absent and compares the encoded runtime file byte-for-byte with the accepted
+output.
 
-This step is complete when every declared gate passes and the offline rebuild is
-byte-identical. If the asset class has no deterministic encoder yet, the task
-must create one or explicitly resolve why byte identity is outside its contract.
+Local work is ready to push when every targeted declared gate passes. Final
+verification is complete when the CI offline rebuild is byte-identical. If the
+asset class has no deterministic encoder yet, the task must create one or
+explicitly resolve why byte identity is outside its contract.
 
 ## 6. Review in context
 

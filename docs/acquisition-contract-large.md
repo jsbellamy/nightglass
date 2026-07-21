@@ -65,7 +65,8 @@ fallback.
 An agent may advance a large candidate to visual review only when all of these
 are true:
 
-- raw provenance, PNG, and magenta-border gates pass;
+- candidate PNG and magenta-border gates pass; provenance is created and
+  validated only when the accepted candidate is promoted;
 - the complete subject clears all four raw-canvas edges;
 - both pitch scores are at least `0.04`;
 - recovered width is at most **40** logical cells;
@@ -73,6 +74,14 @@ are true:
   the safe-box maximum is 60;
 - the submitted prompt and visible result use role-correct facing; large Bosses
   therefore face **LEFT**.
+
+Run `python3 pipeline/acquire.py measure --tier large --report <evidence.json>
+<candidate.png>` to apply and save the deterministic envelope. Measurement does
+not require or create a provenance sidecar. After visual review passes,
+`pipeline/acquire.py promote --tier large --report <promotion.json>` creates the
+accepted Archived Raw Bundle, records `tier: "large"`, builds the 48×72 runtime,
+and updates its manifest entry. Promotion also rejects an exact prompt that
+omits **LEFT** facing or contains a contradictory subject-facing direction.
 
 A recovered grid that fits 48×72 but exceeds 40×60 is still an overshoot retry,
 not a discretionary accept. Examples: 42×72 and 29×69 both fit the runtime

@@ -26,16 +26,59 @@ adding or changing raster assets.
 ```bash
 npm run assets:build   # rebuild runtime sprites + icons + backdrops from committed sources
 npm run assets:effects # author and derive Ability effect frames (when sources change)
-npm run assets:verify  # contract tests + effects + icons + backdrops byte-identity proof
+npm run assets:verify  # CI/full-catalog contract and byte-identity proof
 ```
 
-`assets:verify` runs with no provider, model, GPU, or network. CI runs the same
-job offline after `pip install pillow`.
+Measure provider candidates immediately; this command is read-only and does not
+require provenance sidecars:
+
+```bash
+python3 pipeline/acquire.py measure --tier large path/to/boss-1-a.png path/to/boss-2-a.png
+```
+
+The JSON result records raw gates, all clipped sides, recovered grid, pitch
+scores, one primary failure, and the next action. A candidate with
+`"status": "retry"` stays outside the Archived Raw Bundle. Add
+`--report docs/research/evidence/<issue>/candidate-report.json` to save the same
+JSON as durable evidence; no image or sidecar is written by measurement.
+
+After deterministic and visual review both pass, promote the chosen candidate:
+
+```bash
+python3 pipeline/acquire.py promote \
+  --tier large \
+  --tag boss-1 \
+  --raw path/to/boss-1-c.png \
+  --provider "Cursor GenerateImage" \
+  --acquisition-tool GenerateImage \
+  --prompt-file path/to/boss-1-c.prompt.txt \
+  --reference identity=assets-raw/grid_raw/boss.png \
+  --report docs/research/evidence/212-boss-stills-large/promotion-report.json
+```
+
+`promote` remeasures the candidate, returns JSON on success or failure, refuses
+a retry result or a prompt with missing/contradictory canonical facing, copies
+the accepted provider bytes into `assets-raw/grid_raw/`, generates the complete
+provenance sidecar, normalizes and validates the runtime PNG, and updates
+`manifest.json`.
+Known tags derive Nightglass asset class, role, facing, and runtime destination;
+`boss-1` retains the historical archived raw tag `boss`. Newly promoted
+sidecars record their size `tier`; the offline build treats older sidecars with
+no tier as `medium` for compatibility.
+
+`assets:verify` runs with no provider, model, GPU, or network. CI runs this
+authoritative full-catalog job offline after `pip install pillow`. Do not run it
+inside a candidate generation or retry loop. Ordinary asset tasks use `measure`
+and `promote` locally, push the completed asset batch, and read the CI `assets`
+job. Run the full command locally only when changing pipeline code, acquisition
+contracts, the palette, manifest schemas, or shared derivation logic.
 
 ## Adding a new asset
 
 1. Declare the asset contract (see `docs/agents/asset-generation.md`).
-2. Archive the provider PNG byte-for-byte under `assets-raw/grid_raw/` with a
-   provenance sidecar whose `raw_sha256` matches the file.
-3. Run `npm run assets:build` and confirm `npm run assets:verify` is green.
-4. Commit the raw, sidecar, rebuilt runtime PNG, and updated `manifest.json`.
+2. Run `acquire.py measure --tier <tier>` and follow its retry/advance result.
+3. After visual review passes, run `acquire.py promote` with the exact prompt and
+   direct references.
+4. Commit the raw, sidecar, promoted runtime PNG, and updated `manifest.json`.
+5. Push the completed batch; the CI `assets` job performs the full-catalog
+   rebuild and byte-identity proof once.

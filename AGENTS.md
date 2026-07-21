@@ -79,6 +79,14 @@ Battlefield body facing is fixed by combatant role, not chosen per asset:
 **Party Characters face RIGHT; Opponents (ordinary monsters and Bosses) face
 LEFT.** Prompts, evidence, and visual review must all agree with that rule.
 
+For an ordinary asset task, run only the asset class's targeted acquisition,
+build, and promotion checks locally. Never run the repository-wide
+`npm run assets:verify` inside a candidate generation or retry loop. Push the
+completed asset batch and treat the CI `assets` job as the authoritative
+full-catalog verification. Run `assets:verify` locally only when changing the
+pipeline, an acquisition contract, the palette, a manifest schema, or shared
+derivation logic that can affect existing assets.
+
 ### Acceptance evidence
 
 Criterion-by-criterion publication gate: which seam proves a rendered,
