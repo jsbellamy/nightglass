@@ -472,7 +472,7 @@ describe("batched anchor geometry reads", () => {
     document.body.replaceChildren();
   });
 
-  it("resolves floorY to 6 when computed bottom is empty", () => {
+  it("defaults combatant floor offset to 6px when bottom is unset", () => {
     const battlefield = document.createElement("section");
     const combatant = document.createElement("div");
     combatant.dataset["entityId"] = "opp:1:0";
@@ -655,7 +655,7 @@ describe("batched anchor geometry reads", () => {
     presentation.destroy();
   });
 
-  it("records manifest footX for a non-32px body without using frame width for effects", () => {
+  it("places strike-target effects on the foot of a wider-than-32px body without resizing the effect frame", () => {
     const { effectLane, presentation, addCombatant } = mountPresentationHarness();
     const target = addCombatant("opp:1:0", "100px");
     target.style.setProperty("--combatant-frame-w", "40");
@@ -664,6 +664,10 @@ describe("batched anchor geometry reads", () => {
 
     const geometry = readAnchorGeometry(effectLane.parentElement as HTMLElement, new Set(["opp:1:0"]));
     const footX = geometry.get("opp:1:0")?.footX;
+    expect(footX).toBeDefined();
+    if (footX === undefined) {
+      throw new Error("missing foot geometry");
+    }
     expect(footX).toBe(target.offsetLeft + 20);
 
     const snapshot = createEngine(buildContent(), undefined, LOOT_SEED).snapshot();
@@ -685,7 +689,7 @@ describe("batched anchor geometry reads", () => {
     presentation.render(950, snapshot);
 
     const host = effectLane.querySelector<HTMLElement>(".effect-host");
-    expect(host?.style.left).toBe(`${footX! - 16}px`);
+    expect(host?.style.left).toBe(`${footX - 16}px`);
     const effect = host?.querySelector<HTMLImageElement>(".effect-frame.strike-target");
     expect(effect?.width).toBe(30);
     presentation.destroy();
@@ -722,7 +726,7 @@ describe("batched anchor geometry reads", () => {
     presentation.destroy();
   });
 
-  it("positions actor pools and damage floats on the manifest foot for flexible bodies", () => {
+  it("keeps actor pools and damage numbers on the foot for flexible body frames", () => {
     const { battlefield, presentation, addCombatant, feedbackLayer } = mountPresentationHarness();
     const actor = addCombatant("party:knight:front", "200px");
     actor.style.setProperty("--combatant-frame-w", "40");

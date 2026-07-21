@@ -188,8 +188,11 @@ function readManifestFootLocalX(element: HTMLElement): {
 }
 
 function readAnchorFromElement(element: HTMLElement): AnchorGeometry {
-  const { footLocalX, frameWidth, frameHeight } = readManifestFootLocalX(element);
   const style = getComputedStyle(element);
+  const frameWidth = parseFloat(style.getPropertyValue("--combatant-frame-w")) || 32;
+  const frameHeight = parseFloat(style.getPropertyValue("--combatant-frame-h")) || 48;
+  const footRaw = style.getPropertyValue("--combatant-foot-x").trim();
+  const footLocalX = footRaw ? parseFloat(footRaw) : frameWidth / 2;
   return {
     footX: element.offsetLeft + footLocalX,
     floorY: parseInt(style.bottom || "6", 10),
