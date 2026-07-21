@@ -1,8 +1,4 @@
-"""Negative + determinism tests for the acquisition contract (#21, #29).
-
-Every rejection rule must actually fire, and the normalizer must reproduce
-byte-identical runtime frames from the archived raw bundle with no provider.
-"""
+"""Negative + determinism tests for the body sprite contract (#250, #251)."""
 import hashlib
 import io
 import json
@@ -42,7 +38,32 @@ def check(label, condition, detail=""):
 
 
 def good_frame():
-    return A.normalize(RAW_DIR / "knight.png")
+    return A.normalize_legacy_grid_v1(RAW_DIR / "knight.png")
+
+
+print("identity body profiles")
+hunter_profile = A.body_profile_for_tag("hunter")
+check("Hunter profile is Party 40x68 facing right",
+      hunter_profile.role == "party-character"
+      and hunter_profile.max_opaque_w == 40
+      and hunter_profile.max_opaque_h == 68
+      and hunter_profile.facing == "right")
+pipcap_profile = A.body_profile_for_tag("pipcap")
+check("Pipcap profile is ordinary Opponent 30x68 facing left",
+      pipcap_profile.role == "ordinary-opponent"
+      and pipcap_profile.max_opaque_w == 30
+      and pipcap_profile.max_opaque_h == 68
+      and pipcap_profile.facing == "left")
+boss_profile = A.body_profile_for_tag("boss-3")
+check("Boss profile is Boss 160x72 facing left",
+      boss_profile.role == "boss"
+      and boss_profile.max_opaque_w == 160
+      and boss_profile.max_opaque_h == 72
+      and boss_profile.facing == "left")
+layout = A.load_layout()
+check("layout.json matches shared battlefield and anchor contract",
+      layout["battlefield"]["floor_y"] == 80
+      and layout["anchors_x"]["party"] == [24, 68, 112])
 
 
 MONSTER_FRAMES = {
@@ -101,13 +122,15 @@ with tempfile.TemporaryDirectory() as temp_name:
     temp = pathlib.Path(temp_name)
     candidate = temp / "boss-3-candidate.png"
     candidate.write_bytes((RAW_DIR / "boss-3.png").read_bytes())
-    report = A.measure_candidate(candidate, frame=A.FRAMES["medium"])
+    report = A.measure_candidate(candidate, tag="boss-3")
     check("candidate measurement does not require a provenance sidecar",
           not candidate.with_suffix(".source.json").exists()
           and report["status"] == "advance",
           str(report))
-    check("candidate report returns stable measurements",
-          report["grid"] == [21, 40]
+    check("flexible candidate report records profile and fit, not logical grid",
+          report["profile"]["max_opaque_w"] == 160
+          and report["fitted_opaque_size"] is not None
+          and "grid" not in report
           and report["primary_failure"] is None
           and report["clipped_sides"] == []
           and report["gates"] == [],
@@ -117,14 +140,14 @@ with tempfile.TemporaryDirectory() as temp_name:
     saved_report = temp / "candidate-report.json"
     with redirect_stdout(output):
         exit_code = A.main([
-            "measure", "--tier", "medium", "--report", str(saved_report),
+            "measure", "--tag", "boss-3", "--report", str(saved_report),
             str(candidate),
         ])
     cli_report = json.loads(output.getvalue())
     check("measure CLI returns machine-readable candidate JSON",
           exit_code == 0
-          and cli_report["tier"] == "medium"
-          and cli_report["candidates"][0]["grid"] == [21, 40],
+          and cli_report["tag"] == "boss-3"
+          and cli_report["candidates"][0]["status"] == "advance",
           output.getvalue())
     check("measure CLI saves the same machine-readable report when requested",
           json.loads(saved_report.read_text()) == cli_report,
@@ -132,12 +155,25 @@ with tempfile.TemporaryDirectory() as temp_name:
 
     roomy_candidate = temp / "knight-candidate.png"
     roomy_candidate.write_bytes((RAW_DIR / "knight.png").read_bytes())
-    roomy_report = A.measure_candidate(roomy_candidate, frame=A.FRAMES["medium"])
-    check("medium safe box remains advisory for a runtime-fitting candidate",
+    roomy_report = A.measure_candidate(roomy_candidate, tag="hunter")
+    check("oversized opaque bounds advance for proportional reduction",
           roomy_report["status"] == "advance"
-          and roomy_report["grid"] == [32, 45]
-          and roomy_report["safe_box_exceeded"],
+          and roomy_report["fitted_opaque_size"][0] <= hunter_profile.max_opaque_w
+          and roomy_report["fitted_opaque_size"][1] <= hunter_profile.max_opaque_h,
           str(roomy_report))
+
+    stamp_raw = temp / "stamp-candidate.png"
+    stamp_src = Image.open(RAW_DIR / "hunter.png").convert("RGBA")
+    stamp_src.load()[0, stamp_src.height - 1] = (0, 255, 0, 255)
+    stamp_src.save(stamp_raw)
+    stamp_report = A.measure_candidate(stamp_raw, tag="hunter")
+    check("measurement ignores only the lower-left stamp pixel",
+          stamp_report["status"] == "advance"
+          and stamp_report["cursor_stamp_removed"] is True,
+          str(stamp_report))
+    check("stamp candidate preserves provider bytes until archival copy",
+          stamp_raw.read_bytes() != (RAW_DIR / "hunter.png").read_bytes(),
+          "synthetic stamp raw differs from archived hunter bytes")
 
     promoted_raw_dir = temp / "raw"
     promoted_out_dir = temp / "runtime"
@@ -147,28 +183,33 @@ with tempfile.TemporaryDirectory() as temp_name:
         provider="Cursor GenerateImage",
         acquisition_tool="GenerateImage",
         prompt="strict side profile facing LEFT",
-        frame=A.FRAMES["medium"],
         raw_dir=promoted_raw_dir,
         out_dir=promoted_out_dir,
     )
     promoted_sidecar = json.loads(
         (promoted_raw_dir / "boss-3.source.json").read_text())
+    promoted_manifest = json.loads((promoted_out_dir / "manifest.json").read_text())
+    promoted_runtime = Image.open(promoted_out_dir / "boss-3.png")
     check("promotion creates canonical raw, runtime, sidecar, and manifest",
           result["status"] == "promoted"
           and (promoted_raw_dir / "boss-3.png").read_bytes() == candidate.read_bytes()
           and (promoted_out_dir / "boss-3.png").exists()
           and (promoted_out_dir / "manifest.json").exists(),
           str(result))
-    check("promotion generates complete core provenance",
-          promoted_sidecar["provider"] == "Cursor GenerateImage"
+    check("promotion generates flexible provenance and geometry",
+          promoted_sidecar["acquisition"] == "flexible"
+          and promoted_sidecar["cursor_stamp_removed"] is False
+          and promoted_sidecar["provider"] == "Cursor GenerateImage"
           and promoted_sidecar["acquisition_tool"] == "GenerateImage"
           and promoted_sidecar["prompt"] == "strict side profile facing LEFT"
           and promoted_sidecar["raw_sha256"] == hashlib.sha256(candidate.read_bytes()).hexdigest()
-          and promoted_sidecar["tier"] == "medium"
           and promoted_sidecar["identity"] == "boss-3"
           and promoted_sidecar["asset_class"] == "opponent"
           and promoted_sidecar["runtime_destination"] == "src/assets/sprites/boss-3.png"
-          and promoted_sidecar["facing"] == "left",
+          and promoted_sidecar["facing"] == "left"
+          and "visual_bounds" in promoted_manifest["boss-3"]
+          and not A.validate_manifest_geometry(
+              promoted_runtime, promoted_manifest["boss-3"], "boss-3"),
           str(promoted_sidecar))
 
     rejected = temp / "rejected.png"
@@ -182,7 +223,6 @@ with tempfile.TemporaryDirectory() as temp_name:
             provider="Cursor GenerateImage",
             acquisition_tool="GenerateImage",
             prompt="strict side profile facing LEFT",
-            frame=A.FRAMES["medium"],
             raw_dir=rejected_raw_dir,
             out_dir=rejected_out_dir,
         )
@@ -241,7 +281,7 @@ with tempfile.TemporaryDirectory() as temp_name:
     output = io.StringIO()
     with redirect_stdout(output):
         rejected_exit = A.main([
-            "promote", "--tier", "medium", "--tag", "boss-3",
+            "promote", "--tag", "boss-3",
             "--raw", str(rejected), "--provider", "Cursor GenerateImage",
             "--acquisition-tool", "GenerateImage", "--prompt-file", str(prompt_file),
             "--report", str(rejected_report_path),
@@ -278,11 +318,12 @@ with tempfile.TemporaryDirectory() as temp_name:
     A.build_archived_bundle(
         ["boss-2", "boss-3"], raw_dir=tiered_raw_dir, out_dir=tiered_out_dir)
     tiered_manifest = json.loads((tiered_out_dir / "manifest.json").read_text())
-    check("offline build honors explicit tier and legacy medium default",
+    check("offline build honors legacy-grid-v1 tier sidecars",
           Image.open(tiered_out_dir / "boss-2.png").size == (48, 72)
           and Image.open(tiered_out_dir / "boss-3.png").size == (32, 48)
           and tiered_manifest["boss-2"]["frame_size"] == [48, 72]
-          and tiered_manifest["boss-3"]["frame_size"] == [32, 48],
+          and tiered_manifest["boss-3"]["frame_size"] == [32, 48]
+          and "visual_bounds" in tiered_manifest["boss-3"],
           str({name: entry["frame_size"] for name, entry in tiered_manifest.items()}))
 
 _stub_oversize = [[(200, 200, 200) for _ in range(22)] for _ in range(35)]
@@ -307,7 +348,8 @@ bad_key.unlink()
 print("rejection rules")
 
 # wrong dimensions
-errs = A.validate(Image.new("RGBA", (32, 32), (0, 0, 0, 255)), "wrongdim")
+errs = A.validate(Image.new("RGBA", (32, 32), (0, 0, 0, 255)), "wrongdim",
+                  frame=A.MEDIUM)
 check("wrong dimensions rejected", any("wrong dimensions" in e for e in errs))
 
 # non-RGBA
@@ -318,17 +360,18 @@ check("non-RGBA rejected", any("non-RGBA" in e for e in errs))
 f = good_frame()
 px = f.load()
 px[16, 30] = (*A.PALETTE[0], 128)
-errs = A.validate(f, "softalpha")
+errs = A.validate(f, "softalpha", frame=A.MEDIUM)
 check("unapproved alpha rejected", any("unapproved alpha" in e for e in errs))
 
 # embedded effects -- an off-palette glow baked into a Character frame
 f = good_frame()
 f.load()[16, 20] = (255, 255, 0, 255)
-errs = A.validate(f, "glow")
+errs = A.validate(f, "glow", frame=A.MEDIUM)
 check("embedded effects rejected", any("embedded effects" in e for e in errs))
 
 # empty frame
-errs = A.validate(Image.new("RGBA", (32, 48), (0, 0, 0, 0)), "empty")
+errs = A.validate(Image.new("RGBA", (32, 48), (0, 0, 0, 0)), "empty",
+                  frame=A.MEDIUM)
 check("empty frame rejected", any("empty frame" in e for e in errs))
 
 # generator-clipped raw -- synthesize a raw whose subject runs off the edge
@@ -348,7 +391,7 @@ clipped.save(tmp)
 errs = A.raw_clipping(tmp)
 check("generator clipping detects bottom and right edges",
       any("bottom/right" in e for e in errs), errs[0] if errs else "")
-clipped_report = A.measure_candidate(tmp)
+clipped_report = A.measure_candidate_legacy(tmp)
 check("candidate report keeps clipped sides when the magenta-border gate fails",
       clipped_report["clipped_sides"] == ["bottom", "right"]
       and clipped_report["primary_failure"] == "clip-fail",
@@ -407,8 +450,8 @@ print("\ntier normalization anchors")
 _stub_cells = [[(200, 200, 200) if x < 10 else None for x in range(10)]
                for _ in range(20)]
 with mock.patch.object(A, "recover_grid", return_value=(_stub_cells, {})):
-    small_frame = A.normalize(RAW_DIR / "knight.png", frame=A.FRAMES["small"])
-    large_frame = A.normalize(RAW_DIR / "knight.png", frame=A.FRAMES["large"])
+    small_frame = A.normalize_legacy_grid_v1(RAW_DIR / "knight.png", frame=A.FRAMES["small"])
+    large_frame = A.normalize_legacy_grid_v1(RAW_DIR / "knight.png", frame=A.FRAMES["large"])
 check("small normalize canvas is 24x32", small_frame.size == (24, 32))
 check("large normalize canvas is 48x72", large_frame.size == (48, 72))
 _spx = small_frame.load()
@@ -419,14 +462,17 @@ check("large normalize bottom-centre anchor",
       _lpx[19, 52][3] == 255 and _lpx[18, 52][3] == 0 and _lpx[29, 52][3] == 0)
 
 print("\ndeterminism")
-one = A.normalize(RAW_DIR / "wizard.png")
-two = A.normalize(RAW_DIR / "wizard.png")
+one = A.normalize_legacy_grid_v1(RAW_DIR / "wizard.png")
+two = A.normalize_legacy_grid_v1(RAW_DIR / "wizard.png")
 one_png, two_png = png_bytes(one), png_bytes(two)
 check("repeated offline rebuild is byte-identical PNG",
       hashlib.sha256(one_png).hexdigest() == hashlib.sha256(two_png).hexdigest())
 
 for raw_tag, runtime_name in RUNTIME_SPRITES.items():
-    rebuilt = png_bytes(A.normalize(RAW_DIR / f"{raw_tag}.png"))
+    sidecar = json.loads((RAW_DIR / f"{raw_tag}.png").with_suffix(".source.json").read_text())
+    tier = sidecar.get("tier", "medium")
+    rebuilt = png_bytes(A.normalize_legacy_grid_v1(RAW_DIR / f"{raw_tag}.png",
+                                                   frame=A.FRAMES[tier]))
     committed = (RUNTIME_DIR / runtime_name).read_bytes()
     check(f"offline rebuild matches committed {runtime_name} byte-for-byte",
           rebuilt == committed)
@@ -435,7 +481,10 @@ manifest_data = json.loads((RUNTIME_DIR / "manifest.json").read_text())
 for raw_tag, runtime_name in RUNTIME_SPRITES.items():
     sprite_key = pathlib.Path(runtime_name).stem
     entry = manifest_data[sprite_key]
-    rebuilt_image = A.normalize(RAW_DIR / f"{raw_tag}.png")
+    sidecar = json.loads((RAW_DIR / f"{raw_tag}.png").with_suffix(".source.json").read_text())
+    tier = sidecar.get("tier", "medium")
+    rebuilt_image = A.normalize_legacy_grid_v1(RAW_DIR / f"{raw_tag}.png",
+                                               frame=A.FRAMES[tier])
     recorded = entry["frames"][0]["sha256"]
     actual = hashlib.sha256(rebuilt_image.tobytes()).hexdigest()
     check(f"medium re-acquire sha256 matches manifest for {sprite_key}",
@@ -455,6 +504,17 @@ manifest = manifest_data
 check("manifest records moonberry-16 palette for every sprite",
       all(entry.get("palette") == "moonberry-16" for entry in manifest.values()),
       str({k: v.get("palette") for k, v in manifest.items()}))
+check("every manifest entry records visual_bounds and foot_anchor",
+      all("visual_bounds" in entry and "foot_anchor" in entry
+          for entry in manifest.values()))
+for sprite_key, entry in manifest.items():
+    runtime = Image.open(RUNTIME_DIR / f"{sprite_key}.png")
+    check(f"manifest geometry matches runtime for {sprite_key}",
+          not A.validate_manifest_geometry(runtime, entry, sprite_key))
+bad_entry = dict(entry)
+bad_entry["foot_anchor"] = [0, 0]
+check("validate_manifest_geometry rejects disagreeing manifest rows",
+      A.validate_manifest_geometry(runtime, bad_entry, sprite_key))
 
 print("\nprovider neutrality")
 loaded = {m for m in sys.modules

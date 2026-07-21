@@ -1,0 +1,19 @@
+{
+  "battlefield": {
+    "width": 480,
+    "height": 86,
+    "floor_y": 80,
+    "boss_bar_bottom_y": 7
+  },
+  "roles": {
+    "party": { "max_opaque": [40, 68] },
+    "ordinary_opponent": { "max_opaque": [30, 68] },
+    "boss": { "max_opaque": [160, 72] }
+  },
+  "anchors_x": {
+    "party": [24, 68, 112],
+    "ordinary_opponent": [312, 346, 380, 414, 448],
+    "ordinary_opponent_stress": [312, 346, 380, 414, 452],
+    "boss": [240]
+  }
+}
