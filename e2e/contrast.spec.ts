@@ -38,6 +38,7 @@ const DOCK_PRIMARY_TEXT: { tab: "character" | "armory" | "stage"; selector: stri
     selector: '[data-character-section="talents"] [data-class-id="knight"] [data-talent-points="true"]',
   },
   { tab: "armory", selector: ".armory-grid .equipment-name" },
+  { tab: "armory", selector: ".armory-grid .equipment-marker" },
   { tab: "armory", selector: ".armory-slot-segment" },
   { tab: "armory", selector: ".armory-state-select" },
   { tab: "armory", selector: ".armory-detail .armory-attempt-note" },

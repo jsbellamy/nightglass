@@ -6,8 +6,8 @@ Emitted by the rendered-evidence harness (`npm run test:evidence`) as
 `character-equipment-rows.png` — a real Chromium capture of the Character
 Equipment section after Armory's slot strip was deleted (#271). No chrome-tier
 (16×16) consumer remains in the Dock; this slug is carried by the Character
-Equipment content-tier (34×34) rows with an explicit tier change noted in the
-issue #271 PR.
+Equipment content-tier (34×34) rows with an explicit tier change noted in
+`docs/agents/acceptance-evidence.md` and the #271 PR body.
 
 ## Judgement (nightglass#132, retargeted by #271)
 

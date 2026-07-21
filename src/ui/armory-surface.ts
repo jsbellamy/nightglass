@@ -699,7 +699,6 @@ export function mountArmorySurface(
 
     const summary = el("article", {
       class: "equipment-card equipment-detail",
-      data: { dropDetail: String(selectedDrop.dropId) },
     });
     renderDropSummary(summary, selectedDrop);
     detail.append(summary);

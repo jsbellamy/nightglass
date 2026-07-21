@@ -21,11 +21,9 @@ const LOOT_SEED = 42;
 function renderArmory(
   surface: ReturnType<typeof mountArmorySurface>,
   snapshot: Snapshot,
-  selectedClassId: ClassId = "knight",
 ): void {
   const engine = createEngine(fixtureContent, snapshot, LOOT_SEED);
   surface.render(snapshot, legalityViewFromEngine(engine));
-  void selectedClassId;
 }
 
 function mountWithSelection(
@@ -245,11 +243,16 @@ describe("Armory surface", () => {
     expect(root.querySelector('[data-armory-detail="true"] .equipment-name')?.textContent).toMatch(
       /Fixture Blade/,
     );
+    expect(root.querySelector(".armory-compare-columns")).not.toBeNull();
+    expect(
+      [...root.querySelectorAll(".armory-compare-column h4")].map((node) => node.textContent),
+    ).toEqual(["Equipped", "Selected"]);
     expect(root.querySelector('[data-stat-deltas="true"]')).not.toBeNull();
     expect(root.querySelector('[data-ability-deltas="true"]')).not.toBeNull();
     expect(root.querySelector('[data-next-attempt-note="true"]')?.textContent).toMatch(
       /next Stage Attempt/i,
     );
+    expect(root.querySelector("[data-drop-detail]")).toBeNull();
     expect(root.textContent?.toLowerCase()).not.toMatch(/\bpower total\b|\baggregate score\b/);
 
     root.querySelector<HTMLElement>('.equipment-card[data-drop-id="1"]')?.click();
