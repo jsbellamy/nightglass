@@ -28,7 +28,7 @@ export interface DockWindowDeps {
   getDockWindow?: () => Promise<DockWebviewWindow | null>;
   createDockWindow?: (url: string) => Promise<DockWebviewWindow>;
   onTileMoved?: (listener: () => void) => () => void;
-  /** When true, compositor follow owns tile tracking — skip onTileMoved. */
+  /** When true, macOS creation-time child attach succeeded (stacking hint only; JS still follows on open). */
   isDockChildAttached?: () => boolean;
   /** Called from destroy() so production can reset dockChildAttachSupported. */
   onDestroy?: () => void;
@@ -252,8 +252,7 @@ export function createDockWindowPort(deps: DockWindowDeps = {}): DockWindowPort 
         await windowRef.show();
       }
       open = true;
-      const childAttached = deps.isDockChildAttached?.() ?? false;
-      if (!moveCleanup && deps.onTileMoved && !childAttached) {
+      if (!moveCleanup && deps.onTileMoved) {
         moveCleanup = deps.onTileMoved(() => {
           onTileMoved();
         });
@@ -269,6 +268,8 @@ export function createDockWindowPort(deps: DockWindowDeps = {}): DockWindowPort 
       }
       open = false;
       deps.invalidateGeometryCache?.();
+      moveCleanup?.();
+      moveCleanup = null;
     },
     async toggle() {
       if (open) {
