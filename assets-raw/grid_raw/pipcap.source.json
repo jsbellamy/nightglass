@@ -1,9 +1,31 @@
 {
   "provider": "Cursor GenerateImage",
   "acquisition_tool": "GenerateImage",
-  "raw_sha256": "61521e221604d6106dc890e3feafec8326b704c7626e1400fa858cea429cb5a7",
-  "candidate": "pipcap-c.png",
+  "raw_sha256": "3f4d7a89cb61e562974056a96eb83db6de1d87c2e970085b123ffa56381b1cb1",
+  "acquisition": "flexible",
+  "identity_profile": {
+    "asset_class": "opponent",
+    "role": "ordinary-opponent",
+    "facing": "left"
+  },
+  "cursor_stamp_removed": false,
+  "identity": "pipcap",
+  "asset_class": "opponent",
+  "runtime_destination": "src/assets/sprites/pipcap.png",
+  "candidate": "pipcap-flex-a.png",
   "facing": "left",
-  "role": "ordinary_opponent",
-  "prompt": "TRUE chunky pixel art sprite ONLY. Canvas is exactly 32 logical columns by 48 logical rows rendered large \u2014 each logical pixel MUST be a perfectly uniform solid-color square block about 32 rendered pixels wide, with crisp aligned grid seams throughout. One tiny whimsical mushroom creature named Pipcap, strict side profile facing LEFT, cream-gold cap, berry-pink stem body, dark-plum eye and feet. The mushroom silhouette must be SMALL: about 24 logical columns wide and 38-40 logical rows tall, centered, with LARGE flat #ff00ff magenta margins on all four sides (at least 4 magenta cells left and right). 10 flat colors max, one-cell dark outline. No anti-aliasing, no gradients, no dithering, no soft edges, no floor, no shadow, no glow, no text. Magenta background must be perfectly flat #ff00ff."
+  "role": "ordinary-opponent",
+  "style_references": [
+    {
+      "path": "docs/research/evidence/256-pipcap-flex/identity-pipcap-pre.png",
+      "sha256": "61521e221604d6106dc890e3feafec8326b704c7626e1400fa858cea429cb5a7",
+      "role": "identity"
+    },
+    {
+      "path": "assets-raw/grid_raw/hunter.png",
+      "sha256": "7e828a24f02ec992ba65c98d61d3ef1fe617abb3f71754ce1af7d4facb4ae622",
+      "role": "style"
+    }
+  ],
+  "prompt": "Single full-body Pipcap ordinary monster game sprite, strict side profile facing\nLEFT. A tiny whimsical mushroom goblin with a broad cream-spotted cap, berry\ngill fringe and stem body, mint leaf clothing, dark-plum eye and feet, and a\nsimple forward cap-bash stance. Compact squat silhouette with both feet visible;\nthe cap is the dominant readable shape.\n\nChunky, simplified, flat-colour Moonberry night-garden fantasy pixel art with\nlarge readable shapes and a strong silhouette at small native scale. Preserve\nthe attached Pipcap's identity and match the attached accepted Hunter's palette,\noutline weight, and storybook cohort.\n\nShow exactly one complete subject with generous empty clearance on every edge\nof an opaque flat solid magenta #ff00ff background. No shadow, floor, glow,\nspores, sparkles, particles, Ability effect, text, watermark, scenery, UI,\ntransparency, or other subject.\n"
 }
