@@ -378,6 +378,43 @@ describe("Character picker", () => {
     picker.destroy();
   });
 
+  it("orders chips by pendingParty over a stale formation pending without duplicates", () => {
+    const root = document.createElement("div");
+    const engine = createEngine(content, undefined, LOOT_SEED);
+    const picker = mountCharacterPicker(root, {
+      content,
+      onSelect: () => undefined,
+      onCommand: (command) => {
+        if (command.cmd === "setFormation") {
+          engine.setFormation(command.args[0]);
+        }
+        if (command.cmd === "setParty") {
+          engine.setParty(command.args[0], command.args[1]);
+        }
+      },
+    });
+    const { party, reserve } = engine.snapshot().progression;
+
+    picker.render(engine.snapshot(), party[0]!);
+    root
+      .querySelector<HTMLButtonElement>('[data-formation-action="move-down"][data-slot="0"]')
+      ?.click();
+    picker.render(engine.snapshot(), party[0]!);
+    root.querySelector<HTMLButtonElement>(`[data-party-swap="${party[0]}"]`)?.click();
+    picker.render(engine.snapshot(), party[0]!);
+
+    const chips = [...root.querySelectorAll<HTMLElement>("[data-character-chip]")].map(
+      (chip) => chip.dataset["characterChip"],
+    );
+    expect(chips).toEqual([reserve, party[1], party[2], party[0]]);
+    expect(new Set(chips).size).toBe(4);
+    expect(root.querySelector("[data-formation-action]")).toBeNull();
+    expect(root.querySelector('[data-pending-kind="formation"]')).not.toBeNull();
+    expect(root.querySelector('[data-pending-kind="party"]')).not.toBeNull();
+
+    picker.destroy();
+  });
+
   it("composes consecutive Reserve swaps against pendingParty", () => {
     const root = document.createElement("div");
     const commands: unknown[] = [];

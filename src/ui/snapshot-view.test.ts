@@ -3,6 +3,7 @@ import { createEngine } from "../core/engine";
 import { cloneSnapshot } from "../core/snapshot";
 import { fixtureContent } from "../core/testing/fixture-content";
 import type { Content } from "../core/types";
+import { buildContent } from "../data";
 import {
   CLASS_LABELS,
   appliedLoadout,
@@ -18,9 +19,16 @@ import {
 } from "./snapshot-view";
 
 const LOOT_SEED = 42;
+const content = buildContent();
 
 function baseSnapshot() {
   const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
+  engine.advanceBy(1);
+  return engine.snapshot();
+}
+
+function fullRosterSnapshot() {
+  const engine = createEngine(content, undefined, LOOT_SEED);
   engine.advanceBy(1);
   return engine.snapshot();
 }
@@ -108,7 +116,7 @@ describe("Snapshot view Party roster and Combatants", () => {
   });
 
   it("honours pendingParty for effective party and roster order", () => {
-    const snapshot = baseSnapshot();
+    const snapshot = fullRosterSnapshot();
     const { party, reserve } = snapshot.progression;
     snapshot.progression.pendingParty = {
       members: [reserve, party[1]!, party[2]!],
@@ -119,12 +127,26 @@ describe("Snapshot view Party roster and Combatants", () => {
       members: [reserve, party[1]!, party[2]!],
       reserve: party[0]!,
     });
-    expect(effectiveFormation(snapshot)).toEqual([reserve, party[1]!, party[2]!]);
+    expect(effectiveFormation(snapshot)).toEqual([...party]);
     expect(rosterClassIds(snapshot)).toEqual([reserve, party[1]!, party[2]!, party[0]!]);
   });
 
-  it("honours a pending formation edit over applied and pending party members", () => {
-    const snapshot = baseSnapshot();
+  it("honours a pending formation edit when no pendingParty is set", () => {
+    const snapshot = fullRosterSnapshot();
+    const { party, reserve } = snapshot.progression;
+    const order: [typeof party[0], typeof party[1], typeof party[2]] = [
+      party[2]!,
+      party[0]!,
+      party[1]!,
+    ];
+    snapshot.pendingEdits.push({ kind: "formation", order });
+
+    expect(effectiveFormation(snapshot)).toEqual(order);
+    expect(rosterClassIds(snapshot)).toEqual([...order, reserve]);
+  });
+
+  it("prefers pendingParty membership over a stale formation pending for chip order", () => {
+    const snapshot = fullRosterSnapshot();
     const { party, reserve } = snapshot.progression;
     const order: [typeof party[0], typeof party[1], typeof party[2]] = [
       party[2]!,
@@ -138,7 +160,8 @@ describe("Snapshot view Party roster and Combatants", () => {
     };
 
     expect(effectiveFormation(snapshot)).toEqual(order);
-    expect(rosterClassIds(snapshot)).toEqual([...order, party[0]!]);
+    expect(rosterClassIds(snapshot)).toEqual([reserve, party[1]!, party[2]!, party[0]!]);
+    expect(new Set(rosterClassIds(snapshot)).size).toBe(4);
   });
 
   it("finds a party Combatant by Class during an Attempt", () => {

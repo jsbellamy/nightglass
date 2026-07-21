@@ -35,20 +35,27 @@ export function effectiveParty(snapshot: Snapshot): {
 }
 
 /**
- * Formation Front/Middle/Back honouring a pending formation edit, otherwise
- * the effective Party members (so pendingParty is visible on the rail).
+ * Formation Front/Middle/Back for ↑↓ commands: a pending formation edit, else
+ * the applied Party (Engine.setFormation validates against applied members).
  */
 export function effectiveFormation(snapshot: Snapshot): [ClassId, ClassId, ClassId] {
   const pending = snapshot.pendingEdits.find((edit) => edit.kind === "formation");
   if (pending?.kind === "formation") {
     return [...pending.order];
   }
-  return effectiveParty(snapshot).members;
+  return [...snapshot.progression.party];
 }
 
-/** Formation order followed by the Reserve, both effective. */
+/**
+ * Rail chip order: pendingParty membership wins when set; otherwise Formation
+ * order (pending or applied) followed by Reserve. Always four distinct Classes
+ * when the Snapshot is well-formed.
+ */
 export function rosterClassIds(snapshot: Snapshot): ClassId[] {
-  const { reserve } = effectiveParty(snapshot);
+  const { members, reserve } = effectiveParty(snapshot);
+  if (snapshot.progression.pendingParty) {
+    return [...members, reserve];
+  }
   return [...effectiveFormation(snapshot), reserve];
 }
 

@@ -186,6 +186,7 @@ export function mountCharacterPicker(
 
     chipOrder = rosterClassIds(snapshot);
     const formation = effectiveFormation(snapshot);
+    const showFormationControls = snapshot.progression.pendingParty === null;
     const rows = chipOrder.map((classId, index) => {
       const isSelected = classId === selected;
       const positionKey = index < 3 ? POSITION_KEYS[index]! : "reserve";
@@ -221,7 +222,7 @@ export function mountCharacterPicker(
       chip.addEventListener("keydown", (event) => onChipKeydown(event, classId));
 
       const rowChildren: HTMLElement[] = [chip];
-      if (isPartySlot) {
+      if (isPartySlot && showFormationControls) {
         const moveUp = el("button", {
           class: "formation-action focus-ring",
           data: { formationAction: "move-up", slot: String(index) },
