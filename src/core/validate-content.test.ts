@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { buildContent } from "../data";
 import { validateContent } from "./validate-content";
 import { fixtureContent } from "./testing/fixture-content";
-import type { Content, OpponentDef } from "./types";
+import type { Content } from "./types";
 
 describe("validateContent", () => {
   it("returns [] for fixture Content with cardinality relaxation", () => {
@@ -72,20 +72,14 @@ describe("validateContent", () => {
     );
   });
 
-  it('rejects a wave with a "large" opponent alongside others', () => {
-    const largeGrunt: OpponentDef = {
-      ...fixtureContent.opponents[0]!,
-      id: "fixture-large-grunt",
-      size: "large",
-    };
+  it("rejects a wave with a Boss alongside other Opponents", () => {
     const content: Content = {
       ...fixtureContent,
-      opponents: [...fixtureContent.opponents, largeGrunt],
       stages: [
         {
           ...fixtureContent.stages[0]!,
           waves: [
-            { opponents: ["fixture-large-grunt", "fixture-stunner"] },
+            { opponents: ["fixture-boss", "fixture-stunner"] },
             fixtureContent.stages[0]!.waves[1]!,
           ],
         },
@@ -93,42 +87,45 @@ describe("validateContent", () => {
     };
 
     expect(validateContent(content, { fixture: true })).toContain(
-      'stage 1 wave 1 has a "large" opponent "fixture-large-grunt" alongside 1 other opponent(s); large opponents must be solo',
+      'stage 1 wave 1 has a Boss "fixture-boss" alongside 1 other opponent(s); a wave with a Boss must contain exactly one Opponent',
     );
   });
 
-  it('allows a solo "large" opponent wave and multi-opponent waves of smaller tiers', () => {
-    const largeBoss: OpponentDef = {
-      ...fixtureContent.opponents.find((opponent) => opponent.id === "fixture-boss")!,
-      size: "large",
-    };
-    const smallGrunt = fixtureContent.opponents.find(
-      (opponent) => opponent.id === "fixture-small-grunt",
-    )!;
+  it("rejects a Boss encounter wave that includes companions", () => {
     const content: Content = {
       ...fixtureContent,
-      opponents: [
-        smallGrunt,
-        largeBoss,
-        fixtureContent.opponents.find((opponent) => opponent.id === "fixture-stunner")!,
+      stages: [
+        {
+          ...fixtureContent.stages[0]!,
+          boss: { opponents: ["fixture-boss", "fixture-grunt"] },
+        },
       ],
+    };
+
+    expect(validateContent(content, { fixture: true })).toContain(
+      'stage 1 boss has a Boss "fixture-boss" alongside 1 other opponent(s); a wave with a Boss must contain exactly one Opponent',
+    );
+  });
+
+  it("allows a solo Boss, solo ordinary Opponents, and multi-opponent waves without a Boss", () => {
+    const content: Content = {
+      ...fixtureContent,
       stages: [
         {
           ...fixtureContent.stages[0]!,
           waves: [
             { opponents: ["fixture-small-grunt", "fixture-stunner"] },
-            { opponents: ["fixture-small-grunt"] },
+            { opponents: ["fixture-grunt"] },
           ],
           boss: { opponents: ["fixture-boss"] },
         },
       ],
     };
 
-    const violations = validateContent(content, { fixture: true });
-    const largeRuleViolations = violations.filter((violation) =>
-      violation.includes('"large" opponent'),
+    const bossRuleViolations = validateContent(content, { fixture: true }).filter((violation) =>
+      violation.includes("Boss"),
     );
-    expect(largeRuleViolations).toEqual([]);
+    expect(bossRuleViolations).toEqual([]);
   });
 
   it("returns [] for shipped Content assembled from data modules", () => {

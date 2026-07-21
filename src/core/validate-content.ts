@@ -160,13 +160,13 @@ export function validateContent(
     }
 
     violations.push(
-      ...largeOpponentWaveViolations(stage.id, "wave 1", stage.waves[0], opponentById),
+      ...bossSoloWaveViolations(stage.id, "wave 1", stage.waves[0], opponentById),
     );
     violations.push(
-      ...largeOpponentWaveViolations(stage.id, "wave 2", stage.waves[1], opponentById),
+      ...bossSoloWaveViolations(stage.id, "wave 2", stage.waves[1], opponentById),
     );
     violations.push(
-      ...largeOpponentWaveViolations(stage.id, "boss", stage.boss, opponentById),
+      ...bossSoloWaveViolations(stage.id, "boss", stage.boss, opponentById),
     );
 
     for (const [waveIndex, wave] of stage.waves.entries()) {
@@ -241,7 +241,7 @@ function waveBudgetViolations(
   return [];
 }
 
-function largeOpponentWaveViolations(
+function bossSoloWaveViolations(
   stageId: number,
   waveLabel: string,
   wave: { opponents: string[] },
@@ -254,9 +254,9 @@ function largeOpponentWaveViolations(
   const violations: string[] = [];
   for (const opponentId of wave.opponents) {
     const opponent = opponentById.get(opponentId);
-    if (opponent?.size === "large") {
+    if (opponent?.boss) {
       violations.push(
-        `stage ${stageId} ${waveLabel} has a "large" opponent "${opponentId}" alongside ${wave.opponents.length - 1} other opponent(s); large opponents must be solo`,
+        `stage ${stageId} ${waveLabel} has a Boss "${opponentId}" alongside ${wave.opponents.length - 1} other opponent(s); a wave with a Boss must contain exactly one Opponent`,
       );
     }
   }

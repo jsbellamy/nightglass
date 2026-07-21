@@ -166,7 +166,6 @@ function pipcap(
     name: "Pipcap",
     family: "pipcap",
     boss: false,
-    size: "medium",
     base: stats,
     abilityIds: [basicAbilityId],
     xpAward,
@@ -183,16 +182,11 @@ function boss(
   xpAward: number,
   spriteKey: string,
 ): OpponentDef {
-  // INTERIM: bosses are size "medium" until their 48x72 art is regenerated.
-  // Flipped to "large" by the boss-regen asset slice (#212), which is the first
-  // point at which a large PNG exists to back the tier. Do not flip early:
-  // the sprite-tier invariant test will fail against the 32x48 files.
   return {
     id,
     name,
     family: id,
     boss: true,
-    size: "medium",
     base: stats,
     abilityIds: [basicAbilityId, sweepAbilityId],
     xpAward,
