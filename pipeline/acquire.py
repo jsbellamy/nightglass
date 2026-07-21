@@ -1013,7 +1013,7 @@ def promote_candidate(
         staged_raw.with_suffix(".source.json").write_text(
             json.dumps(sidecar, indent=2) + "\n"
         )
-        runtime, geometry, stamp_removed = normalize_flexible(staged_raw, profile)
+        runtime, geometry, _stamp_removed = normalize_flexible(staged_raw, profile)
         errors = (
             raw_clipping(staged_raw)
             + validate(runtime, out_name, geometry=geometry, profile=profile)

@@ -141,13 +141,14 @@ provider dump into task-local scratch, then measure it with the owning pipeline;
 for Battle Tile bodies run:
 
 ```bash
-python3 pipeline/acquire.py measure --role <party|opponent|boss> \
+python3 pipeline/acquire.py measure --tag <knight|hunter|pipcap|boss-1|…> \
   --report <task-evidence>/candidate-report.json <candidate.png>
 ```
 
-(Until the flexible-body pipeline lands, the CLI may still accept legacy
-`--tier` flags; new acquisition work targets the body contract and role
-ceilings in [`../body-sprite-contract.md`](../body-sprite-contract.md).)
+Role ceilings and facing come from the known asset identity (`layout.json` +
+`ASSET_IDENTITIES`); callers cannot override them with `--tier` or custom
+dimensions. Offline rebuild of archived tier raws still uses the internal
+`legacy-grid-v1` adapter (see ADR-0004).
 
 Measurement requires no provenance sidecar. It writes no asset or sidecar; when
 `--report` is supplied, it saves the same JSON emitted on stdout as task
@@ -162,6 +163,8 @@ provenance sidecar containing:
 - provider and acquisition tool
 - exact prompt
 - raw SHA-256
+- `acquisition` (`flexible` for new bodies), `identity_profile`, and
+  `cursor_stamp_removed` when applicable
 - direct input paths and SHA-256 values
 - asset class and intended runtime destination
 

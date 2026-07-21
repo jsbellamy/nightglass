@@ -487,7 +487,7 @@ for raw_tag, runtime_name in RUNTIME_SPRITES.items():
                                                frame=A.FRAMES[tier])
     recorded = entry["frames"][0]["sha256"]
     actual = hashlib.sha256(rebuilt_image.tobytes()).hexdigest()
-    check(f"medium re-acquire sha256 matches manifest for {sprite_key}",
+    check(f"legacy-grid-v1 rebuild sha256 matches manifest for {sprite_key}",
           actual == recorded, f"got {actual[:16]}… expected {recorded[:16]}…")
 
 _p = one.load()
