@@ -690,6 +690,101 @@ html.dock-window body {
   min-width: 0;
 }
 
+.character-equipment {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.equipment-slot-row {
+  display: grid;
+  grid-template-columns: 64px 42px minmax(0, 1fr) auto;
+  grid-template-areas: "label icon titles actions";
+  column-gap: 10px;
+  row-gap: 2px;
+  align-items: center;
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid rgba(255, 249, 233, 0.16);
+  border-radius: 6px;
+  /* Opaque bases so AA probes never treat rarity alpha as solid pastel. */
+  background: #191c26;
+}
+
+.equipment-slot-row[data-slot-filled="false"] {
+  grid-template-columns: 64px minmax(0, 1fr) auto;
+  grid-template-areas: "label empty actions";
+}
+
+.equipment-slot-label {
+  grid-area: label;
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--dock-text, #fff9e9);
+}
+
+.equipment-slot-row .equipment-icon-content {
+  grid-area: icon;
+  width: 34px;
+  height: 34px;
+  overflow: visible;
+}
+
+.equipment-slot-titles {
+  grid-area: titles;
+  min-width: 0;
+  background: rgba(25, 28, 38, 0.95);
+  border-radius: 4px;
+  padding: 2px 4px;
+}
+
+.equipment-slot-row .equipment-meta {
+  color: var(--dock-text-muted, #d8d0bf);
+}
+
+.equipment-slot-row .equipment-guaranteed {
+  color: var(--dock-text, #fff9e9);
+}
+
+.equipment-slot-empty {
+  grid-area: empty;
+  margin: 0;
+  font-size: 12px;
+  color: var(--dock-text-muted, #d8d0bf);
+}
+
+.equipment-slot-actions {
+  grid-area: actions;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.equipment-slot-browse,
+.equipment-slot-unequip {
+  border: 1px solid rgba(255, 249, 233, 0.18);
+  border-radius: 4px;
+  background: #292d3d;
+  color: var(--dock-text, #fff9e9);
+  cursor: pointer;
+  padding: 4px 8px;
+  font-size: 11px;
+}
+
+.equipment-slot-row.rarity-uncommon {
+  background: #1a2824;
+}
+
+.equipment-slot-row.rarity-rare {
+  background: #1a2430;
+}
+
+.equipment-slot-row.rarity-epic {
+  background: #221f2e;
+}
+
 .party-surface,
 .stage-surface,
 .loadout-surface,

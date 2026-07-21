@@ -1,5 +1,5 @@
 import type { ReadonlySnapshot } from "../core/snapshot";
-import type { ClassId, Content } from "../core/types";
+import type { ClassId, Content, EquipmentSlotId } from "../core/types";
 import { mountArmorySurface } from "./armory-surface";
 import { mountCharacterPicker } from "./character-picker";
 import { mountCharacterSurface } from "./character-surface";
@@ -11,11 +11,15 @@ import type { MountedSurface } from "./surface-shell";
 
 export type DockTabId = "character" | "armory" | "stage";
 
+export type DockTabIntent = { kind: "browse-slot"; classId: ClassId; slot: EquipmentSlotId };
+
 export interface DockSurfaceMountOptions {
   content: Content;
   onCommand(command: TileCommand): void;
   /** The Character the picker has selected. Read at render time, not mount time. */
   getSelectedClassId(): ClassId | null;
+  /** Switch tabs and hand the target surface an intent. Used for the Character → Armory jump. */
+  requestTab(tab: DockTabId, intent?: DockTabIntent): void;
 }
 
 export interface DockSurfaceEntry {
@@ -72,6 +76,7 @@ export function mountManagementDock(
   let heldLegality: EngineLegalityView = EMPTY_ENGINE_LEGALITY;
   let hasHeldState = false;
   let selectedClassId: ClassId | undefined;
+  let pendingIntent: DockTabIntent | undefined;
 
   root.classList.add("dock-shell", "management-dock");
   root.setAttribute("role", "dialog");
@@ -112,6 +117,7 @@ export function mountManagementDock(
     content: options.content,
     onCommand: (command) => options.onCommand?.(command),
     getSelectedClassId: () => selectedClassId ?? null,
+    requestTab,
   };
 
   const characterPicker = mountCharacterPicker(body, {
@@ -180,11 +186,18 @@ export function mountManagementDock(
   function renderSurface(id: DockTabId): void {
     const mounted = mountedSurfaces.get(id)!;
     const entry = DOCK_SURFACES.find((surfaceEntry) => surfaceEntry.id === id);
+    const intent = pendingIntent;
+    pendingIntent = undefined;
     if (entry?.needsLegality) {
-      (mounted as { render(s: typeof heldSnapshot, l: typeof heldLegality): void }).render(
-        heldSnapshot,
-        heldLegality,
-      );
+      (
+        mounted as {
+          render(
+            s: typeof heldSnapshot,
+            l: typeof heldLegality,
+            i?: DockTabIntent,
+          ): void;
+        }
+      ).render(heldSnapshot, heldLegality, intent);
     } else {
       mounted.render(heldSnapshot);
     }
@@ -208,6 +221,15 @@ export function mountManagementDock(
     }
     surface.setAttribute("aria-labelledby", `dock-tab-${activeTab}`);
     if (tabChanged && hasHeldState) {
+      renderSurface(activeTab);
+    }
+  }
+
+  function requestTab(tab: DockTabId, intent?: DockTabIntent): void {
+    pendingIntent = intent;
+    const alreadyActive = tab === activeTab;
+    setActiveTab(tab);
+    if (alreadyActive && hasHeldState) {
       renderSurface(activeTab);
     }
   }
