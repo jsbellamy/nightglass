@@ -53,7 +53,7 @@ const CHARACTER_PICKER_TEXT = [
 ] as const;
 
 test.describe("accessibility contrast floor", () => {
-  test("evidence: aa-contrast — status line and all three Dock surfaces meet WCAG AA against resolved glass backgrounds", async ({
+  test("evidence: aa-contrast / evidence: dock-surfaces — status line and Dock surfaces meet WCAG AA; scroll affordance appears only when a panel overflows", async ({
     browser,
   }) => {
     const { context, tile } = await openTilePage(browser);
