@@ -8,6 +8,7 @@ import type { CombatantState, ReadonlySnapshot } from "../core/snapshot";
 import type { Content, StageDef } from "../core/types";
 import { createPresentation, type Presentation } from "./presentation";
 import { createSfx, type SfxController } from "./sfx";
+import { footAnchorXForCombatant } from "./battle-tile-layout";
 import { resolveSprite } from "./sprites";
 
 export {
@@ -104,13 +105,46 @@ function createCombatantLookup(content: Content): CombatantLookup {
   };
 }
 
+function applyCombatantGeometry(
+  element: HTMLElement,
+  combatant: CombatantState,
+  lookup: CombatantLookup,
+  opponentStressLayout: boolean,
+): void {
+  const sprite = resolveSprite(lookup.spriteKeyFor(combatant));
+  const isParty = combatant.side === "party";
+  const formationSlot = isParty ? formationSlotFromEntityId(combatant.entityId) : null;
+  const opponentIndex = isParty ? null : opponentIndexFromEntityId(combatant.entityId);
+  const anchorX = footAnchorXForCombatant({
+    combatant,
+    formationSlot,
+    opponentIndex,
+    isBoss: lookup.isBoss(combatant),
+    opponentStressLayout,
+  });
+  const [frameWidth, frameHeight] = sprite.frameSize;
+  const [footX] = sprite.footAnchor;
+  element.style.setProperty("--combatant-anchor-x", String(anchorX));
+  element.style.setProperty("--combatant-foot-x", String(footX));
+  element.style.setProperty("--combatant-frame-w", String(frameWidth));
+  element.style.setProperty("--combatant-frame-h", String(frameHeight));
+
+  const image = element.querySelector<HTMLImageElement>(".combatant-sprite");
+  if (image) {
+    image.width = frameWidth;
+    image.height = frameHeight;
+  }
+}
+
 function ensureCombatantElement(
   container: HTMLElement,
   combatant: CombatantState,
   lookup: CombatantLookup,
+  opponentStressLayout: boolean,
 ): HTMLElement {
   let element = container.querySelector<HTMLElement>(`[data-entity-id="${combatant.entityId}"]`);
   if (element) {
+    applyCombatantGeometry(element, combatant, lookup, opponentStressLayout);
     return element;
   }
 
@@ -122,7 +156,6 @@ function ensureCombatantElement(
   element = document.createElement("div");
   element.className = [
     "combatant",
-    `size-${sprite.size}`,
     isParty ? "party" : "opponent",
     isParty ? "facing-right" : "facing-left",
     formationSlot ? `formation-${formationSlot}` : "",
@@ -146,8 +179,8 @@ function ensureCombatantElement(
   const image = document.createElement("img");
   image.className = "combatant-sprite";
   image.src = sprite.url;
-  image.width = sprite.width;
-  image.height = sprite.height;
+  image.width = sprite.frameSize[0];
+  image.height = sprite.frameSize[1];
   image.alt = "";
   image.draggable = false;
   image.style.imageRendering = "pixelated";
@@ -181,6 +214,7 @@ function ensureCombatantElement(
     element.append(stack, healthBar);
   }
   container.append(element);
+  applyCombatantGeometry(element, combatant, lookup, opponentStressLayout);
   return element;
 }
 
@@ -207,11 +241,12 @@ function syncCombatants(
   container: HTMLElement,
   combatants: CombatantState[],
   lookup: CombatantLookup,
+  opponentStressLayout: boolean,
 ): void {
   const seen = new Set<string>();
   for (const combatant of combatants) {
     seen.add(combatant.entityId);
-    const element = ensureCombatantElement(container, combatant, lookup);
+    const element = ensureCombatantElement(container, combatant, lookup, opponentStressLayout);
     updateCombatantElement(element, combatant, lookup);
   }
   for (const element of [...container.querySelectorAll<HTMLElement>(".combatant")]) {
@@ -373,11 +408,12 @@ export function mountBattleTile(
     });
     const opponents = opponentCombatants(attempt.combatants);
     const boss = opponents.find((combatant) => lookup.isBoss(combatant));
+    const opponentStressLayout = opponents.length >= 5;
 
-    syncCombatants(partyZone, party, lookup);
-    syncCombatants(opponentZone, opponents, lookup);
+    syncCombatants(partyZone, party, lookup, opponentStressLayout);
+    syncCombatants(opponentZone, opponents, lookup, opponentStressLayout);
     updateBossBar(battlefield, boss);
-    battlefield.classList.toggle("opponent-stress-layout", opponents.length >= 5);
+    battlefield.classList.toggle("opponent-stress-layout", opponentStressLayout);
     presentation.render(presentationNowMs, snapshot);
     sfx.releaseDueTo(presentationNowMs);
   }

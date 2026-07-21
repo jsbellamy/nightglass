@@ -2,8 +2,13 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { MONSTER_FRAMES, type MonsterSize } from "../core/types";
-import { resolveSprite, SPRITE_SOURCES } from "./sprites";
+import manifestJson from "../assets/sprites/manifest.json";
+import layoutJson from "../assets/sprites/layout.json";
+import {
+  resolveSprite,
+  spriteBattlefieldRole,
+  SPRITE_SOURCES,
+} from "./sprites";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const spritesDir = join(here, "../assets/sprites");
@@ -19,57 +24,52 @@ function pngIhdrSize(bytes: Buffer): { width: number; height: number } {
   };
 }
 
-/** Parse one specific `.combatant-sprite` rule — not descendant / state overrides. */
-function combatantSpriteRuleSize(
-  css: string,
-  selector: string,
-): { width: number; height: number } {
-  const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const match = css.match(new RegExp(`^${escaped}\\s*\\{([^}]+)\\}`, "m"));
-  expect(match, `${selector} rule`).not.toBeNull();
-  const body = match![1]!;
-  const width = body.match(/width:\s*(\d+)px/);
-  const height = body.match(/height:\s*(\d+)px/);
-  expect(width, "width").not.toBeNull();
-  expect(height, "height").not.toBeNull();
-  return { width: Number(width![1]), height: Number(height![1]) };
+function opaqueExtent(bounds: readonly [number, number, number, number]): {
+  width: number;
+  height: number;
+} {
+  const [left, top, right, bottom] = bounds;
+  return { width: right - left, height: bottom - top };
 }
 
-const TIER_SPRITE_SELECTORS: Record<MonsterSize, string> = {
-  medium: ".combatant-sprite",
-  small: ".combatant.size-small .combatant-sprite",
-  large: ".combatant.size-large .combatant-sprite",
-};
-
 describe("native-1× sprite dimensions", () => {
-  it("evidence: native-1x-scaling — MONSTER_FRAMES, resolveSprite, PNG IHDR, and per-tier .combatant-sprite rules agree (excluding knockout-collapse transform)", () => {
+  it("evidence: native-1x-scaling — PNG IHDR, manifest, registry, and CSS frame vars agree for every production sprite", () => {
     const css = readFileSync(stylesPath, "utf8");
+    expect(css).toMatch(/--combatant-frame-w/);
+    expect(css).not.toMatch(/\.combatant\.size-(small|medium|large)/);
+    expect(css).not.toMatch(/scaleX\(-1\)/);
 
-    for (const tier of Object.keys(MONSTER_FRAMES) as MonsterSize[]) {
-      const [frameWidth, frameHeight] = MONSTER_FRAMES[tier];
-      const cssSize = combatantSpriteRuleSize(css, TIER_SPRITE_SELECTORS[tier]);
-      expect(cssSize, `CSS for tier ${tier}`).toEqual({ width: frameWidth, height: frameHeight });
-    }
-
-    // Deliberate knockout scale lives on `.combatant-stack`, not the sprite rule.
-    // A knocked-out sprite legitimately measures 28.16×44.16; this assertion
-    // excludes that transformed state by only reading the base CSS rule.
     expect(css).toMatch(
       /\.knockout-collapse\s+\.combatant-stack\s*\{[^}]*transform:\s*scale\(0\.88,\s*0\.92\)/,
     );
 
     for (const [key, source] of Object.entries(SPRITE_SOURCES)) {
-      const [frameWidth, frameHeight] = MONSTER_FRAMES[source.size];
+      const manifest = manifestJson[key as keyof typeof manifestJson];
+      const [manifestWidth, manifestHeight] = manifest.frame_size;
       const resolved = resolveSprite(key);
-      expect(resolved.size, `${key} size`).toBe(source.size);
-      expect(resolved.width, `${key} resolved width`).toBe(frameWidth);
-      expect(resolved.height, `${key} resolved height`).toBe(frameHeight);
+      expect(resolved.frameSize, `${key} frameSize`).toEqual([manifestWidth, manifestHeight]);
+      expect(resolved.visualBounds, `${key} visualBounds`).toEqual(manifest.visual_bounds);
+      expect(resolved.footAnchor, `${key} footAnchor`).toEqual(manifest.foot_anchor);
 
-      const tierCss = combatantSpriteRuleSize(css, TIER_SPRITE_SELECTORS[source.size]);
-      expect(tierCss).toEqual({ width: frameWidth, height: frameHeight });
+      const [frameWidth, frameHeight] = resolved.frameSize;
+      expect(resolved.footAnchor[0], `${key} foot x`).toBe(frameWidth / 2);
+      expect(resolved.footAnchor[1], `${key} foot y`).toBe(frameHeight);
+
+      const [left, top, right, bottom] = resolved.visualBounds;
+      expect(left).toBeGreaterThanOrEqual(0);
+      expect(top).toBeGreaterThanOrEqual(0);
+      expect(right).toBeLessThanOrEqual(frameWidth);
+      expect(bottom).toBeLessThanOrEqual(frameHeight);
+
+      const role = spriteBattlefieldRole(key);
+      const maxOpaque = layoutJson.roles[role].max_opaque as [number, number];
+      const opaque = opaqueExtent(resolved.visualBounds);
+      expect(opaque.width, `${key} opaque width`).toBeLessThanOrEqual(maxOpaque[0]);
+      expect(opaque.height, `${key} opaque height`).toBeLessThanOrEqual(maxOpaque[1]);
 
       const ihdr = pngIhdrSize(readFileSync(join(spritesDir, `${key}.png`)));
       expect(ihdr, `${key} PNG IHDR`).toEqual({ width: frameWidth, height: frameHeight });
+      expect(source.url).toBeTruthy();
     }
   });
 });

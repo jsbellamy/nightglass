@@ -2,9 +2,16 @@
 
 import { describe, expect, it } from "vitest";
 import { buildContent } from "../data";
-import { MONSTER_FRAMES } from "../core/types";
+import manifestJson from "../assets/sprites/manifest.json";
 import { fixtureContent } from "../core/testing/fixture-content";
-import { collectContentSpriteKeys, isRegisteredSpriteKey, resolveSprite } from "./sprites";
+import {
+  collectContentSpriteKeys,
+  geometryFromManifestEntry,
+  isRegisteredSpriteKey,
+  resolveSprite,
+  spriteBattlefieldRole,
+  SPRITE_SOURCES,
+} from "./sprites";
 
 describe("sprite registry", () => {
   it("resolves every Content spriteKey including all acquired Class and Boss stills", () => {
@@ -20,23 +27,23 @@ describe("sprite registry", () => {
     }
   });
 
-  it("resolves the acquired Priest still without an interim label", () => {
+  it("resolves manifest-backed geometry for production sprites", () => {
     const priest = resolveSprite("priest");
+    const manifest = manifestJson.priest;
     expect(priest.interim).toBeUndefined();
     expect(priest.interimLabel).toBeUndefined();
-    expect(priest.size).toBe("medium");
-    expect(priest.width).toBe(MONSTER_FRAMES.medium[0]);
-    expect(priest.height).toBe(MONSTER_FRAMES.medium[1]);
+    expect(priest.frameSize).toEqual(manifest.frame_size);
+    expect(priest.visualBounds).toEqual(manifest.visual_bounds);
+    expect(priest.footAnchor).toEqual(manifest.foot_anchor);
     expect(priest.url).toContain("priest");
+    expect(spriteBattlefieldRole("priest")).toBe("party");
   });
 
   it("resolves the acquired Hunter still without an interim label", () => {
     const hunter = resolveSprite("hunter");
     expect(hunter.interim).toBeUndefined();
     expect(hunter.interimLabel).toBeUndefined();
-    expect(hunter.size).toBe("medium");
-    expect(hunter.width).toBe(MONSTER_FRAMES.medium[0]);
-    expect(hunter.height).toBe(MONSTER_FRAMES.medium[1]);
+    expect(hunter.frameSize).toEqual([32, 48]);
     expect(hunter.url).toContain("hunter");
   });
 
@@ -45,13 +52,52 @@ describe("sprite registry", () => {
       const boss = resolveSprite(key);
       expect(boss.interim).toBeUndefined();
       expect(boss.interimLabel).toBeUndefined();
-      expect(boss.size).toBe("medium");
-      expect(boss.width).toBe(MONSTER_FRAMES.medium[0]);
-      expect(boss.height).toBe(MONSTER_FRAMES.medium[1]);
+      expect(boss.frameSize).toEqual([32, 48]);
+      expect(spriteBattlefieldRole(key)).toBe("boss");
       expect(boss.url).toContain(key);
     }
     expect(resolveSprite("boss-2").url).not.toBe(resolveSprite("boss-1").url);
     expect(resolveSprite("boss-3").url).not.toBe(resolveSprite("boss-1").url);
+  });
+
+  it("rejects missing or malformed manifest geometry", () => {
+    expect(() => geometryFromManifestEntry("missing", undefined)).toThrow(/Missing manifest/);
+    expect(() =>
+      geometryFromManifestEntry("bad", { frame_size: [32], visual_bounds: [0, 0, 1, 1], foot_anchor: [16, 48] }),
+    ).toThrow(/frame_size/);
+    expect(() =>
+      geometryFromManifestEntry("bad", {
+        frame_size: [32, 48],
+        visual_bounds: [0, 0, 1],
+        foot_anchor: [16, 48],
+      }),
+    ).toThrow(/visual_bounds/);
+    expect(() =>
+      geometryFromManifestEntry("bad", {
+        frame_size: [32, 48],
+        visual_bounds: [0, 0, 32, 48],
+        foot_anchor: [0, 0],
+      }),
+    ).toThrow(/foot_anchor/);
+  });
+
+  it("keeps SPRITE_SOURCES URL-only without size tiers", () => {
+    for (const source of Object.values(SPRITE_SOURCES)) {
+      expect(source).toEqual({ url: source.url });
+      expect("size" in source).toBe(false);
+    }
+  });
+
+  it("uses test-only fixture adapters without public size tiers", () => {
+    const small = resolveSprite("fixture-small-grunt");
+    expect(small.frameSize).toEqual([24, 32]);
+    expect(small.footAnchor).toEqual([12, 32]);
+    expect(small.url).toContain("pipcap");
+
+    const bossFixture = resolveSprite("fixture-boss");
+    const bossOne = resolveSprite("boss-1");
+    expect(bossFixture.frameSize).toEqual(bossOne.frameSize);
+    expect(bossFixture.url).toBe(bossOne.url);
   });
 
   it("covers fixture opponent spriteKeys used in Engine tests", () => {
