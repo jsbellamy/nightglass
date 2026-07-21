@@ -812,7 +812,7 @@ describe("dock window port", () => {
     expect(dock.windowRef.show).toHaveBeenCalledTimes(2);
   });
 
-  it("does not register onTileMoved when the dock is attached as a child window", async () => {
+  it("registers onTileMoved on first open even when the dock is attached as a child window", async () => {
     const dock = mockDockWindow();
     const onTileMoved = vi.fn(() => () => {});
     const port = createDockWindowPort({
@@ -827,8 +827,70 @@ describe("dock window port", () => {
 
     await port.open();
 
-    expect(onTileMoved).not.toHaveBeenCalled();
+    expect(onTileMoved).toHaveBeenCalledOnce();
     expect(dock.callOrder.filter((entry) => entry === "show")).toHaveLength(1);
+  });
+
+  it("manual-check: dock-position-only — with child attach, open→close→open still follows tile moves", async () => {
+    const frames = createManualScheduler();
+    let moved: (() => void) | undefined;
+    let currentTile = { ...tile };
+    const dock = mockDockWindow();
+    const onTileMoved = vi.fn((listener: () => void) => {
+      moved = listener;
+      return vi.fn();
+    });
+    const port = createDockWindowPort({
+      isTauri: true,
+      dockUrl,
+      getTileOuterPosition: async () => ({ ...currentTile }),
+      getMonitorForTile: async () => monitor,
+      getDockWindow: async () => dock,
+      isDockChildAttached: () => true,
+      scheduleFrame: frames.scheduleFrame,
+      onTileMoved,
+    });
+
+    await port.open();
+    await port.close();
+    expect(onTileMoved).toHaveBeenCalledOnce();
+    onTileMoved.mockClear();
+
+    await port.open();
+    expect(onTileMoved).toHaveBeenCalledOnce();
+
+    const movedTile = { ...tile, x: 350 };
+    currentTile = movedTile;
+    moved?.();
+    await frames.flushOne();
+    const expected = dockRect(movedTile, monitor);
+    expect(dock.callOrder[dock.callOrder.length - 1]).toBe(
+      `setPosition:${expected.x},${expected.y}`,
+    );
+  });
+
+  it("invokes onTileMoved cleanup on close and registers exactly one listener on the next open", async () => {
+    const cleanup = vi.fn();
+    const onTileMoved = vi.fn(() => cleanup);
+    const dock = mockDockWindow();
+    const port = createDockWindowPort({
+      isTauri: true,
+      dockUrl,
+      getTileOuterPosition: async () => tile,
+      getMonitorForTile: async () => monitor,
+      getDockWindow: async () => dock,
+      onTileMoved,
+    });
+
+    await port.open();
+    expect(onTileMoved).toHaveBeenCalledOnce();
+
+    await port.close();
+    expect(cleanup).toHaveBeenCalledOnce();
+
+    onTileMoved.mockClear();
+    await port.open();
+    expect(onTileMoved).toHaveBeenCalledOnce();
   });
 
   it("registers the throttled onTileMoved path when child attach is unsupported", async () => {
@@ -910,16 +972,17 @@ describe("dock window port", () => {
 
     await port.open();
     expect(createCount).toBe(1);
-    expect(onTileMoved).not.toHaveBeenCalled();
+    expect(onTileMoved).toHaveBeenCalledOnce();
 
     port.destroy();
     expect(onDestroy).toHaveBeenCalledOnce();
     expect(dockChildAttachSupported).toBe(false);
 
+    onTileMoved.mockClear();
     await port.open();
     expect(createCount).toBe(2);
     expect(dockChildAttachSupported).toBe(true);
-    expect(onTileMoved).not.toHaveBeenCalled();
+    expect(onTileMoved).toHaveBeenCalledOnce();
   });
 
   it("does not reparent the Dock webview after create", () => {
