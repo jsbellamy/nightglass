@@ -17,6 +17,9 @@ touches:
 - packaged presentation-effect URL resolution (`src/ui/effect-images.ts` or
   wiring that resolves Ability effect frames and Status Effect glyphs for the
   Tauri webview bundle)
+- Dock child-window attachment (`parent: "tile"` in `src/ui/dock-window.ts`) —
+  always-on-top stacking, `dockRect` geometry under child coordinates, and
+  close / `dock-closed` semantics
 
 Every other rendered criterion — tile/dock geometry, AA contrast, keyboard
 floor, five-opponent fit, sprite native-1× sizing, in-UI Dock close over the
@@ -38,17 +41,26 @@ creates a Tauri `WebviewWindow` or exercises OS window chrome.
 3. **Native positioning** — The Dock window opens at the geometry implied by
    `dockRect` relative to the tile's outer position on the monitor (above or
    below with the configured gap), not at an arbitrary OS default.
-4. **Dock geometry not restored from disk** — With `tauri-plugin-window-state`
-   constrained to tile position only and the dock denylisted, a stale `"dock"`
-   entry in `.window-state.json` must not shrink or reposition the dock; it
-   opens at the full `DOCK_WIDTH`×`DOCK_HEIGHT` from `createDockWindow` and
-   `dockRect` on every launch.
-5. **Native effect-image loading** — In the packaged Tauri webview (not
+4. **Native effect-image loading** — In the packaged Tauri webview (not
    `vite preview` alone), at least one visible Ability effect frame
    (`img.effect-frame`) and one Status Effect glyph (`img.status-icon`) load
    with real pixels — not broken-image placeholders. Browser
    `evidence: effect-image-loading` proves Vite bundling; this check proves the
    production webview outcome that dynamic `import.meta.url` resolution missed.
+5. **Dock child-window attachment (macOS)** — With the Dock open as a creation-time
+   child of the Battle Tile (`parent: "tile"`):
+   - the tile remains above a normal foreground application window
+     (always-on-top still holds with the child attached);
+   - the dock sits flush above or below the tile at the `dockRect` position
+     (8px `DOCK_GAP_PX`), confirming child `setPosition` accepts monitor-absolute
+     logical coordinates; above/below flip and monitor clamp still hold when
+     dragging the tile;
+   - dragging the tile shows no visible dock lag relative to the #273 throttled
+     baseline;
+   - in-UI `.dock-close` still tears the dock down and publishes `dock-closed`
+     without disturbing the tile's simulation or position.
+   Any failure of always-on-top, `dockRect` geometry, or close semantics is a
+   revert to the unattached #273 path (see issue #275 §6).
 
 ## Explicitly out of scope here
 
