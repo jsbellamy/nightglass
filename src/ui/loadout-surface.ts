@@ -4,18 +4,14 @@ import type { ReadonlySnapshot } from "../core/snapshot";
 import type { AbilityDef, ClassId, Content } from "../core/types";
 import {
   abilityRawDisplay,
-  actionCyclePhase,
-  cooldownRemainingMs,
   formatAbilityRawLine,
   formatAbilityTimings,
-  formatCooldownState,
 } from "./ability-format";
 import type { TileCommand } from "./bus";
 import {
   appliedLoadout,
   CLASS_LABELS,
   classKitFor,
-  combatantForClass,
   effectiveLoadout,
   effectiveTalentState,
   unlockableAbilityIds,
@@ -49,8 +45,6 @@ function newlyInsertedAbilities(
 function renderAbilityCard(
   ability: AbilityDef,
   stats: ReturnType<typeof characterStats>,
-  snapshot: ReadonlySnapshot,
-  classId: ClassId,
   slotIndex: number | "basic",
   activationDelayPending: boolean,
 ): HTMLElement {
@@ -73,22 +67,6 @@ function renderAbilityCard(
         class: "activation-delay",
         data: { activationDelay: "true" },
         text: "Activation Delay: starts on full cooldown",
-      }),
-    );
-  }
-
-  const combatant = combatantForClass(snapshot, classId);
-  if (combatant && snapshot.attempt && slotIndex !== "basic" && !activationDelayPending) {
-    const readyAt = combatant.cooldownReadyAtMs[ability.id] ?? 0;
-    const remainingMs = cooldownRemainingMs(readyAt, snapshot.simNowMs);
-    cardChildren.push(
-      el("p", {
-        class: "ability-cooldown",
-        data: {
-          cooldownTelemetry: "true",
-          remainingMs: String(remainingMs),
-        },
-        text: formatCooldownState(readyAt, snapshot.simNowMs),
       }),
     );
   }
@@ -144,20 +122,6 @@ export function mountLoadoutSurface(
         sectionChildren.push(marker);
       }
 
-      const combatant = combatantForClass(snapshot, classId);
-      if (combatant?.action) {
-        const phase = actionCyclePhase(combatant.action, snapshot.simNowMs);
-        if (phase) {
-          sectionChildren.push(
-            el("p", {
-              class: "action-cycle-phase",
-              data: { actionCycleTelemetry: "true" },
-              text: `Action Cycle: ${phase} (${combatant.action.abilityId})`,
-            }),
-          );
-        }
-      }
-
       const basicAbility = abilityById(content, classKit.basicAbilityId);
       if (basicAbility) {
         sectionChildren.push(
@@ -166,7 +130,7 @@ export function mountLoadoutSurface(
             { class: "basic-attack", aria: { label: "Basic attack fallback" } },
             [
               el("p", { class: "slot-label", text: "Basic attack (fallback)" }),
-              renderAbilityCard(basicAbility, stats, snapshot, classId, "basic", false),
+              renderAbilityCard(basicAbility, stats, "basic", false),
             ],
           ),
         );
@@ -241,8 +205,6 @@ export function mountLoadoutSurface(
             renderAbilityCard(
               ability,
               stats,
-              snapshot,
-              classId,
               slotIndex,
               inserted.has(abilityId),
             ),

@@ -105,14 +105,24 @@ export function serializeEngineLegality(
   return { talentAllocate, talentDeallocate, equip };
 }
 
+/** Memoized so Management Dock can gate remounts on legality identity across pumps. */
+let memoizedLegalityData: SerializedEngineLegality | undefined;
+let memoizedLegalityView: EngineLegalityView | undefined;
+
 export function legalityViewFromSerialized(data: SerializedEngineLegality): EngineLegalityView {
-  return {
+  if (memoizedLegalityData === data && memoizedLegalityView) {
+    return memoizedLegalityView;
+  }
+  const view: EngineLegalityView = {
     canAllocateTalent: (classId, talentId) =>
       data.talentAllocate[talentKey(classId, talentId)] ?? false,
     canDeallocateTalent: (classId, talentId) =>
       data.talentDeallocate[talentKey(classId, talentId)] ?? false,
     canEquip: (dropId, classId, slot) => data.equip[equipKey(dropId, classId, slot)] ?? false,
   };
+  memoizedLegalityData = data;
+  memoizedLegalityView = view;
+  return view;
 }
 
 export const EMPTY_ENGINE_LEGALITY: EngineLegalityView = {

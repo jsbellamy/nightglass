@@ -7,7 +7,12 @@ import { mountStageSurface } from "./stage-surface";
 import type { TileCommand } from "./bus";
 import { EMPTY_ENGINE_LEGALITY, type EngineLegalityView } from "./engine-legality";
 import { rosterClassIds } from "./snapshot-view";
-import { bindScrollOverflowAffordance, type MountedSurface } from "./surface-shell";
+import {
+  bindScrollOverflowAffordance,
+  captureScrollPositions,
+  restoreScrollPositions,
+  type MountedSurface,
+} from "./surface-shell";
 
 export type DockTabId = "character" | "armory" | "stage";
 
@@ -61,6 +66,36 @@ export interface ManagementDockOptions {
   onCommand?: (command: TileCommand) => void;
 }
 
+/**
+ * Stable key for Snapshot fields that affect Management Dock surfaces.
+ * Combat HP / cooldown / sim clock churn is excluded so pumps do not remount.
+ */
+function managementRelevantKey(snapshot: ReadonlySnapshot | null): string {
+  if (!snapshot) {
+    return "null";
+  }
+  const { progression, pendingEdits, attempt } = snapshot;
+  return JSON.stringify({
+    unlockedStage: progression.unlockedStage,
+    party: progression.party,
+    reserve: progression.reserve,
+    pendingParty: progression.pendingParty,
+    armory: progression.armory,
+    characterXp: progression.characterXp,
+    talents: progression.talents,
+    loadouts: progression.loadouts,
+    pendingEdits,
+    attempt: attempt
+      ? {
+          id: attempt.id,
+          stage: attempt.stage,
+          encounter: attempt.encounter,
+          equipmentLoadouts: attempt.equipmentLoadouts,
+        }
+      : null,
+  });
+}
+
 function cycleTab(current: DockTabId, delta: number): DockTabId {
   const index = DOCK_TABS.findIndex((entry) => entry.id === current);
   const next = (index + delta + DOCK_TABS.length) % DOCK_TABS.length;
@@ -77,6 +112,8 @@ export function mountManagementDock(
   let hasHeldState = false;
   let selectedClassId: ClassId | undefined;
   let pendingIntent: DockTabIntent | undefined;
+  let lastManagementKey: string | undefined;
+  let lastRenderedLegality: EngineLegalityView | undefined;
 
   root.classList.add("dock-shell", "management-dock");
   root.setAttribute("role", "dialog");
@@ -127,10 +164,7 @@ export function mountManagementDock(
     content: options.content,
     onSelect(classId) {
       selectedClassId = classId;
-      characterPicker.render(heldSnapshot, classId);
-      if (hasHeldState) {
-        renderSurface(activeTab);
-      }
+      remountPickerAndSurface();
     },
   });
   body.append(surface);
@@ -207,6 +241,22 @@ export function mountManagementDock(
     }
   }
 
+  function remountPickerAndSurface(): void {
+    const scrolls = captureScrollPositions(root);
+    const selected = selectedClassId;
+    if (!heldSnapshot || selected === undefined) {
+      characterPicker.render(null, selected ?? "knight");
+    } else {
+      characterPicker.render(heldSnapshot, selected);
+    }
+    if (hasHeldState) {
+      renderSurface(activeTab);
+    }
+    restoreScrollPositions(root, scrolls);
+    lastManagementKey = managementRelevantKey(heldSnapshot);
+    lastRenderedLegality = heldLegality;
+  }
+
   function setActiveTab(next: DockTabId): void {
     const tabChanged = next !== activeTab;
     activeTab = next;
@@ -225,7 +275,7 @@ export function mountManagementDock(
     }
     surface.setAttribute("aria-labelledby", `dock-tab-${activeTab}`);
     if (tabChanged && hasHeldState) {
-      renderSurface(activeTab);
+      remountPickerAndSurface();
     }
   }
 
@@ -234,7 +284,7 @@ export function mountManagementDock(
     const alreadyActive = tab === activeTab;
     setActiveTab(tab);
     if (alreadyActive && hasHeldState) {
-      renderSurface(activeTab);
+      remountPickerAndSurface();
     }
   }
 
@@ -305,14 +355,18 @@ export function mountManagementDock(
       heldLegality = legality;
       hasHeldState = true;
       syncStageLabel();
-      const selected = syncSelectedClassId(snapshot);
-      if (!snapshot || selected === undefined) {
-        // selected is ignored on the empty path; ClassId is required by the picker API.
-        characterPicker.render(null, selected ?? "knight");
-      } else {
-        characterPicker.render(snapshot, selected);
+      syncSelectedClassId(snapshot);
+
+      const nextKey = managementRelevantKey(snapshot);
+      const managementUnchanged =
+        lastManagementKey !== undefined &&
+        nextKey === lastManagementKey &&
+        lastRenderedLegality === legality;
+      if (managementUnchanged) {
+        return;
       }
-      renderSurface(activeTab);
+
+      remountPickerAndSurface();
     },
     setOpen(open) {
       root.hidden = !open;

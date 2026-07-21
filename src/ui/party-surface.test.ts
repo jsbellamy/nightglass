@@ -79,6 +79,21 @@ describe("Party surface", () => {
     surface.destroy();
   });
 
+  it("never renders live Health text on Formation cards during a Stage Attempt", () => {
+    const root = document.createElement("div");
+    const engine = createEngine(content, undefined, LOOT_SEED);
+    const snapshot = engine.snapshot();
+    const selected = { current: snapshot.progression.party[0] as ClassId };
+    const surface = mountPartySurface(root, mountOptions(content, selected));
+
+    surface.render(snapshot);
+
+    expect(root.querySelector(".character-health")).toBeNull();
+    expect(root.textContent ?? "").not.toMatch(/Health\s+\d+\/\d+/);
+
+    surface.destroy();
+  });
+
   it("re-renders selection marker and swap branch without a remount", () => {
     const root = document.createElement("div");
     const engine = createEngine(content, undefined, LOOT_SEED);
