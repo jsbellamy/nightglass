@@ -160,10 +160,13 @@ describe("Battle Tile renderer", () => {
     expect(sprite?.style.imageRendering).toBe("pixelated");
     expect(sprite?.width).toBe(32);
     expect(sprite?.height).toBe(48);
-    expect(root.querySelector(".combatant.size-medium")).not.toBeNull();
+    const combatant = root.querySelector<HTMLElement>(".combatant.party");
+    expect(combatant?.style.getPropertyValue("--combatant-frame-w")).toBe("32");
+    expect(combatant?.style.getPropertyValue("--combatant-frame-h")).toBe("48");
+    expect(combatant?.style.getPropertyValue("--combatant-foot-x")).toBe("16");
   });
 
-  it("mounts a small fixture opponent with size-small and a 24×32 sprite box", () => {
+  it("mounts a small fixture opponent with fixture adapter geometry and layout anchor", () => {
     const root = document.createElement("main");
     const tile = mountBattleTile(root, fixtureContent);
     const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
@@ -188,11 +191,123 @@ describe("Battle Tile renderer", () => {
     ];
     tile.render(snapshot);
 
-    const opponent = root.querySelector<HTMLElement>(".combatant.opponent.size-small");
+    const opponent = root.querySelector<HTMLElement>(".combatant.opponent");
     expect(opponent).not.toBeNull();
+    expect(opponent?.classList.contains("size-small")).toBe(false);
     const sprite = opponent?.querySelector<HTMLImageElement>(".combatant-sprite");
     expect(sprite?.width).toBe(24);
     expect(sprite?.height).toBe(32);
+    expect(opponent?.style.getPropertyValue("--combatant-frame-w")).toBe("24");
+    expect(opponent?.style.getPropertyValue("--combatant-anchor-x")).toBe("312");
+  });
+
+  it("places legacy party and opponent feet on layout anchors", () => {
+    const root = document.createElement("main");
+    const tile = mountBattleTile(root, fixtureContent);
+    const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
+    tile.render(engine.snapshot());
+
+    expect(
+      root.querySelector<HTMLElement>(".combatant.party.formation-back")?.style.getPropertyValue(
+        "--combatant-anchor-x",
+      ),
+    ).toBe("24");
+    expect(
+      root.querySelector<HTMLElement>(".combatant.party.formation-middle")?.style.getPropertyValue(
+        "--combatant-anchor-x",
+      ),
+    ).toBe("68");
+    expect(
+      root.querySelector<HTMLElement>(".combatant.party.formation-front")?.style.getPropertyValue(
+        "--combatant-anchor-x",
+      ),
+    ).toBe("112");
+
+    const opponent = root.querySelector<HTMLElement>(".combatant.opponent.opponent-slot-0");
+    expect(opponent?.style.getPropertyValue("--combatant-anchor-x")).toBe("312");
+  });
+
+  it("uses stress layout anchor for the fifth opponent slot", () => {
+    const root = document.createElement("main");
+    const tile = mountBattleTile(root, fixtureContent);
+    const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
+    tile.render(snapshotWithFiveOpponents(engine.snapshot()));
+
+    const stressSlot = root.querySelector<HTMLElement>(".combatant.opponent.opponent-slot-4");
+    expect(stressSlot?.style.getPropertyValue("--combatant-anchor-x")).toBe("452");
+  });
+
+  it("places bosses on the layout boss foot anchor", () => {
+    const root = document.createElement("main");
+    const tile = mountBattleTile(root, fixtureContent);
+    const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
+    const snapshot = structuredClone(engine.snapshot());
+    const attempt = snapshot.attempt;
+    if (!attempt) {
+      throw new Error("missing attempt");
+    }
+    attempt.encounter = 3;
+    attempt.combatants = [
+      ...attempt.combatants.filter((entry) => entry.side === "party"),
+      {
+        entityId: "opp:3:0",
+        side: "opponent",
+        defId: "fixture-boss",
+        health: 180,
+        maxHealth: 200,
+        knockedOut: false,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+    ];
+    tile.render(snapshot);
+
+    const boss = root.querySelector<HTMLElement>(".combatant.boss-combatant");
+    expect(boss?.style.getPropertyValue("--combatant-anchor-x")).toBe("240");
+  });
+
+  it("keeps ordinary health bars 32px wide when the body frame is narrower", () => {
+    const root = document.createElement("main");
+    const tile = mountBattleTile(root, fixtureContent);
+    const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
+    const snapshot = structuredClone(engine.snapshot());
+    const attempt = snapshot.attempt;
+    if (!attempt) {
+      throw new Error("missing attempt");
+    }
+    attempt.combatants = [
+      ...attempt.combatants.filter((entry) => entry.side === "party"),
+      {
+        entityId: "opp:1:0",
+        side: "opponent",
+        defId: "fixture-small-grunt",
+        health: 25,
+        maxHealth: 25,
+        knockedOut: false,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+    ];
+    tile.render(snapshot);
+
+    document.body.append(root);
+    const opponent = root.querySelector<HTMLElement>(".combatant.opponent");
+    const healthBar = opponent?.querySelector<HTMLElement>(".health-bar");
+    expect(opponent?.style.getPropertyValue("--combatant-frame-w")).toBe("24");
+    expect(healthBar?.style.width).toBe("");
+    root.remove();
+  });
+
+  it("does not mirror opponent bodies at render time", () => {
+    const root = document.createElement("main");
+    const tile = mountBattleTile(root, fixtureContent);
+    const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
+    tile.render(engine.snapshot());
+
+    const sprite = root.querySelector<HTMLElement>(".combatant.opponent .combatant-sprite");
+    expect(sprite?.style.transform).toBe("");
   });
 
   it("updates health bar width after an impact event", () => {

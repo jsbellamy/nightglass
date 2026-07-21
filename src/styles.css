@@ -176,20 +176,21 @@ body {
   position: absolute;
   bottom: 6px;
   z-index: 3;
-  width: 32px;
+  left: calc(var(--combatant-anchor-x, 0) * 1px - var(--combatant-foot-x, 0) * 1px);
+  width: calc(var(--combatant-frame-w, 32) * 1px);
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
 .combatant.opponent {
-  width: 32px;
+  width: calc(var(--combatant-frame-w, 32) * 1px);
 }
 
 .combatant-stack {
   position: relative;
-  width: 32px;
-  height: 48px;
+  width: calc(var(--combatant-frame-w, 32) * 1px);
+  height: calc(var(--combatant-frame-h, 48) * 1px);
 }
 
 .layer {
@@ -204,45 +205,9 @@ body {
 
 .combatant-sprite {
   display: block;
-  width: 32px;
-  height: 48px;
+  width: calc(var(--combatant-frame-w, 32) * 1px);
+  height: calc(var(--combatant-frame-h, 48) * 1px);
   image-rendering: pixelated;
-}
-
-.combatant.size-small {
-  width: 24px;
-}
-.combatant.size-small .combatant-stack {
-  width: 24px;
-  height: 32px;
-}
-.combatant.size-small .combatant-sprite {
-  width: 24px;
-  height: 32px;
-}
-.combatant.size-small .health-bar {
-  width: 24px;
-}
-
-.combatant.size-large {
-  width: 48px;
-}
-.combatant.size-large .combatant-stack {
-  width: 48px;
-  height: 72px;
-}
-.combatant.size-large .combatant-sprite {
-  width: 48px;
-  height: 72px;
-}
-
-.combatant.opponent.size-large {
-  right: 50%;
-  transform: translateX(50%);
-}
-
-.facing-left .combatant-sprite {
-  transform: scaleX(-1);
 }
 
 .interim-sprite-label {
@@ -288,42 +253,6 @@ body {
 
 .knocked-out .health-fill {
   background: linear-gradient(90deg, #6a6f7d 0%, #949aa8 100%);
-}
-
-.party.formation-back {
-  left: 8px;
-}
-
-.party.formation-middle {
-  left: 52px;
-}
-
-.party.formation-front {
-  left: 96px;
-}
-
-.opponent.opponent-slot-0 {
-  right: 152px;
-}
-
-.opponent.opponent-slot-1 {
-  right: 118px;
-}
-
-.opponent.opponent-slot-2 {
-  right: 84px;
-}
-
-.opponent.opponent-slot-3 {
-  right: 50px;
-}
-
-.opponent.opponent-slot-4 {
-  right: 16px;
-}
-
-.opponent-stress-layout .opponent.opponent-slot-4 {
-  right: 12px;
 }
 
 .boss-health-bar {
