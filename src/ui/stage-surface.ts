@@ -26,14 +26,21 @@ export function mountStageSurface(
   options: StageSurfaceOptions,
 ): StageSurface {
   let pendingStage: 1 | 2 | 3 | null = null;
+  let mountedConfirm: HTMLElement | null = null;
+
+  function removeConfirmElement(): void {
+    mountedConfirm?.remove();
+  }
 
   function clearConfirm(): void {
     pendingStage = null;
-    root.querySelector(".stage-confirm")?.remove();
+    mountedConfirm?.remove();
+    mountedConfirm = null;
   }
 
   function renderConfirm(stageId: 1 | 2 | 3): void {
-    clearConfirm();
+    removeConfirmElement();
+    pendingStage = stageId;
     const yes = el("button", {
       class: "stage-confirm-yes focus-ring",
       data: { stageConfirm: "yes" },
@@ -59,6 +66,7 @@ export function mountStageSurface(
       "div",
       {
         class: "stage-confirm",
+        data: { pendingStage: String(stageId) },
         props: { role: "region" },
         aria: { label: "Confirm Stage selection" },
       },
@@ -71,6 +79,7 @@ export function mountStageSurface(
       ],
     );
 
+    mountedConfirm = confirm;
     root.append(confirm);
     yes.focus();
   }
@@ -139,17 +148,40 @@ export function mountStageSurface(
 
   function render(snapshot: ReadonlySnapshot | null): void {
     const confirmStage = pendingStage;
+    const confirmEl = mountedConfirm;
+    const focusedInConfirm =
+      confirmEl &&
+      document.activeElement instanceof Node &&
+      confirmEl.contains(document.activeElement)
+        ? document.activeElement
+        : null;
+
     shell.render(snapshot);
     pendingStage = confirmStage;
-    if (snapshot && pendingStage !== null) {
-      renderConfirm(pendingStage);
+    if (!snapshot) {
+      clearConfirm();
+      return;
     }
+    if (pendingStage === null) {
+      return;
+    }
+    if (
+      mountedConfirm &&
+      mountedConfirm.dataset["pendingStage"] === String(pendingStage)
+    ) {
+      root.append(mountedConfirm);
+      if (focusedInConfirm instanceof HTMLElement) {
+        focusedInConfirm.focus();
+      }
+      return;
+    }
+    renderConfirm(pendingStage);
   }
 
   return {
     render,
     destroy() {
-      pendingStage = null;
+      clearConfirm();
       shell.destroy();
     },
   };
