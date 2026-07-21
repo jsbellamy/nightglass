@@ -1,6 +1,7 @@
 # ADR-0005: Management Dock workspace geometry
 
-**Status:** Accepted. Supersedes ADR-0002 (`docs/adr/0002-battle-tile-and-management-dock.md`) for dock dimensions and width coupling; ADR-0002's two-window model, fixed non-resizable dock, and `BroadcastChannel` bus round-trip remain in force.
+**Status:** Accepted. Supersedes ADR-0002 (`docs/adr/0002-battle-tile-and-management-dock.md`) for dock dimensions and width coupling; ADR-0002's two-window model, fixed non-resizable dock, and `BroadcastChannel` bus round-trip remain in force.  
+**Date:** 2026-07-21
 
 ## Context
 
