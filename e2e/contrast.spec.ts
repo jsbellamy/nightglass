@@ -11,7 +11,7 @@ import { armoryColourSnapshot } from "./helpers/snapshots";
 const DOCK_PRIMARY_TEXT: { tab: "character" | "armory" | "stage"; selector: string }[] = [
   {
     tab: "character",
-    selector: '[data-character-section="party"] .party-formation .character-name',
+    selector: ".character-picker .character-chip-name",
   },
   {
     tab: "character",

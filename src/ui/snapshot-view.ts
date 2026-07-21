@@ -19,10 +19,37 @@ export function classKitFor(content: Content, classId: ClassId): ClassKitDef {
   return classKit;
 }
 
-/** Party members followed by the Reserve. */
+/** Party + Reserve honouring an uncommitted pendingParty. */
+export function effectiveParty(snapshot: Snapshot): {
+  members: [ClassId, ClassId, ClassId];
+  reserve: ClassId;
+} {
+  const pending = snapshot.progression.pendingParty;
+  if (pending) {
+    return { members: [...pending.members], reserve: pending.reserve };
+  }
+  return {
+    members: [...snapshot.progression.party],
+    reserve: snapshot.progression.reserve,
+  };
+}
+
+/**
+ * Formation Front/Middle/Back honouring a pending formation edit, otherwise
+ * the effective Party members (so pendingParty is visible on the rail).
+ */
+export function effectiveFormation(snapshot: Snapshot): [ClassId, ClassId, ClassId] {
+  const pending = snapshot.pendingEdits.find((edit) => edit.kind === "formation");
+  if (pending?.kind === "formation") {
+    return [...pending.order];
+  }
+  return effectiveParty(snapshot).members;
+}
+
+/** Formation order followed by the Reserve, both effective. */
 export function rosterClassIds(snapshot: Snapshot): ClassId[] {
-  const { party, reserve } = snapshot.progression;
-  return [...party, reserve];
+  const { reserve } = effectiveParty(snapshot);
+  return [...effectiveFormation(snapshot), reserve];
 }
 
 /** Talent state including any uncommitted Talent pendingEdit. */

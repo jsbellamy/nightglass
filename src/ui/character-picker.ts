@@ -1,15 +1,19 @@
 import type { ReadonlySnapshot } from "../core/snapshot";
 import type { ClassId, Content } from "../core/types";
+import type { TileCommand } from "./bus";
 import { bindPressable } from "./keyboard";
 import {
   CLASS_LABELS,
+  effectiveFormation,
+  effectiveParty,
   levelFor,
   rosterClassIds,
 } from "./snapshot-view";
-import { bindScrollOverflowAffordance, el } from "./surface-shell";
+import { bindScrollOverflowAffordance, el, pendingMarker } from "./surface-shell";
 
 const POSITION_LABELS = ["Front", "Middle", "Back"] as const;
 const POSITION_KEYS = ["front", "middle", "back"] as const;
+const FORMATION_SLOTS = ["Front", "Middle", "Back"] as const;
 
 export interface CharacterPicker {
   render(snapshot: ReadonlySnapshot | null, selected: ClassId): void;
@@ -19,6 +23,23 @@ export interface CharacterPicker {
 export interface CharacterPickerOptions {
   content: Content;
   onSelect(classId: ClassId): void;
+  onCommand?: (command: TileCommand) => void;
+}
+
+function swapFormationOrder(
+  order: [ClassId, ClassId, ClassId],
+  slotIndex: number,
+  direction: "up" | "down",
+): [ClassId, ClassId, ClassId] {
+  const next = [...order] as [ClassId, ClassId, ClassId];
+  const target = direction === "up" ? slotIndex - 1 : slotIndex + 1;
+  if (target < 0 || target >= next.length) {
+    return order;
+  }
+  const current = next[slotIndex]!;
+  next[slotIndex] = next[target]!;
+  next[target] = current;
+  return next;
 }
 
 export function mountCharacterPicker(
@@ -28,8 +49,17 @@ export function mountCharacterPicker(
   const picker = el("div", {
     class: "character-picker",
     aria: { label: "Character picker" },
+  });
+  const pendingHost = el("div", { class: "character-picker-pending" });
+  const tablist = el("div", {
+    class: "character-picker-tabs",
     props: { role: "tablist" },
   });
+  const swapHost = el("div", {
+    class: "character-picker-swaps",
+    aria: { label: "Reserve swaps" },
+  });
+  picker.append(pendingHost, tablist, swapHost);
   root.append(picker);
   const unbindOverflow = bindScrollOverflowAffordance(picker);
 
@@ -70,13 +100,97 @@ export function mountCharacterPicker(
     }
   }
 
+  function renderPending(snapshot: ReadonlySnapshot): void {
+    const children: HTMLElement[] = [];
+    if (snapshot.pendingEdits.some((edit) => edit.kind === "formation")) {
+      const marker = pendingMarker();
+      marker.dataset["pendingKind"] = "formation";
+      children.push(marker);
+    }
+    if (snapshot.progression.pendingParty !== null) {
+      children.push(
+        el("p", {
+          class: "pending-marker pending-attempt",
+          data: { pendingKind: "party" },
+          text: "Applies next Attempt",
+        }),
+      );
+    }
+    pendingHost.replaceChildren(...children);
+  }
+
+  function renderSwapControls(snapshot: ReadonlySnapshot, selected: ClassId): void {
+    const { members, reserve } = effectiveParty(snapshot);
+    const selectedPartyIndex = members.indexOf(selected);
+    const selectedIsReserve = selected === reserve;
+    const buttons: HTMLElement[] = [];
+
+    if (selectedIsReserve) {
+      for (let slotIndex = 0; slotIndex < members.length; slotIndex += 1) {
+        const swapButton = el("button", {
+          class: "party-swap focus-ring",
+          data: { partySwapSlot: String(slotIndex) },
+          props: { type: "button" },
+          text: `→ ${FORMATION_SLOTS[slotIndex]}`,
+        });
+        bindPressable(swapButton, () => {
+          const current = effectiveParty(snapshot);
+          const nextMembers = [...current.members] as [ClassId, ClassId, ClassId];
+          nextMembers[slotIndex] = selected;
+          options.onCommand?.({
+            cmd: "setParty",
+            args: [nextMembers, current.members[slotIndex]!],
+          });
+        });
+        buttons.push(swapButton);
+      }
+    } else if (selectedPartyIndex !== -1) {
+      const swapButton = el("button", {
+        class: "party-swap focus-ring",
+        data: { partySwap: selected },
+        props: { type: "button" },
+        text: "Swap with Reserve",
+      });
+      bindPressable(swapButton, () => {
+        const current = effectiveParty(snapshot);
+        const index = current.members.indexOf(selected);
+        if (index === -1) {
+          return;
+        }
+        const nextMembers = [...current.members] as [ClassId, ClassId, ClassId];
+        nextMembers[index] = current.reserve;
+        options.onCommand?.({
+          cmd: "setParty",
+          args: [nextMembers, selected],
+        });
+      });
+      buttons.push(swapButton);
+    }
+
+    swapHost.replaceChildren(...buttons);
+  }
+
   function renderChips(snapshot: ReadonlySnapshot, selected: ClassId): void {
     const restoreFocus = picker.contains(document.activeElement);
+    const active = document.activeElement;
+    const restoreSelector =
+      active instanceof HTMLElement
+        ? active.getAttribute("data-formation-action")
+          ? `[data-formation-action="${active.getAttribute("data-formation-action")}"][data-slot="${active.getAttribute("data-slot")}"]`
+          : active.getAttribute("data-party-swap")
+            ? `[data-party-swap="${active.getAttribute("data-party-swap")}"]`
+            : active.getAttribute("data-party-swap-slot")
+              ? `[data-party-swap-slot="${active.getAttribute("data-party-swap-slot")}"]`
+              : `[data-character-chip="${selected}"]`
+        : `[data-character-chip="${selected}"]`;
+
     chipOrder = rosterClassIds(snapshot);
-    const chips = chipOrder.map((classId, index) => {
+    const formation = effectiveFormation(snapshot);
+    const rows = chipOrder.map((classId, index) => {
       const isSelected = classId === selected;
       const positionKey = index < 3 ? POSITION_KEYS[index]! : "reserve";
       const positionLabel = index < 3 ? POSITION_LABELS[index]! : "Reserve";
+      const isPartySlot = index < 3;
 
       const chip = el(
         "button",
@@ -103,18 +217,53 @@ export function mountCharacterPicker(
         ],
       );
       chip.setAttribute("aria-selected", isSelected ? "true" : "false");
-
       bindPressable(chip, () => options.onSelect(classId));
       chip.addEventListener("keydown", (event) => onChipKeydown(event, classId));
-      return chip;
+
+      const rowChildren: HTMLElement[] = [chip];
+      if (isPartySlot) {
+        const moveUp = el("button", {
+          class: "formation-action focus-ring",
+          data: { formationAction: "move-up", slot: String(index) },
+          props: { type: "button", disabled: index === 0 },
+          aria: { label: "Move up" },
+          text: "↑",
+        });
+        bindPressable(moveUp, () => {
+          options.onCommand?.({
+            cmd: "setFormation",
+            args: [swapFormationOrder(formation, index, "up")],
+          });
+        });
+
+        const moveDown = el("button", {
+          class: "formation-action focus-ring",
+          data: { formationAction: "move-down", slot: String(index) },
+          props: { type: "button", disabled: index === formation.length - 1 },
+          aria: { label: "Move down" },
+          text: "↓",
+        });
+        bindPressable(moveDown, () => {
+          options.onCommand?.({
+            cmd: "setFormation",
+            args: [swapFormationOrder(formation, index, "down")],
+          });
+        });
+
+        rowChildren.push(
+          el("div", { class: "character-picker-formation-controls" }, [moveUp, moveDown]),
+        );
+      }
+
+      return el("div", { class: "character-picker-row" }, rowChildren);
     });
 
-    picker.replaceChildren(...chips);
+    tablist.replaceChildren(...rows);
+    renderPending(snapshot);
+    renderSwapControls(snapshot, selected);
 
     if (restoreFocus) {
-      picker
-        .querySelector<HTMLElement>(`[data-character-chip="${selected}"]`)
-        ?.focus();
+      picker.querySelector<HTMLElement>(restoreSelector)?.focus();
     }
   }
 
@@ -122,7 +271,9 @@ export function mountCharacterPicker(
     render(snapshot, selected) {
       if (!snapshot) {
         chipOrder = [];
-        picker.replaceChildren();
+        pendingHost.replaceChildren();
+        tablist.replaceChildren();
+        swapHost.replaceChildren();
         return;
       }
       renderChips(snapshot, selected);

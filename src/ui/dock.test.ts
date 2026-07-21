@@ -60,7 +60,7 @@ describe("Management Dock shell", () => {
     dock.destroy();
   });
 
-  it("places Party, Equipment, Loadout, and Talents sections inside the Character panel", () => {
+  it("places Equipment, Loadout, and Talents sections inside the Character panel without Party", () => {
     const root = document.createElement("main");
     const dock = mountDock(root);
     const engine = createEngine(fixtureContent, undefined, 3);
@@ -71,11 +71,12 @@ describe("Management Dock shell", () => {
       ...(characterPanel?.querySelectorAll<HTMLElement>("[data-character-section]") ?? []),
     ];
     expect(sections.map((section) => section.dataset["characterSection"])).toEqual([
-      "party",
       "equipment",
       "loadout",
       "talents",
     ]);
+    expect(root.querySelector(".party-surface")).toBeNull();
+    expect(root.querySelector(".character-picker [data-formation-action]")).not.toBeNull();
 
     dock.destroy();
   });
@@ -221,13 +222,14 @@ describe("Management Dock shell", () => {
     const engine = createEngine(fixtureContent, undefined, 3);
     dock.render(engine.snapshot());
 
-    expect(root.querySelector(".party-surface")).not.toBeNull();
+    expect(root.querySelector(".party-surface")).toBeNull();
+    expect(root.querySelector(".character-picker")).not.toBeNull();
     expect(root.querySelector(".loadout-surface")).not.toBeNull();
     expect(root.querySelector(".talents-surface")).not.toBeNull();
 
     dock.destroy();
 
-    expect(root.querySelector(".party-surface")).toBeNull();
+    expect(root.querySelector(".character-picker")).toBeNull();
     expect(root.querySelector(".loadout-surface")).toBeNull();
     expect(root.querySelector(".talents-surface")).toBeNull();
     expect(root.querySelector(".character-surface")).toBeNull();
@@ -243,7 +245,8 @@ describe("Management Dock active-surface rendering", () => {
     dock.render(engine.snapshot());
 
     expect(root.querySelector(".character-surface")?.childElementCount).toBeGreaterThan(0);
-    expect(root.querySelector(".party-surface")?.childElementCount).toBeGreaterThan(0);
+    expect(root.querySelector(".party-surface")).toBeNull();
+    expect(root.querySelector(".character-picker [data-character-chip]")).not.toBeNull();
     expect(root.querySelector(".loadout-surface")?.childElementCount).toBeGreaterThan(0);
     expect(root.querySelector(".talents-surface")?.childElementCount).toBeGreaterThan(0);
     expect(root.querySelector(".armory-surface")?.childElementCount).toBe(0);
@@ -272,7 +275,7 @@ describe("Management Dock active-surface rendering", () => {
     expect(root.querySelector(".stage-surface .attempt-position")).not.toBeNull();
 
     root.querySelector<HTMLButtonElement>('[data-dock-tab="character"]')?.click();
-    expect(root.querySelector(".party-surface .dock-surface-title")?.textContent).toBe("Party");
+    expect(root.querySelector(".party-surface")).toBeNull();
     expect(root.querySelector(".loadout-surface .dock-surface-title")?.textContent).toBe(
       "Loadout",
     );
@@ -438,8 +441,7 @@ describe("Management Dock active-surface rendering", () => {
     const first = structuredClone(engine.snapshot());
     dock.render(first);
 
-    const partyRoot = root.querySelector(".party-surface");
-    expect(partyRoot).not.toBeNull();
+    expect(root.querySelector(".character-picker")).not.toBeNull();
     expect(root.querySelector('[data-pending-kind="formation"]')).toBeNull();
 
     const managed = structuredClone(first);
@@ -449,7 +451,8 @@ describe("Management Dock active-surface rendering", () => {
     dock.render(managed);
 
     expect(root.querySelector('[data-pending-kind="formation"]')).not.toBeNull();
-    expect(root.querySelector(".party-surface")).not.toBeNull();
+    expect(root.querySelector(".character-picker")).not.toBeNull();
+    expect(root.querySelector(".party-surface")).toBeNull();
 
     root.remove();
     dock.destroy();
@@ -620,7 +623,8 @@ describe("Management Dock Character picker", () => {
         .querySelector(`[data-character-chip="${partyFront}"]`)
         ?.getAttribute("aria-selected"),
     ).toBe("false");
-    expect(root.querySelector(".party-surface")?.childElementCount).toBeGreaterThan(0);
+    expect(root.querySelector(".character-surface")?.childElementCount).toBeGreaterThan(0);
+    expect(root.querySelector(".party-surface")).toBeNull();
     expect(onCommand).not.toHaveBeenCalled();
 
     const third = snapshot.progression.party[2]!;
@@ -631,6 +635,14 @@ describe("Management Dock Character picker", () => {
       root.querySelector(`[data-character-chip="${third}"]`)?.getAttribute("aria-selected"),
     ).toBe("true");
     expect(onCommand).not.toHaveBeenCalled();
+
+    root
+      .querySelector<HTMLButtonElement>('[data-formation-action="move-down"][data-slot="0"]')
+      ?.click();
+    expect(onCommand).toHaveBeenCalledWith({
+      cmd: "setFormation",
+      args: [[snapshot.progression.party[1], snapshot.progression.party[0], snapshot.progression.party[2]]],
+    });
 
     dock.destroy();
   });

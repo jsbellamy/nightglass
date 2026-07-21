@@ -584,6 +584,39 @@ html.dock-window body {
   border-right: 1px solid rgba(255, 249, 233, 0.14);
 }
 
+.character-picker-pending {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.character-picker-pending .pending-marker {
+  margin: 0;
+}
+
+.character-picker-tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.character-picker-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.character-picker-formation-controls {
+  display: flex;
+  gap: 4px;
+}
+
+.character-picker-swaps {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 .character-picker-chip {
   display: flex;
   flex-direction: column;
@@ -836,7 +869,6 @@ html.dock-window body {
   background: #221f2e;
 }
 
-.party-surface,
 .stage-surface,
 .loadout-surface,
 .talents-surface {
@@ -865,8 +897,6 @@ html.dock-window body {
   color: #ffe8c2;
 }
 
-.party-formation,
-.party-reserve,
 .stage-list,
 .failure-policy {
   display: flex;
@@ -874,22 +904,12 @@ html.dock-window body {
   gap: 6px;
 }
 
-.character-card,
 .stage-row {
   border: 1px solid rgba(255, 249, 233, 0.16);
   border-radius: 6px;
   background: rgba(25, 28, 38, 0.9);
 }
 
-.character-card {
-  padding: 6px 8px;
-}
-
-.formation-slot .slot-label,
-.reserve-note,
-.character-name,
-.character-level,
-.character-health,
 .attempt-position,
 .failure-policy-copy,
 .stage-confirm-copy {
@@ -898,20 +918,6 @@ html.dock-window body {
   line-height: 1.4;
 }
 
-.character-name {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--dock-text, #fff9e9);
-}
-
-.slot-label {
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--dock-text-muted, #d8d0bf);
-}
-
-.formation-controls,
 .stage-confirm-actions {
   display: flex;
   gap: 4px;
@@ -937,6 +943,13 @@ html.dock-window body {
   cursor: pointer;
 }
 
+.character-picker-formation-controls .formation-action {
+  flex: 1;
+  min-width: 0;
+  padding: 2px 0;
+  line-height: 1.2;
+}
+
 .formation-action:disabled,
 .party-swap:disabled,
 .talent-allocate:disabled,
@@ -958,7 +971,7 @@ html.dock-window body {
 
 .party-swap {
   width: 100%;
-  padding: 6px 8px;
+  padding: 4px 6px;
   text-align: left;
 }
 

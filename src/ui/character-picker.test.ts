@@ -4,13 +4,21 @@ import { describe, expect, it, vi } from "vitest";
 import { createEngine } from "../core/engine";
 import { fixtureContent } from "../core/testing/fixture-content";
 import type { ClassId } from "../core/types";
+import { buildContent } from "../data";
 import { mountCharacterPicker } from "./character-picker";
-import { CLASS_LABELS, combatantForClass, rosterClassIds } from "./snapshot-view";
+import {
+  CLASS_LABELS,
+  combatantForClass,
+  effectiveFormation,
+  rosterClassIds,
+} from "./snapshot-view";
 
 const POSITION_BY_INDEX = ["front", "middle", "back"] as const;
+const content = buildContent();
+const LOOT_SEED = 42;
 
 describe("Character picker", () => {
-  it("renders one chip per Roster Character in rosterClassIds order", () => {
+  it("renders one chip per Roster Character in Front/Middle/Back/Reserve order", () => {
     const root = document.createElement("div");
     const picker = mountCharacterPicker(root, {
       content: fixtureContent,
@@ -24,7 +32,9 @@ describe("Character picker", () => {
 
     const chips = [...root.querySelectorAll<HTMLElement>("[data-character-chip]")];
     expect(root.querySelector(".character-picker")).not.toBeNull();
+    expect(root.querySelector('[role="tablist"]')).not.toBeNull();
     expect(chips.map((chip) => chip.dataset["characterChip"])).toEqual(roster);
+    expect(chips).toHaveLength(4);
 
     picker.destroy();
   });
@@ -48,8 +58,7 @@ describe("Character picker", () => {
       expect(chip.dataset["characterChip"]).toBe(classId);
       expect(chip.querySelector(".character-chip-name")?.textContent).toBe(CLASS_LABELS[classId]);
       expect(chip.querySelector(".character-chip-level")?.textContent).toMatch(/^Level \d+$/);
-      const expectedPosition =
-        index < 3 ? POSITION_BY_INDEX[index]! : "reserve";
+      const expectedPosition = index < 3 ? POSITION_BY_INDEX[index]! : "reserve";
       expect(
         chip.querySelector<HTMLElement>(".character-chip-position")?.dataset["pickerPosition"],
       ).toBe(expectedPosition);
@@ -199,6 +208,250 @@ describe("Character picker", () => {
     expect(document.activeElement).toBe(
       root.querySelector(`[data-character-chip="${roster[3]!}"]`),
     );
+
+    root.remove();
+    picker.destroy();
+  });
+
+  it("issues setFormation when Move down / Move up swap adjacent Formation slots", () => {
+    const root = document.createElement("div");
+    const commands: unknown[] = [];
+    const picker = mountCharacterPicker(root, {
+      content,
+      onSelect: () => undefined,
+      onCommand: (command) => commands.push(command),
+    });
+    const engine = createEngine(content, undefined, LOOT_SEED);
+    const snapshot = engine.snapshot();
+    const party = snapshot.progression.party;
+
+    picker.render(snapshot, party[0]!);
+
+    expect(
+      root.querySelector<HTMLButtonElement>('[data-formation-action="move-up"][data-slot="0"]')
+        ?.disabled,
+    ).toBe(true);
+    expect(
+      root.querySelector<HTMLButtonElement>('[data-formation-action="move-down"][data-slot="2"]')
+        ?.disabled,
+    ).toBe(true);
+    expect(root.querySelector('[data-formation-action][data-slot="3"]')).toBeNull();
+
+    root
+      .querySelector<HTMLButtonElement>('[data-formation-action="move-down"][data-slot="1"]')
+      ?.click();
+
+    expect(commands).toEqual([
+      {
+        cmd: "setFormation",
+        args: [[party[0], party[2], party[1]]],
+      },
+    ]);
+
+    commands.length = 0;
+    root
+      .querySelector<HTMLButtonElement>('[data-formation-action="move-up"][data-slot="1"]')
+      ?.click();
+    expect(commands).toEqual([
+      {
+        cmd: "setFormation",
+        args: [[party[1], party[0], party[2]]],
+      },
+    ]);
+
+    picker.destroy();
+  });
+
+  it("shows Swap with Reserve for a Party Member and issues setParty", () => {
+    const root = document.createElement("div");
+    const commands: unknown[] = [];
+    const picker = mountCharacterPicker(root, {
+      content,
+      onSelect: () => undefined,
+      onCommand: (command) => commands.push(command),
+    });
+    const engine = createEngine(content, undefined, LOOT_SEED);
+    const { party, reserve } = engine.snapshot().progression;
+
+    picker.render(engine.snapshot(), party[0]!);
+    expect(root.querySelectorAll(".party-swap")).toHaveLength(1);
+    root.querySelector<HTMLButtonElement>(`[data-party-swap="${party[0]}"]`)?.click();
+
+    expect(commands).toEqual([
+      {
+        cmd: "setParty",
+        args: [[reserve, party[1], party[2]], party[0]],
+      },
+    ]);
+
+    picker.destroy();
+  });
+
+  it("shows → Front/Middle/Back for Reserve and issues setParty", () => {
+    const root = document.createElement("div");
+    const commands: unknown[] = [];
+    const picker = mountCharacterPicker(root, {
+      content,
+      onSelect: () => undefined,
+      onCommand: (command) => commands.push(command),
+    });
+    const engine = createEngine(content, undefined, LOOT_SEED);
+    const { party, reserve } = engine.snapshot().progression;
+
+    picker.render(engine.snapshot(), reserve);
+    expect(root.querySelectorAll(".party-swap")).toHaveLength(3);
+    root.querySelector<HTMLButtonElement>('[data-party-swap-slot="1"]')?.click();
+
+    expect(commands).toEqual([
+      {
+        cmd: "setParty",
+        args: [[party[0], reserve, party[2]], party[1]],
+      },
+    ]);
+
+    picker.destroy();
+  });
+
+  it("orders chips by pending formation and shows next-Wave pending marker", () => {
+    const root = document.createElement("div");
+    const engine = createEngine(content, undefined, LOOT_SEED);
+    const picker = mountCharacterPicker(root, {
+      content,
+      onSelect: () => undefined,
+      onCommand: (command) => {
+        if (command.cmd === "setFormation") {
+          engine.setFormation(command.args[0]);
+        }
+      },
+    });
+    const snapshot = engine.snapshot();
+    const party = snapshot.progression.party;
+
+    picker.render(snapshot, party[0]!);
+    root
+      .querySelector<HTMLButtonElement>('[data-formation-action="move-down"][data-slot="0"]')
+      ?.click();
+    picker.render(engine.snapshot(), party[0]!);
+
+    const order = effectiveFormation(engine.snapshot());
+    expect(order).toEqual([party[1], party[0], party[2]]);
+    expect(
+      [...root.querySelectorAll<HTMLElement>("[data-character-chip]")].map(
+        (chip) => chip.dataset["characterChip"],
+      ),
+    ).toEqual([...order, snapshot.progression.reserve]);
+    expect(root.querySelector('[data-pending-kind="formation"]')?.textContent).toMatch(
+      /next Wave/i,
+    );
+    expect(root.querySelector(".party-surface")).toBeNull();
+
+    picker.destroy();
+  });
+
+  it("orders chips by pendingParty and shows next-Attempt pending marker", () => {
+    const root = document.createElement("div");
+    const engine = createEngine(content, undefined, LOOT_SEED);
+    const picker = mountCharacterPicker(root, {
+      content,
+      onSelect: () => undefined,
+      onCommand: (command) => {
+        if (command.cmd === "setParty") {
+          engine.setParty(command.args[0], command.args[1]);
+        }
+      },
+    });
+    const { party, reserve } = engine.snapshot().progression;
+
+    picker.render(engine.snapshot(), party[0]!);
+    root.querySelector<HTMLButtonElement>(`[data-party-swap="${party[0]}"]`)?.click();
+    picker.render(engine.snapshot(), reserve);
+
+    expect(
+      [...root.querySelectorAll<HTMLElement>("[data-character-chip]")].map(
+        (chip) => chip.dataset["characterChip"],
+      ),
+    ).toEqual([reserve, party[1], party[2], party[0]]);
+    expect(root.querySelector('[data-pending-kind="party"]')?.textContent).toMatch(
+      /next Attempt/i,
+    );
+
+    picker.destroy();
+  });
+
+  it("composes consecutive Reserve swaps against pendingParty", () => {
+    const root = document.createElement("div");
+    const commands: unknown[] = [];
+    const engine = createEngine(content, undefined, LOOT_SEED);
+    const { party, reserve } = engine.snapshot().progression;
+    let selected: ClassId = party[0]!;
+    const picker = mountCharacterPicker(root, {
+      content,
+      onSelect: (classId) => {
+        selected = classId;
+      },
+      onCommand: (command) => {
+        commands.push(command);
+        if (command.cmd === "setParty") {
+          engine.setParty(command.args[0], command.args[1]);
+        }
+      },
+    });
+
+    picker.render(engine.snapshot(), selected);
+    root.querySelector<HTMLButtonElement>(`[data-party-swap="${party[0]}"]`)?.click();
+    selected = party[1]!;
+    picker.render(engine.snapshot(), selected);
+    root.querySelector<HTMLButtonElement>(`[data-party-swap="${party[1]}"]`)?.click();
+
+    expect(commands).toEqual([
+      { cmd: "setParty", args: [[reserve, party[1], party[2]], party[0]] },
+      { cmd: "setParty", args: [[reserve, party[0], party[2]], party[1]] },
+    ]);
+
+    picker.destroy();
+  });
+
+  it("activates Formation and Reserve controls by keyboard", () => {
+    const root = document.createElement("div");
+    document.body.append(root);
+    const commands: unknown[] = [];
+    const engine = createEngine(content, undefined, LOOT_SEED);
+    const party = engine.snapshot().progression.party;
+    const picker = mountCharacterPicker(root, {
+      content,
+      onSelect: () => undefined,
+      onCommand: (command) => {
+        commands.push(command);
+        if (command.cmd === "setFormation") {
+          engine.setFormation(command.args[0]);
+        }
+        if (command.cmd === "setParty") {
+          engine.setParty(command.args[0], command.args[1]);
+        }
+      },
+    });
+
+    picker.render(engine.snapshot(), party[0]!);
+    const moveDown = root.querySelector<HTMLButtonElement>(
+      '[data-formation-action="move-down"][data-slot="0"]',
+    );
+    moveDown?.focus();
+    moveDown?.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    picker.render(engine.snapshot(), party[0]!);
+    expect(commands.some((command) => (command as { cmd: string }).cmd === "setFormation")).toBe(
+      true,
+    );
+
+    const swapButton = root.querySelector<HTMLButtonElement>("[data-party-swap]");
+    swapButton?.focus();
+    swapButton?.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    expect(commands.some((command) => (command as { cmd: string }).cmd === "setParty")).toBe(true);
+
+    for (const element of root.querySelectorAll<HTMLElement>(
+      "button:not([disabled]), [tabindex]:not([tabindex='-1'])",
+    )) {
+      expect(element.classList.contains("focus-ring")).toBe(true);
+    }
 
     root.remove();
     picker.destroy();

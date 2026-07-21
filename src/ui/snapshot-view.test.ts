@@ -8,7 +8,9 @@ import {
   appliedLoadout,
   classKitFor,
   combatantForClass,
+  effectiveFormation,
   effectiveLoadout,
+  effectiveParty,
   effectiveTalentState,
   levelFor,
   rosterClassIds,
@@ -101,6 +103,42 @@ describe("Snapshot view Party roster and Combatants", () => {
     const { party, reserve } = snapshot.progression;
 
     expect(rosterClassIds(snapshot)).toEqual([...party, reserve]);
+    expect(effectiveParty(snapshot)).toEqual({ members: [...party], reserve });
+    expect(effectiveFormation(snapshot)).toEqual([...party]);
+  });
+
+  it("honours pendingParty for effective party and roster order", () => {
+    const snapshot = baseSnapshot();
+    const { party, reserve } = snapshot.progression;
+    snapshot.progression.pendingParty = {
+      members: [reserve, party[1]!, party[2]!],
+      reserve: party[0]!,
+    };
+
+    expect(effectiveParty(snapshot)).toEqual({
+      members: [reserve, party[1]!, party[2]!],
+      reserve: party[0]!,
+    });
+    expect(effectiveFormation(snapshot)).toEqual([reserve, party[1]!, party[2]!]);
+    expect(rosterClassIds(snapshot)).toEqual([reserve, party[1]!, party[2]!, party[0]!]);
+  });
+
+  it("honours a pending formation edit over applied and pending party members", () => {
+    const snapshot = baseSnapshot();
+    const { party, reserve } = snapshot.progression;
+    const order: [typeof party[0], typeof party[1], typeof party[2]] = [
+      party[2]!,
+      party[0]!,
+      party[1]!,
+    ];
+    snapshot.pendingEdits.push({ kind: "formation", order });
+    snapshot.progression.pendingParty = {
+      members: [reserve, party[1]!, party[2]!],
+      reserve: party[0]!,
+    };
+
+    expect(effectiveFormation(snapshot)).toEqual(order);
+    expect(rosterClassIds(snapshot)).toEqual([...order, party[0]!]);
   });
 
   it("finds a party Combatant by Class during an Attempt", () => {
