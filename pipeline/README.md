@@ -1,10 +1,14 @@
 # Asset pipeline
 
-Production home for the logical-grid acquisition toolchain frozen in
-[`docs/acquisition-contract.md`](../docs/acquisition-contract.md). Follow the
+Production home for the Battlefield body normalizer and related offline tooling.
+Authoritative body rules:
+[`docs/body-sprite-contract.md`](../docs/body-sprite-contract.md). Follow the
 acquisition loop in
 [`docs/agents/asset-generation.md`](../docs/agents/asset-generation.md) when
 adding or changing raster assets.
+
+Retired tier contracts (`docs/acquisition-contract*.md`) are historical pointers
+only.
 
 ## Layout
 
@@ -33,20 +37,24 @@ Measure provider candidates immediately; this command is read-only and does not
 require provenance sidecars:
 
 ```bash
-python3 pipeline/acquire.py measure --tier large path/to/boss-1-a.png path/to/boss-2-a.png
+python3 pipeline/acquire.py measure --role boss path/to/boss-1-a.png path/to/boss-2-a.png
 ```
 
-The JSON result records raw gates, all clipped sides, recovered grid, pitch
-scores, one primary failure, and the next action. A candidate with
+The JSON result records raw gates, clipped sides, opaque bounds against the role
+ceiling, one primary failure, and the next action. A candidate with
 `"status": "retry"` stays outside the Archived Raw Bundle. Add
 `--report docs/research/evidence/<issue>/candidate-report.json` to save the same
 JSON as durable evidence; no image or sidecar is written by measurement.
+
+Until the flexible-body implementation lands, `measure` may still accept legacy
+`--tier small|medium|large` for existing assets; new work targets
+`--role party|opponent|boss` per `docs/body-sprite-contract.md`.
 
 After deterministic and visual review both pass, promote the chosen candidate:
 
 ```bash
 python3 pipeline/acquire.py promote \
-  --tier large \
+  --role boss \
   --tag boss-1 \
   --raw path/to/boss-1-c.png \
   --provider "Cursor GenerateImage" \
@@ -60,11 +68,9 @@ python3 pipeline/acquire.py promote \
 a retry result or a prompt with missing/contradictory canonical facing, copies
 the accepted provider bytes into `assets-raw/grid_raw/`, generates the complete
 provenance sidecar, normalizes and validates the runtime PNG, and updates
-`manifest.json`.
+`manifest.json` with per-asset `frame_size`, `visual_bounds`, and `foot_anchor`.
 Known tags derive Nightglass asset class, role, facing, and runtime destination;
-`boss-1` retains the historical archived raw tag `boss`. Newly promoted
-sidecars record their size `tier`; the offline build treats older sidecars with
-no tier as `medium` for compatibility.
+`boss-1` retains the historical archived raw tag `boss`.
 
 `assets:verify` runs with no provider, model, GPU, or network. CI runs this
 authoritative full-catalog job offline after `pip install pillow`. Do not run it
@@ -76,7 +82,8 @@ contracts, the palette, manifest schemas, or shared derivation logic.
 ## Adding a new asset
 
 1. Declare the asset contract (see `docs/agents/asset-generation.md`).
-2. Run `acquire.py measure --tier <tier>` and follow its retry/advance result.
+2. Run `acquire.py measure` with the body role (or legacy tier for unchanged
+   tooling) and follow its retry/advance result.
 3. After visual review passes, run `acquire.py promote` with the exact prompt and
    direct references.
 4. Commit the raw, sidecar, promoted runtime PNG, and updated `manifest.json`.

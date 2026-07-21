@@ -54,20 +54,15 @@ gate passes; do not mirror a generated raw as a substitute for reacquisition.
 
 ### Contract pointers
 
-- For Characters and opponents that enter the Battle Tile, pick the acquisition
-  contract that matches the target size tier (`MonsterSize` /
-  `MONSTER_FRAMES` in `src/core/types.ts`, `FRAMES` in `pipeline/acquire.py`):
-  - **medium (default)** — [`../acquisition-contract.md`](../acquisition-contract.md)
-    (32×48). Use this when the task does not name a tier, and for every current
-    Class still and ordinary medium opponent.
-  - **small** — [`../acquisition-contract-small.md`](../acquisition-contract-small.md)
-    (24×32).
-  - **large** — [`../acquisition-contract-large.md`](../acquisition-contract-large.md)
-    (48×72), including Boss-scale opponents.
-  Each contract owns that tier's logical grid, conservative prompt safe box,
-  magenta key, Archived Raw Bundle, bottom-center anchor, `moonberry-16`,
-  validator, manifest, and offline rebuild. Do not paraphrase one tier's shell
-  into another's geometry.
+- For every Party Character and Opponent body that enters the Battle Tile, read
+  [`../body-sprite-contract.md`](../body-sprite-contract.md). It owns role-based
+  opaque fit ceilings, per-asset `frame_size` / `visual_bounds` / `foot_anchor`,
+  Cursor opaque-RGB prompts on `#ff00ff`, chroma key and stamp handling,
+  proportional fit, bottom-centre anchoring, `moonberry-16`, binary alpha, the
+  Archived Raw Bundle, validator gates, manifest geometry, offline byte-identical
+  rebuild, and the legacy adapter promise for existing sprites. The retired
+  small/medium/large tier contracts are historical pointers only — do not use
+  their grid shells or fixed canvas sizes.
 - For **Equipment Base icons**, read [`../icon-contract.md`](../icon-contract.md).
   It owns the 34×34 runtime, text-grid sources under `src/assets/icon-sources/`,
   palette scoping, ingest gates, `src/assets/icons/` manifest layout, and the
@@ -101,13 +96,13 @@ style reference, or edit target. Archive any direct input needed to reproduce an
 accepted generation and record its SHA-256.
 
 Write the prompt as a contract: subject and identity, composition, art language,
-geometry, background, and acceptance constraints. For Battle Tile bodies, paste
-the **chosen tier** acquisition contract's **grid shell** (exact logical canvas,
-flat-block pixels, conservative **safe box**, magenta clearance, outline/palette
-bans) around the subject description — do not paraphrase the shell into softer
-art direction, and do not borrow another tier's geometry. Resolve the shell's
-`<FACING>` token from the Battlefield facing rule above before submitting the
-prompt. Request the safe box; never ask the subject to fill the runtime canvas.
+geometry, background, and acceptance constraints. For Battle Tile bodies, follow
+the **Cursor source contract** in
+[`../body-sprite-contract.md`](../body-sprite-contract.md): one complete
+strict-side-profile subject, generous magenta clearance, chunky Moonberry
+flat-colour pixel art, role-correct facing from the Battlefield facing rule
+above, and **no** exact logical grid, canvas dimensions, block dimensions, or
+safe-box measurements in the prompt.
 
 For Equipment Base icons, use this **icon grid shell**
 around a concrete subject noun — same discipline as the Character shell, resized
@@ -134,10 +129,10 @@ identification.
 
 This step is complete when (a) the prompt names every identity-bearing feature
 and every geometric constraint, including the literal role-correct facing,
-(b) Battle Tile body prompts contain the contract grid shell verbatim or by an
-explicit quote of its clauses with no unresolved placeholders (Equipment icon
-prompts contain the icon grid shell above), and (c) every direct image input has
-a recorded role.
+(b) Battle Tile body prompts satisfy the body contract's Cursor source rules and
+contain no forbidden grid/canvas/safe-box measurements (Equipment icon prompts
+contain the icon grid shell above), and (c) every direct image input has a
+recorded role.
 
 ## 3. Generate and archive the raw
 
@@ -146,9 +141,13 @@ provider dump into task-local scratch, then measure it with the owning pipeline;
 for Battle Tile bodies run:
 
 ```bash
-python3 pipeline/acquire.py measure --tier <small|medium|large> \
+python3 pipeline/acquire.py measure --role <party|opponent|boss> \
   --report <task-evidence>/candidate-report.json <candidate.png>
 ```
+
+(Until the flexible-body pipeline lands, the CLI may still accept legacy
+`--tier` flags; new acquisition work targets the body contract and role
+ceilings in [`../body-sprite-contract.md`](../body-sprite-contract.md).)
 
 Measurement requires no provenance sidecar. It writes no asset or sidecar; when
 `--report` is supplied, it saves the same JSON emitted on stdout as task
@@ -233,13 +232,12 @@ Apply this state machine:
 1. **Reject and retry** when any raw gate fails, any side is clipped, either
    pitch score is below its gate, the recovered grid exceeds the runtime canvas,
    or it exceeds a stricter advancement envelope declared by the owning
-   contract. Large bodies use their 40×60 safe box as such an envelope;
-   medium/small safe boxes remain advisory prompt targets.
+   contract. Body sprites use the role opaque ceilings in
+   [`../body-sprite-contract.md`](../body-sprite-contract.md) as hard gates.
 2. Choose exactly one primary failure using the priority above. Preserve the
    subject identity and change only the prompt clauses needed by that retry move.
 3. **Advance to visual review** only after every deterministic advancement gate
-   passes. An advisory safe-box exceedance remains visible in the report but
-   does not block medium/small candidates. Visual review then judges role-correct
+   passes. Visual review then judges role-correct
    facing, identity, silhouette, cohort consistency, and runtime obstructions;
    visual appeal never overrides a deterministic failure.
 4. **Accept** only after deterministic validation and visual review both pass.
@@ -257,7 +255,7 @@ Candidate measurement has no sidecar. Save its JSON with `--report`; this is the
 validator report consumed by later agents. Promotion must generate shipping
 provenance containing provider, acquisition tool, exact prompt, raw SHA-256,
 direct inputs with roles and hashes, asset class, runtime destination, candidate
-name, canonical identity, role, facing, and size tier. Promotion rejects prompts
+name, canonical identity, role, and facing. Promotion rejects prompts
 without one explicit canonical subject-facing direction, or with a contradictory
 direction: party Characters specify only **RIGHT** and opponents only **LEFT**.
 
