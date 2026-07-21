@@ -17,9 +17,6 @@ touches:
 - packaged presentation-effect URL resolution (`src/ui/effect-images.ts` or
   wiring that resolves Ability effect frames and Status Effect glyphs for the
   Tauri webview bundle)
-- Dock child-window attachment (`parent: "tile"` in `src/ui/dock-window.ts`) —
-  always-on-top stacking, `dockRect` geometry under child coordinates, and
-  close / `dock-closed` semantics
 
 Every other rendered criterion — tile/dock geometry, AA contrast, keyboard
 floor, five-opponent fit, sprite native-1× sizing, in-UI Dock close over the
@@ -47,20 +44,6 @@ creates a Tauri `WebviewWindow` or exercises OS window chrome.
    with real pixels — not broken-image placeholders. Browser
    `evidence: effect-image-loading` proves Vite bundling; this check proves the
    production webview outcome that dynamic `import.meta.url` resolution missed.
-5. **Dock child-window attachment (macOS)** — With the Dock open as a creation-time
-   child of the Battle Tile (`parent: "tile"`):
-   - the tile remains above a normal foreground application window
-     (always-on-top still holds with the child attached);
-   - the dock sits flush above or below the tile at the `dockRect` position
-     (8px `DOCK_GAP_PX`), confirming child `setPosition` accepts monitor-absolute
-     logical coordinates; above/below flip and monitor clamp still hold when
-     dragging the tile;
-   - dragging the tile shows no visible dock lag relative to the #273 throttled
-     baseline;
-   - in-UI `.dock-close` still tears the dock down and publishes `dock-closed`
-     without disturbing the tile's simulation or position.
-   Any failure of always-on-top, `dockRect` geometry, or close semantics is a
-   revert to the unattached #273 path (see issue #275 §6).
 
 ## Explicitly out of scope here
 
