@@ -130,33 +130,33 @@
   "pipcap": {
     "action": "still",
     "frame_size": [
-      32,
-      48
+      30,
+      32
     ],
     "visual_bounds": [
-      1,
-      8,
+      0,
+      0,
       30,
-      48
+      32
     ],
     "foot_anchor": [
-      16,
-      48
+      15,
+      32
     ],
     "palette": "moonberry-16",
-    "baseline_row": 47,
+    "baseline_row": 31,
     "total_ms": 1,
     "frames": [
       {
         "name": "pipcap",
         "duration_ms": 1,
-        "sha256": "f36ab891a5f5ab549cc2b51ceeacf99bd94949dbeb0cf1fbb28a47e4d8593966"
+        "sha256": "4bd576700223d6af0913db208e42093036d890a74f699d4d010e94974e029ad1"
       }
     ],
     "cues_ms": {},
     "source": {
       "provider": "Cursor GenerateImage",
-      "raw_sha256": "61521e221604d6106dc890e3feafec8326b704c7626e1400fa858cea429cb5a7"
+      "raw_sha256": "3f4d7a89cb61e562974056a96eb83db6de1d87c2e970085b123ffa56381b1cb1"
     }
   },
   "boss-1": {

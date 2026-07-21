@@ -107,8 +107,6 @@ check("Knight grid is recoverable without reduction",
       reports["knight"]["grid"] == [32, 45], str(reports["knight"]))
 check("Wizard grid is recoverable without reduction",
       reports["wizard"]["grid"] == [29, 45], str(reports["wizard"]))
-check("Pipcap ordinary opponent grid is recoverable without reduction",
-      reports["pipcap"]["grid"] == [29, 40], str(reports["pipcap"]))
 check("Boss opponent grid is recoverable without reduction",
       reports["boss"]["grid"] == [32, 41], str(reports["boss"]))
 check("Boss-2 Gloomcap Matron grid is recoverable without reduction",
@@ -134,6 +132,20 @@ check("Hunter flexible opaque bounds fit the Party 40x68 ceiling",
       and hunter_measure["fitted_opaque_size"][1] <= hunter_profile.max_opaque_h
       and hunter_measure["clipped_sides"] == [],
       str(hunter_measure))
+
+pipcap_sidecar = _sidecar("pipcap")
+pipcap_measure = A.measure_candidate(RAW_DIR / "pipcap.png", tag="pipcap")
+check("Pipcap archived raw uses flexible acquisition provenance",
+      pipcap_sidecar.get("acquisition") == "flexible"
+      and pipcap_sidecar.get("identity_profile", {}).get("role") == "ordinary-opponent"
+      and pipcap_sidecar.get("facing") == "left",
+      str(pipcap_sidecar))
+check("Pipcap flexible opaque bounds fit the ordinary Opponent 30x68 ceiling",
+      pipcap_measure["status"] == "advance"
+      and pipcap_measure["fitted_opaque_size"][0] <= pipcap_profile.max_opaque_w
+      and pipcap_measure["fitted_opaque_size"][1] <= pipcap_profile.max_opaque_h
+      and pipcap_measure["clipped_sides"] == [],
+      str(pipcap_measure))
 
 
 print("candidate measurement interface")

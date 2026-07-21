@@ -1,0 +1,15 @@
+Single full-body Pipcap ordinary monster game sprite, strict side profile facing
+LEFT. A tiny whimsical mushroom goblin with a broad cream-spotted cap, berry
+gill fringe and stem body, mint leaf clothing, dark-plum eye and feet, and a
+simple forward cap-bash stance. Compact squat silhouette with both feet visible;
+the cap is the dominant readable shape.
+
+Chunky, simplified, flat-colour Moonberry night-garden fantasy pixel art with
+large readable shapes and a strong silhouette at small native scale. Preserve
+the attached Pipcap's identity and match the attached accepted Hunter's palette,
+outline weight, and storybook cohort.
+
+Show exactly one complete subject with generous empty clearance on every edge
+of an opaque flat solid magenta #ff00ff background. No shadow, floor, glow,
+spores, sparkles, particles, Ability effect, text, watermark, scenery, UI,
+transparency, or other subject.
