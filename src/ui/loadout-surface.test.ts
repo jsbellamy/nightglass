@@ -6,11 +6,29 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { createEngine } from "../core/engine";
 import { fixtureContent } from "../core/testing/fixture-content";
+import type { ClassId } from "../core/types";
 import type { Snapshot } from "../core/snapshot";
 import { mountBattleTile } from "./battle-tile";
 import { mountLoadoutSurface } from "./loadout-surface";
 
 const LOOT_SEED = 42;
+
+function mountOptions(
+  content: typeof fixtureContent,
+  selected: { current: ClassId },
+  onCommand?: Parameters<typeof mountLoadoutSurface>[1]["onCommand"],
+) {
+  return onCommand
+    ? {
+        content,
+        getSelectedClassId: () => selected.current,
+        onCommand,
+      }
+    : {
+        content,
+        getSelectedClassId: () => selected.current,
+      };
+}
 
 function knightSection(root: HTMLElement): HTMLElement {
   const section = root.querySelector<HTMLElement>('[data-class-id="knight"]');
@@ -27,18 +45,42 @@ function sweepRawText(root: HTMLElement): string | undefined {
 }
 
 describe("Loadout surface", () => {
-  it("shows the basic attack fallback and three ordered loadout slots per Character", () => {
+  it("renders exactly one .loadout-character for the picker selection", () => {
     const root = document.createElement("div");
     const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
-    const surface = mountLoadoutSurface(root, { content: fixtureContent });
+    const selected = { current: "knight" as ClassId };
+    const surface = mountLoadoutSurface(root, mountOptions(fixtureContent, selected));
 
     surface.render(engine.snapshot());
 
-    expect(root.querySelectorAll(".loadout-character")).toHaveLength(4);
-    const knight = knightSection(root);
-    expect(knight.querySelector(".basic-attack")).not.toBeNull();
-    expect(knight.querySelectorAll(".loadout-slot")).toHaveLength(3);
-    expect(knight.querySelector('[data-slot="0"] .slot-label')?.textContent).toMatch(/Slot 1/);
+    const sections = root.querySelectorAll(".loadout-character");
+    expect(sections).toHaveLength(1);
+    expect(sections[0]?.getAttribute("data-class-id")).toBe("knight");
+    expect(knightSection(root).querySelector(".basic-attack")).not.toBeNull();
+    expect(knightSection(root).querySelectorAll(".loadout-slot")).toHaveLength(3);
+    expect(knightSection(root).querySelector('[data-slot="0"] .slot-label')?.textContent).toMatch(
+      /Slot 1/,
+    );
+    expect(root.querySelector(".loadout-order-note")).not.toBeNull();
+
+    surface.destroy();
+  });
+
+  it("re-renders the newly selected Character without a remount", () => {
+    const root = document.createElement("div");
+    const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
+    const selected = { current: "knight" as ClassId };
+    const surface = mountLoadoutSurface(root, mountOptions(fixtureContent, selected));
+
+    surface.render(engine.snapshot());
+    expect(root.querySelector(".loadout-character")?.getAttribute("data-class-id")).toBe("knight");
+
+    selected.current = "wizard";
+    surface.render(engine.snapshot());
+
+    const sections = root.querySelectorAll(".loadout-character");
+    expect(sections).toHaveLength(1);
+    expect(sections[0]?.getAttribute("data-class-id")).toBe("wizard");
 
     surface.destroy();
   });
@@ -50,14 +92,15 @@ describe("Loadout surface", () => {
     const saved = boot.snapshot();
     saved.progression.characterXp.knight = 850;
     const engine = createEngine(fixtureContent, saved, LOOT_SEED);
-    const surface = mountLoadoutSurface(root, {
-      content: fixtureContent,
-      onCommand: (command) => {
+    const selected = { current: "knight" as ClassId };
+    const surface = mountLoadoutSurface(
+      root,
+      mountOptions(fixtureContent, selected, (command) => {
         if (command.cmd === "allocateTalent") {
           engine.allocateTalent(command.args[0], command.args[1]);
         }
-      },
-    });
+      }),
+    );
 
     surface.render(engine.snapshot());
     expect(sweepRawText(root)).toBe("9 damage");
@@ -73,7 +116,8 @@ describe("Loadout surface", () => {
   it("never renders consolidated Power totals in the DOM", () => {
     const root = document.createElement("div");
     const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
-    const surface = mountLoadoutSurface(root, { content: fixtureContent });
+    const selected = { current: "knight" as ClassId };
+    const surface = mountLoadoutSurface(root, mountOptions(fixtureContent, selected));
 
     surface.render(engine.snapshot());
     expect(root.textContent?.toLowerCase()).not.toMatch(/\bpower\b/);
@@ -84,7 +128,8 @@ describe("Loadout surface", () => {
   it("prevents duplicate Ability assignment in the slot picker", () => {
     const root = document.createElement("div");
     const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
-    const surface = mountLoadoutSurface(root, { content: fixtureContent });
+    const selected = { current: "knight" as ClassId };
+    const surface = mountLoadoutSurface(root, mountOptions(fixtureContent, selected));
 
     surface.render(engine.snapshot());
     const slotTwoSelect = knightSection(root).querySelector<HTMLSelectElement>(
@@ -98,18 +143,19 @@ describe("Loadout surface", () => {
     surface.destroy();
   });
 
-  it("shows Activation Delay at queue time and live cooldown after the Wave boundary", () => {
+  it("shows Activation Delay at edit time and live cooldown after the Wave boundary", () => {
     const root = document.createElement("div");
     const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
     engine.advanceBy(1);
-    const surface = mountLoadoutSurface(root, {
-      content: fixtureContent,
-      onCommand: (command) => {
+    const selected = { current: "knight" as ClassId };
+    const surface = mountLoadoutSurface(
+      root,
+      mountOptions(fixtureContent, selected, (command) => {
         if (command.cmd === "setLoadout") {
           engine.setLoadout(command.args[0], command.args[1]);
         }
-      },
-    });
+      }),
+    );
 
     engine.setLoadout("knight", ["k-pommel", "k-sweep", "k-rally"]);
     surface.render(engine.snapshot());
@@ -153,7 +199,8 @@ describe("Loadout surface", () => {
     knight.cooldownReadyAtMs["k-sweep"] = 10_500;
     snapshot.simNowMs = 10_000;
 
-    const surface = mountLoadoutSurface(root, { content: fixtureContent });
+    const selected = { current: "knight" as ClassId };
+    const surface = mountLoadoutSurface(root, mountOptions(fixtureContent, selected));
     surface.render(snapshot);
 
     const cooldown = knightSection(root).querySelector<HTMLElement>(
@@ -188,7 +235,8 @@ describe("Loadout surface", () => {
     };
     snapshot.simNowMs = 300;
 
-    const loadout = mountLoadoutSurface(loadoutRoot, { content: fixtureContent });
+    const selected = { current: "knight" as ClassId };
+    const loadout = mountLoadoutSurface(loadoutRoot, mountOptions(fixtureContent, selected));
     const tile = mountBattleTile(tileRoot, fixtureContent);
     loadout.render(snapshot);
     tile.render(snapshot);
@@ -206,14 +254,15 @@ describe("Loadout surface", () => {
     const root = document.createElement("div");
     const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
     engine.advanceBy(1);
-    const surface = mountLoadoutSurface(root, {
-      content: fixtureContent,
-      onCommand: (command) => {
+    const selected = { current: "knight" as ClassId };
+    const surface = mountLoadoutSurface(
+      root,
+      mountOptions(fixtureContent, selected, (command) => {
         if (command.cmd === "setLoadout") {
           engine.setLoadout(command.args[0], command.args[1]);
         }
-      },
-    });
+      }),
+    );
 
     engine.setLoadout("knight", ["k-pommel", "k-sweep", "k-rally"]);
     surface.render(engine.snapshot());
@@ -230,15 +279,16 @@ describe("Loadout surface", () => {
     const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
     engine.advanceBy(1);
     const commands: unknown[] = [];
-    const surface = mountLoadoutSurface(root, {
-      content: fixtureContent,
-      onCommand: (command) => {
+    const selected = { current: "knight" as ClassId };
+    const surface = mountLoadoutSurface(
+      root,
+      mountOptions(fixtureContent, selected, (command) => {
         commands.push(command);
         if (command.cmd === "setLoadout") {
           engine.setLoadout(command.args[0], command.args[1]);
         }
-      },
-    });
+      }),
+    );
 
     surface.render(engine.snapshot());
     const select = knightSection(root).querySelector<HTMLSelectElement>(

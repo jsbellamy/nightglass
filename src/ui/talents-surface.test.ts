@@ -6,10 +6,27 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { createEngine } from "../core/engine";
 import { fixtureContent } from "../core/testing/fixture-content";
+import type { ClassId } from "../core/types";
 import { mountTalentsSurface } from "./talents-surface";
 import { legalityViewFromEngine } from "./engine-legality";
 
 const LOOT_SEED = 42;
+
+function mountOptions(
+  selected: { current: ClassId },
+  onCommand?: Parameters<typeof mountTalentsSurface>[1]["onCommand"],
+) {
+  return onCommand
+    ? {
+        content: fixtureContent,
+        getSelectedClassId: () => selected.current,
+        onCommand,
+      }
+    : {
+        content: fixtureContent,
+        getSelectedClassId: () => selected.current,
+      };
+}
 
 function renderTalents(
   surface: ReturnType<typeof mountTalentsSurface>,
@@ -43,12 +60,16 @@ function leveledKnightEngine() {
 }
 
 describe("Talents surface", () => {
-  it("shows available Talent Points and Stat/Ability rows per Character", () => {
+  it("renders exactly one .talents-character for the picker selection", () => {
     const root = document.createElement("div");
     const engine = leveledKnightEngine();
-    const surface = mountTalentsSurface(root, { content: fixtureContent });
+    const selected = { current: "knight" as ClassId };
+    const surface = mountTalentsSurface(root, mountOptions(selected));
 
     renderTalents(surface, engine);
+    const sections = root.querySelectorAll(".talents-character");
+    expect(sections).toHaveLength(1);
+    expect(sections[0]?.getAttribute("data-class-id")).toBe("knight");
     const knight = knightSection(root);
     expect(knight.querySelector('[data-talent-points="true"]')?.textContent).toMatch(
       /6 Talent Points available/,
@@ -59,17 +80,63 @@ describe("Talents surface", () => {
     surface.destroy();
   });
 
+  it("re-renders the newly selected Character without a remount", () => {
+    const root = document.createElement("div");
+    const engine = leveledKnightEngine();
+    const selected = { current: "knight" as ClassId };
+    const surface = mountTalentsSurface(root, mountOptions(selected));
+
+    renderTalents(surface, engine);
+    expect(root.querySelector(".talents-character")?.getAttribute("data-class-id")).toBe("knight");
+
+    selected.current = "wizard";
+    renderTalents(surface, engine);
+
+    const sections = root.querySelectorAll(".talents-character");
+    expect(sections).toHaveLength(1);
+    expect(sections[0]?.getAttribute("data-class-id")).toBe("wizard");
+
+    surface.destroy();
+  });
+
+  it("pluralizes Talent Points as singular at one and plural at two", () => {
+    const root = document.createElement("div");
+    const selected = { current: "knight" as ClassId };
+    const surface = mountTalentsSurface(root, mountOptions(selected));
+
+    const boot = createEngine(fixtureContent, undefined, LOOT_SEED);
+    boot.advanceBy(1);
+    const oneSaved = boot.snapshot();
+    oneSaved.progression.characterXp.knight = 0;
+    const onePoint = createEngine(fixtureContent, oneSaved, LOOT_SEED);
+    renderTalents(surface, onePoint);
+    expect(knightSection(root).querySelector('[data-talent-points="true"]')?.textContent).toBe(
+      "1 Talent Point available",
+    );
+
+    const twoSaved = boot.snapshot();
+    twoSaved.progression.characterXp.knight = 100;
+    const twoPoints = createEngine(fixtureContent, twoSaved, LOOT_SEED);
+    renderTalents(surface, twoPoints);
+    expect(knightSection(root).querySelector('[data-talent-points="true"]')?.textContent).toBe(
+      "2 Talent Points available",
+    );
+
+    surface.destroy();
+  });
+
   it("enforces the five-point Stat cap in the UI", () => {
     const root = document.createElement("div");
     const engine = leveledKnightEngine();
-    const surface = mountTalentsSurface(root, {
-      content: fixtureContent,
-      onCommand: (command) => {
+    const selected = { current: "knight" as ClassId };
+    const surface = mountTalentsSurface(
+      root,
+      mountOptions(selected, (command) => {
         if (command.cmd === "allocateTalent") {
           engine.allocateTalent(command.args[0], command.args[1]);
         }
-      },
-    });
+      }),
+    );
 
     for (let rank = 0; rank < 5; rank += 1) {
       renderTalents(surface, engine);
@@ -97,7 +164,8 @@ describe("Talents surface", () => {
     const saved = engine.snapshot();
     saved.progression.characterXp.knight = 250;
     const midLevel = createEngine(fixtureContent, saved, LOOT_SEED);
-    const surface = mountTalentsSurface(root, { content: fixtureContent });
+    const selected = { current: "knight" as ClassId };
+    const surface = mountTalentsSurface(root, mountOptions(selected));
 
     renderTalents(surface, midLevel);
     const pick = knightSection(root).querySelector<HTMLButtonElement>(
@@ -117,14 +185,15 @@ describe("Talents surface", () => {
     }
     engine.allocateTalent("knight", "k-hold-line");
 
-    const surface = mountTalentsSurface(root, {
-      content: fixtureContent,
-      onCommand: (command) => {
+    const selected = { current: "knight" as ClassId };
+    const surface = mountTalentsSurface(
+      root,
+      mountOptions(selected, (command) => {
         if (command.cmd === "deallocateTalent") {
           engine.deallocateTalent(command.args[0], command.args[1]);
         }
-      },
-    });
+      }),
+    );
 
     renderTalents(surface, engine);
     const removeStat = knightSection(root).querySelector<HTMLButtonElement>(
@@ -145,7 +214,8 @@ describe("Talents surface", () => {
     engine.allocateTalent("knight", "k-hold-line");
     engine.setLoadout("knight", ["k-hold-line", "k-sweep", "k-rally"]);
 
-    const surface = mountTalentsSurface(root, { content: fixtureContent });
+    const selected = { current: "knight" as ClassId };
+    const surface = mountTalentsSurface(root, mountOptions(selected));
     renderTalents(surface, engine);
 
     expect(
@@ -159,7 +229,8 @@ describe("Talents surface", () => {
     const root = document.createElement("div");
     const engine = leveledKnightEngine();
     engine.allocateTalent("knight", "k-fortitude");
-    const surface = mountTalentsSurface(root, { content: fixtureContent });
+    const selected = { current: "knight" as ClassId };
+    const surface = mountTalentsSurface(root, mountOptions(selected));
 
     renderTalents(surface, engine);
     expect(
@@ -174,9 +245,10 @@ describe("Talents surface", () => {
     document.body.append(root);
     const engine = leveledKnightEngine();
     const commands: unknown[] = [];
-    const surface = mountTalentsSurface(root, {
-      content: fixtureContent,
-      onCommand: (command) => {
+    const selected = { current: "knight" as ClassId };
+    const surface = mountTalentsSurface(
+      root,
+      mountOptions(selected, (command) => {
         commands.push(command);
         if (command.cmd === "allocateTalent") {
           engine.allocateTalent(command.args[0], command.args[1]);
@@ -184,8 +256,8 @@ describe("Talents surface", () => {
         if (command.cmd === "deallocateTalent") {
           engine.deallocateTalent(command.args[0], command.args[1]);
         }
-      },
-    });
+      }),
+    );
 
     renderTalents(surface, engine);
     const allocate = knightSection(root).querySelector<HTMLButtonElement>(

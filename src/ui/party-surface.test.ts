@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { createEngine } from "../core/engine";
 import { fixtureContent } from "../core/testing/fixture-content";
-import type { Content } from "../core/types";
+import type { ClassId, Content } from "../core/types";
 import { buildContent } from "../data";
 import { applyTileCommand } from "../main";
 import { createBusEndpoint } from "./bus";
@@ -16,6 +16,23 @@ import { levelFor } from "./snapshot-view";
 
 const LOOT_SEED = 42;
 const content = buildContent();
+
+function mountOptions(
+  contentArg: Content,
+  selected: { current: ClassId },
+  onCommand?: Parameters<typeof mountPartySurface>[1]["onCommand"],
+) {
+  return onCommand
+    ? {
+        content: contentArg,
+        getSelectedClassId: () => selected.current,
+        onCommand,
+      }
+    : {
+        content: contentArg,
+        getSelectedClassId: () => selected.current,
+      };
+}
 
 /** Drain BroadcastChannel delivery across hops until `predicate` holds. */
 async function flushBus(predicate?: () => boolean): Promise<void> {
@@ -39,18 +56,138 @@ function activateFocused(): void {
 }
 
 describe("Party surface", () => {
-  it("shows Formation slots, Reserve, and all four Characters", () => {
+  it("renders three Formation slots and marks the selected Character's slot", () => {
     const root = document.createElement("div");
     const engine = createEngine(content, undefined, LOOT_SEED);
-    const surface = mountPartySurface(root, { content });
+    const party = engine.snapshot().progression.party;
+    const selected = { current: party[1] as ClassId };
+    const surface = mountPartySurface(root, mountOptions(content, selected));
 
     surface.render(engine.snapshot());
 
     expect(root.querySelector(".party-formation")).not.toBeNull();
     expect(root.querySelectorAll(".formation-slot")).toHaveLength(3);
+    expect(root.querySelectorAll('[data-formation-selected="true"]')).toHaveLength(1);
+    expect(
+      root.querySelector(`.formation-slot[data-slot="1"]`)?.getAttribute("data-formation-selected"),
+    ).toBe("true");
+    expect(
+      root.querySelector(`.formation-slot[data-slot="0"]`)?.hasAttribute("data-formation-selected"),
+    ).toBe(false);
     expect(root.querySelector(".party-reserve")).not.toBeNull();
+
+    surface.destroy();
+  });
+
+  it("re-renders selection marker and swap branch without a remount", () => {
+    const root = document.createElement("div");
+    const engine = createEngine(content, undefined, LOOT_SEED);
+    const { party, reserve } = engine.snapshot().progression;
+    const selected = { current: party[0] as ClassId };
+    const surface = mountPartySurface(root, mountOptions(content, selected));
+
+    surface.render(engine.snapshot());
+    expect(root.querySelectorAll(".party-swap")).toHaveLength(1);
+    expect(root.querySelector(`[data-party-swap="${party[0]}"]`)).not.toBeNull();
+    expect(root.querySelector(".reserve-note")).toBeNull();
+
+    selected.current = reserve;
+    surface.render(engine.snapshot());
+
+    expect(root.querySelectorAll(".party-swap")).toHaveLength(3);
+    expect(root.querySelector('[data-party-swap-slot="0"]')).not.toBeNull();
+    expect(root.querySelector('[data-party-swap-slot="1"]')).not.toBeNull();
+    expect(root.querySelector('[data-party-swap-slot="2"]')).not.toBeNull();
     expect(root.querySelector(".reserve-note")?.textContent).toMatch(/50%/);
-    expect(root.querySelectorAll(".character-card")).toHaveLength(4);
+    expect(root.querySelectorAll('[data-formation-selected="true"]')).toHaveLength(0);
+
+    surface.destroy();
+  });
+
+  it("shows one Swap with Reserve button for a Party Member and publishes setParty", () => {
+    const root = document.createElement("div");
+    const commands: unknown[] = [];
+    const engine = createEngine(content, undefined, LOOT_SEED);
+    const { party, reserve } = engine.snapshot().progression;
+    const selected = { current: party[0] as ClassId };
+    const surface = mountPartySurface(
+      root,
+      mountOptions(content, selected, (command) => {
+        commands.push(command);
+      }),
+    );
+
+    surface.render(engine.snapshot());
+    expect(root.querySelectorAll(".party-swap")).toHaveLength(1);
+    root.querySelector<HTMLButtonElement>(`[data-party-swap="${party[0]}"]`)?.click();
+
+    expect(commands).toEqual([
+      {
+        cmd: "setParty",
+        args: [[reserve, party[1], party[2]], party[0]],
+      },
+    ]);
+
+    surface.destroy();
+  });
+
+  it("shows three Swap into slot buttons for the Reserve and publishes setParty", () => {
+    const root = document.createElement("div");
+    const commands: unknown[] = [];
+    const engine = createEngine(content, undefined, LOOT_SEED);
+    const { party, reserve } = engine.snapshot().progression;
+    const selected = { current: reserve };
+    const surface = mountPartySurface(
+      root,
+      mountOptions(content, selected, (command) => {
+        commands.push(command);
+      }),
+    );
+
+    surface.render(engine.snapshot());
+    expect(root.querySelectorAll(".party-swap")).toHaveLength(3);
+    root.querySelector<HTMLButtonElement>('[data-party-swap-slot="1"]')?.click();
+
+    expect(commands).toEqual([
+      {
+        cmd: "setParty",
+        args: [[party[0], reserve, party[2]], party[1]],
+      },
+    ]);
+
+    surface.destroy();
+  });
+
+  it("composes consecutive swaps against pendingParty", () => {
+    const root = document.createElement("div");
+    const commands: unknown[] = [];
+    const engine = createEngine(content, undefined, LOOT_SEED);
+    const { party, reserve } = engine.snapshot().progression;
+    const selected = { current: party[0] as ClassId };
+    const surface = mountPartySurface(
+      root,
+      mountOptions(content, selected, (command) => {
+        commands.push(command);
+        if (command.cmd === "setParty") {
+          engine.setParty(command.args[0], command.args[1]);
+        }
+      }),
+    );
+
+    surface.render(engine.snapshot());
+    root.querySelector<HTMLButtonElement>(`[data-party-swap="${party[0]}"]`)?.click();
+    surface.render(engine.snapshot());
+
+    // After first swap: pending [reserve, party1, party2], reserve=party0.
+    // Select party[1] (still a Party Member in the pending Party) and swap again.
+    selected.current = party[1];
+    surface.render(engine.snapshot());
+    root.querySelector<HTMLButtonElement>(`[data-party-swap="${party[1]}"]`)?.click();
+
+    expect(commands).toEqual([
+      { cmd: "setParty", args: [[reserve, party[1], party[2]], party[0]] },
+      { cmd: "setParty", args: [[reserve, party[0], party[2]], party[1]] },
+    ]);
 
     surface.destroy();
   });
@@ -59,15 +196,16 @@ describe("Party surface", () => {
     const root = document.createElement("div");
     const commands: unknown[] = [];
     const engine = createEngine(content, undefined, LOOT_SEED);
-    const surface = mountPartySurface(root, {
-      content,
-      onCommand: (command) => {
+    const selected = { current: engine.snapshot().progression.party[0] as ClassId };
+    const surface = mountPartySurface(
+      root,
+      mountOptions(content, selected, (command) => {
         commands.push(command);
         if (command.cmd === "setFormation") {
           engine.setFormation(command.args[0]);
         }
-      },
-    });
+      }),
+    );
 
     surface.render(engine.snapshot());
     const initialParty = [...engine.snapshot().progression.party] as const;
@@ -86,6 +224,9 @@ describe("Party surface", () => {
     const formationMarker = root.querySelector('[data-pending-kind="formation"]');
     expect(formationMarker?.textContent).toMatch(/next Wave/i);
     expect(root.querySelector('[data-pending-kind="party"]')).toBeNull();
+    expect(
+      root.querySelector('[data-formation-action="move-down"][data-slot="0"]'),
+    ).not.toBeNull();
 
     engine.advanceBy(1);
     for (let ms = 0; ms < 120_000; ms += 1) {
@@ -126,16 +267,17 @@ describe("Party surface", () => {
       busChannel,
     );
 
-    const surface = mountPartySurface(root, {
-      content,
-      onCommand: (command) => {
-        dockBus.publish({ type: "command", command });
-      },
-    });
-
-    surface.render(engine.snapshot());
     const party = engine.snapshot().progression.party;
     const reserve = engine.snapshot().progression.reserve;
+    const selected = { current: party[0] as ClassId };
+    const surface = mountPartySurface(
+      root,
+      mountOptions(content, selected, (command) => {
+        dockBus.publish({ type: "command", command });
+      }),
+    );
+
+    surface.render(engine.snapshot());
 
     const swapButton = root.querySelector<HTMLButtonElement>(
       `[data-party-swap="${party[0]}"]`,
@@ -167,9 +309,10 @@ describe("Party surface", () => {
     document.body.append(root);
     const engine = createEngine(content, undefined, LOOT_SEED);
     const commands: unknown[] = [];
-    const surface = mountPartySurface(root, {
-      content,
-      onCommand: (command) => {
+    const selected = { current: engine.snapshot().progression.party[0] as ClassId };
+    const surface = mountPartySurface(
+      root,
+      mountOptions(content, selected, (command) => {
         commands.push(command);
         if (command.cmd === "setFormation") {
           engine.setFormation(command.args[0]);
@@ -177,8 +320,8 @@ describe("Party surface", () => {
         if (command.cmd === "setParty") {
           engine.setParty(command.args[0], command.args[1]);
         }
-      },
-    });
+      }),
+    );
 
     surface.render(engine.snapshot());
     const moveDown = root.querySelector<HTMLButtonElement>(
@@ -220,7 +363,8 @@ describe("Party surface", () => {
     snapshot.progression.characterXp.knight = 25;
 
     const root = document.createElement("div");
-    const surface = mountPartySurface(root, { content: testContent });
+    const selected = { current: "knight" as ClassId };
+    const surface = mountPartySurface(root, mountOptions(testContent, selected));
     surface.render(snapshot);
 
     const expectedLevel = levelFor(snapshot, testContent, "knight");
