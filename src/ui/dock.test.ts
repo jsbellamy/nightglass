@@ -60,7 +60,7 @@ describe("Management Dock shell", () => {
     dock.destroy();
   });
 
-  it("places Equipment, Loadout, and Talents sections inside the Character panel without Party", () => {
+  it("places Loadout and Talents sections inside the Character panel without Equipment or Party", () => {
     const root = document.createElement("main");
     const dock = mountDock(root);
     const engine = createEngine(fixtureContent, undefined, 3);
@@ -71,10 +71,10 @@ describe("Management Dock shell", () => {
       ...(characterPanel?.querySelectorAll<HTMLElement>("[data-character-section]") ?? []),
     ];
     expect(sections.map((section) => section.dataset["characterSection"])).toEqual([
-      "equipment",
       "loadout",
       "talents",
     ]);
+    expect(root.querySelector('[data-character-section="equipment"]')).toBeNull();
     expect(root.querySelector(".party-surface")).toBeNull();
     expect(root.querySelector(".character-picker [data-formation-action]")).not.toBeNull();
 
@@ -701,8 +701,8 @@ describe("Management Dock Character picker", () => {
   });
 });
 
-describe("Management Dock Character → Armory jump", () => {
-  it("switches to Armory and applies the browse-slot filter when Choose is activated", () => {
+describe("Management Dock Armory worn strip", () => {
+  it("applies browse-slot filters from the worn strip without leaving Armory", () => {
     const root = document.createElement("main");
     document.body.append(root);
     const dock = mountDock(root);
@@ -734,10 +734,12 @@ describe("Management Dock Character → Armory jump", () => {
     ];
     const live = createEngine(fixtureContent, snapshot, 3);
     dock.render(snapshot, legalityViewFromEngine(live));
+    root.querySelector<HTMLButtonElement>('[data-dock-tab="armory"]')?.click();
 
-    root.querySelector<HTMLButtonElement>('[data-browse-slot="armor"]')?.click();
+    root.querySelector<HTMLButtonElement>('[data-worn-slot="armor"]')?.click();
 
     expect(root.querySelector<HTMLElement>('[data-dock-panel="armory"]')?.hidden).toBe(false);
+    expect(root.querySelector('[data-character-section="equipment"]')).toBeNull();
     expect(
       root.querySelector<HTMLButtonElement>('[data-slot-filter="armor"]')?.getAttribute("aria-pressed"),
     ).toBe("true");
@@ -751,7 +753,7 @@ describe("Management Dock Character → Armory jump", () => {
     dock.destroy();
   });
 
-  it("consumes the browse-slot intent once so a later manual Armory visit does not re-apply it", () => {
+  it("keeps a worn-strip slot filter until the player clears it, including after leaving Armory", () => {
     const root = document.createElement("main");
     document.body.append(root);
     const dock = mountDock(root);
@@ -783,8 +785,9 @@ describe("Management Dock Character → Armory jump", () => {
     ];
     const live = createEngine(fixtureContent, snapshot, 3);
     dock.render(snapshot, legalityViewFromEngine(live));
+    root.querySelector<HTMLButtonElement>('[data-dock-tab="armory"]')?.click();
 
-    root.querySelector<HTMLButtonElement>('[data-browse-slot="armor"]')?.click();
+    root.querySelector<HTMLButtonElement>('[data-worn-slot="armor"]')?.click();
     root.querySelector<HTMLButtonElement>('[data-slot-filter="all"]')?.click();
     expect(
       root.querySelector<HTMLButtonElement>('[data-slot-filter="armor"]')?.getAttribute("aria-pressed"),

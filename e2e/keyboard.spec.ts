@@ -91,11 +91,22 @@ test.describe("accessibility keyboard floor", () => {
 
     await dock.locator('[data-character-chip="knight"]').focus();
     await dock.keyboard.press("Enter");
-    await assertFocusRingVisible(dock, '.equipment-slot-browse[data-browse-slot="charm"]');
+    await assertFocusRingVisible(dock, '[data-class-id="knight"] [data-loadout-assign="0"]');
 
     await focusDockTab(dock, "armory");
     await dock.locator('[data-character-chip="knight"]').focus();
     await dock.keyboard.press("Enter");
+    await assertFocusRingVisible(dock, '[data-worn-slot="charm"]');
+    await dock.locator('[data-worn-slot="charm"]').focus();
+    await dock.keyboard.press("Enter");
+    await expect(
+      dock.locator('[data-slot-filter="charm"][aria-pressed="true"]'),
+    ).toBeVisible();
+    await dock.locator('[data-slot-filter="all"]').focus();
+    await dock.keyboard.press("Enter");
+    await expect(
+      dock.locator('[data-slot-filter="all"][aria-pressed="true"]'),
+    ).toBeVisible();
     await dock.locator('[data-discard-select="1"]').focus();
     await assertFocusRingVisible(dock, '[data-discard-select="1"]');
     await dock.locator('.equipment-card[data-drop-id="1"]').focus();
@@ -107,11 +118,12 @@ test.describe("accessibility keyboard floor", () => {
     await dock.keyboard.press("Enter");
     await expect(dock.locator(".armory-grid")).toBeVisible();
     await expect(dock.locator('[data-armory-detail="true"]')).toBeVisible();
-
-    await focusDockTab(dock, "character");
-    await dock.locator('[data-character-chip="knight"]').focus();
+    await dock.locator('[data-worn-slot="weapon"]').focus();
     await dock.keyboard.press("Enter");
-    await assertFocusRingVisible(dock, '.equipment-slot-unequip[data-unequip-slot="weapon"]');
+    await assertFocusRingVisible(dock, '[data-unequip-slot="weapon"]');
+    await dock.locator('[data-unequip-slot="weapon"]').focus();
+    await dock.keyboard.press("Enter");
+    await expect(dock.locator('[data-unequip-slot="weapon"]')).toHaveCount(0);
 
     await focusDockTab(dock, "stage");
     await dock.locator('[data-stage-id="1"]').focus();

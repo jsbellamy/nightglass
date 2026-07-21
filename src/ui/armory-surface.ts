@@ -2,7 +2,6 @@ import { dropStatModifiers, snapshotEquipmentLoadouts } from "../core/equipment"
 import type { DropInstance, ReadonlySnapshot } from "../core/snapshot";
 import type { ClassId, Content, EquipmentSlotId } from "../core/types";
 import type { TileCommand } from "./bus";
-import type { DockTabIntent } from "./dock";
 import {
   type ArmoryFilters,
   type ArmorySortId,
@@ -35,7 +34,6 @@ export interface ArmorySurface {
   render(
     snapshot: ReadonlySnapshot | null,
     legality: EngineLegalityView,
-    intent?: DockTabIntent,
   ): void;
   destroy(): void;
 }
@@ -162,42 +160,102 @@ export function mountArmorySurface(
     container.append(wrap);
   }
 
+  function applyBrowseSlot(classId: ClassId, slot: EquipmentSlotId, armory: DropInstance[]): void {
+    const next: ArmoryFilters = { ...filters, slot };
+    if (slot === "weapon") {
+      next.weaponClass = classId;
+    } else {
+      delete next.weaponClass;
+    }
+    filters = next;
+    browseCompatibility = { classId, slot };
+    selectedDropId = equippedDropId(armory, classId, slot);
+    crossEquipConfirm = null;
+  }
+
+  function renderWornStrip(snapshot: ReadonlySnapshot, container: HTMLElement): void {
+    const classId = options.getSelectedClassId();
+    const strip = el("div", {
+      class: "armory-worn-strip",
+      data: { armoryWornStrip: "true" },
+      props: { role: "group" },
+      aria: {
+        label: classId
+          ? `Worn loadout · ${CLASS_LABELS[classId]}`
+          : "Worn loadout",
+      },
+    });
+
+    const slots: EquipmentSlotId[] = ["weapon", "armor", "charm"];
+    for (const slot of slots) {
+      const equippedId =
+        classId === null
+          ? null
+          : equippedDropId(snapshot.progression.armory, classId, slot);
+      const drop = equippedId === null ? undefined : dropById(snapshot.progression.armory, equippedId);
+      const filled = drop !== undefined;
+      const base = drop ? equipmentBaseForDrop(drop, content) : null;
+      const label = filled && base
+        ? `${SLOT_LABELS[slot]} · ${base.name}`
+        : `${SLOT_LABELS[slot]} · Empty`;
+      const button = el("button", {
+        class: filled
+          ? `armory-worn-slot focus-ring rarity-${drop.rarity}`
+          : "armory-worn-slot focus-ring armory-worn-slot--empty",
+        data: {
+          wornSlot: slot,
+          slotFilled: filled ? "true" : "false",
+        },
+        props: { type: "button", disabled: classId === null },
+        aria: { label },
+      });
+      button.title = label;
+      button.append(
+        el("span", { class: "armory-worn-slot-label", text: SLOT_LABELS[slot] }),
+      );
+      if (drop && base) {
+        appendContentTierIcon(button, base.iconKey, base.name);
+      } else {
+        button.append(el("span", { class: "armory-worn-slot-empty", text: "Empty" }));
+      }
+      bindPressable(button, () => {
+        if (classId === null) {
+          return;
+        }
+        applyBrowseSlot(classId, slot, snapshot.progression.armory);
+        render(snapshot);
+      });
+      strip.append(button);
+    }
+
+    container.append(strip);
+  }
+
   function renderTileFace(card: HTMLElement, drop: DropInstance): void {
     const base = equipmentBaseForDrop(drop, content);
     card.classList.add(`rarity-${drop.rarity}`);
+    card.title = base.name;
 
     const header = el("div", { class: "equipment-card-header" });
     appendContentTierIcon(header, base.iconKey, base.name);
-    header.append(
-      el("div", { class: "equipment-card-titles" }, [
-        el("p", { class: "equipment-name", text: base.name }),
-      ]),
-    );
     card.append(header);
 
-    const markerChildren: HTMLElement[] = [];
     if (!isDropSeen(drop)) {
-      markerChildren.push(
+      card.append(
         el("span", {
-          class: "equipment-marker unseen-marker",
+          class: "equipment-badge unseen-badge",
           data: { unseenMarker: "true" },
-          text: "Unseen",
+          aria: { label: "Unseen" },
         }),
       );
     }
     if (drop.locked) {
-      markerChildren.push(
-        el("span", { class: "equipment-marker locked-marker", text: "Locked" }),
+      card.append(
+        el("span", {
+          class: "equipment-badge locked-marker",
+          aria: { label: "Locked" },
+        }),
       );
-    }
-    const assignment = formatAssignment(drop.assignedTo);
-    if (assignment) {
-      markerChildren.push(
-        el("span", { class: "equipment-marker assigned-marker", text: assignment }),
-      );
-    }
-    if (markerChildren.length > 0) {
-      card.append(el("div", { class: "equipment-markers" }, markerChildren));
     }
   }
 
@@ -711,6 +769,7 @@ export function mountArmorySurface(
     renderDropSummary(summary, selectedDrop);
     detail.append(summary);
 
+    const actions = el("div", { class: "armory-detail-actions" });
     const lockButton = el("button", {
       class: "equipment-lock-toggle focus-ring",
       data: { lockToggle: String(selectedDrop.dropId) },
@@ -720,9 +779,24 @@ export function mountArmorySurface(
     bindPressable(lockButton, () => {
       publish({ cmd: "setLocked", args: [selectedDrop.dropId, !selectedDrop.locked] });
     });
-    detail.append(el("div", { class: "armory-detail-actions" }, [lockButton]));
+    actions.append(lockButton);
 
     const classId = options.getSelectedClassId();
+    const assigned = selectedDrop.assignedTo;
+    if (classId && assigned?.classId === classId) {
+      const unequip = el("button", {
+        class: "equipment-slot-unequip focus-ring",
+        data: { unequipSlot: assigned.slot },
+        props: { type: "button" },
+        text: "Unequip",
+      });
+      bindPressable(unequip, () => {
+        publish({ cmd: "unequip", args: [classId, assigned.slot] });
+      });
+      actions.append(unequip);
+    }
+    detail.append(actions);
+
     if (classId) {
       const slot = equipmentBaseForDrop(selectedDrop, content).slot;
       renderComparePanel(snapshot, detail, selectedDrop, classId, slot);
@@ -739,6 +813,7 @@ export function mountArmorySurface(
     body(snapshot) {
       const body = el("div", { class: "armory-body" });
       renderToolbar(snapshot, body);
+      renderWornStrip(snapshot, body);
       const panes = el("div", { class: "armory-panes" });
       renderGrid(snapshot, panes);
       renderDetail(snapshot, panes);
@@ -750,21 +825,8 @@ export function mountArmorySurface(
   function render(
     snapshot: ReadonlySnapshot | null,
     legality: EngineLegalityView = currentLegality,
-    intent?: DockTabIntent,
   ): void {
     currentLegality = legality;
-    if (intent?.kind === "browse-slot") {
-      const next: ArmoryFilters = { ...filters, slot: intent.slot };
-      if (intent.slot === "weapon") {
-        next.weaponClass = intent.classId;
-      } else {
-        delete next.weaponClass;
-      }
-      filters = next;
-      browseCompatibility = { classId: intent.classId, slot: intent.slot };
-      selectedDropId = null;
-      crossEquipConfirm = null;
-    }
     if (snapshot) {
       syncOptimisticSeen(snapshot.progression.armory);
     }

@@ -75,18 +75,153 @@ function armorySnapshot(armory: DropInstance[]): Snapshot {
 }
 
 describe("Armory surface", () => {
-  it("does not render a slot strip; grid and detail are siblings", () => {
+  it("renders a worn loadout strip for the selected Class above grid and detail panes", () => {
     const root = document.createElement("div");
     const selected = { current: "knight" as ClassId };
     const surface = mountWithSelection(root, selected);
-    renderArmory(surface, armorySnapshot([drop({ dropId: 1, baseId: "fixture-blade" })]));
+    renderArmory(
+      surface,
+      armorySnapshot([
+        drop({
+          dropId: 1,
+          baseId: "fixture-blade",
+          assignedTo: { classId: "knight", slot: "weapon" },
+        }),
+      ]),
+    );
 
     expect(root.querySelector(".armory-slot-strip")).toBeNull();
+    const strip = root.querySelector<HTMLElement>('[data-armory-worn-strip="true"]');
+    expect(strip).not.toBeNull();
+    expect(strip?.getAttribute("aria-label")).toMatch(/Worn loadout/i);
+    const slots = [...root.querySelectorAll<HTMLElement>("[data-worn-slot]")];
+    expect(slots.map((slot) => slot.dataset["wornSlot"])).toEqual(["weapon", "armor", "charm"]);
+    expect(
+      root.querySelector<HTMLElement>('[data-worn-slot="weapon"]')?.dataset["slotFilled"],
+    ).toBe("true");
+    expect(
+      root.querySelector('[data-worn-slot="weapon"] .equipment-icon-img--content'),
+    ).not.toBeNull();
+    expect(
+      root.querySelector<HTMLElement>('[data-worn-slot="armor"]')?.dataset["slotFilled"],
+    ).toBe("false");
+    expect(
+      root.querySelector<HTMLElement>('[data-worn-slot="charm"]')?.dataset["slotFilled"],
+    ).toBe("false");
+
     const panes = root.querySelector(".armory-panes");
     expect(panes?.querySelector(".armory-grid")).not.toBeNull();
     expect(panes?.querySelector(".armory-detail")).not.toBeNull();
     expect(root.querySelector('[data-armory-collection="true"]')).not.toBeNull();
     expect(root.querySelector('[data-armory-detail="true"]')).not.toBeNull();
+
+    surface.destroy();
+  });
+
+  it("applies browse-slot filters and selects the equipped Drop when a filled worn slot is activated", () => {
+    const root = document.createElement("div");
+    const selected = { current: "knight" as ClassId };
+    const snapshot = armorySnapshot([
+      drop({
+        dropId: 1,
+        baseId: "fixture-blade",
+        assignedTo: { classId: "knight", slot: "weapon" },
+      }),
+      drop({ dropId: 2, baseId: "fixture-armor" }),
+      drop({ dropId: 3, baseId: "fixture-focus" }),
+    ]);
+    const surface = mountWithSelection(root, selected);
+    renderArmory(surface, snapshot);
+
+    root.querySelector<HTMLButtonElement>('[data-worn-slot="weapon"]')?.click();
+    renderArmory(surface, snapshot);
+
+    expect(
+      root
+        .querySelector<HTMLButtonElement>('[data-slot-filter="weapon"]')
+        ?.getAttribute("aria-pressed"),
+    ).toBe("true");
+    expect(
+      [...root.querySelectorAll<HTMLElement>(".armory-grid .equipment-card")].map(
+        (card) => card.dataset["dropId"],
+      ),
+    ).toEqual(["1"]);
+    expect(
+      root
+        .querySelector<HTMLElement>('.armory-grid .equipment-card[data-drop-id="1"]')
+        ?.getAttribute("aria-selected"),
+    ).toBe("true");
+    expect(root.querySelector('[data-armory-detail="true"] .equipment-name')?.textContent).toMatch(
+      /Fixture Blade/,
+    );
+
+    surface.destroy();
+  });
+
+  it("applies browse-slot filters with empty selection when an empty worn slot is activated", () => {
+    const root = document.createElement("div");
+    const selected = { current: "knight" as ClassId };
+    const snapshot = armorySnapshot([
+      drop({ dropId: 1, baseId: "fixture-blade" }),
+      drop({ dropId: 2, baseId: "fixture-armor" }),
+    ]);
+    const surface = mountWithSelection(root, selected);
+    renderArmory(surface, snapshot);
+    root.querySelector<HTMLElement>('.equipment-card[data-drop-id="1"]')?.click();
+    renderArmory(surface, snapshot);
+    expect(
+      root.querySelector('.armory-grid .equipment-card[data-drop-id="1"]')?.getAttribute("aria-selected"),
+    ).toBe("true");
+
+    root.querySelector<HTMLButtonElement>('[data-worn-slot="armor"]')?.click();
+    renderArmory(surface, snapshot);
+
+    expect(
+      root
+        .querySelector<HTMLButtonElement>('[data-slot-filter="armor"]')
+        ?.getAttribute("aria-pressed"),
+    ).toBe("true");
+    expect(
+      [...root.querySelectorAll<HTMLElement>(".armory-grid .equipment-card")].map(
+        (card) => card.dataset["dropId"],
+      ),
+    ).toEqual(["2"]);
+    expect(
+      root.querySelector('.armory-grid .equipment-card[aria-selected="true"]'),
+    ).toBeNull();
+    expect(root.querySelector('[data-armory-detail="true"]')?.textContent).toMatch(
+      /Select a Drop/i,
+    );
+
+    surface.destroy();
+  });
+
+  it("re-renders the worn strip when the selected Class changes", () => {
+    const root = document.createElement("div");
+    const selected = { current: "knight" as ClassId };
+    const snapshot = armorySnapshot([
+      drop({
+        dropId: 1,
+        baseId: "fixture-blade",
+        assignedTo: { classId: "knight", slot: "weapon" },
+      }),
+      drop({
+        dropId: 2,
+        baseId: "fixture-focus",
+        assignedTo: { classId: "wizard", slot: "weapon" },
+      }),
+    ]);
+    const surface = mountWithSelection(root, selected);
+    renderArmory(surface, snapshot);
+    expect(
+      root.querySelector('[data-worn-slot="weapon"] .equipment-icon-img--content'),
+    ).not.toBeNull();
+
+    selected.current = "wizard";
+    renderArmory(surface, snapshot);
+    expect(
+      root.querySelector('[data-worn-slot="weapon"]')?.getAttribute("aria-label"),
+    ).toMatch(/Fixture Focus/);
 
     surface.destroy();
   });
@@ -110,7 +245,7 @@ describe("Armory surface", () => {
     surface.destroy();
   });
 
-  it("renders tiles with a content icon, name, markers, data-drop-id, and rarity class", () => {
+  it("renders Armory collection tiles as icon-first Drops with Unseen and Locked badges, omitting assignment prose", () => {
     const root = document.createElement("div");
     const selected = { current: "knight" as ClassId };
     const snapshot = armorySnapshot([
@@ -126,16 +261,49 @@ describe("Armory surface", () => {
     const surface = mountWithSelection(root, selected);
     renderArmory(surface, snapshot);
 
-    const tile = root.querySelector<HTMLElement>('.equipment-card[data-drop-id="1"]');
+    const tile = root.querySelector<HTMLElement>('.armory-grid .equipment-card[data-drop-id="1"]');
     expect(tile?.classList.contains("rarity-rare")).toBe(true);
     const icon = tile?.querySelector<HTMLImageElement>(".equipment-icon-img--content");
     expect(icon?.width).toBe(34);
     expect(icon?.height).toBe(34);
-    expect(tile?.querySelector(".equipment-name")?.textContent).toMatch(/Fixture Blade/);
-    expect(tile?.querySelector('[data-unseen-marker="true"]')).not.toBeNull();
-    expect(tile?.querySelector(".locked-marker")).not.toBeNull();
-    expect(tile?.querySelector(".assigned-marker")).not.toBeNull();
+    expect(tile?.getAttribute("aria-label")).toMatch(/Fixture Blade/);
+    expect(tile?.querySelector(".equipment-name")).toBeNull();
+    expect(tile?.textContent).not.toMatch(/Unseen/);
+    expect(tile?.querySelector('[data-unseen-marker="true"]')?.getAttribute("aria-label")).toBe(
+      "Unseen",
+    );
+    expect(tile?.querySelector(".locked-marker")?.getAttribute("aria-label")).toBe("Locked");
+    expect(tile?.querySelector(".locked-marker")?.textContent).not.toMatch(/Locked/);
+    expect(tile?.querySelector(".assigned-marker")).toBeNull();
+    expect(tile?.textContent).not.toMatch(/Knight/);
     expect(root.querySelector(".armory-filter")).toBeNull();
+
+    surface.destroy();
+  });
+
+  it("keeps name, markers, and assignment prose in the detail pane", () => {
+    const root = document.createElement("div");
+    const selected = { current: "knight" as ClassId };
+    const snapshot = armorySnapshot([
+      drop({
+        dropId: 1,
+        baseId: "fixture-blade",
+        rarity: "rare",
+        seen: false,
+        locked: true,
+        assignedTo: { classId: "knight", slot: "weapon" },
+      }),
+    ]);
+    const surface = mountWithSelection(root, selected);
+    renderArmory(surface, snapshot);
+    root.querySelector<HTMLElement>('.equipment-card[data-drop-id="1"]')?.click();
+    renderArmory(surface, snapshot);
+
+    const detail = root.querySelector<HTMLElement>('[data-armory-detail="true"]');
+    expect(detail?.querySelector(".equipment-name")?.textContent).toMatch(/Fixture Blade/);
+    expect(detail?.querySelector(".equipment-meta")?.textContent).toMatch(/Tier/);
+    expect(detail?.querySelector(".assigned-marker")?.textContent).toMatch(/Knight/);
+    expect(detail?.querySelector('[data-unequip-slot="weapon"]')).not.toBeNull();
 
     surface.destroy();
   });
@@ -181,7 +349,9 @@ describe("Armory surface", () => {
     sort!.value = "name";
     sort!.dispatchEvent(new Event("change"));
     renderArmory(surface, snapshot);
-    expect(root.querySelector(".armory-grid .equipment-card")?.textContent).toMatch(/Fixture Armor/);
+    expect(
+      root.querySelector(".armory-grid .equipment-card")?.getAttribute("aria-label"),
+    ).toMatch(/Fixture Armor/);
 
     surface.destroy();
   });
@@ -368,36 +538,6 @@ describe("Armory surface", () => {
 
     surface.destroy();
     root.remove();
-  });
-
-  it("browse-slot intent filters to pieces compatible with that Character and slot", () => {
-    const root = document.createElement("div");
-    const selected = { current: "knight" as ClassId };
-    const snapshot = armorySnapshot([
-      drop({ dropId: 1, baseId: "fixture-blade" }),
-      drop({ dropId: 2, baseId: "fixture-focus" }),
-      drop({ dropId: 3, baseId: "fixture-armor" }),
-    ]);
-    const engine = createEngine(fixtureContent, snapshot, LOOT_SEED);
-    const surface = mountWithSelection(root, selected);
-    surface.render(snapshot, legalityViewFromEngine(engine), {
-      kind: "browse-slot",
-      classId: "knight",
-      slot: "weapon",
-    });
-
-    expect(
-      root
-        .querySelector<HTMLButtonElement>('[data-slot-filter="weapon"]')
-        ?.getAttribute("aria-pressed"),
-    ).toBe("true");
-    expect(
-      [...root.querySelectorAll<HTMLElement>(".armory-grid .equipment-card")].map(
-        (card) => card.dataset["dropId"],
-      ),
-    ).toEqual(["1"]);
-
-    surface.destroy();
   });
 
   it("lists Rare and Epic pieces in bulk discard confirm and excludes equipped or Locked rows", () => {

@@ -15,30 +15,16 @@ const DOCK_PRIMARY_TEXT: { tab: "character" | "armory" | "stage"; selector: stri
   },
   {
     tab: "character",
-    selector: '[data-character-section="equipment"] .equipment-slot-label',
-  },
-  {
-    tab: "character",
-    selector: '[data-character-section="equipment"] [data-slot-filled="false"] .equipment-slot-empty',
-  },
-  {
-    tab: "character",
-    selector: '[data-character-section="equipment"] [data-slot-filled="true"] .equipment-name',
-  },
-  {
-    tab: "character",
-    selector: '[data-character-section="equipment"] [data-slot-filled="true"] .equipment-meta',
-  },
-  {
-    tab: "character",
     selector: '[data-character-section="loadout"] .loadout-character .surface-section-title',
   },
   {
     tab: "character",
     selector: '[data-character-section="talents"] [data-class-id="knight"] [data-talent-points="true"]',
   },
-  { tab: "armory", selector: ".armory-grid .equipment-name" },
-  { tab: "armory", selector: ".armory-grid .equipment-marker" },
+  { tab: "armory", selector: ".armory-worn-strip .armory-worn-slot-label" },
+  { tab: "armory", selector: '.armory-worn-strip [data-slot-filled="false"] .armory-worn-slot-empty' },
+  { tab: "armory", selector: ".armory-detail .equipment-detail .equipment-name" },
+  { tab: "armory", selector: ".armory-detail .equipment-detail .equipment-marker" },
   { tab: "armory", selector: ".armory-slot-segment" },
   { tab: "armory", selector: ".armory-state-select" },
   { tab: "armory", selector: ".armory-detail .armory-attempt-note" },
@@ -68,8 +54,14 @@ test.describe("accessibility contrast floor", () => {
     expect(toggleSample).not.toBeNull();
     assertAaContrast(toggleSample!);
 
+    let armoryDetailPrepared = false;
     for (const { tab, selector } of DOCK_PRIMARY_TEXT) {
       await focusDockTab(dock, tab);
+      if (tab === "armory" && !armoryDetailPrepared) {
+        await dock.locator('.armory-grid .equipment-card[data-drop-id="1"]').click();
+        await expect(dock.locator(".armory-detail .equipment-detail .equipment-name")).toBeVisible();
+        armoryDetailPrepared = true;
+      }
       const sample = await readTextContrastSample(dock, selector);
       expect(sample, `sample for ${selector}`).not.toBeNull();
       const ratio = assertAaContrast(sample!);
@@ -197,20 +189,23 @@ test.describe("accessibility contrast floor", () => {
     await tile.close();
 
     await focusDockTab(dock, "armory");
+    // Detail needs a selection before name/marker contrast samples run.
+    await dock.locator('.armory-grid .equipment-card[data-drop-id="1"]').click();
+    await expect(dock.locator(".armory-detail .equipment-detail .equipment-name")).toBeVisible();
     const epicCard = dock.locator(".armory-grid .equipment-card.rarity-epic");
     await expect(epicCard).toBeVisible({ timeout: 5_000 });
     const raritySignals = await epicCard.evaluate((card) => {
-      const name = card.querySelector(".equipment-name")?.textContent?.trim();
-      const markers = card.querySelector(".equipment-markers")?.textContent?.trim();
       return {
-        hasName: (name?.length ?? 0) > 0,
-        hasMarkers: (markers?.length ?? 0) > 0,
-        lockedText: card.querySelector(".locked-marker")?.textContent?.trim() ?? "",
+        hasIcon: card.querySelector(".equipment-icon-img--content") !== null,
+        lockedLabel: card.querySelector(".locked-marker")?.getAttribute("aria-label") ?? "",
+        hasNameText: (card.querySelector(".equipment-name")?.textContent?.trim().length ?? 0) > 0,
+        hasUnseenWord: (card.textContent ?? "").includes("Unseen"),
       };
     });
-    expect(raritySignals.hasName).toBe(true);
-    expect(raritySignals.hasMarkers).toBe(true);
-    expect(raritySignals.lockedText).toMatch(/Locked/);
+    expect(raritySignals.hasIcon).toBe(true);
+    expect(raritySignals.lockedLabel).toBe("Locked");
+    expect(raritySignals.hasNameText).toBe(false);
+    expect(raritySignals.hasUnseenWord).toBe(false);
 
     await epicCard.click();
     await expect(
@@ -219,6 +214,9 @@ test.describe("accessibility contrast floor", () => {
     const detailLock = dock.locator('[data-lock-toggle="99"]');
     await expect(detailLock).toBeVisible();
     await expect(detailLock).toContainText(/Unlock/);
+    await expect(
+      dock.locator('[data-armory-detail="true"] .equipment-detail .locked-marker'),
+    ).toContainText(/Locked/);
 
     await focusDockTab(dock, "stage");
     const lockedStage = await dock.evaluate(() => {
