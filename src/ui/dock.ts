@@ -2,16 +2,14 @@ import type { ReadonlySnapshot } from "../core/snapshot";
 import type { ClassId, Content } from "../core/types";
 import { mountArmorySurface } from "./armory-surface";
 import { mountCharacterPicker } from "./character-picker";
-import { mountLoadoutSurface } from "./loadout-surface";
-import { mountPartySurface } from "./party-surface";
+import { mountCharacterSurface } from "./character-surface";
 import { mountStageSurface } from "./stage-surface";
-import { mountTalentsSurface } from "./talents-surface";
 import type { TileCommand } from "./bus";
 import { EMPTY_ENGINE_LEGALITY, type EngineLegalityView } from "./engine-legality";
 import { rosterClassIds } from "./snapshot-view";
 import type { MountedSurface } from "./surface-shell";
 
-export type DockTabId = "party" | "loadout" | "talents" | "armory" | "stage";
+export type DockTabId = "character" | "armory" | "stage";
 
 export interface DockSurfaceMountOptions {
   content: Content;
@@ -23,14 +21,24 @@ export interface DockSurfaceMountOptions {
 export interface DockSurfaceEntry {
   id: DockTabId;
   label: string;
+  /** True when this surface's render takes the legality view as a second argument. */
+  needsLegality?: boolean;
   mount(root: HTMLElement, options: DockSurfaceMountOptions): MountedSurface;
 }
 
 export const DOCK_SURFACES: DockSurfaceEntry[] = [
-  { id: "party", label: "Party", mount: mountPartySurface },
-  { id: "loadout", label: "Loadout", mount: mountLoadoutSurface },
-  { id: "talents", label: "Talents", mount: mountTalentsSurface as unknown as DockSurfaceEntry["mount"] },
-  { id: "armory", label: "Armory", mount: mountArmorySurface as unknown as DockSurfaceEntry["mount"] },
+  {
+    id: "character",
+    label: "Character",
+    needsLegality: true,
+    mount: mountCharacterSurface as DockSurfaceEntry["mount"],
+  },
+  {
+    id: "armory",
+    label: "Armory",
+    needsLegality: true,
+    mount: mountArmorySurface as unknown as DockSurfaceEntry["mount"],
+  },
   { id: "stage", label: "Stage", mount: mountStageSurface },
 ];
 
@@ -59,7 +67,7 @@ export function mountManagementDock(
   root: HTMLElement,
   options: ManagementDockOptions = {},
 ): ManagementDock {
-  let activeTab: DockTabId = options.initialTab ?? "party";
+  let activeTab: DockTabId = options.initialTab ?? "character";
   let heldSnapshot: ReadonlySnapshot | null = null;
   let heldLegality: EngineLegalityView = EMPTY_ENGINE_LEGALITY;
   let hasHeldState = false;
@@ -171,7 +179,8 @@ export function mountManagementDock(
 
   function renderSurface(id: DockTabId): void {
     const mounted = mountedSurfaces.get(id)!;
-    if (id === "talents" || id === "armory") {
+    const entry = DOCK_SURFACES.find((surfaceEntry) => surfaceEntry.id === id);
+    if (entry?.needsLegality) {
       (mounted as { render(s: typeof heldSnapshot, l: typeof heldLegality): void }).render(
         heldSnapshot,
         heldLegality,
