@@ -277,6 +277,38 @@ describe("Stage surface", () => {
     surface.destroy();
   });
 
+  it("shows Stage confirm on Enter without immediately confirming via the same key", async () => {
+    const root = document.createElement("div");
+    document.body.append(root);
+    const commands: unknown[] = [];
+    const engine = createEngine(content, undefined, LOOT_SEED);
+    const surface = mountStageSurface(root, {
+      content,
+      onCommand: (command) => {
+        commands.push(command);
+      },
+    });
+
+    surface.render(engine.snapshot());
+    const stageButton = root.querySelector<HTMLButtonElement>('[data-stage-id="1"]');
+    stageButton?.focus();
+    stageButton?.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    stageButton?.dispatchEvent(new KeyboardEvent("keyup", { key: "Enter", bubbles: true }));
+
+    expect(root.querySelector(".stage-confirm")).not.toBeNull();
+    expect(commands).toEqual([]);
+
+    await new Promise<void>((resolve) => {
+      queueMicrotask(resolve);
+    });
+    expect(document.activeElement).toBe(
+      root.querySelector('[data-stage-confirm="yes"]'),
+    );
+
+    surface.destroy();
+    root.remove();
+  });
+
   it("shows the Failure Policy and completes Stage select with keyboard only", () => {
     const root = document.createElement("div");
     document.body.append(root);

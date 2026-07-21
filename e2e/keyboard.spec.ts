@@ -118,6 +118,8 @@ test.describe("accessibility keyboard floor", () => {
     await assertFocusRingVisible(dock, '[data-stage-id="1"]');
     await dock.keyboard.press("Enter");
     await expect(dock.locator(".stage-confirm")).toBeVisible();
+    await dock.locator('[data-stage-confirm="yes"]').focus();
+    await assertFocusRingVisible(dock, '[data-stage-confirm="yes"]');
     await dock.keyboard.press("Enter");
     await expect(dock.locator(".stage-confirm")).toHaveCount(0);
 
