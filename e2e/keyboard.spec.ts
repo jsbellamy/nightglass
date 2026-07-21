@@ -81,13 +81,17 @@ test.describe("accessibility keyboard floor", () => {
     await focusDockTab(dock, "armory");
     await dock.locator('[data-character-chip="knight"]').focus();
     await dock.keyboard.press("Enter");
-    await dock.locator('[data-class-id="knight"][data-compare-slot="weapon"]').focus();
+    await dock.locator('[data-discard-select="1"]').focus();
+    await assertFocusRingVisible(dock, '[data-discard-select="1"]');
+    await dock.locator('.equipment-card[data-drop-id="1"]').focus();
     await dock.keyboard.press("Enter");
-    await dock.locator('[data-compare-candidate="1"]').focus();
-    await dock.keyboard.press("Enter");
+    await assertFocusRingVisible(dock, '.equipment-card[data-drop-id="1"]');
+    await dock.locator('[data-lock-toggle="1"]').focus();
+    await assertFocusRingVisible(dock, '[data-lock-toggle="1"]');
     await dock.locator('[data-equip-button="true"]').focus();
     await dock.keyboard.press("Enter");
-    await expect(dock.locator(".armory-slot-strip")).toBeVisible();
+    await expect(dock.locator(".armory-grid")).toBeVisible();
+    await expect(dock.locator('[data-armory-detail="true"]')).toBeVisible();
 
     await focusDockTab(dock, "character");
     await dock.locator('[data-character-chip="knight"]').focus();

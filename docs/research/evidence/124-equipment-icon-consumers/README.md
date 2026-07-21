@@ -3,17 +3,18 @@
 Scenario key: `evidence: equipment-icon-chrome-legibility`.
 
 Emitted by the rendered-evidence harness (`npm run test:evidence`) as
-`armory-slot-strip.png` — a real Chromium capture of the Armory slot strip with
-all sixteen equipped slots showing 16×16 chrome-tier icons beside their slot
-labels.
+`character-equipment-rows.png` — a real Chromium capture of the Character
+Equipment section after Armory's slot strip was deleted (#271). No chrome-tier
+(16×16) consumer remains in the Dock; this slug is carried by the Character
+Equipment content-tier (34×34) rows with an explicit tier change noted in
+`docs/agents/acceptance-evidence.md` and the #271 PR body.
 
-## Judgement (nightglass#132)
+## Judgement (nightglass#132, retargeted by #271)
 
-**Legible — discharged.** The chrome-tier downscale from the 34×34 content-tier
-pipeline remains readable beside each slot label (Weapon / Armor / Charm) across
-all four Class Kits. Identity is carried by the 34×34 card and drop-toast
-consumers; the slot icon is an affordance hint only, matching the two-tier
-contract in #124.
+**Legible — discharged at Character Equipment.** The original chrome-tier
+downscale judgement against the Armory slot strip no longer has a Dock
+consumer. Character Equipment rows keep identity readable at content tier
+beside Weapon / Armor / Charm labels across all four Class Kits.
 
 ## Note on the PNG
 

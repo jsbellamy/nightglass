@@ -8,7 +8,11 @@ import { createEngine } from "../core/engine";
 import { fixtureContent } from "../core/testing/fixture-content";
 import { mountBattleTile } from "./battle-tile";
 import { DOCK_SURFACES, DOCK_TABS, mountManagementDock } from "./dock";
-import { EMPTY_ENGINE_LEGALITY, type EngineLegalityView } from "./engine-legality";
+import {
+  EMPTY_ENGINE_LEGALITY,
+  legalityViewFromEngine,
+  type EngineLegalityView,
+} from "./engine-legality";
 
 function mountDock(root: HTMLElement, options: Parameters<typeof mountManagementDock>[1] = {}) {
   return mountManagementDock(root, { content: fixtureContent, ...options });
@@ -471,20 +475,19 @@ describe("Management Dock Character → Armory jump", () => {
         assignedTo: null,
       },
     ];
-    dock.render(snapshot);
+    const live = createEngine(fixtureContent, snapshot, 3);
+    dock.render(snapshot, legalityViewFromEngine(live));
 
     root.querySelector<HTMLButtonElement>('[data-browse-slot="armor"]')?.click();
 
     expect(root.querySelector<HTMLElement>('[data-dock-panel="armory"]')?.hidden).toBe(false);
     expect(
-      root
-        .querySelector<HTMLButtonElement>(
-          '[data-filter-key="slot"][data-filter-value="armor"]',
-        )
-        ?.getAttribute("aria-pressed"),
+      root.querySelector<HTMLButtonElement>('[data-slot-filter="armor"]')?.getAttribute("aria-pressed"),
     ).toBe("true");
     expect(
-      [...root.querySelectorAll<HTMLElement>(".equipment-card")].map((card) => card.dataset["dropId"]),
+      [...root.querySelectorAll<HTMLElement>(".armory-grid .equipment-card")].map(
+        (card) => card.dataset["dropId"],
+      ),
     ).toEqual(["2"]);
 
     root.remove();
@@ -521,30 +524,25 @@ describe("Management Dock Character → Armory jump", () => {
         assignedTo: null,
       },
     ];
-    dock.render(snapshot);
+    const live = createEngine(fixtureContent, snapshot, 3);
+    dock.render(snapshot, legalityViewFromEngine(live));
 
     root.querySelector<HTMLButtonElement>('[data-browse-slot="armor"]')?.click();
-    root.querySelector<HTMLButtonElement>(".armory-filter-clear")?.click();
+    root.querySelector<HTMLButtonElement>('[data-slot-filter="all"]')?.click();
     expect(
-      root
-        .querySelector<HTMLButtonElement>(
-          '[data-filter-key="slot"][data-filter-value="armor"]',
-        )
-        ?.getAttribute("aria-pressed"),
+      root.querySelector<HTMLButtonElement>('[data-slot-filter="armor"]')?.getAttribute("aria-pressed"),
     ).toBe("false");
 
     root.querySelector<HTMLButtonElement>('[data-dock-tab="character"]')?.click();
     root.querySelector<HTMLButtonElement>('[data-dock-tab="armory"]')?.click();
 
     expect(
-      root
-        .querySelector<HTMLButtonElement>(
-          '[data-filter-key="slot"][data-filter-value="armor"]',
-        )
-        ?.getAttribute("aria-pressed"),
+      root.querySelector<HTMLButtonElement>('[data-slot-filter="armor"]')?.getAttribute("aria-pressed"),
     ).toBe("false");
     expect(
-      [...root.querySelectorAll<HTMLElement>(".equipment-card")].map((card) => card.dataset["dropId"]),
+      [...root.querySelectorAll<HTMLElement>(".armory-grid .equipment-card")].map(
+        (card) => card.dataset["dropId"],
+      ),
     ).toEqual(["2", "1"]);
 
     root.remove();

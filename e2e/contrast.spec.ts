@@ -37,7 +37,11 @@ const DOCK_PRIMARY_TEXT: { tab: "character" | "armory" | "stage"; selector: stri
     tab: "character",
     selector: '[data-character-section="talents"] [data-class-id="knight"] [data-talent-points="true"]',
   },
-  { tab: "armory", selector: ".equipment-name" },
+  { tab: "armory", selector: ".armory-grid .equipment-name" },
+  { tab: "armory", selector: ".armory-grid .equipment-marker" },
+  { tab: "armory", selector: ".armory-slot-segment" },
+  { tab: "armory", selector: ".armory-state-select" },
+  { tab: "armory", selector: ".armory-detail .armory-attempt-note" },
   { tab: "stage", selector: ".attempt-position" },
 ];
 
@@ -114,23 +118,28 @@ test.describe("accessibility contrast floor", () => {
     await tile.close();
 
     await focusDockTab(dock, "armory");
-    const epicCard = dock.locator(".armory-collection .equipment-card.rarity-epic");
+    const epicCard = dock.locator(".armory-grid .equipment-card.rarity-epic");
     await expect(epicCard).toBeVisible({ timeout: 5_000 });
     const raritySignals = await epicCard.evaluate((card) => {
       const name = card.querySelector(".equipment-name")?.textContent?.trim();
-      const meta = card.querySelector(".equipment-meta")?.textContent?.trim();
-      const locked =
-        card.querySelector(".locked-marker")?.textContent?.trim() ??
-        card.querySelector(".equipment-lock-toggle")?.textContent?.trim();
+      const markers = card.querySelector(".equipment-markers")?.textContent?.trim();
       return {
         hasName: (name?.length ?? 0) > 0,
-        hasMeta: (meta?.length ?? 0) > 0,
-        lockedText: locked,
+        hasMarkers: (markers?.length ?? 0) > 0,
+        lockedText: card.querySelector(".locked-marker")?.textContent?.trim() ?? "",
       };
     });
     expect(raritySignals.hasName).toBe(true);
-    expect(raritySignals.hasMeta).toBe(true);
-    expect(raritySignals.lockedText).toMatch(/Locked|Unlock/);
+    expect(raritySignals.hasMarkers).toBe(true);
+    expect(raritySignals.lockedText).toMatch(/Locked/);
+
+    await epicCard.click();
+    await expect(
+      dock.locator('[data-armory-detail="true"] .equipment-detail .equipment-name'),
+    ).toBeVisible();
+    const detailLock = dock.locator('[data-lock-toggle="99"]');
+    await expect(detailLock).toBeVisible();
+    await expect(detailLock).toContainText(/Unlock/);
 
     await focusDockTab(dock, "stage");
     const lockedStage = await dock.evaluate(() => {
