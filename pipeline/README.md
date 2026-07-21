@@ -57,9 +57,10 @@ python3 pipeline/acquire.py promote \
 ```
 
 `promote` remeasures the candidate, returns JSON on success or failure, refuses
-a retry result, copies the accepted provider bytes into `assets-raw/grid_raw/`,
-generates the complete provenance sidecar, normalizes and validates the runtime
-PNG, and updates `manifest.json`.
+a retry result or a prompt with missing/contradictory canonical facing, copies
+the accepted provider bytes into `assets-raw/grid_raw/`, generates the complete
+provenance sidecar, normalizes and validates the runtime PNG, and updates
+`manifest.json`.
 Known tags derive Nightglass asset class, role, facing, and runtime destination;
 `boss-1` retains the historical archived raw tag `boss`. Newly promoted
 sidecars record their size `tier`; the offline build treats older sidecars with

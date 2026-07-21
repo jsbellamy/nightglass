@@ -195,6 +195,46 @@ with tempfile.TemporaryDirectory() as temp_name:
           and not rejected_out_dir.exists(),
           rejected_error)
 
+    wrong_facing_raw_dir = temp / "wrong-facing-raw"
+    wrong_facing_out_dir = temp / "wrong-facing-runtime"
+    try:
+        A.promote_candidate(
+            candidate,
+            tag="boss-3",
+            provider="Cursor GenerateImage",
+            acquisition_tool="GenerateImage",
+            prompt="strict side profile facing RIGHT",
+            raw_dir=wrong_facing_raw_dir,
+            out_dir=wrong_facing_out_dir,
+        )
+        wrong_facing_error = "accepted"
+    except ValueError as error:
+        wrong_facing_error = str(error)
+    check("promotion rejects prompts that contradict canonical facing",
+          "must specify only facing LEFT" in wrong_facing_error
+          and not wrong_facing_raw_dir.exists()
+          and not wrong_facing_out_dir.exists(),
+          wrong_facing_error)
+
+    try:
+        A.promote_candidate(
+            candidate,
+            tag="boss-3",
+            provider="Cursor GenerateImage",
+            acquisition_tool="GenerateImage",
+            prompt="strict side profile with a complete silhouette",
+            raw_dir=wrong_facing_raw_dir,
+            out_dir=wrong_facing_out_dir,
+        )
+        missing_facing_error = "accepted"
+    except ValueError as error:
+        missing_facing_error = str(error)
+    check("promotion requires an explicit canonical facing clause",
+          "must specify only facing LEFT" in missing_facing_error
+          and not wrong_facing_raw_dir.exists()
+          and not wrong_facing_out_dir.exists(),
+          missing_facing_error)
+
     prompt_file = temp / "prompt.txt"
     prompt_file.write_text("strict side profile facing LEFT")
     rejected_report_path = temp / "rejected-report.json"

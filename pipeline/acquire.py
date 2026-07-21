@@ -27,6 +27,7 @@ import hashlib
 import json
 import math
 import pathlib
+import re
 import shutil
 import struct
 import sys
@@ -608,6 +609,23 @@ def _asset_identity(tag: str) -> tuple[str, dict]:
     return raw_tag, identity
 
 
+def _prompt_facings(prompt: str) -> set[str]:
+    """Return explicit subject-facing directions, ignoring unrelated left/right text."""
+    forward = re.findall(
+        r"\b(?:face|faces|facing|looking|oriented)\s+"
+        r"(?:(?:directly|towards?)\s+|to\s+the\s+)?"
+        r"(?:screen[-\s]*)?(left|right)\b",
+        prompt,
+        flags=re.IGNORECASE,
+    )
+    reverse = re.findall(
+        r"\b(?:screen[-\s]*)?(left|right)[-\s]+facing\b",
+        prompt,
+        flags=re.IGNORECASE,
+    )
+    return {direction.lower() for direction in forward + reverse}
+
+
 def promote_candidate(
     raw_path: pathlib.Path,
     *,
@@ -626,6 +644,15 @@ def promote_candidate(
     out_dir = pathlib.Path(out_dir)
     if not provider.strip() or not acquisition_tool.strip() or not prompt.strip():
         raise ValueError("promotion requires provider, acquisition tool, and exact prompt")
+    raw_tag, identity = _asset_identity(tag)
+    expected_facing = identity["facing"]
+    prompt_facings = _prompt_facings(prompt)
+    if prompt_facings != {expected_facing}:
+        found = ", ".join(sorted(direction.upper() for direction in prompt_facings))
+        raise ValueError(
+            f"{tag}: exact prompt must specify only facing {expected_facing.upper()}; "
+            f"found {found or 'no explicit facing clause'}"
+        )
     report = measure_candidate(raw_path, frame=frame)
     if report["status"] != "advance":
         raise ValueError(
@@ -633,7 +660,6 @@ def promote_candidate(
             f"{report['primary_failure']} ({report['next_action']})"
         )
 
-    raw_tag, identity = _asset_identity(tag)
     out_name = OUTPUT_NAMES.get(raw_tag, raw_tag)
     runtime_destination = f"src/assets/sprites/{out_name}.png"
     raw_sha256 = hashlib.sha256(raw_path.read_bytes()).hexdigest()

@@ -237,10 +237,11 @@ Apply this state machine:
    medium/small safe boxes remain advisory prompt targets.
 2. Choose exactly one primary failure using the priority above. Preserve the
    subject identity and change only the prompt clauses needed by that retry move.
-3. **Advance to visual review** only after every deterministic rule and the
-   safe-box target pass. Visual review then judges role-correct facing, identity,
-   silhouette, cohort consistency, and runtime obstructions; visual appeal never
-   overrides a deterministic failure.
+3. **Advance to visual review** only after every deterministic advancement gate
+   passes. An advisory safe-box exceedance remains visible in the report but
+   does not block medium/small candidates. Visual review then judges role-correct
+   facing, identity, silhouette, cohort consistency, and runtime obstructions;
+   visual appeal never overrides a deterministic failure.
 4. **Accept** only after deterministic validation and visual review both pass.
    Promote the chosen provider raw byte-for-byte with its complete provenance;
    record rejected candidates as table rows and remove redundant PNG copies.
@@ -256,7 +257,9 @@ Candidate measurement has no sidecar. Save its JSON with `--report`; this is the
 validator report consumed by later agents. Promotion must generate shipping
 provenance containing provider, acquisition tool, exact prompt, raw SHA-256,
 direct inputs with roles and hashes, asset class, runtime destination, candidate
-name, canonical identity, role, facing, and size tier.
+name, canonical identity, role, facing, and size tier. Promotion rejects prompts
+without one explicit canonical subject-facing direction, or with a contradictory
+direction: party Characters specify only **RIGHT** and opponents only **LEFT**.
 
 **#125 Equipment icon trial (measured).** Brown wood reads as **off-ramp** at
 17% and must be prompted as an on-palette material; grid-faithful style references
