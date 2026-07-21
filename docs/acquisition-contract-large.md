@@ -74,6 +74,12 @@ are true:
 - the submitted prompt and visible result use role-correct facing; large Bosses
   therefore face **LEFT**.
 
+Run `python3 pipeline/acquire.py measure --tier large <candidate.png>` to apply
+the deterministic envelope. Measurement does not require or create a provenance
+sidecar. After visual review passes, `pipeline/acquire.py promote --tier large`
+creates the accepted Archived Raw Bundle, records `tier: "large"`, builds the
+48×72 runtime, and updates its manifest entry.
+
 A recovered grid that fits 48×72 but exceeds 40×60 is still an overshoot retry,
 not a discretionary accept. Examples: 42×72 and 29×69 both fit the runtime
 canvas but fail the prompt envelope. Use the acquisition loop's failure priority

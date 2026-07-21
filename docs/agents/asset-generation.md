@@ -141,8 +141,22 @@ a recorded role.
 
 ## 3. Generate and archive the raw
 
-Generate one candidate per distinct asset. Copy the provider PNG byte-for-byte
-into the task's Archived Raw Bundle, then add a provenance sidecar containing:
+Generate one candidate per distinct asset. Copy the provider PNG out of the
+provider dump into task-local scratch, then measure it with the owning pipeline;
+for Battle Tile bodies run:
+
+```bash
+python3 pipeline/acquire.py measure --tier <small|medium|large> <candidate.png>
+```
+
+Measurement is read-only and requires no provenance sidecar. A rejected
+candidate remains scratch evidence and is represented durably by its measurement
+table row, not by a fabricated sidecar or a committed PNG.
+
+After deterministic gates and visual review both pass, promote the chosen
+provider PNG byte-for-byte into the task's Archived Raw Bundle. For Battle Tile
+bodies, `pipeline/acquire.py promote` performs the copy and generates a
+provenance sidecar containing:
 
 - provider and acquisition tool
 - exact prompt
@@ -150,8 +164,9 @@ into the task's Archived Raw Bundle, then add a provenance sidecar containing:
 - direct input paths and SHA-256 values
 - asset class and intended runtime destination
 
-The raw is immutable evidence. Subsequent transforms consume it and write new
-files. This step is complete when recomputing the hash matches the sidecar.
+The accepted raw is immutable evidence. Subsequent transforms consume it and
+write new files. This step is complete when recomputing the hash matches the
+generated sidecar.
 
 Reference-only exploration lives outside the shipped raw bundle and is labelled
 reference-only at its storage location. Promotion to a shipping candidate starts
@@ -161,6 +176,8 @@ a fresh acquisition loop with shipping gates declared in step 1.
 
 Run the earliest deterministic ingest or validator immediately. Use its report as
 feedback for the next candidate. Provider-resolution prettiness is not a gate.
+For Battle Tile bodies, use `pipeline/acquire.py measure`; do not write an ad-hoc
+Python harness or measurement-only `.source.json`.
 
 For logical-grid art, read the ingest report rather than the candidate image.
 Equipment icon evidence commits `ingest-report.json` beside the provider raws;
@@ -228,10 +245,10 @@ Apply this state machine:
    choice. The orchestrator decides whether human input is necessary. Otherwise
    continue the loop autonomously.
 
-Measurement sidecars are not shipping provenance merely because `raw_gates()`
-accepts their hash. Before promotion, require provider, acquisition tool, exact
-prompt, raw SHA-256, direct inputs with roles and hashes, asset class, runtime
-destination, candidate name, role, and facing.
+Candidate measurement has no sidecar. Promotion must generate shipping
+provenance containing provider, acquisition tool, exact prompt, raw SHA-256,
+direct inputs with roles and hashes, asset class, runtime destination, candidate
+name, role, facing, and size tier.
 
 **#125 Equipment icon trial (measured).** Brown wood reads as **off-ramp** at
 17% and must be prompted as an on-palette material; grid-faithful style references

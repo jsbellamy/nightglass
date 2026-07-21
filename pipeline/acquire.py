@@ -3,10 +3,13 @@
 Reference implementation of the contract settled in #21 and amended by #29.
 
 PROVIDER-NEUTRAL BY CONSTRUCTION. This module imports no generator, opens no
-socket, and loads no model. Its only input is the archived raw bundle
-(`assets-raw/grid_raw/*.png` plus provenance sidecars). Running it with the
-provider absent and the network down reproduces byte-identical runtime frames.
+socket, and loads no model. Candidate measurement reads provider PNGs directly;
+promotion creates the archived raw bundle (`assets-raw/grid_raw/*.png` plus
+provenance sidecars). Running the offline build with the provider absent and the
+network down reproduces byte-identical runtime frames.
 
+    measure    candidate PNG -> JSON retry/advance report (no sidecar required)
+    promote    accepted PNG  -> archived raw + sidecar + runtime + manifest
     normalize  raw PNG  -> key magenta -> recover logical grid -> tier runtime frame
     validate   frame(s)  -> [] or a list of rejection reasons
     manifest   frames    -> integer-ms animation manifest
@@ -19,11 +22,15 @@ Determinism guarantees:
 """
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
 import math
 import pathlib
+import shutil
 import struct
+import sys
+import tempfile
 import zlib
 from dataclasses import dataclass
 from typing import Iterable
@@ -47,12 +54,14 @@ class Frame:
     w: int
     h: int
     min_logical_height: int
+    safe_w: int
+    safe_h: int
 
 
 FRAMES = {
-    "small": Frame(w=24, h=32, min_logical_height=26),
-    "medium": Frame(w=32, h=48, min_logical_height=40),
-    "large": Frame(w=48, h=72, min_logical_height=60),
+    "small": Frame(w=24, h=32, min_logical_height=26, safe_w=20, safe_h=26),
+    "medium": Frame(w=32, h=48, min_logical_height=40, safe_w=26, safe_h=40),
+    "large": Frame(w=48, h=72, min_logical_height=60, safe_w=40, safe_h=60),
 }
 
 MEDIUM = FRAMES["medium"]
@@ -71,6 +80,19 @@ OUTPUT_NAMES = {
 DEFAULT_TAGS = (
     "knight", "wizard", "priest", "hunter", "pipcap", "boss", "boss-2", "boss-3",
 )
+
+CANONICAL_RAW_TAGS = {"boss-1": "boss"}
+
+ASSET_IDENTITIES = {
+    "knight": {"asset_class": "Character", "role": "party-character", "facing": "right"},
+    "wizard": {"asset_class": "Character", "role": "party-character", "facing": "right"},
+    "priest": {"asset_class": "Character", "role": "party-character", "facing": "right"},
+    "hunter": {"asset_class": "Character", "role": "party-character", "facing": "right"},
+    "pipcap": {"asset_class": "opponent", "role": "ordinary-opponent", "facing": "left"},
+    "boss-1": {"asset_class": "opponent", "role": "boss", "facing": "left"},
+    "boss-2": {"asset_class": "opponent", "role": "boss", "facing": "left"},
+    "boss-3": {"asset_class": "opponent", "role": "boss", "facing": "left"},
+}
 
 PALETTE = [tuple(c["rgb"]) for c in
            json.loads((HERE / "palette.json").read_text())["colors"]]
@@ -139,13 +161,16 @@ def _key(raw_path: pathlib.Path) -> tuple[Image.Image, list[bool], tuple[int, in
     return src, fg, (min(xs), min(ys), max(xs), max(ys))
 
 
-def raw_gates(raw_path: pathlib.Path) -> list[str]:
-    """Validate the acquisition-only gates before deterministic ingest."""
+def candidate_gates(raw_path: pathlib.Path) -> list[str]:
+    """Validate provider bytes without requiring archival provenance."""
     errs: list[str] = []
-    with Image.open(raw_path) as opened:
-        if opened.format != "PNG":
-            errs.append(f"{raw_path.name}: raw must be a PNG, got {opened.format!r}")
-        src = opened.convert("RGBA")
+    try:
+        with Image.open(raw_path) as opened:
+            if opened.format != "PNG":
+                errs.append(f"{raw_path.name}: raw must be a PNG, got {opened.format!r}")
+            src = opened.convert("RGBA")
+    except (OSError, ValueError) as error:
+        return [f"{raw_path.name}: unreadable candidate: {error}"]
     w, h = src.size
     px = src.load()
     border = [px[x, y] for y in range(h) for x in range(w)
@@ -154,6 +179,12 @@ def raw_gates(raw_path: pathlib.Path) -> list[str]:
     if not border or keyed / len(border) < 0.95:
         errs.append(f"{raw_path.name}: border is not a flat {MAGENTA!r} chroma key "
                     f"({keyed}/{len(border)} pixels within tolerance {KEY_TOLERANCE})")
+    return errs
+
+
+def raw_gates(raw_path: pathlib.Path) -> list[str]:
+    """Validate candidate bytes and archival provenance before ingest."""
+    errs = candidate_gates(raw_path)
 
     sidecar = raw_path.with_suffix(".source.json")
     if not sidecar.exists():
@@ -286,6 +317,112 @@ def sample_cells(src: Image.Image, fg: list[bool], bbox: tuple[int, int, int, in
     return grid
 
 
+def _clipped_sides(src: Image.Image, bbox: tuple[int, int, int, int]) -> list[str]:
+    w, h = src.size
+    x0, y0, x1, y1 = bbox
+    return [side for side, hit in
+            (("top", y0 == 0), ("bottom", y1 == h - 1),
+             ("left", x0 == 0), ("right", x1 == w - 1))
+            if hit]
+
+
+def _recover_candidate(
+    raw_path: pathlib.Path,
+    frame: Frame,
+) -> tuple[list[list[tuple[int, int, int] | None]] | None, dict]:
+    """Measure candidate geometry without provenance or fit enforcement."""
+    src, fg, bbox = _key(raw_path)
+    x0, y0, x1, y1 = bbox
+    long_side = max(x1 - x0 + 1, y1 - y0 + 1)
+    minimum, maximum = long_side / frame.h, long_side / frame.min_logical_height
+    pitch_x = detect_pitch(src, fg, "x", minimum, maximum)
+    pitch_y = detect_pitch(src, fg, "y", minimum, maximum)
+    report = {
+        "bbox": list(bbox),
+        "pitch_x": pitch_x,
+        "pitch_y": pitch_y,
+        "grid": None,
+        "clipped_sides": _clipped_sides(src, bbox),
+    }
+    if pitch_x["score"] < MIN_GRID_SCORE or pitch_y["score"] < MIN_GRID_SCORE:
+        return None, report
+    cells = sample_cells(src, fg, bbox, pitch_x, pitch_y)
+    grid_h = len(cells)
+    grid_w = len(cells[0]) if cells else 0
+    if not grid_w or not grid_h or any(len(row) != grid_w for row in cells):
+        return None, report
+    report["grid"] = [grid_w, grid_h]
+    return cells, report
+
+
+def measure_candidate(raw_path: pathlib.Path, frame: Frame = MEDIUM) -> dict:
+    """Return a JSON-ready retry/advance decision for a provider candidate."""
+    raw_path = pathlib.Path(raw_path)
+    gates = candidate_gates(raw_path)
+    result = {
+        "candidate": str(raw_path),
+        "status": "retry",
+        "primary_failure": "raw-gate-fail" if gates else None,
+        "next_action": "repair the PNG or flat magenta border" if gates else None,
+        "gates": gates,
+        "clipped_sides": [],
+        "bbox": None,
+        "grid": None,
+        "pitch_x": None,
+        "pitch_y": None,
+    }
+    if gates:
+        return result
+    try:
+        cells, report = _recover_candidate(raw_path, frame)
+    except ValueError as error:
+        result["gates"] = [str(error)]
+        result["primary_failure"] = "raw-gate-fail"
+        result["next_action"] = "redraw a non-empty subject on the magenta background"
+        return result
+
+    result.update({
+        "clipped_sides": report["clipped_sides"],
+        "bbox": report["bbox"],
+        "grid": report["grid"],
+        "pitch_x": report["pitch_x"],
+        "pitch_y": report["pitch_y"],
+    })
+    if report["clipped_sides"]:
+        sides = "/".join(report["clipped_sides"])
+        result["primary_failure"] = "clip-fail"
+        result["next_action"] = (
+            f"add at least two magenta cells of clearance on {sides}; keep the safe box"
+        )
+        return result
+    if cells is None:
+        result["primary_failure"] = "pitch-fail"
+        result["next_action"] = (
+            "strengthen the exact-grid shell and attach an accepted grid-faithful style reference"
+        )
+        return result
+
+    grid_w, grid_h = report["grid"]
+    if (grid_w > frame.w or grid_h > frame.h
+            or grid_w > frame.safe_w or grid_h > frame.safe_h):
+        result["primary_failure"] = "overshoot"
+        result["next_action"] = (
+            f"redraw the complete silhouette inside the {frame.safe_w}x{frame.safe_h} "
+            "safe box with clearance on every edge"
+        )
+        return result
+    if grid_h < frame.min_logical_height:
+        result["primary_failure"] = "underfill"
+        result["next_action"] = (
+            f"redraw larger while staying inside the {frame.safe_w}x{frame.safe_h} safe box"
+        )
+        return result
+    result["status"] = "advance"
+    result["primary_failure"] = None
+    result["next_action"] = "advance to visual review"
+    return result
+
+
 def recover_grid(
     raw_path: pathlib.Path,
     frame: Frame = MEDIUM,
@@ -293,25 +430,21 @@ def recover_grid(
     gate_errs = raw_gates(raw_path)
     if gate_errs:
         raise ValueError("; ".join(gate_errs))
-    src, fg, bbox = _key(raw_path)
-    x0, y0, x1, y1 = bbox
-    long_side = max(x1 - x0 + 1, y1 - y0 + 1)
-    minimum, maximum = long_side / frame.h, long_side / frame.min_logical_height
-    pitch_x = detect_pitch(src, fg, "x", minimum, maximum)
-    pitch_y = detect_pitch(src, fg, "y", minimum, maximum)
-    if pitch_x["score"] < MIN_GRID_SCORE or pitch_y["score"] < MIN_GRID_SCORE:
+    cells, report = _recover_candidate(raw_path, frame)
+    if cells is None and (report["pitch_x"]["score"] < MIN_GRID_SCORE
+                          or report["pitch_y"]["score"] < MIN_GRID_SCORE):
         raise ValueError(f"{raw_path.name}: no recoverable logical grid "
-                         f"(scores x={pitch_x['score']:.3f}, y={pitch_y['score']:.3f})")
-    cells = sample_cells(src, fg, bbox, pitch_x, pitch_y)
-    grid_h = len(cells)
-    grid_w = len(cells[0]) if cells else 0
-    if not grid_w or not grid_h or any(len(row) != grid_w for row in cells):
+                         f"(scores x={report['pitch_x']['score']:.3f}, "
+                         f"y={report['pitch_y']['score']:.3f})")
+    if cells is None or report["grid"] is None:
         raise ValueError(f"{raw_path.name}: recovered an empty or irregular grid")
+    grid_w, grid_h = report["grid"]
     if (grid_w > frame.w or grid_h > frame.h
             or grid_h < frame.min_logical_height):
         raise ValueError(f"{raw_path.name}: recovered grid {grid_w}x{grid_h} does not fit "
                          f"the {frame.w}x{frame.h} contract")
-    return cells, {"bbox": bbox, "pitch_x": pitch_x, "pitch_y": pitch_y,
+    return cells, {"bbox": tuple(report["bbox"]),
+                   "pitch_x": report["pitch_x"], "pitch_y": report["pitch_y"],
                    "grid": [grid_w, grid_h]}
 
 
@@ -370,11 +503,11 @@ def validate(image: Image.Image, name: str = "frame",
         errs.append(f"{name}: empty frame, no opaque pixels")
         return errs
 
-    # NOTE: clipping is deliberately NOT checked here. normalize() scales to
-    # fit, so the subject touching the canvas edge is the expected result, not
-    # damage. Real clipping happens upstream -- the generator cutting the
-    # character off at the raw canvas edge -- so raw_clipping() catches it
-    # against the archived raw, before the reduction discards the evidence.
+    # NOTE: clipping is deliberately NOT checked here. normalize() places the
+    # recovered cells on the runtime canvas, where an occupied edge no longer
+    # proves that the provider cropped the source. Real clipping happens
+    # upstream, so raw_clipping() checks the provider PNG before recovery
+    # discards that evidence.
 
     # embedded effects -- an Ability effect baked into a Character frame.
     # Effects are authored as separate assets, so a Character frame may only
@@ -397,12 +530,9 @@ def raw_clipping(raw_path: pathlib.Path) -> list[str]:
         src, _, (x0, y0, x1, y1) = _key(raw_path)
     except ValueError as error:
         return [str(error)]
-    w, h = src.size
-    touching = [side for side, hit in
-                (("top", y0 == 0), ("bottom", y1 == h),
-                 ("left", x0 == 0), ("right", x1 == w))
-                if hit]
+    touching = _clipped_sides(src, (x0, y0, x1, y1))
     if touching:
+        w, h = src.size
         return [f"{raw_path.name}: subject clipped by generator at "
                 f"{'/'.join(touching)} of the {w}x{h} raw canvas"]
     return []
@@ -461,6 +591,108 @@ def manifest(action: str, frames: list[tuple[str, Image.Image]],
     }
 
 
+def _asset_identity(tag: str) -> tuple[str, dict]:
+    raw_tag = CANONICAL_RAW_TAGS.get(tag, tag)
+    out_name = OUTPUT_NAMES.get(raw_tag, raw_tag)
+    identity = ASSET_IDENTITIES.get(out_name)
+    if identity is None:
+        raise ValueError(f"{tag}: no known Nightglass asset identity")
+    return raw_tag, identity
+
+
+def promote_candidate(
+    raw_path: pathlib.Path,
+    *,
+    tag: str,
+    provider: str,
+    acquisition_tool: str,
+    prompt: str,
+    frame: Frame = MEDIUM,
+    references: list[tuple[str, pathlib.Path]] | None = None,
+    raw_dir: pathlib.Path = RAW_DIR,
+    out_dir: pathlib.Path = OUT_DIR,
+) -> dict:
+    """Promote one gate-passing candidate and generate its shipping provenance."""
+    raw_path = pathlib.Path(raw_path)
+    raw_dir = pathlib.Path(raw_dir)
+    out_dir = pathlib.Path(out_dir)
+    if not provider.strip() or not acquisition_tool.strip() or not prompt.strip():
+        raise ValueError("promotion requires provider, acquisition tool, and exact prompt")
+    report = measure_candidate(raw_path, frame=frame)
+    if report["status"] != "advance":
+        raise ValueError(
+            f"{raw_path.name}: candidate cannot be promoted: "
+            f"{report['primary_failure']} ({report['next_action']})"
+        )
+
+    raw_tag, identity = _asset_identity(tag)
+    out_name = OUTPUT_NAMES.get(raw_tag, raw_tag)
+    runtime_destination = f"src/assets/sprites/{out_name}.png"
+    raw_sha256 = hashlib.sha256(raw_path.read_bytes()).hexdigest()
+    style_references = []
+    for role, reference in references or []:
+        reference = pathlib.Path(reference)
+        style_references.append({
+            "path": str(reference),
+            "sha256": hashlib.sha256(reference.read_bytes()).hexdigest(),
+            "role": role,
+        })
+    sidecar = {
+        "provider": provider,
+        "acquisition_tool": acquisition_tool,
+        "raw_sha256": raw_sha256,
+        "tier": next(name for name, value in FRAMES.items() if value == frame),
+        "asset_class": identity["asset_class"],
+        "runtime_destination": runtime_destination,
+        "candidate": raw_path.name,
+        "facing": identity["facing"],
+        "role": identity["role"],
+        "style_references": style_references,
+        "prompt": prompt,
+    }
+    raw_dir.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(dir=raw_dir.parent) as stage_name:
+        staged_raw = pathlib.Path(stage_name) / f"{raw_tag}.png"
+        shutil.copyfile(raw_path, staged_raw)
+        staged_raw.with_suffix(".source.json").write_text(
+            json.dumps(sidecar, indent=2) + "\n"
+        )
+        runtime = normalize(staged_raw, frame=frame)
+        errors = raw_clipping(staged_raw) + validate(runtime, out_name, frame=frame)
+        if errors:
+            raise ValueError("; ".join(errors))
+
+        raw_dir.mkdir(parents=True, exist_ok=True)
+        out_dir.mkdir(parents=True, exist_ok=True)
+        archived_raw = raw_dir / f"{raw_tag}.png"
+        shutil.copyfile(staged_raw, archived_raw)
+        shutil.copyfile(
+            staged_raw.with_suffix(".source.json"),
+            archived_raw.with_suffix(".source.json"),
+        )
+    runtime_path = out_dir / f"{out_name}.png"
+    save_runtime_png(runtime, runtime_path)
+    manifest_path = out_dir / "manifest.json"
+    manifest_data = json.loads(manifest_path.read_text()) if manifest_path.exists() else {}
+    manifest_data[out_name] = manifest(
+        "still",
+        [(out_name, runtime)],
+        [1],
+        source={"provider": provider, "raw_sha256": raw_sha256},
+        frame=frame,
+    )
+    manifest_path.write_text(json.dumps(manifest_data, indent=2) + "\n")
+    return {
+        "status": "promoted",
+        "candidate": str(raw_path),
+        "raw": str(archived_raw),
+        "sidecar": str(archived_raw.with_suffix(".source.json")),
+        "runtime": str(runtime_path),
+        "manifest": str(manifest_path),
+        "measurement": report,
+    }
+
+
 # --------------------------------------------------------------- cli
 
 def _build(tags: Iterable[str]):
@@ -469,11 +701,15 @@ def _build(tags: Iterable[str]):
     manifests: dict[str, dict] = {}
     for tag in tags:
         raw = RAW_DIR / f"{tag}.png"
-        frame = normalize(raw)
+        sidecar = json.loads(raw.with_suffix(".source.json").read_text())
+        tier = sidecar.get("tier", "medium")
+        if tier not in FRAMES:
+            raise ValueError(f"{raw.name}: unknown acquisition tier {tier!r}")
+        frame_spec = FRAMES[tier]
+        frame = normalize(raw, frame=frame_spec)
         out_name = OUTPUT_NAMES.get(tag, tag)
         save_runtime_png(frame, OUT_DIR / f"{out_name}.png")
-        built.append((tag, out_name, frame, raw_clipping(raw)))
-        sidecar = json.loads(raw.with_suffix(".source.json").read_text())
+        built.append((tag, out_name, frame, frame_spec, raw_clipping(raw)))
         manifests[out_name] = manifest(
             "still",
             [(out_name, frame)],
@@ -482,25 +718,87 @@ def _build(tags: Iterable[str]):
                 "provider": sidecar.get("provider"),
                 "raw_sha256": sidecar.get("raw_sha256"),
             },
+            frame=frame_spec,
         )
     (OUT_DIR / "manifest.json").write_text(
         json.dumps(manifests, indent=2) + "\n")
     return built, OUT_DIR
 
 
-if __name__ == "__main__":
-    import sys
+def _reference(value: str) -> tuple[str, pathlib.Path]:
+    if "=" not in value:
+        raise argparse.ArgumentTypeError("reference must be ROLE=PATH")
+    role, path = value.split("=", 1)
+    if not role or not path:
+        raise argparse.ArgumentTypeError("reference must be ROLE=PATH")
+    return role, pathlib.Path(path)
 
-    tags = sys.argv[1:] or list(DEFAULT_TAGS)
-    built, out = _build(tags)
-    ok = True
-    for tag, out_name, frame, raw_errs in built:
-        errs = raw_errs + validate(frame, out_name)
-        digest = hashlib.sha256(frame.tobytes()).hexdigest()[:16]
-        print(f"{out_name:<18} baseline={baseline(frame):<3} sha={digest} "
-              f"{'ACCEPT' if not errs else 'REJECT'}")
-        for e in errs:
-            ok = False
-            print(f"   - {e}")
-    print(f"\nruntime frames -> {out}")
-    sys.exit(0 if ok else 1)
+
+def _command_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Nightglass logical-grid acquisition")
+    commands = parser.add_subparsers(dest="command", required=True)
+    measure = commands.add_parser(
+        "measure", help="measure provider candidates without provenance sidecars"
+    )
+    measure.add_argument("paths", nargs="+", type=pathlib.Path)
+    measure.add_argument("--tier", choices=FRAMES, default="medium")
+
+    promote = commands.add_parser(
+        "promote", help="promote one passing candidate and generate shipping provenance"
+    )
+    promote.add_argument("--tier", choices=FRAMES, default="medium")
+    promote.add_argument("--tag", required=True)
+    promote.add_argument("--raw", required=True, type=pathlib.Path)
+    promote.add_argument("--provider", required=True)
+    promote.add_argument("--acquisition-tool")
+    promote.add_argument("--prompt-file", required=True, type=pathlib.Path)
+    promote.add_argument("--reference", action="append", default=[], type=_reference,
+                         metavar="ROLE=PATH")
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    argv = list(sys.argv[1:] if argv is None else argv)
+    if argv and argv[0] in {"-h", "--help"}:
+        _command_parser().print_help()
+        print("\nWith no subcommand, rebuilds the default archived sprite bundle.")
+        return 0
+    if not argv or argv[0] not in {"measure", "promote"}:
+        built, out = _build(argv or list(DEFAULT_TAGS))
+        ok = True
+        for tag, out_name, frame, frame_spec, raw_errs in built:
+            errs = raw_errs + validate(frame, out_name, frame=frame_spec)
+            digest = hashlib.sha256(frame.tobytes()).hexdigest()[:16]
+            print(f"{out_name:<18} baseline={baseline(frame, frame=frame_spec):<3} "
+                  f"sha={digest} {'ACCEPT' if not errs else 'REJECT'}")
+            for error in errs:
+                ok = False
+                print(f"   - {error}")
+        print(f"\nruntime frames -> {out}")
+        return 0 if ok else 1
+
+    args = _command_parser().parse_args(argv)
+    frame = FRAMES[args.tier]
+    if args.command == "measure":
+        payload = {
+            "tier": args.tier,
+            "candidates": [measure_candidate(path, frame=frame) for path in args.paths],
+        }
+        print(json.dumps(payload, indent=2))
+        return 0
+
+    result = promote_candidate(
+        args.raw,
+        tag=args.tag,
+        provider=args.provider,
+        acquisition_tool=args.acquisition_tool or args.provider,
+        prompt=args.prompt_file.read_text(),
+        frame=frame,
+        references=args.reference,
+    )
+    print(json.dumps(result, indent=2))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

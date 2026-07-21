@@ -4,9 +4,12 @@ Every rejection rule must actually fire, and the normalizer must reproduce
 byte-identical runtime frames from the archived raw bundle with no provider.
 """
 import hashlib
+import io
 import json
 import pathlib
 import sys
+import tempfile
+from contextlib import redirect_stdout
 from unittest import mock
 
 from PIL import Image
@@ -43,18 +46,20 @@ def good_frame():
 
 
 MONSTER_FRAMES = {
-    "small": (24, 32),
-    "medium": (32, 48),
-    "large": (48, 72),
+    "small": (24, 32, 20, 26),
+    "medium": (32, 48, 26, 40),
+    "large": (48, 72, 40, 60),
 }
 
 
 print("frame tiers")
-for tier, (w, h) in MONSTER_FRAMES.items():
+for tier, (w, h, safe_w, safe_h) in MONSTER_FRAMES.items():
     spec = A.FRAMES[tier]
     check(f"FRAMES[{tier!r}] matches MONSTER_FRAMES",
-          (spec.w, spec.h) == (w, h) and spec.min_logical_height > 0,
-          f"w={spec.w} h={spec.h} min_h={spec.min_logical_height}")
+          (spec.w, spec.h, spec.safe_w, spec.safe_h) == (w, h, safe_w, safe_h)
+          and spec.min_logical_height > 0,
+          f"w={spec.w} h={spec.h} safe={spec.safe_w}x{spec.safe_h} "
+          f"min_h={spec.min_logical_height}")
 check("MEDIUM is the default medium tier", A.MEDIUM is A.FRAMES["medium"])
 
 
@@ -63,7 +68,7 @@ def png_bytes(frame):
 
 
 print("raw acquisition gates")
-bundle = sorted(RAW_DIR.glob("*.png"))
+bundle = [RAW_DIR / f"{tag}.png" for tag in A.DEFAULT_TAGS]
 gate_errs = [e for p in bundle for e in A.raw_gates(p)]
 check("archived raws match their unmodified provider hashes", not gate_errs,
       str(gate_errs))
@@ -88,6 +93,89 @@ check("Hunter grid is recoverable without reduction",
 check("both pitch fits clear the confidence gate",
       all(report[axis]["score"] >= A.MIN_GRID_SCORE
           for report in reports.values() for axis in ("pitch_x", "pitch_y")))
+
+
+print("candidate measurement interface")
+with tempfile.TemporaryDirectory() as temp_name:
+    temp = pathlib.Path(temp_name)
+    candidate = temp / "boss-3-candidate.png"
+    candidate.write_bytes((RAW_DIR / "boss-3.png").read_bytes())
+    report = A.measure_candidate(candidate, frame=A.FRAMES["medium"])
+    check("candidate measurement does not require a provenance sidecar",
+          not candidate.with_suffix(".source.json").exists()
+          and report["status"] == "advance",
+          str(report))
+    check("candidate report returns stable measurements",
+          report["grid"] == [21, 40]
+          and report["primary_failure"] is None
+          and report["clipped_sides"] == []
+          and report["gates"] == [],
+          str(report))
+
+    output = io.StringIO()
+    with redirect_stdout(output):
+        exit_code = A.main(["measure", "--tier", "medium", str(candidate)])
+    cli_report = json.loads(output.getvalue())
+    check("measure CLI returns machine-readable candidate JSON",
+          exit_code == 0
+          and cli_report["tier"] == "medium"
+          and cli_report["candidates"][0]["grid"] == [21, 40],
+          output.getvalue())
+
+    promoted_raw_dir = temp / "raw"
+    promoted_out_dir = temp / "runtime"
+    result = A.promote_candidate(
+        candidate,
+        tag="boss-3",
+        provider="Cursor GenerateImage",
+        acquisition_tool="GenerateImage",
+        prompt="strict side profile facing LEFT",
+        frame=A.FRAMES["medium"],
+        raw_dir=promoted_raw_dir,
+        out_dir=promoted_out_dir,
+    )
+    promoted_sidecar = json.loads(
+        (promoted_raw_dir / "boss-3.source.json").read_text())
+    check("promotion creates canonical raw, runtime, sidecar, and manifest",
+          result["status"] == "promoted"
+          and (promoted_raw_dir / "boss-3.png").read_bytes() == candidate.read_bytes()
+          and (promoted_out_dir / "boss-3.png").exists()
+          and (promoted_out_dir / "manifest.json").exists(),
+          str(result))
+    check("promotion generates complete core provenance",
+          promoted_sidecar["provider"] == "Cursor GenerateImage"
+          and promoted_sidecar["acquisition_tool"] == "GenerateImage"
+          and promoted_sidecar["prompt"] == "strict side profile facing LEFT"
+          and promoted_sidecar["raw_sha256"] == hashlib.sha256(candidate.read_bytes()).hexdigest()
+          and promoted_sidecar["tier"] == "medium"
+          and promoted_sidecar["asset_class"] == "opponent"
+          and promoted_sidecar["runtime_destination"] == "src/assets/sprites/boss-3.png"
+          and promoted_sidecar["facing"] == "left",
+          str(promoted_sidecar))
+
+    rejected = temp / "rejected.png"
+    Image.new("RGBA", (64, 96), (0, 0, 255, 255)).save(rejected)
+    rejected_raw_dir = temp / "rejected-raw"
+    rejected_out_dir = temp / "rejected-runtime"
+    try:
+        A.promote_candidate(
+            rejected,
+            tag="boss-3",
+            provider="Cursor GenerateImage",
+            acquisition_tool="GenerateImage",
+            prompt="strict side profile facing LEFT",
+            frame=A.FRAMES["medium"],
+            raw_dir=rejected_raw_dir,
+            out_dir=rejected_out_dir,
+        )
+        rejected_error = ""
+    except ValueError as error:
+        rejected_error = str(error)
+    check("promotion refuses retry candidates without writing shipping artifacts",
+          "cannot be promoted" in rejected_error
+          and not rejected_raw_dir.exists()
+          and not rejected_out_dir.exists(),
+          rejected_error)
 
 _stub_oversize = [[(200, 200, 200) for _ in range(22)] for _ in range(35)]
 with mock.patch.object(A, "sample_cells", return_value=_stub_oversize):
@@ -143,6 +231,15 @@ clipped.save(tmp)
 errs = A.raw_clipping(tmp)
 check("generator-clipped raw rejected", any("clipped by generator" in e for e in errs),
       errs[0] if errs else "")
+tmp.unlink()
+
+clipped = Image.new("RGBA", (64, 64), (*A.MAGENTA, 255))
+clipped.paste(Image.new("RGBA", (20, 20), (233, 226, 189, 255)), (44, 44))
+tmp = HERE / "_clipped_bottom_right_test.png"
+clipped.save(tmp)
+errs = A.raw_clipping(tmp)
+check("generator clipping detects bottom and right edges",
+      any("bottom/right" in e for e in errs), errs[0] if errs else "")
 tmp.unlink()
 
 # whole raw bundle is clean
