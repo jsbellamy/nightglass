@@ -1,0 +1,63 @@
+{
+  "battlefield": {
+    "width": 480,
+    "height": 86,
+    "floor_y": 80,
+    "boss_bar_bottom_y": 7
+  },
+  "boss_anchor_x": 240,
+  "boss_geometry": {
+    "frame_size": [
+      36,
+      72
+    ],
+    "visual_bounds": [
+      0,
+      0,
+      36,
+      72
+    ],
+    "foot_anchor": [
+      18,
+      72
+    ]
+  },
+  "opaque_body_rect": [
+    222,
+    8,
+    258,
+    80
+  ],
+  "crosses_boss_bar": false,
+  "inside_battlefield": true,
+  "party_bodies": [
+    {
+      "anchor_x": 24,
+      "body": [
+        8,
+        35,
+        40,
+        80
+      ]
+    },
+    {
+      "anchor_x": 68,
+      "body": [
+        48,
+        34,
+        88,
+        80
+      ]
+    },
+    {
+      "anchor_x": 112,
+      "body": [
+        97,
+        35,
+        126,
+        80
+      ]
+    }
+  ],
+  "boss_vs_party_overlaps": []
+}

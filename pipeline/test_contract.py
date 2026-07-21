@@ -111,8 +111,6 @@ check("Boss opponent grid is recoverable without reduction",
       reports["boss"]["grid"] == [32, 41], str(reports["boss"]))
 check("Boss-2 Gloomcap Matron grid is recoverable without reduction",
       reports["boss-2"]["grid"] == [29, 43], str(reports["boss-2"]))
-check("Boss-3 Thornmother Vane grid is recoverable without reduction",
-      reports["boss-3"]["grid"] == [21, 40], str(reports["boss-3"]))
 check("Priest grid is recoverable without reduction",
       reports["priest"]["grid"] == [27, 46], str(reports["priest"]))
 check("both pitch fits clear the confidence gate",
@@ -146,6 +144,20 @@ check("Pipcap flexible opaque bounds fit the ordinary Opponent 30x68 ceiling",
       and pipcap_measure["fitted_opaque_size"][1] <= pipcap_profile.max_opaque_h
       and pipcap_measure["clipped_sides"] == [],
       str(pipcap_measure))
+
+boss3_sidecar = _sidecar("boss-3")
+boss3_measure = A.measure_candidate(RAW_DIR / "boss-3.png", tag="boss-3")
+check("Boss-3 Thornmother archived raw uses flexible acquisition provenance",
+      boss3_sidecar.get("acquisition") == "flexible"
+      and boss3_sidecar.get("identity_profile", {}).get("role") == "boss"
+      and boss3_sidecar.get("facing") == "left",
+      str(boss3_sidecar))
+check("Boss-3 flexible opaque bounds fit the Boss 160x72 ceiling",
+      boss3_measure["status"] == "advance"
+      and boss3_measure["fitted_opaque_size"][0] <= boss_profile.max_opaque_w
+      and boss3_measure["fitted_opaque_size"][1] <= boss_profile.max_opaque_h
+      and boss3_measure["clipped_sides"] == [],
+      str(boss3_measure))
 
 
 print("candidate measurement interface")

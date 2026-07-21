@@ -226,33 +226,33 @@
   "boss-3": {
     "action": "still",
     "frame_size": [
-      32,
-      48
+      36,
+      72
     ],
     "visual_bounds": [
-      5,
-      8,
-      26,
-      48
+      0,
+      0,
+      36,
+      72
     ],
     "foot_anchor": [
-      16,
-      48
+      18,
+      72
     ],
     "palette": "moonberry-16",
-    "baseline_row": 47,
+    "baseline_row": 71,
     "total_ms": 1,
     "frames": [
       {
         "name": "boss-3",
         "duration_ms": 1,
-        "sha256": "0c968a4f2ada7e986d06b2ffe903da1cdfbdec274920461afe5e8b9a8a9d4484"
+        "sha256": "d50d15ed713e1cd7ce104311dfb1669ea04fa36494444256e19e0b21dd1922b5"
       }
     ],
     "cues_ms": {},
     "source": {
       "provider": "Cursor GenerateImage",
-      "raw_sha256": "02543340a945e8f1cd52e15a2bb013069c2749a08fd35c0732a24cdbfdcca1ca"
+      "raw_sha256": "30e3b6d081726c00761455c3b65e0e0649d57bcbadea8f22a96c302f96896b3d"
     }
   }
 }
