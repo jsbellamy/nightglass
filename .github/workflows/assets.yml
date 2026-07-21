@@ -1,0 +1,27 @@
+name: Assets
+
+on:
+  pull_request:
+    paths:
+      - "pipeline/**"
+      - "src/assets/**"
+      - "assets-raw/**"
+      - ".github/workflows/assets.yml"
+  push:
+    branches: [main]
+    paths:
+      - "pipeline/**"
+      - "src/assets/**"
+      - "assets-raw/**"
+      - ".github/workflows/assets.yml"
+
+jobs:
+  assets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pillow
+      - run: npm run assets:verify
