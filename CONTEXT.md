@@ -41,11 +41,11 @@ A combatant fought by the Party on the Battlefield, defined by authored statisti
 _Avoid_: enemy, mob, monster
 
 **Battle Tile**:
-The fixed 480×112 logical-pixel, always-on-top surface that contains the live Battlefield. The Management Dock fans out beside it but does not resize, replace, or implicitly pause it.
+The fixed 480×112 logical-pixel, always-on-top surface that contains the live Battlefield. The Management Dock fans out beside it but does not resize, replace, or implicitly pause it. The dock may translate the tile horizontally only to keep it centered on the clamped dock workspace.
 _Avoid_: main window, taskbar, combat window
 
 **Management Dock**:
-The single 800×480 logical-pixel tabbed panel, docked flush above the tile (below it when top-parked). It shows one management surface at a time — Character, Armory, or Stage — and opening or switching it never resizes, moves, or pauses the Battle Tile.
+The single 800×480 logical-pixel tabbed panel, docked flush above the tile (below it when top-parked). It shows one management surface at a time — Character, Armory, or Stage — and opening or switching it never resizes or implicitly pauses the Battle Tile. It may translate the tile horizontally only to preserve center-on-dock after monitor clamping.
 _Avoid_: management windows, card fan, settings panel
 
 **Party Member**:

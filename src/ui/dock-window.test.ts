@@ -139,12 +139,12 @@ describe("dock window port", () => {
     return { port, createDockWindow, getTauriWindow: () => tauriWindow };
   }
 
-  it("manual-check: dock-no-tile-resize — reads tile geometry without calling tile resize or move APIs", () => {
+  it("manual-check: dock-no-tile-resize — reads tile geometry without calling tile resize APIs", () => {
     const source = readFileSync(
       join(dirname(fileURLToPath(import.meta.url)), "dock-window.ts"),
       "utf8",
     );
-    expect(source).not.toMatch(/getCurrentWindow\(\)\.set(Position|Size|Fullscreen)/);
+    expect(source).not.toMatch(/getCurrentWindow\(\)\.set(Size|Fullscreen)/);
     expect(source).not.toMatch(/getCurrentWindow\(\)\.hide\(/);
     expect(source).toMatch(/scaleFactor/);
   });
@@ -393,8 +393,76 @@ describe("dock window port", () => {
     });
 
     await port.open();
+    const expected = dockRect(tile, monitor);
     const expectedY = tile.y - DOCK_GAP_PX - DOCK_HEIGHT;
-    expect(dock.callOrder).toContain(`setPosition:${tile.x},${expectedY}`);
+    expect(dock.callOrder).toContain(`setPosition:${expected.x},${expectedY}`);
+  });
+
+  it("manual-check: dock-position-only — calls setTilePosition only when dockRect tileX differs from tile.x", async () => {
+    const dock = mockDockWindow();
+    const setTilePosition = vi.fn(async () => {});
+    const clampedTile = { x: 80, y: 732, width: 480, height: 112 };
+    const portClamped = createDockWindowPort({
+      isTauri: true,
+      dockUrl,
+      getTileOuterPosition: async () => clampedTile,
+      getMonitorForTile: async () => monitor,
+      createDockWindow: async () => dock,
+      setTilePosition,
+    });
+    await portClamped.open();
+    const clampedRect = dockRect(clampedTile, monitor);
+    expect(clampedRect.tileX).not.toBe(clampedTile.x);
+    expect(setTilePosition).toHaveBeenCalledTimes(1);
+    expect(setTilePosition).toHaveBeenCalledWith(clampedRect.tileX, clampedTile.y);
+
+    const setTilePositionUnclamped = vi.fn(async () => {});
+    const dock2 = mockDockWindow();
+    const portUnclamped = createDockWindowPort({
+      isTauri: true,
+      dockUrl,
+      getTileOuterPosition: async () => tile,
+      getMonitorForTile: async () => monitor,
+      createDockWindow: async () => dock2,
+      setTilePosition: setTilePositionUnclamped,
+    });
+    await portUnclamped.open();
+    expect(setTilePositionUnclamped).not.toHaveBeenCalled();
+
+    dock.callOrder.length = 0;
+    setTilePosition.mockClear();
+    await portClamped.reposition({ tile: clampedTile, monitor });
+    expect(setTilePosition).toHaveBeenCalledTimes(1);
+    expect(setTilePosition).toHaveBeenCalledWith(clampedRect.tileX, clampedTile.y);
+    expect(dock.callOrder.some((entry) => entry.startsWith("setPosition"))).toBe(true);
+
+    dock2.callOrder.length = 0;
+    await portUnclamped.syncPositionFromTile();
+    expect(setTilePositionUnclamped).not.toHaveBeenCalled();
+
+    const frames = createManualScheduler();
+    let moved: (() => void) | undefined;
+    const setTilePositionOnMove = vi.fn(async () => {});
+    const dockMove = mockDockWindow();
+    const portMove = createDockWindowPort({
+      isTauri: true,
+      dockUrl,
+      getTileOuterPosition: async () => clampedTile,
+      getMonitorForTile: async () => monitor,
+      getDockWindow: async () => dockMove,
+      scheduleFrame: frames.scheduleFrame,
+      setTilePosition: setTilePositionOnMove,
+      onTileMoved: (listener) => {
+        moved = listener;
+        return () => {};
+      },
+    });
+    await portMove.open();
+    setTilePositionOnMove.mockClear();
+    moved?.();
+    await frames.flushOne();
+    expect(setTilePositionOnMove).toHaveBeenCalledTimes(1);
+    expect(setTilePositionOnMove).toHaveBeenCalledWith(clampedRect.tileX, clampedTile.y);
   });
 
   it("fetches scaleFactor and currentMonitor at most once across a drag, never outerSize", async () => {
