@@ -40,7 +40,9 @@ creates a Tauri `WebviewWindow` or exercises OS window chrome.
    tile webview; the tile pump keeps advancing.
 3. **Native positioning** — The Dock window opens at the geometry implied by
    `dockRect` relative to the tile's outer position on the monitor (above or
-   below with the configured gap), not at an arbitrary OS default.
+   below with the configured gap), horizontally **centered** on the Battle Tile
+   when unclamped; near monitor edges the tile snaps so it stays centered on the
+   clamped dock — not at an arbitrary OS default.
 4. **Dock geometry not restored from disk** — With `tauri-plugin-window-state`
    constrained to tile position only and the dock denylisted, a stale `"dock"`
    entry in `.window-state.json` must not shrink or reposition the dock; it

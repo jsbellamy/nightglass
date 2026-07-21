@@ -94,15 +94,18 @@ Decisions: [Battlefield workspace](https://github.com/jsbellamy/nightglass/issue
 
 - A single **800×480 logical-pixel** tabbed panel, docked flush to the tile with
   an 8px gap, in the same glass language. It opens **above** a bottom-parked
-  tile and **below** a top-parked one; horizontal placement left-aligns to the
-  tile when there is room and clamps to the monitor so the dock stays fully
-  on-screen (see ADR-0005).
+  tile and **below** a top-parked one; horizontal placement **centers** the dock
+  on the tile when there is room, **clamps** to the monitor so the dock stays fully
+  on-screen, and may **snap the tile horizontally** so it stays centered on the
+  clamped dock (see ADR-0005).
 - One tab per management surface — **Party, Loadout, Talents, Armory, Stage** —
   with a capacity of **one surface at a time**; choosing another surface swaps
   the tab. A status-line button opens the dock; pressing the active surface's
   button again, or the dock's ✕, closes the whole dock.
-- Opening, switching, or closing the dock never resizes, moves, or pauses the
-  Battle Tile.
+- Opening, switching, or closing the dock never **resizes or implicitly pauses**
+  the Battle Tile. The dock may **translate the tile horizontally** only to
+  preserve center-on-dock after monitor clamping (or the equivalent recenter
+  from `dockRect`).
 
 ---
 

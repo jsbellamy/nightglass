@@ -36,6 +36,8 @@ export interface DockWindowDeps {
   scheduleFrame?: (callback: () => void | Promise<void>) => void;
   /** Clears cached scale-factor / monitor reads. Called from close() and destroy(). */
   invalidateGeometryCache?: () => void;
+  /** Snaps the Battle Tile horizontally when dock clamping recenters it. */
+  setTilePosition?: (x: number, y: number) => Promise<void>;
 }
 
 export interface DockWebviewWindow {
@@ -186,16 +188,26 @@ export function createDockWindowPort(deps: DockWindowDeps = {}): DockWindowPort 
     return { tile, monitor };
   }
 
+  async function applyDockPlacement(
+    geometry: DockWindowGeometry,
+    next: ReturnType<typeof dockRect>,
+  ): Promise<void> {
+    const windowRef = await ensureDockWindow();
+    if (windowRef) {
+      await windowRef.setPosition(next.x, next.y);
+    }
+    if (next.tileX !== geometry.tile.x && deps.setTilePosition) {
+      await deps.setTilePosition(next.tileX, geometry.tile.y);
+    }
+  }
+
   async function applyPosition(): Promise<void> {
     const geometry = await readGeometry();
     if (!geometry) {
       return;
     }
     const next = dockRect(geometry.tile, geometry.monitor);
-    const windowRef = await ensureDockWindow();
-    if (windowRef) {
-      await windowRef.setPosition(next.x, next.y);
-    }
+    await applyDockPlacement(geometry, next);
   }
 
   async function runScheduledFrame(): Promise<void> {
@@ -271,10 +283,7 @@ export function createDockWindowPort(deps: DockWindowDeps = {}): DockWindowPort 
     },
     async reposition(geometry) {
       const next = dockRect(geometry.tile, geometry.monitor);
-      const windowRef = await ensureDockWindow();
-      if (windowRef) {
-        await windowRef.setPosition(next.x, next.y);
-      }
+      await applyDockPlacement(geometry, next);
     },
     async syncPositionFromTile() {
       await applyPosition();
@@ -472,6 +481,11 @@ export function createProductionDockWindowPort(): DockWindowPort {
       return () => {
         unlisten?.();
       };
+    },
+    async setTilePosition(x, y) {
+      const { getCurrentWindow } = await import("@tauri-apps/api/window");
+      const { LogicalPosition } = await import("@tauri-apps/api/dpi");
+      await getCurrentWindow().setPosition(new LogicalPosition(x, y));
     },
   });
 }
