@@ -21,7 +21,7 @@ const SCREENSHOTS = "e2e-screenshots";
 const KNOCKOUT_ARTIFACT = "docs/research/evidence/knockout-readability/tile-combat.png";
 /** Committed review artifact after Armory strip deletion (#271): Character Equipment rows. */
 const EQUIPMENT_CHROME_LEGIBILITY_ARTIFACT =
-  "docs/research/evidence/124-equipment-icon-consumers/character-equipment-rows.png";
+  "docs/research/evidence/124-equipment-icon-consumers/armory-worn-strip.png";
 
 type Rect = { x: number; y: number; w: number; h: number; cls?: string };
 
@@ -574,7 +574,7 @@ test.describe("rendered-output evidence seam", () => {
     await context.close();
   });
 
-  test("evidence: equipment-icon-content-tier / evidence: equipment-icon-chrome-legibility — Armory grid content-tier geometry and density; Character Equipment carries the chrome-legibility slug after strip deletion (content tier, explicit change)", async ({
+  test("evidence: equipment-icon-content-tier / evidence: equipment-icon-chrome-legibility — Armory grid content-tier geometry and density; worn strip carries the chrome-legibility slug (content tier, explicit change)", async ({
     browser,
   }) => {
     const { context, tile } = await openTile(browser);
@@ -586,6 +586,7 @@ test.describe("rendered-output evidence seam", () => {
     await postBusSnapshot(dock, equipmentIconReviewSnapshot());
     await dock.click('[data-dock-tab="armory"]');
     await dock.waitForSelector(".armory-grid .equipment-icon-img--content");
+    await dock.waitForSelector('[data-armory-worn-strip="true"] .equipment-icon-img--content');
 
     const gridContent = await dock.evaluate(() => {
       const img = document.querySelector<HTMLImageElement>(
@@ -615,6 +616,8 @@ test.describe("rendered-output evidence seam", () => {
           imgBox.top >= wrapBox.top - 0.5 &&
           imgBox.bottom <= wrapBox.bottom + 0.5,
         hasRarityTint: /(?:^|\s)rarity-/.test(tile.className),
+        hasTileName: tile.querySelector(".equipment-name") !== null,
+        hasUnseenWord: (tile.textContent ?? "").includes("Unseen"),
       };
     });
 
@@ -629,6 +632,8 @@ test.describe("rendered-output evidence seam", () => {
     expect(Number.parseFloat(gridContent!.wrapBorderWidth), "no wrapper border").toBe(0);
     expect(gridContent!.fitsWrap, "icon fits wrapper").toBe(true);
     expect(gridContent!.hasRarityTint, "rarity class on tile").toBe(true);
+    expect(gridContent!.hasTileName, "icon-first tiles omit name").toBe(false);
+    expect(gridContent!.hasUnseenWord, "tiles omit Unseen prose").toBe(false);
 
     const density = await dock.evaluate(() => {
       const grid = document.querySelector<HTMLElement>(".armory-grid");
@@ -656,30 +661,27 @@ test.describe("rendered-output evidence seam", () => {
         tileCount: tiles.length,
         chromeSurvives: document.querySelector(".equipment-icon-img--chrome") !== null,
         slotStrip: document.querySelector(".armory-slot-strip") !== null,
+        wornStrip: document.querySelector('[data-armory-worn-strip="true"]') !== null,
       };
     });
 
     expect(density, "Armory density sample").not.toBeNull();
-    expect(density!.slotStrip, "slot strip removed").toBe(false);
+    expect(density!.slotStrip, "legacy slot strip remains removed").toBe(false);
+    expect(density!.wornStrip, "worn loadout strip present").toBe(true);
     expect(density!.chromeSurvives, "no chrome-tier icon remains in the dock").toBe(false);
     expect(density!.columnCount, "at least three columns at 800px dock width").toBeGreaterThanOrEqual(
       3,
     );
     expect(density!.firstRowVisible, "at least one full row visible without scrolling").toBe(true);
 
-    await dock.click('[data-dock-tab="character"]');
-    await dock.waitForSelector(
-      '[data-character-section="equipment"] .equipment-icon-img--content',
-    );
-
     const classIds = ["knight", "wizard", "priest", "hunter"] as const;
     for (const classId of classIds) {
       await dock.click(`[data-character-chip="${classId}"]`);
       const slotFits = await dock.evaluate(() => {
-        return [...document.querySelectorAll<HTMLElement>("[data-equipment-slot]")].map((row) => {
+        return [...document.querySelectorAll<HTMLElement>("[data-worn-slot]")].map((row) => {
           const img = row.querySelector<HTMLImageElement>(".equipment-icon-img--content");
           if (!img) {
-            return { slot: row.dataset["equipmentSlot"], ok: false, reason: "missing icon" };
+            return { slot: row.dataset["wornSlot"], ok: false, reason: "missing icon" };
           }
           const imgBox = img.getBoundingClientRect();
           const rowBox = row.getBoundingClientRect();
@@ -698,7 +700,7 @@ test.describe("rendered-output evidence seam", () => {
             imgBox.top >= wrapBox.top - 0.5 &&
             imgBox.bottom <= wrapBox.bottom + 0.5;
           return {
-            slot: row.dataset["equipmentSlot"],
+            slot: row.dataset["wornSlot"],
             ok:
               fitsRow &&
               fitsWrap &&
@@ -712,15 +714,17 @@ test.describe("rendered-output evidence seam", () => {
           };
         });
       });
-      expect(slotFits, `three slots for ${classId}`).toHaveLength(3);
+      expect(slotFits, `three worn slots for ${classId}`).toHaveLength(3);
       for (const entry of slotFits) {
         expect(entry.ok, `${classId}/${entry.slot}: ${entry.reason}`).toBe(true);
       }
     }
 
+    expect(await dock.locator('[data-character-section="equipment"]').count()).toBe(0);
+
     mkdirSync("docs/research/evidence/124-equipment-icon-consumers", { recursive: true });
-    const equipment = await dock.locator('[data-character-section="equipment"]');
-    await equipment.screenshot({ path: EQUIPMENT_CHROME_LEGIBILITY_ARTIFACT });
+    const wornStrip = await dock.locator('[data-armory-worn-strip="true"]');
+    await wornStrip.screenshot({ path: EQUIPMENT_CHROME_LEGIBILITY_ARTIFACT });
 
     await context.close();
   });
