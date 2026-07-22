@@ -1,0 +1,112 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "e7202416f54dab24a7ff29380226ce77e117eb08fd114afa38964d797de6b64f",
+  "asset_class": "interface",
+  "kind": "talent-skill-glyph",
+  "runtime_destination": "src/assets/icons/sunlance.png",
+  "candidate": "sunlance-r2",
+  "palette_subset": [
+    "contour-plum-deepest",
+    "contour-plum-deep",
+    "mint",
+    "mint-light",
+    "cream",
+    "cream-gold",
+    "berry-shadow",
+    "berry-mid",
+    "berry",
+    "berry-bright",
+    "sage",
+    "twilight-slate"
+  ],
+  "style_references": [
+    {
+      "path": "docs/research/evidence/305-talent-icons-knight/knight-talent-sheet@8x.png",
+      "sha256": "3d8431fe435f55800f96762fbebb6118805b2095698f8440bf6fced710e05aed",
+      "role": "style_cohort"
+    },
+    {
+      "path": "docs/research/evidence/305-talent-icons-wizard/wizard-talent-sheet@8x.png",
+      "sha256": "e306825a0a7871aa217901da88ebcf686600ffe8ab4784e0ff1a06e10c78f7bd",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/moonpetal-relic.png",
+      "sha256": "ed5b990ae00fd690a8b3abc09167fc6c1b92ca865aacfe76efbe8c84a3f1c9f6",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/halcyon-lantern.png",
+      "sha256": "da00ae318d92b23d8f661103e95ddd77fc545e4971bef5f04eb6aa0f5038bc43",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/fortitude.png",
+      "sha256": "c6788da990b7fea87b4cbeb084f25f10c5281fd8973e2748765984f628b8b984",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/elemental-practice.png",
+      "sha256": "0572db1603feab66c3db3774fb11cf67baec20e9449633f380c3c0387250db7a",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/sprites/priest.png",
+      "sha256": "1decef54968ce8437afbf1d27c6755560542db69d89e554c8eacad1aa4ac2b2a",
+      "role": "style_reference"
+    },
+    {
+      "path": "src/assets/sprites/knight.png",
+      "sha256": "6ae9b30bf9157e0cb5054c72a79b3cccc115f2a9aad8b4ab417bf288c3d9d4b6",
+      "role": "style_reference"
+    },
+    {
+      "path": "src/assets/sprites/wizard.png",
+      "sha256": "a8646b1925f434c2d802d69f828d933ebbbbd5a32ef90b339ff558f3682d46d7",
+      "role": "style_reference"
+    }
+  ],
+  "prompt": "TRUE chunky pixel art skill icon ONLY. Drawn on an exact 32x32 logical\npixel grid rendered large; every logical pixel is one clean flat square block\n\u2014 no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A\nsingle centered symbolic skill glyph in three-quarter display angle: a LARGE vertical cream-gold sun spear glyph with berry flare at the tip filling the frame.\nNot a wearable equipment piece and not a full character \u2014 one readable glyph only.\nEnlarge \u2014 subject's long side spans about 26-30 logical pixels, with at least two full\nmagenta cells of clearance on every edge. Flat solid magenta #ff00ff background,\nnothing else in frame. Selective one-logical-pixel dark-plum outline. Use only\nmint / berry / cream / plum Moonberry colours (8-12 flat colors max) \u2014 no brown,\ntan, cyan, pure white, or pure black. Structural members at least 3 logical\npixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        304,
+        61,
+        751,
+        959
+      ],
+      "pitch_x": {
+        "pitch": 31.87222222222232,
+        "score": 0.3042264048681289
+      },
+      "pitch_y": {
+        "pitch": 31.97222222222232,
+        "score": 0.2064909579079501
+      },
+      "grid": [
+        14,
+        28
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 234,
+      "far_cells": 25,
+      "far_fraction": 0.1068,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "contour-plum-deep": 51,
+        "berry-shadow": 13,
+        "mint": 42,
+        "cream": 40,
+        "mint-light": 18,
+        "berry": 13,
+        "berry-mid": 14,
+        "berry-bright": 10,
+        "sage": 14,
+        "cream-gold": 13,
+        "twilight-slate": 6
+      }
+    }
+  }
+}

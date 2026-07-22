@@ -1,0 +1,61 @@
+{
+  "provider": "Cursor GenerateImage",
+  "prompt": "TRUE chunky pixel art skill icon ONLY. Drawn on an exact 32x32 logical pixel grid rendered large; every logical pixel is one clean flat square block \u2014 no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered symbolic skill glyph in three-quarter display angle: a VERY LARGE open cream sun-script tablet with mint and berry radiance marks, thick chunky slabs, dominating the frame. Not a wearable equipment piece and not a full character \u2014 one readable glyph only. Enlarge strongly \u2014 subject's long side spans about 28-30 logical pixels, with at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel dark-plum outline. Use only mint / berry / cream / plum Moonberry colours (8-12 flat colors max) \u2014 no brown, tan, cyan, pure white, or pure black. Structural members at least 3 logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "raw_sha256": "4393b846d60ef442ca5e08dd5d571db60a05b7c7ad6e7a4ba58321877526095a",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        88,
+        58,
+        940,
+        964
+      ],
+      "pitch_x": {
+        "pitch": 35.09444444444436,
+        "score": 0.07340930834905153
+      },
+      "pitch_y": {
+        "pitch": 35.54444444444434,
+        "score": 0.08311982074993914
+      },
+      "grid": [
+        25,
+        26
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 437,
+      "far_cells": 2,
+      "far_fraction": 0.0046,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "contour-plum-deep": 31,
+        "cream": 226,
+        "mint": 8,
+        "mint-light": 46,
+        "berry-mid": 1,
+        "mint-pale": 8,
+        "mint-shadow": 71,
+        "berry": 41,
+        "berry-bright": 2,
+        "cream-gold": 3
+      }
+    }
+  },
+  "palette_subset": [
+    "contour-plum-deepest",
+    "contour-plum-deep",
+    "mint-shadow",
+    "mint",
+    "mint-light",
+    "mint-pale",
+    "cream",
+    "cream-gold",
+    "berry-mid",
+    "berry",
+    "berry-bright",
+    "sage",
+    "twilight-slate"
+  ],
+  "evidence_raw": "docs/research/evidence/305-talent-icons-priest/accepted-raws/radiant-study.png"
+}

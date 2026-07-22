@@ -199,6 +199,46 @@
     "source_family": "prismatic-shelter",
     "sha256": "d3eeae567f99b0818ddc7a265a331ff9a98eecd85d09c06353d9234332afef44"
   },
+  "devotion": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "devotion",
+    "sha256": "d3fd5d7b4bebe7082920b91032a9e388ec5ec95b8ab93c78fe27096e21432305"
+  },
+  "radiant-study": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "radiant-study",
+    "sha256": "566c893c82afa84373a8b06b964e7cb75765a35b5c8868c49ae5ceeadf666a28"
+  },
+  "moonwell": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "moonwell",
+    "sha256": "5050fc2097209b449e98bf5937c9d5ab17b745c14354a725094089a71e6c33d4"
+  },
+  "sunlance": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "sunlance",
+    "sha256": "b85e0fe4cae55df2ed4c18232f5a518486b3e47bbd9e2c729d00bb9907b5a648"
+  },
   "verify-canary-a": {
     "canvas": [
       34,
