@@ -83,10 +83,10 @@ export const effectRecipes: Record<string, EffectRecipe> = {
   },
   "sundering-charge": {
     stillKey: "arc-slash",
-    frames: "arc-slash",
+    frames: "arc-slash-heavy",
     anchor: "strike_target",
     anchorDx: -15,
-    durationMs: 250,
+    durationMs: 330,
     cuesMs: { impact_expected: 700 },
   },
 
@@ -214,9 +214,9 @@ export const effectRecipes: Record<string, EffectRecipe> = {
   },
   "absolute-zero": {
     stillKey: "spell-bloom",
-    frames: "spell-bloom-frost",
+    frames: "spell-bloom-scaled-frost",
     anchor: "strike_target",
-    durationMs: 220,
+    durationMs: 260,
     cuesMs: { impact_expected: 650 },
   },
 
