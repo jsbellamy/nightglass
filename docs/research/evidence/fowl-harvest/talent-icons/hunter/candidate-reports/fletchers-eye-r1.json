@@ -1,0 +1,41 @@
+{
+  "candidate": "fletchers-eye-r1",
+  "path": "docs/research/evidence/fowl-harvest/talent-icons/hunter/scratch/fletchers-eye-r1.png",
+  "status": "pass",
+  "recovered": {
+    "bbox": [
+      91,
+      223,
+      932,
+      804
+    ],
+    "pitch_x": {
+      "pitch": 28.188888888888957,
+      "score": 0.2027182653611275
+    },
+    "pitch_y": {
+      "pitch": 27.63888888888895,
+      "score": 0.44348654137784554
+    },
+    "grid": [
+      30,
+      21
+    ]
+  },
+  "ramp": {
+    "opaque_cells": 386,
+    "far_cells": 1,
+    "far_fraction": 0.0026,
+    "off_ramp_reject": false,
+    "quantize_histogram": {
+      "contour-plum-deep": 116,
+      "mint-light": 132,
+      "cream": 104,
+      "berry-bright": 31,
+      "berry": 2,
+      "berry-shadow": 1
+    }
+  },
+  "primary": "advance",
+  "measurement": "30\u00d721; far 0.3%"
+}

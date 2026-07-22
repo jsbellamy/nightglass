@@ -1,0 +1,42 @@
+{
+  "candidate": "wayfarers-ward-r2",
+  "path": "docs/research/evidence/fowl-harvest/talent-icons/hunter/scratch/wayfarers-ward-r2.png",
+  "status": "pass",
+  "recovered": {
+    "bbox": [
+      285,
+      284,
+      738,
+      741
+    ],
+    "pitch_x": {
+      "pitch": 17.322222222222287,
+      "score": 0.5040335521238472
+    },
+    "pitch_y": {
+      "pitch": 18.2222222222223,
+      "score": 0.42657947384909956
+    },
+    "grid": [
+      26,
+      25
+    ]
+  },
+  "ramp": {
+    "opaque_cells": 478,
+    "far_cells": 0,
+    "far_fraction": 0.0,
+    "off_ramp_reject": false,
+    "quantize_histogram": {
+      "contour-plum-deep": 120,
+      "cream": 141,
+      "mint-light": 82,
+      "mint": 96,
+      "berry": 33,
+      "mint-shadow": 5,
+      "berry-bright": 1
+    }
+  },
+  "primary": "advance",
+  "measurement": "26\u00d725; far 0.0%"
+}

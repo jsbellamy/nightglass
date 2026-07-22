@@ -1,0 +1,88 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "e84f3ed97c20c8e113ef266b118859e61e9c816b0ce76522ca68a2e3095c9ee3",
+  "asset_class": "interface",
+  "kind": "talent-skill-glyph",
+  "runtime_destination": "src/assets/icons/twin-fang.png",
+  "note": "Unregistered interim source family for #393; no registry/runtime activation in this slice.",
+  "candidate": "twin-fang-r3",
+  "palette_subset": [
+    "contour-plum-deepest",
+    "contour-plum-deep",
+    "mint-shadow",
+    "mint",
+    "mint-light",
+    "mint-pale",
+    "cream",
+    "berry-shadow",
+    "berry-mid",
+    "berry",
+    "berry-bright",
+    "sage",
+    "twilight-slate"
+  ],
+  "style_references": [
+    {
+      "path": "docs/research/evidence/305-talent-icons-hunter/hunter-talent-sheet@8x.png",
+      "sha256": "5a3f09656c875b699331a82afd2e15525145e271c3a966a1fde3272a3482f7bd",
+      "role": "style_cohort"
+    },
+    {
+      "path": "docs/research/evidence/305-talent-icons-hunter/accepted-raws/heartseeker.png",
+      "sha256": "0f0766ccd380da627a1d70d6d5955b8218bb69a0bf507a058fa1c4c8c837f176",
+      "role": "style_cohort"
+    },
+    {
+      "path": "docs/research/evidence/305-talent-icons-hunter/accepted-raws/draw-weight.png",
+      "sha256": "f460f7ea9f4a2b1bc86fe7ff2f845aa34a463c67385836d14e467f4e65b6460b",
+      "role": "style_cohort"
+    },
+    {
+      "path": "docs/research/evidence/305-talent-icons-hunter/accepted-raws/fieldcraft.png",
+      "sha256": "476adf7fe3acb463f230b2861c640a3e76d3ea0f05e07a6f8414023bd03a260e",
+      "role": "style_cohort"
+    },
+    {
+      "path": "docs/research/evidence/305-talent-icons-hunter/accepted-raws/moonwire-trap.png",
+      "sha256": "84ddc0a9328cef66ada566777b94e82320eb14e0ffb3020e06a41927beb20423",
+      "role": "style_cohort"
+    }
+  ],
+  "prompt": "TRUE chunky pixel art Talent icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block with no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered symbolic Management Dock skill glyph for Twin Fang: two close parallel arrowheads aimed at one target point, reading two successive heavy attacks. Not a wearable Equipment item, not a scene, not a full Character, and not a UI frame. The subject long side spans about 26\u201330 logical pixels, with at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel dark-plum outline. Use only mint, berry, cream, and plum Moonberry colors, 8\u201312 flat colors maximum; no brown, tan, cyan, pure white, or pure black. Structural members are at least three logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        185,
+        176,
+        838,
+        881
+      ],
+      "pitch_x": {
+        "pitch": 34.611111111111136,
+        "score": 0.14663518272784895
+      },
+      "pitch_y": {
+        "pitch": 32.41111111111126,
+        "score": 0.3035104563273359
+      },
+      "grid": [
+        19,
+        22
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 249,
+      "far_cells": 5,
+      "far_fraction": 0.0201,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "contour-plum-deep": 66,
+        "mint-light": 82,
+        "cream": 71,
+        "berry-bright": 30
+      }
+    }
+  },
+  "evidence_raw": "docs/research/evidence/fowl-harvest/talent-icons/hunter/accepted-raws/twin-fang.png"
+}

@@ -1,0 +1,39 @@
+{
+  "candidate": "twin-fang-r3",
+  "path": "docs/research/evidence/fowl-harvest/talent-icons/hunter/scratch/twin-fang-r3.png",
+  "status": "pass",
+  "recovered": {
+    "bbox": [
+      185,
+      176,
+      838,
+      881
+    ],
+    "pitch_x": {
+      "pitch": 34.611111111111136,
+      "score": 0.14663518272784895
+    },
+    "pitch_y": {
+      "pitch": 32.41111111111126,
+      "score": 0.3035104563273359
+    },
+    "grid": [
+      19,
+      22
+    ]
+  },
+  "ramp": {
+    "opaque_cells": 249,
+    "far_cells": 5,
+    "far_fraction": 0.0201,
+    "off_ramp_reject": false,
+    "quantize_histogram": {
+      "contour-plum-deep": 66,
+      "mint-light": 82,
+      "cream": 71,
+      "berry-bright": 30
+    }
+  },
+  "primary": "preference-underfill",
+  "measurement": "19\u00d722; far 2.0%"
+}
