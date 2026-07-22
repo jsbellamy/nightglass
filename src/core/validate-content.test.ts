@@ -235,4 +235,70 @@ describe("validateContent", () => {
       'status "heal-tick" tickEffect must be damage',
     );
   });
+
+  it("rejects duplicate Talent ids across Tier 1 and later Tiers", () => {
+    const knight = fixtureContent.classes.find((entry) => entry.id === "knight")!;
+    const content: Content = {
+      ...fixtureContent,
+      classes: fixtureContent.classes.map((classKit) =>
+        classKit.id === "knight"
+          ? {
+              ...knight,
+              talentTiers: [
+                {
+                  ...knight.talents,
+                  statRow: [
+                    { ...knight.talents.statRow[0]!, id: "k-fortitude" },
+                    knight.talents.statRow[1]!,
+                  ],
+                },
+              ],
+            }
+          : classKit,
+      ),
+    };
+
+    expect(validateContent(content, { fixture: true })).toContain(
+      'class "knight" talent id "k-fortitude" is duplicated across talents and talentTiers[0]',
+    );
+  });
+
+  it("rejects a later Tier Ability reference that does not resolve", () => {
+    const knight = fixtureContent.classes.find((entry) => entry.id === "knight")!;
+    const content: Content = {
+      ...fixtureContent,
+      classes: fixtureContent.classes.map((classKit) =>
+        classKit.id === "knight"
+          ? {
+              ...knight,
+              talentTiers: [
+                {
+                  statRow: [
+                    {
+                      id: "k2-fortitude",
+                      name: "Fortitude II",
+                      perRank: { percent: { maxHealth: 0.04 } },
+                      maxRanks: 5,
+                      iconKey: "k2-fortitude",
+                    },
+                    {
+                      id: "k2-swordcraft",
+                      name: "Swordcraft II",
+                      perRank: { percent: { physicalPower: 0.04 } },
+                      maxRanks: 5,
+                      iconKey: "k2-swordcraft",
+                    },
+                  ],
+                  abilityRow: ["k-missing-tier-two", "k-falling-star"],
+                },
+              ],
+            }
+          : classKit,
+      ),
+    };
+
+    expect(validateContent(content, { fixture: true })).toContain(
+      'class "knight" talentTiers[0] abilityId "k-missing-tier-two" not found',
+    );
+  });
 });
