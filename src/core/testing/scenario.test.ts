@@ -52,7 +52,7 @@ describe("scenario builder", () => {
       label: string;
       build: () => Snapshot;
       expect: {
-        stage: 1 | 2 | 3;
+        stage: 1 | 2 | 3 | 4 | 5 | 6;
         encounter: 1 | 2 | 3;
         party: [ClassId, ClassId, ClassId];
         reserve: ClassId;
@@ -305,6 +305,17 @@ describe("scenario builder", () => {
 
       const engine = createEngine(fixtureContent, saved);
       expect(engine.snapshot().attempt, `line ${entry.line} loadable`).not.toBeNull();
+    }
+  });
+
+  it("reaches Stage 4 through Stage 6 Arrange dimensions through the builder", () => {
+    for (const stage of [4, 5, 6] as const) {
+      const saved = scenario().atStage(stage).atEncounter(2).build();
+      expect(saved.attempt?.stage).toBe(stage);
+      expect(saved.attempt?.encounter).toBe(2);
+      expect(saved.progression.unlockedStage).toBeGreaterThanOrEqual(stage);
+      const engine = createEngine(fixtureContent, saved);
+      expect(engine.snapshot().attempt?.stage).toBe(stage);
     }
   });
 });
