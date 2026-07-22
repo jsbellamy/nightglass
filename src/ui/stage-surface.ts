@@ -1,11 +1,12 @@
 import type { ReadonlySnapshot } from "../core/snapshot";
 import type { Content } from "../core/types";
 import type { TileCommand } from "./bus";
+import type { EngineLegalityView } from "./engine-legality";
 import { bindPressable } from "./keyboard";
 import { el, mountSurfaceShell } from "./surface-shell";
 
 export interface StageSurface {
-  render(snapshot: ReadonlySnapshot | null): void;
+  render(snapshot: ReadonlySnapshot | null, legality?: EngineLegalityView): void;
   destroy(): void;
 }
 
@@ -152,7 +153,10 @@ export function mountStageSurface(
     },
   });
 
-  function render(snapshot: ReadonlySnapshot | null): void {
+  function render(
+    snapshot: ReadonlySnapshot | null,
+    legality?: EngineLegalityView,
+  ): void {
     const confirmStage = pendingStage;
     const confirmEl = mountedConfirm;
     const focusedInConfirm =
@@ -162,7 +166,7 @@ export function mountStageSurface(
         ? document.activeElement
         : null;
 
-    shell.render(snapshot);
+    shell.render(snapshot, legality);
     pendingStage = confirmStage;
     if (!snapshot) {
       clearConfirm();

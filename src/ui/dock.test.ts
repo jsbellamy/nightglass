@@ -119,6 +119,132 @@ describe("Management Dock shell", () => {
     dock.destroy();
   });
 
+  it("delivers the exact legality view to each active surface body across the three tabs", () => {
+    const stageEntry = DOCK_SURFACES.find((entry) => entry.id === "stage")!;
+    const originalStageMount = stageEntry.mount;
+    let stageRenderLegality: EngineLegalityView | undefined;
+    stageEntry.mount = (root, options) => {
+      const mounted = originalStageMount(root, options);
+      const originalRender = mounted.render.bind(mounted);
+      mounted.render = (snapshot, legality) => {
+        stageRenderLegality = legality;
+        originalRender(snapshot, legality);
+      };
+      return mounted;
+    };
+
+    try {
+      const root = document.createElement("main");
+      const dock = mountDock(root);
+      const boot = createEngine(fixtureContent, undefined, 42);
+      boot.advanceBy(1);
+      const saved = boot.snapshot();
+      saved.progression.characterXp.knight = 850;
+      saved.progression.armory = [
+        {
+          dropId: 1,
+          baseId: "fixture-blade",
+          itemLevel: 1,
+          rarity: "common",
+          affixes: [],
+          awardedAtMs: 100,
+          seen: true,
+          locked: false,
+          assignedTo: null,
+        },
+      ];
+      const engine = createEngine(fixtureContent, saved, 42);
+      const snapshot = engine.snapshot();
+
+      const seen: EngineLegalityView[] = [];
+      const legality: EngineLegalityView = {
+        canAllocateTalent: (...args) => {
+          seen.push(legality);
+          return legalityViewFromEngine(engine).canAllocateTalent(...args);
+        },
+        canDeallocateTalent: (...args) => {
+          seen.push(legality);
+          return legalityViewFromEngine(engine).canDeallocateTalent(...args);
+        },
+        canEquip: (...args) => {
+          seen.push(legality);
+          return legalityViewFromEngine(engine).canEquip(...args);
+        },
+      };
+
+      dock.render(snapshot, legality);
+      root
+        .querySelector<HTMLElement>('.talent-cell[data-talent-id="k-fortitude"]')
+        ?.click();
+      expect(seen.length).toBeGreaterThan(0);
+      expect(seen.every((view) => view === legality)).toBe(true);
+
+      seen.length = 0;
+      root.querySelector<HTMLButtonElement>('[data-dock-tab="armory"]')?.click();
+      root.querySelector<HTMLButtonElement>('[data-worn-slot="weapon"]')?.click();
+      expect(seen.length).toBeGreaterThan(0);
+      expect(seen.every((view) => view === legality)).toBe(true);
+
+      stageRenderLegality = undefined;
+      root.querySelector<HTMLButtonElement>('[data-dock-tab="stage"]')?.click();
+      expect(stageRenderLegality).toBe(legality);
+      expect(root.querySelector(".stage-list")).not.toBeNull();
+
+      dock.destroy();
+    } finally {
+      stageEntry.mount = originalStageMount;
+    }
+  });
+
+  it("keeps Talent allocate/deallocate and Armory equip enabled state for a fixture Snapshot", () => {
+    const root = document.createElement("main");
+    const dock = mountDock(root);
+    const boot = createEngine(fixtureContent, undefined, 42);
+    boot.advanceBy(1);
+    const saved = boot.snapshot();
+    saved.progression.characterXp.knight = 850;
+    saved.progression.armory = [
+      {
+        dropId: 1,
+        baseId: "fixture-blade",
+        itemLevel: 1,
+        rarity: "common",
+        affixes: [],
+        awardedAtMs: 100,
+        seen: true,
+        locked: false,
+        assignedTo: null,
+      },
+    ];
+    const engine = createEngine(fixtureContent, saved, 42);
+    const snapshot = engine.snapshot();
+    const legality = legalityViewFromEngine(engine);
+
+    dock.render(snapshot, legality);
+    root
+      .querySelector<HTMLElement>('.talent-cell[data-talent-id="k-fortitude"]')
+      ?.click();
+    const allocate = root.querySelector<HTMLButtonElement>(
+      '[data-talent-id="k-fortitude"][data-talent-action="allocate"]',
+    );
+    const deallocate = root.querySelector<HTMLButtonElement>(
+      '[data-talent-id="k-fortitude"][data-talent-action="deallocate"]',
+    );
+    // Fixture: knight has unspent Talent Points and no Fortitude ranks yet.
+    expect(allocate?.disabled).toBe(false);
+    expect(deallocate?.disabled).toBe(true);
+    expect(legality.canAllocateTalent("knight", "k-fortitude")).toBe(true);
+    expect(legality.canDeallocateTalent("knight", "k-fortitude")).toBe(false);
+
+    root.querySelector<HTMLButtonElement>('[data-dock-tab="armory"]')?.click();
+    root.querySelector<HTMLButtonElement>('[data-worn-slot="weapon"]')?.click();
+    const cards = [...root.querySelectorAll<HTMLElement>(".armory-grid .equipment-card")];
+    expect(legality.canEquip(1, "knight", "weapon")).toBe(true);
+    expect(cards.map((card) => card.dataset["dropId"])).toEqual(["1"]);
+
+    dock.destroy();
+  });
+
   it("closes when the active tab is pressed again or the close button is used", () => {
     const root = document.createElement("main");
     const onClose = vi.fn();

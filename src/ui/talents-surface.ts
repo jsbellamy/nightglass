@@ -5,7 +5,7 @@ import {
   formatStatTalentDelta,
 } from "./ability-format";
 import type { TileCommand } from "./bus";
-import type { EngineLegalityView } from "./engine-legality";
+import { EMPTY_ENGINE_LEGALITY, type EngineLegalityView } from "./engine-legality";
 import { bindPressable } from "./keyboard";
 import { createEquipmentIconElement } from "./icons";
 import {
@@ -18,7 +18,7 @@ import {
 import { el, mountSurfaceShell, pendingMarker } from "./surface-shell";
 
 export interface TalentsSurface {
-  render(snapshot: ReadonlySnapshot | null, legality: EngineLegalityView): void;
+  render(snapshot: ReadonlySnapshot | null, legality?: EngineLegalityView): void;
   destroy(): void;
 }
 
@@ -53,14 +53,14 @@ export function mountTalentsSurface(
   options: TalentsSurfaceOptions,
 ): TalentsSurface {
   const { content } = options;
-  let currentLegality: EngineLegalityView;
+  let lastLegality: EngineLegalityView = EMPTY_ENGINE_LEGALITY;
   let lastSnapshot: ReadonlySnapshot | null = null;
   let selectedTalentId: string | null = null;
   let lastClassId: ClassId | null = null;
 
   function rerender(): void {
     if (lastSnapshot) {
-      shell.render(lastSnapshot);
+      shell.render(lastSnapshot, lastLegality);
     }
   }
 
@@ -277,8 +277,7 @@ export function mountTalentsSurface(
 
   const shell = mountSurfaceShell(root, "talents-surface", {
     title: "Talents",
-    body(snapshot) {
-      const legality = currentLegality;
+    body(snapshot, legality) {
       const classId = options.getSelectedClassId()!;
       if (lastClassId !== null && lastClassId !== classId) {
         selectedTalentId = null;
@@ -399,10 +398,10 @@ export function mountTalentsSurface(
   });
 
   return {
-    render(snapshot, legality) {
-      currentLegality = legality;
+    render(snapshot, legality = EMPTY_ENGINE_LEGALITY) {
+      lastLegality = legality;
       lastSnapshot = snapshot;
-      shell.render(snapshot);
+      shell.render(snapshot, legality);
     },
     destroy: () => shell.destroy(),
   };

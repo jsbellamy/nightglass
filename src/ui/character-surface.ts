@@ -20,7 +20,7 @@ function cycleCharacterTab(current: CharacterTabId, delta: number): CharacterTab
 }
 
 export interface CharacterSurface {
-  render(snapshot: ReadonlySnapshot | null, legality: EngineLegalityView): void;
+  render(snapshot: ReadonlySnapshot | null, legality?: EngineLegalityView): void;
   destroy(): void;
 }
 
@@ -129,7 +129,7 @@ export function mountCharacterSurface(
 
   return {
     render(snapshot, legality) {
-      loadout.render(snapshot);
+      loadout.render(snapshot, legality);
       talents.render(snapshot, legality);
     },
     destroy() {
