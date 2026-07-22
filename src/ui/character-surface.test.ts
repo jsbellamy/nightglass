@@ -66,6 +66,9 @@ describe("Character surface", () => {
     const snapshot = engine.snapshot();
 
     surface.render(snapshot, EMPTY_ENGINE_LEGALITY);
+    root
+      .querySelector<HTMLElement>('.talent-cell[data-talent-id="k-fortitude"]')
+      ?.click();
     const allocate = root.querySelector<HTMLButtonElement>(
       '[data-talent-id="k-fortitude"][data-talent-action="allocate"]',
     );
@@ -77,6 +80,9 @@ describe("Character surface", () => {
       canEquip: () => false,
     };
     surface.render(snapshot, permitting);
+    root
+      .querySelector<HTMLElement>('.talent-cell[data-talent-id="k-fortitude"]')
+      ?.click();
     expect(
       root.querySelector<HTMLButtonElement>(
         '[data-talent-id="k-fortitude"][data-talent-action="allocate"]',

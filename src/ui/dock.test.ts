@@ -92,6 +92,9 @@ describe("Management Dock shell", () => {
     const snapshot = engine.snapshot();
 
     dock.render(snapshot, EMPTY_ENGINE_LEGALITY);
+    root
+      .querySelector<HTMLElement>('.talent-cell[data-talent-id="k-fortitude"]')
+      ?.click();
     expect(
       root.querySelector<HTMLButtonElement>(
         '[data-talent-id="k-fortitude"][data-talent-action="allocate"]',
@@ -104,6 +107,9 @@ describe("Management Dock shell", () => {
       canEquip: () => false,
     };
     dock.render(snapshot, permitting);
+    root
+      .querySelector<HTMLElement>('.talent-cell[data-talent-id="k-fortitude"]')
+      ?.click();
     expect(
       root.querySelector<HTMLButtonElement>(
         '[data-talent-id="k-fortitude"][data-talent-action="allocate"]',

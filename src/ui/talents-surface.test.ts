@@ -51,6 +51,16 @@ function knightSection(root: HTMLElement): HTMLElement {
   return section;
 }
 
+function selectTalentCell(root: HTMLElement, talentId: string): void {
+  const cell = knightSection(root).querySelector<HTMLElement>(
+    `.talent-cell[data-talent-id="${talentId}"]`,
+  );
+  if (!cell) {
+    throw new Error(`missing talent cell ${talentId}`);
+  }
+  cell.click();
+}
+
 function leveledKnightEngine() {
   const boot = createEngine(fixtureContent, undefined, LOOT_SEED);
   boot.advanceBy(1);
@@ -60,7 +70,7 @@ function leveledKnightEngine() {
 }
 
 describe("Talents surface", () => {
-  it("renders only the picker's selected Character", () => {
+  it("renders only the picker's selected Character as a chrome grid with sticky detail", () => {
     const root = document.createElement("div");
     const engine = leveledKnightEngine();
     const selected = { current: "knight" as ClassId };
@@ -74,8 +84,187 @@ describe("Talents surface", () => {
     expect(knight.querySelector('[data-talent-points="true"]')?.textContent).toMatch(
       /6 Talent Points available/,
     );
-    expect(knight.querySelectorAll(".talent-stat-row .talent-card")).toHaveLength(2);
-    expect(knight.querySelectorAll(".talent-ability-row .talent-card")).toHaveLength(2);
+    expect(knight.querySelectorAll(".talent-stat-row .talent-cell")).toHaveLength(2);
+    expect(knight.querySelectorAll(".talent-ability-row .talent-cell")).toHaveLength(2);
+    expect(knight.querySelector(".talent-card")).toBeNull();
+    expect(knight.querySelector('[data-talent-detail="true"]')).not.toBeNull();
+    expect(knight.querySelector('[data-talent-detail="true"] .surface-empty')?.textContent).toBe(
+      "Select a Talent",
+    );
+
+    surface.destroy();
+  });
+
+  it("shows Stat rank badges without name or pip prose on the cell", () => {
+    const root = document.createElement("div");
+    const engine = leveledKnightEngine();
+    engine.allocateTalent("knight", "k-fortitude");
+    const selected = { current: "knight" as ClassId };
+    const surface = mountTalentsSurface(root, mountOptions(selected));
+
+    renderTalents(surface, engine);
+    const cell = knightSection(root).querySelector<HTMLElement>(
+      '.talent-cell[data-talent-id="k-fortitude"]',
+    );
+    expect(cell?.querySelector(".talent-rank-badge")?.textContent).toBe("1/5");
+    expect(cell?.querySelector(".talent-name")).toBeNull();
+    expect(cell?.querySelector(".talent-per-rank")).toBeNull();
+    expect(cell?.querySelector(".talent-rank-pips")).toBeNull();
+    expect(cell?.getAttribute("aria-label")).toMatch(/Fortitude.*1 of 5/i);
+
+    surface.destroy();
+  });
+
+  it("keeps both Ability cells visible with empty vs chosen chrome only", () => {
+    const root = document.createElement("div");
+    const engine = leveledKnightEngine();
+    for (let rank = 0; rank < 5; rank += 1) {
+      engine.allocateTalent("knight", rank % 2 === 0 ? "k-fortitude" : "k-swordcraft");
+    }
+    engine.allocateTalent("knight", "k-hold-line");
+    const selected = { current: "knight" as ClassId };
+    const surface = mountTalentsSurface(root, mountOptions(selected));
+
+    renderTalents(surface, engine);
+    const cells = knightSection(root).querySelectorAll(".talent-ability-row .talent-cell");
+    expect(cells).toHaveLength(2);
+    const chosen = knightSection(root).querySelector(
+      '.talent-cell[data-talent-id="k-hold-line"]',
+    );
+    const other = knightSection(root).querySelector(
+      '.talent-cell[data-talent-id="k-falling-star"]',
+    );
+    expect(chosen?.classList.contains("talent-cell--chosen")).toBe(true);
+    expect(other?.classList.contains("talent-cell--chosen")).toBe(false);
+    expect(chosen?.querySelector(".talent-name")).toBeNull();
+    expect(other?.querySelector(".talent-name")).toBeNull();
+    expect(chosen?.getAttribute("aria-label")).toMatch(/Hold/i);
+
+    surface.destroy();
+  });
+
+  it("does not auto-select on mount or Class switch", () => {
+    const root = document.createElement("div");
+    const engine = leveledKnightEngine();
+    const selected = { current: "knight" as ClassId };
+    const surface = mountTalentsSurface(root, mountOptions(selected));
+
+    renderTalents(surface, engine);
+    expect(root.querySelector('[data-talent-detail="true"] .surface-empty')?.textContent).toBe(
+      "Select a Talent",
+    );
+
+    selectTalentCell(root, "k-fortitude");
+    expect(root.querySelector('[data-talent-detail="true"] .talent-name')?.textContent).toBe(
+      "Fortitude",
+    );
+
+    selected.current = "wizard";
+    renderTalents(surface, engine);
+    expect(root.querySelector('[data-talent-detail="true"] .surface-empty')?.textContent).toBe(
+      "Select a Talent",
+    );
+    expect(root.querySelector(".talent-cell.selected")).toBeNull();
+
+    surface.destroy();
+  });
+
+  it("moves allocate and deallocate actions into the sticky detail panel", () => {
+    const root = document.createElement("div");
+    const engine = leveledKnightEngine();
+    engine.allocateTalent("knight", "k-fortitude");
+    const selected = { current: "knight" as ClassId };
+    const surface = mountTalentsSurface(root, mountOptions(selected));
+
+    renderTalents(surface, engine);
+    expect(
+      root.querySelector('.talent-cell [data-talent-action="allocate"]'),
+    ).toBeNull();
+
+    selectTalentCell(root, "k-fortitude");
+    const detail = root.querySelector('[data-talent-detail="true"]');
+    expect(detail?.querySelector(".talent-name")?.textContent).toBe("Fortitude");
+    expect(detail?.querySelector(".talent-per-rank")?.textContent).toMatch(/per rank/i);
+    expect(detail?.querySelector('[data-stat-delta="true"]')?.textContent).toMatch(
+      /Max Health|Physical/i,
+    );
+    expect(
+      detail?.querySelector('[data-talent-action="allocate"]')?.textContent,
+    ).toBe("Add point");
+    expect(
+      detail?.querySelector('[data-talent-action="deallocate"]')?.textContent,
+    ).toBe("Remove point");
+
+    surface.destroy();
+  });
+
+  it("selects a Talent cell on keyboard focus without requiring Enter", () => {
+    const root = document.createElement("div");
+    document.body.append(root);
+    const engine = leveledKnightEngine();
+    const selected = { current: "knight" as ClassId };
+    const surface = mountTalentsSurface(root, mountOptions(selected));
+
+    renderTalents(surface, engine);
+    const cell = knightSection(root).querySelector<HTMLElement>(
+      '.talent-cell[data-talent-id="k-fortitude"]',
+    );
+    cell?.focus();
+    expect(root.querySelector('[data-talent-detail="true"] .talent-name')?.textContent).toBe(
+      "Fortitude",
+    );
+    expect(document.activeElement?.getAttribute("data-talent-id")).toBe("k-fortitude");
+
+    surface.destroy();
+    root.remove();
+  });
+
+  it("shows Ability detail with loadout warning and Choose/Remove only in the panel", () => {
+    const root = document.createElement("div");
+    const engine = leveledKnightEngine();
+    for (let rank = 0; rank < 5; rank += 1) {
+      engine.allocateTalent("knight", rank % 2 === 0 ? "k-fortitude" : "k-swordcraft");
+    }
+    engine.allocateTalent("knight", "k-hold-line");
+    engine.setLoadout("knight", ["k-hold-line", "k-sweep", "k-rally"]);
+    const selected = { current: "knight" as ClassId };
+    const surface = mountTalentsSurface(root, mountOptions(selected));
+
+    renderTalents(surface, engine);
+    expect(root.querySelector('[data-loadout-warning="true"]')).toBeNull();
+
+    selectTalentCell(root, "k-hold-line");
+    const detail = root.querySelector('[data-talent-detail="true"]');
+    expect(detail?.querySelector(".talent-name")?.textContent).toMatch(/Hold/i);
+    expect(detail?.querySelector('[data-loadout-warning="true"]')?.textContent).toMatch(
+      /Slotted in Loadout/i,
+    );
+    expect(detail?.querySelector('[data-talent-action="deallocate"]')?.textContent).toBe(
+      "Remove",
+    );
+    expect(root.querySelector('.talent-cell [data-talent-action]')).toBeNull();
+
+    surface.destroy();
+  });
+
+  it("keeps points, row titles, and Ability gate note visible outside the detail", () => {
+    const root = document.createElement("div");
+    const engine = leveledKnightEngine();
+    const selected = { current: "knight" as ClassId };
+    const surface = mountTalentsSurface(root, mountOptions(selected));
+
+    renderTalents(surface, engine);
+    const knight = knightSection(root);
+    const detail = knight.querySelector('[data-talent-detail="true"]');
+    expect(knight.querySelector('[data-talent-points="true"]')).not.toBeNull();
+    expect(
+      [...knight.querySelectorAll(".talent-row-title")].map((node) => node.textContent),
+    ).toEqual(["Stat Row", "Ability Row"]);
+    expect(knight.querySelector(".talent-gate-note")?.textContent).toMatch(
+      /Spend 5 Stat Row points/i,
+    );
+    expect(detail?.contains(knight.querySelector('[data-talent-points="true"]')!)).toBe(false);
+    expect(detail?.contains(knight.querySelector(".talent-gate-note")!)).toBe(false);
 
     surface.destroy();
   });
@@ -141,13 +330,16 @@ describe("Talents surface", () => {
     for (let rank = 0; rank < 5; rank += 1) {
       renderTalents(surface, engine);
       const talentId = rank % 2 === 0 ? "k-fortitude" : "k-swordcraft";
-      const allocate = knightSection(root).querySelector<HTMLButtonElement>(
-        `[data-talent-id="${talentId}"][data-talent-action="allocate"]`,
-      );
-      allocate?.click();
+      selectTalentCell(root, talentId);
+      knightSection(root)
+        .querySelector<HTMLButtonElement>(
+          `[data-talent-id="${talentId}"][data-talent-action="allocate"]`,
+        )
+        ?.click();
     }
 
     renderTalents(surface, engine);
+    selectTalentCell(root, "k-fortitude");
     const fortitudeAllocate = knightSection(root).querySelector<HTMLButtonElement>(
       `[data-talent-id="k-fortitude"][data-talent-action="allocate"]`,
     );
@@ -168,11 +360,14 @@ describe("Talents surface", () => {
     const surface = mountTalentsSurface(root, mountOptions(selected));
 
     renderTalents(surface, midLevel);
+    selectTalentCell(root, "k-hold-line");
     const pick = knightSection(root).querySelector<HTMLButtonElement>(
       `[data-talent-id="k-hold-line"][data-talent-action="allocate"]`,
     );
     expect(pick?.disabled).toBe(true);
-    expect(knightSection(root).textContent).toMatch(/Spend 5 Stat Row points/i);
+    expect(knightSection(root).querySelector(".talent-gate-note")?.textContent).toMatch(
+      /Spend 5 Stat Row points/i,
+    );
 
     surface.destroy();
   });
@@ -196,31 +391,12 @@ describe("Talents surface", () => {
     );
 
     renderTalents(surface, engine);
+    selectTalentCell(root, "k-fortitude");
     const removeStat = knightSection(root).querySelector<HTMLButtonElement>(
       `[data-talent-id="k-fortitude"][data-talent-action="deallocate"]`,
     );
     expect(removeStat?.disabled).toBe(true);
     expect(() => engine.deallocateTalent("knight", "k-fortitude")).toThrow(/ability/i);
-
-    surface.destroy();
-  });
-
-  it("warns when removing a slotted Ability Talent", () => {
-    const root = document.createElement("div");
-    const engine = leveledKnightEngine();
-    for (let rank = 0; rank < 5; rank += 1) {
-      engine.allocateTalent("knight", rank % 2 === 0 ? "k-fortitude" : "k-swordcraft");
-    }
-    engine.allocateTalent("knight", "k-hold-line");
-    engine.setLoadout("knight", ["k-hold-line", "k-sweep", "k-rally"]);
-
-    const selected = { current: "knight" as ClassId };
-    const surface = mountTalentsSurface(root, mountOptions(selected));
-    renderTalents(surface, engine);
-
-    expect(
-      knightSection(root).querySelector('[data-loadout-warning="true"]')?.textContent,
-    ).toMatch(/Slotted in Loadout/i);
 
     surface.destroy();
   });
@@ -240,7 +416,7 @@ describe("Talents surface", () => {
     surface.destroy();
   });
 
-  it("completes allocate and deallocate flows using keyboard only", () => {
+  it("completes allocate and deallocate flows by selecting a cell then activating detail actions", () => {
     const root = document.createElement("div");
     document.body.append(root);
     const engine = leveledKnightEngine();
@@ -260,6 +436,13 @@ describe("Talents surface", () => {
     );
 
     renderTalents(surface, engine);
+    const cell = knightSection(root).querySelector<HTMLElement>(
+      '.talent-cell[data-talent-id="k-fortitude"]',
+    );
+    cell?.focus();
+    activateFocused();
+    renderTalents(surface, engine);
+
     const allocate = knightSection(root).querySelector<HTMLButtonElement>(
       `[data-talent-id="k-fortitude"][data-talent-action="allocate"]`,
     );
