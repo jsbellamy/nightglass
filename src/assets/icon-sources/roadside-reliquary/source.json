@@ -1,0 +1,64 @@
+{
+  "provider": "Cursor GenerateImage",
+  "prompt": "TRUE chunky pixel art inventory icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block with no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered Fowl Harvest Equipment item in three-quarter display angle for Roadside Reliquary: a SMALL dented roadside shrine canister. Body metal is toast-brown #9b4f2e and patty-brown #6f3528 with grease-brown-deep #4f2926 dents. Faceplate is flat diner-cream #f3d897. Trim bands are diner-teal #1f9277 and teal-light #4fb99b. One small condiment-red #c83d3d circular reflector. Contour is oil-ink #111018 only. The subject long side spans about 26\u201328 logical pixels (fill most of the grid), with at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel oil-ink outline. Use ONLY these flat hex fills from fowl-harvest-24, 8\u201312 colors maximum \u2014 no cyan, no pure white, no pure black, no gray outside storm-slate #55586a, no intermediate blends. Structural members are at least three logical pixels thick. No Character, duck body, scene, shadow, glow, sparks, particles, text, watermark, UI frame, or transparency.",
+  "issue_prompt": "TRUE chunky pixel art inventory icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block with no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered Fowl Harvest Equipment item in three-quarter display angle for Roadside Reliquary: a small dented roadside shrine canister with a diner-cream faceplate, teal trim, and a red reflector. The subject long side spans about 26\u201330 logical pixels, with at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel oil-ink outline. Use only named fowl-harvest-24 colors, 8\u201312 flat colors maximum. Structural members are at least three logical pixels thick. No Character, duck body, scene, shadow, glow, sparks, particles, text, watermark, UI frame, or transparency.",
+  "raw_sha256": "a42f47d65918ef79e110fa40078d24dee00e673c270dcfbc8e8643717f35b5d7",
+  "palette": "fowl-harvest-24",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        240,
+        68,
+        799,
+        958
+      ],
+      "pitch_x": {
+        "pitch": 31.600000000000097,
+        "score": 0.0717379179612001
+      },
+      "pitch_y": {
+        "pitch": 39.34999999999968,
+        "score": 0.05806156475833409
+      },
+      "grid": [
+        18,
+        22
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 324,
+      "far_cells": 29,
+      "far_fraction": 0.0895,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "oil-ink": 42,
+        "toast-brown": 51,
+        "patty-brown": 67,
+        "bruise-plum": 8,
+        "grease-brown-deep": 41,
+        "teal-light": 23,
+        "storm-slate": 2,
+        "pond-teal-deep": 20,
+        "diner-teal": 6,
+        "condiment-red": 21,
+        "diner-cream": 42,
+        "crow-black": 1
+      }
+    }
+  },
+  "palette_subset": [
+    "oil-ink",
+    "crow-black",
+    "bruise-plum",
+    "grease-brown-deep",
+    "patty-brown",
+    "toast-brown",
+    "diner-cream",
+    "pond-teal-deep",
+    "diner-teal",
+    "teal-light",
+    "condiment-red",
+    "storm-slate"
+  ],
+  "evidence_raw": "docs/research/evidence/fowl-harvest/equipment-icons/roadside-reliquary-harvest-warning-lantern/accepted-raws/roadside-reliquary.png"
+}

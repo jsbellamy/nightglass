@@ -1,0 +1,60 @@
+{
+  "candidate": "roadside-reliquary-r1",
+  "source_key": "roadside-reliquary",
+  "palette_id": "fowl-harvest-24",
+  "palette_subset": [
+    "oil-ink",
+    "crow-black",
+    "bruise-plum",
+    "grease-brown-deep",
+    "patty-brown",
+    "toast-brown",
+    "diner-cream",
+    "pond-teal-deep",
+    "diner-teal",
+    "teal-light",
+    "condiment-red",
+    "storm-slate"
+  ],
+  "recovered": {
+    "bbox": [
+      265,
+      109,
+      764,
+      889
+    ],
+    "pitch_x": {
+      "pitch": 33.79444444444449,
+      "score": 0.1083617123948711
+    },
+    "pitch_y": {
+      "pitch": 35.3444444444444,
+      "score": 0.17573737661437758
+    },
+    "grid": [
+      15,
+      22
+    ]
+  },
+  "ramp": {
+    "opaque_cells": 268,
+    "far_cells": 100,
+    "far_fraction": 0.3731,
+    "off_ramp_reject": true,
+    "quantize_histogram": {
+      "grease-brown-deep": 48,
+      "condiment-red": 14,
+      "toast-brown": 21,
+      "patty-brown": 49,
+      "bruise-plum": 28,
+      "oil-ink": 5,
+      "teal-light": 29,
+      "diner-cream": 50,
+      "storm-slate": 17,
+      "crow-black": 2,
+      "diner-teal": 5
+    }
+  },
+  "raw_gates": "pass",
+  "primary_result": "off-ramp"
+}

@@ -1,0 +1,82 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "acea19388165b8c013e4bd0481fec2bf770753f4e70871ab5d979f3abb97364a",
+  "asset_class": "interface",
+  "kind": "equipment-base-icon",
+  "runtime_destination": "src/assets/icons/harvest-warning-lantern.png",
+  "candidate": "harvest-warning-lantern-r3",
+  "palette": "fowl-harvest-24",
+  "palette_subset": [
+    "oil-ink",
+    "crow-black",
+    "bruise-plum",
+    "grease-brown-deep",
+    "patty-brown",
+    "toast-brown",
+    "rust-orange-deep",
+    "beak-orange",
+    "diner-cream",
+    "storm-slate",
+    "condiment-red",
+    "yolk-gold",
+    "corn-yellow"
+  ],
+  "issue_prompt": "TRUE chunky pixel art inventory icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block with no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered Fowl Harvest Equipment item in three-quarter display angle for Harvest Warning Lantern: a rugged hanging grain-yard lantern with a red beacon core, storm-slate cage, and rust-orange handle. The subject long side spans about 26\u201330 logical pixels, with at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel oil-ink outline. Use only named fowl-harvest-24 colors, 8\u201312 flat colors maximum. Structural members are at least three logical pixels thick. No Character, duck body, scene, shadow, glow, sparks, particles, text, watermark, UI frame, or transparency.",
+  "prompt": "TRUE chunky pixel art inventory icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block with no smaller detail, smooth gradient, anti-aliasing, blur, dithering, or soft edges. A single centered Fowl Harvest Equipment item in three-quarter display angle for Harvest Warning Lantern: a WIDER rugged hanging grain-yard lantern filling the frame. Outer cage bars are EXACT flat storm-slate #55586a only (not blue, not gray). Inner posts and base are crow-black #1e1c29 and oil-ink #111018. Beacon glass pane is flat condiment-red #c83d3d with a small corn-yellow #f0cf4a core. Top hang-ring and side handle are flat rust-orange-deep #bf532f. The subject long side spans about 26\u201328 logical pixels and the silhouette is about 20\u201324 pixels wide, with at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel oil-ink outline. Use ONLY exact named fowl-harvest-24 hex fills listed above \u2014 every opaque pixel must be one of those exact RGB values, 8 colors max. Structural members are at least three logical pixels thick. No Character, duck body, scene, shadow, glow, sparks, particles, text, watermark, UI frame, or transparency.",
+  "style_references": [
+    {
+      "path": "src/assets/icons/preview/verify-fowl-canary@8x.png",
+      "sha256": "8fdc3206f4e5f5ff228d4651bcd70a6393da3eeed025c24a7b90c2673f3c75cd",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icon-sources/verify-fowl-canary/source.grid",
+      "sha256": "04f1b9aa20d3b67fd0c13c15391c3fd94b55fc7e7df1c92e743e2552e5922a93",
+      "role": "fowl_text_grid_identity"
+    },
+    {
+      "path": "src/assets/icons/preview/moonpetal-relic@8x.png",
+      "sha256": "7190c60c761cae519f8d46e6109cc2bcb01de81ce93fe6dca510ce3f1a75dff7",
+      "role": "priest_relic_equipment_cohort"
+    }
+  ],
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        258,
+        22,
+        823,
+        1006
+      ],
+      "pitch_x": {
+        "pitch": 37.41111111111087,
+        "score": 0.12924716127437244
+      },
+      "pitch_y": {
+        "pitch": 38.6111111111108,
+        "score": 0.23267670888633435
+      },
+      "grid": [
+        16,
+        25
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 284,
+      "far_cells": 9,
+      "far_fraction": 0.0317,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "oil-ink": 119,
+        "rust-orange-deep": 16,
+        "storm-slate": 47,
+        "crow-black": 74,
+        "grease-brown-deep": 3,
+        "condiment-red": 20,
+        "corn-yellow": 4,
+        "bruise-plum": 1
+      }
+    }
+  }
+}
