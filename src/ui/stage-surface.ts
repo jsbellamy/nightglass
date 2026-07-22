@@ -1,5 +1,5 @@
 import type { ReadonlySnapshot } from "../core/snapshot";
-import type { Content } from "../core/types";
+import type { Content, StageId } from "../core/types";
 import type { TileCommand } from "./bus";
 import type { EngineLegalityView } from "./engine-legality";
 import { bindPressable } from "./keyboard";
@@ -33,7 +33,7 @@ export function mountStageSurface(
     mountedConfirm = null;
   }
 
-  function renderConfirm(stageId: 1 | 2 | 3): void {
+  function renderConfirm(stageId: StageId): void {
     mountedConfirm?.remove();
     const yes = el("button", {
       class: "stage-confirm-yes focus-ring",

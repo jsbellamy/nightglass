@@ -1,14 +1,13 @@
 import type { DropInstance, ProgressionState, Snapshot, AttemptState } from "./snapshot";
 import { defaultTalentsForClasses } from "./talents";
-import type { ClassId, Content, EquipmentSlotId } from "./types";
+import type { ClassId, Content, EquipmentSlotId, ItemLevel, StageId } from "./types";
 
 /** Matches `SCHEMA_VERSION` in engine.ts — single integer save schema for the slice. */
 export const SAVE_SCHEMA_VERSION = 1;
 
 const CLASS_IDS = new Set<ClassId>(["knight", "wizard", "priest", "hunter"]);
-const STAGE_IDS = new Set<1 | 2 | 3>([1, 2, 3]);
+const STAGE_IDS = new Set<StageId>([1, 2, 3, 4, 5, 6]);
 const RARITIES = new Set(["common", "uncommon", "rare", "epic"]);
-const ITEM_LEVELS = new Set([1, 2, 3]);
 const EQUIPMENT_SLOTS = new Set<EquipmentSlotId>(["weapon", "armor", "charm"]);
 
 export type ParsedSave =
@@ -32,8 +31,12 @@ function isClassId(value: unknown): value is ClassId {
   return typeof value === "string" && CLASS_IDS.has(value as ClassId);
 }
 
-function isStageId(value: unknown): value is 1 | 2 | 3 {
-  return typeof value === "number" && STAGE_IDS.has(value as 1 | 2 | 3);
+function isStageId(value: unknown): value is StageId {
+  return typeof value === "number" && Number.isInteger(value) && STAGE_IDS.has(value as StageId);
+}
+
+function isItemLevel(value: unknown): value is ItemLevel {
+  return isStageId(value);
 }
 
 export function createDefaultProgression(content: Content): ProgressionState {
@@ -157,7 +160,7 @@ function loadDropInstance(raw: unknown): DropInstance | null {
   if (
     !isFiniteNumber(dropId) ||
     typeof baseId !== "string" ||
-    !ITEM_LEVELS.has(itemLevel as 1 | 2 | 3) ||
+    !isItemLevel(itemLevel) ||
     !RARITIES.has(rarity as DropInstance["rarity"]) ||
     !isFiniteNumber(awardedAtMs) ||
     typeof seen !== "boolean" ||
@@ -197,7 +200,7 @@ function loadDropInstance(raw: unknown): DropInstance | null {
   return {
     dropId: Math.floor(dropId),
     baseId,
-    itemLevel: itemLevel as 1 | 2 | 3,
+    itemLevel,
     rarity: rarity as DropInstance["rarity"],
     affixes,
     awardedAtMs: Math.floor(awardedAtMs),

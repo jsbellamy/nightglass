@@ -1,8 +1,8 @@
-import type { ClassId, DamageChannel, Element } from "./types";
+import type { ClassId, DamageChannel, Element, StageId } from "./types";
 
 export type EngineEvent = { seq: number; atMs: number } & (
-  | { type: "stage-attempt-started"; stage: 1 | 2 | 3; attemptId: number }
-  | { type: "wave-started"; stage: 1 | 2 | 3; encounter: 1 | 2 | 3; boss: boolean }
+  | { type: "stage-attempt-started"; stage: StageId; attemptId: number }
+  | { type: "wave-started"; stage: StageId; encounter: 1 | 2 | 3; boss: boolean }
   | {
       type: "action-started";
       entityId: string;
@@ -27,9 +27,9 @@ export type EngineEvent = { seq: number; atMs: number } & (
   | { type: "status-expired"; entityId: string; statusId: string }
   | { type: "knockout"; entityId: string }
   | { type: "revived"; entityId: string; health: number }
-  | { type: "wave-cleared"; stage: 1 | 2 | 3; encounter: 1 | 2 | 3 }
-  | { type: "stage-cleared"; stage: 1 | 2 | 3 }
-  | { type: "party-defeat"; stage: 1 | 2 | 3 }
+  | { type: "wave-cleared"; stage: StageId; encounter: 1 | 2 | 3 }
+  | { type: "stage-cleared"; stage: StageId }
+  | { type: "party-defeat"; stage: StageId }
   | { type: "xp-awarded"; classId: ClassId; amount: number; totalXp: number }
   | { type: "level-up"; classId: ClassId; level: number }
   | { type: "drop-awarded"; dropId: number }

@@ -56,6 +56,7 @@ import type {
   EquipmentSlotId,
   OpponentDef,
   StageDef,
+  StageId,
   StatusEffectDef,
 } from "./types";
 import { opponentEntityId, partyEntityId } from "./entity-id";
@@ -76,7 +77,7 @@ export interface Engine {
   advanceOffline(ms: number): EngineEvent[];
   snapshot(): Snapshot;
   beginFreshAttempt(): EngineEvent[];
-  selectStage(stage: 1 | 2 | 3): EngineEvent[];
+  selectStage(stage: StageId): EngineEvent[];
   setLoadout(classId: ClassId, loadout: [string, string, string]): void;
   setFormation(order: [ClassId, ClassId, ClassId]): void;
   allocateTalent(classId: ClassId, talentId: string): void;
@@ -111,7 +112,7 @@ interface ContentIndex {
   content: Content;
   classesById: Map<ClassId, ClassKitDef>;
   opponentsById: Map<string, OpponentDef>;
-  stagesById: Map<1 | 2 | 3, StageDef>;
+  stagesById: Map<StageId, StageDef>;
   abilitiesById: Map<string, AbilityDef>;
   statusesById: Map<string, StatusEffectDef>;
 }
@@ -221,7 +222,7 @@ function makeOpponentCombatant(
   };
 }
 
-function resolveStage(index: ContentIndex, stage: 1 | 2 | 3): 1 | 2 | 3 {
+function resolveStage(index: ContentIndex, stage: StageId): StageId {
   if (index.stagesById.has(stage)) {
     return stage;
   }
@@ -234,7 +235,7 @@ function resolveStage(index: ContentIndex, stage: 1 | 2 | 3): 1 | 2 | 3 {
   return fallback;
 }
 
-function stageDefFor(index: ContentIndex, stage: 1 | 2 | 3): StageDef {
+function stageDefFor(index: ContentIndex, stage: StageId): StageDef {
   const stageDef = index.stagesById.get(resolveStage(index, stage));
   if (!stageDef) {
     throw new Error(`Missing Stage ${stage} in Content`);
@@ -251,7 +252,7 @@ function opponentIdsForEncounter(stageDef: StageDef, encounter: 1 | 2 | 3): stri
 
 function spawnOpponents(
   index: ContentIndex,
-  stage: 1 | 2 | 3,
+  stage: StageId,
   encounter: 1 | 2 | 3,
 ): CombatantState[] {
   const stageDef = stageDefFor(index, stage);
@@ -267,7 +268,7 @@ function spawnOpponents(
 function createAttempt(
   state: EngineState,
   index: ContentIndex,
-  stage: 1 | 2 | 3,
+  stage: StageId,
   encounter: 1 | 2 | 3 = 1,
   preserveParty?: CombatantState[],
   preserveEquipmentLoadouts?: Record<ClassId, EquipmentLoadout>,
@@ -321,7 +322,7 @@ function emit(
 function startFreshAttempt(
   state: EngineState,
   index: ContentIndex,
-  stage: 1 | 2 | 3,
+  stage: StageId,
   events: EngineEvent[],
 ): void {
   if (state.progression.pendingParty) {
@@ -821,7 +822,7 @@ function awardEncounterDrops(
   state: EngineState,
   index: ContentIndex,
   events: EngineEvent[],
-  stage: 1 | 2 | 3,
+  stage: StageId,
   encounter: 1 | 2 | 3,
 ): void {
   const stageDef = stageDefFor(index, stage);
@@ -895,11 +896,11 @@ function clearStage(state: EngineState, index: ContentIndex, events: EngineEvent
   emit(state, events, { type: "stage-cleared", stage: clearedStage });
 
   if (clearedStage < 3) {
-    const nextStage = (clearedStage + 1) as 1 | 2 | 3;
+    const nextStage = (clearedStage + 1) as StageId;
     state.progression.unlockedStage = Math.max(
       state.progression.unlockedStage,
       index.stagesById.has(nextStage) ? nextStage : clearedStage,
-    ) as 1 | 2 | 3;
+    ) as StageId;
     state.attempt = null;
     startFreshAttempt(state, index, resolveStage(index, nextStage), events);
     return;
@@ -1258,7 +1259,7 @@ export function createEngine(
     return events;
   }
 
-  function selectStage(stage: 1 | 2 | 3): EngineEvent[] {
+  function selectStage(stage: StageId): EngineEvent[] {
     if (stage > state.progression.unlockedStage) {
       throw new Error(`Stage ${stage} is locked (unlocked: ${state.progression.unlockedStage})`);
     }

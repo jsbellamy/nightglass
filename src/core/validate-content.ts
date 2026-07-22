@@ -144,7 +144,10 @@ export function validateContent(
       );
     }
 
-    const budget = ENCOUNTER_BUDGETS[stage.id];
+    const budget =
+      stage.id === 1 || stage.id === 2 || stage.id === 3
+        ? ENCOUNTER_BUDGETS[stage.id]
+        : undefined;
     if (!budget) {
       violations.push(`stage ${stage.id} has no authored encounter budget`);
     } else {

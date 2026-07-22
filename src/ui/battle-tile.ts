@@ -3,7 +3,7 @@ import backdrop2Url from "../assets/backdrops/backdrop-2.png";
 import backdrop3Url from "../assets/backdrops/backdrop-3.png";
 import type { EngineEvent } from "../core/events";
 import type { CombatantState, ReadonlySnapshot } from "../core/snapshot";
-import type { Content, StageDef } from "../core/types";
+import type { Content, StageDef, StageId } from "../core/types";
 import { createPresentation, type Presentation } from "./presentation";
 import { createSfx, type SfxController } from "./sfx";
 import { footAnchorXForCombatant } from "./battle-tile-anchors";
@@ -55,7 +55,7 @@ function opponentIndexFromEntityId(entityId: string): number {
   return parsed.side === "opponent" ? parsed.index : 0;
 }
 
-function stageDefFor(content: Content, stageId: 1 | 2 | 3): StageDef | undefined {
+function stageDefFor(content: Content, stageId: StageId): StageDef | undefined {
   return content.stages.find((stage) => stage.id === stageId);
 }
 
