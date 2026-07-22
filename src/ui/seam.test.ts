@@ -19,6 +19,10 @@ export const UI_CORE_VALUE_IMPORT_ALLOWLIST: Record<string, string> = {
     "dropStatModifiers / snapshotEquipmentLoadouts removed by armory stat-derivation slice (#159)",
   "offline-summary.ts": "levelFromXp moves behind snapshot-view in offline-summary slice (#163)",
   "boot.ts": "Composition root owns Engine wiring until shell/bootstrap slice (#163)",
+  "tile-root.ts":
+    "Battle Tile composition-root slice (#354): Engine construction moved from main.ts",
+  "dock-root.ts":
+    "Management Dock composition-root slice (#354): Content build moved from main.ts",
 };
 
 const VALUE_IMPORT_PATTERN =
