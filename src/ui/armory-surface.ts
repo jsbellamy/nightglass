@@ -10,9 +10,6 @@ import {
   discardableDrop,
   equipmentBaseForDrop,
   filterArmoryDrops,
-  formatAffix,
-  formatAssignment,
-  formatGuaranteedStat,
   formatRarityLabel,
   isCompatibleWithSlot,
   rareOrEpicDropNames,
@@ -52,6 +49,17 @@ export interface ArmorySurfaceOptions {
 }
 
 type BrowseCompatibility = { classId: ClassId; slot: EquipmentSlotId };
+
+type ArmoryDragSource =
+  | { kind: "collection"; dropId: number }
+  | {
+      kind: "worn";
+      dropId: number;
+      classId: ClassId;
+      slot: EquipmentSlotId;
+    };
+
+const ARMORY_DRAG_MIME = "application/x-nightglass-armory-drag";
 
 type StateFilterId = "all" | "unseen" | "locked";
 
@@ -105,20 +113,14 @@ export function mountArmorySurface(
   const { content } = options;
   let filters: ArmoryFilters = {};
   let sort: ArmorySortId = "default";
-  let selectedDropId: number | null = null;
   let browseCompatibility: BrowseCompatibility | null = null;
   let selectedDiscard = new Set<number>();
   let discardConfirmOpen = false;
-  let crossEquipConfirm: {
-    dropId: number;
-    fromClassId: ClassId;
-    fromSlot: EquipmentSlotId;
-  } | null = null;
+  let activeDrag: ArmoryDragSource | null = null;
   let lastSnapshot: ReadonlySnapshot | null = null;
   let optimisticallySeenDropIds = new Set<number>();
   let currentLegality: EngineLegalityView = EMPTY_ENGINE_LEGALITY;
   let unbindGridOverflow: (() => void) | null = null;
-  let unbindDetailOverflow: (() => void) | null = null;
   let comparePopoverHost: HTMLElement | null = null;
   let comparePopoverAnchor: HTMLElement | null = null;
   let comparePopoverDropId: number | null = null;
@@ -161,6 +163,223 @@ export function mountArmorySurface(
     comparePopoverAnchor = null;
     comparePopoverDropId = null;
     comparePopoverHost = null;
+  }
+
+  function clearDragHighlights(host: HTMLElement): void {
+    host.classList.remove("armory-body--collection-drag", "armory-body--worn-drag");
+    for (const node of host.querySelectorAll<HTMLElement>(".armory-drop-target--valid")) {
+      node.classList.remove("armory-drop-target--valid");
+    }
+    for (const node of host.querySelectorAll<HTMLElement>(".armory-drag-source")) {
+      node.classList.remove("armory-drag-source");
+    }
+    for (const node of host.querySelectorAll<HTMLElement>(".armory-collection-drop-target--valid")) {
+      node.classList.remove("armory-collection-drop-target--valid");
+    }
+  }
+
+  function endArmoryDrag(host: HTMLElement): void {
+    activeDrag = null;
+    clearDragHighlights(host);
+  }
+
+  function armoryDragHost(): HTMLElement | null {
+    return root.querySelector<HTMLElement>(".armory-body--compare-host");
+  }
+
+  function highlightCollectionDragTargets(snapshot: ReadonlySnapshot, dropId: number): void {
+    const host = armoryDragHost();
+    const classId = options.getSelectedClassId();
+    if (!host || !classId) {
+      return;
+    }
+    const drop = dropById(snapshot.progression.armory, dropId);
+    if (!drop) {
+      return;
+    }
+    const slot = equipmentBaseForDrop(drop, content).slot;
+    if (!isCompatibleWithSlot(drop, classId, slot, currentLegality.canEquip)) {
+      return;
+    }
+    host
+      .querySelector<HTMLElement>(`[data-worn-slot="${slot}"]`)
+      ?.classList.add("armory-drop-target--valid");
+  }
+
+  function highlightWornDragTargets(): void {
+    const host = armoryDragHost();
+    if (!host) {
+      return;
+    }
+    host
+      .querySelector<HTMLElement>('[data-armory-collection="true"]')
+      ?.classList.add("armory-collection-drop-target--valid");
+  }
+
+  function parseDragPayload(event: DragEvent): ArmoryDragSource | null {
+    const raw = event.dataTransfer?.getData(ARMORY_DRAG_MIME);
+    if (!raw) {
+      return activeDrag;
+    }
+    try {
+      return JSON.parse(raw) as ArmoryDragSource;
+    } catch {
+      return activeDrag;
+    }
+  }
+
+  function bindCollectionDrag(
+    snapshot: ReadonlySnapshot,
+    drop: DropInstance,
+    tile: HTMLElement,
+  ): void {
+    tile.draggable = true;
+    tile.addEventListener("dragstart", (event) => {
+      hideComparePopover();
+      const host = armoryDragHost();
+      if (!host) {
+        return;
+      }
+      const source: ArmoryDragSource = { kind: "collection", dropId: drop.dropId };
+      activeDrag = source;
+      host.classList.add("armory-body--collection-drag");
+      tile.classList.add("armory-drag-source");
+      highlightCollectionDragTargets(snapshot, drop.dropId);
+      event.dataTransfer?.setData(ARMORY_DRAG_MIME, JSON.stringify(source));
+      if (event.dataTransfer) {
+        event.dataTransfer.effectAllowed = "move";
+      }
+    });
+    tile.addEventListener("dragend", () => {
+      const host = armoryDragHost();
+      if (host) {
+        endArmoryDrag(host);
+      } else {
+        activeDrag = null;
+      }
+    });
+  }
+
+  function bindWornSlotDrag(
+    classId: ClassId,
+    slot: EquipmentSlotId,
+    drop: DropInstance,
+    button: HTMLElement,
+  ): void {
+    button.draggable = true;
+    button.addEventListener("dragstart", (event) => {
+      hideComparePopover();
+      const host = armoryDragHost();
+      if (!host) {
+        return;
+      }
+      const source: ArmoryDragSource = {
+        kind: "worn",
+        dropId: drop.dropId,
+        classId,
+        slot,
+      };
+      activeDrag = source;
+      host.classList.add("armory-body--worn-drag");
+      button.classList.add("armory-drag-source");
+      highlightWornDragTargets();
+      event.dataTransfer?.setData(ARMORY_DRAG_MIME, JSON.stringify(source));
+      if (event.dataTransfer) {
+        event.dataTransfer.effectAllowed = "move";
+      }
+      event.stopPropagation();
+    });
+    button.addEventListener("dragend", () => {
+      const host = armoryDragHost();
+      if (host) {
+        endArmoryDrag(host);
+      } else {
+        activeDrag = null;
+      }
+    });
+  }
+
+  function bindWornSlotDropTarget(
+    snapshot: ReadonlySnapshot,
+    classId: ClassId,
+    slot: EquipmentSlotId,
+    button: HTMLElement,
+  ): void {
+    button.addEventListener("dragover", (event) => {
+      if (activeDrag?.kind !== "collection") {
+        return;
+      }
+      const dragged = dropById(snapshot.progression.armory, activeDrag.dropId);
+      if (!dragged || slot !== equipmentBaseForDrop(dragged, content).slot) {
+        return;
+      }
+      const selected = options.getSelectedClassId();
+      if (!selected || selected !== classId) {
+        return;
+      }
+      if (!isCompatibleWithSlot(dragged, classId, slot, currentLegality.canEquip)) {
+        return;
+      }
+      event.preventDefault();
+      if (event.dataTransfer) {
+        event.dataTransfer.dropEffect = "move";
+      }
+    });
+
+    button.addEventListener("drop", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const source = parseDragPayload(event);
+      const selected = options.getSelectedClassId();
+      if (!source || source.kind !== "collection" || !selected) {
+        endArmoryDrag(armoryDragHost() ?? root);
+        return;
+      }
+      const dragged = dropById(snapshot.progression.armory, source.dropId);
+      if (!dragged) {
+        endArmoryDrag(armoryDragHost() ?? root);
+        return;
+      }
+      const targetSlot = equipmentBaseForDrop(dragged, content).slot;
+      if (targetSlot !== slot || selected !== classId) {
+        endArmoryDrag(armoryDragHost() ?? root);
+        return;
+      }
+      if (!isCompatibleWithSlot(dragged, classId, slot, currentLegality.canEquip)) {
+        endArmoryDrag(armoryDragHost() ?? root);
+        return;
+      }
+      publish({ cmd: "equip", args: [source.dropId, classId, slot] });
+      endArmoryDrag(armoryDragHost() ?? root);
+    });
+  }
+
+  function bindCollectionDropTarget(snapshot: ReadonlySnapshot, grid: HTMLElement): void {
+    grid.addEventListener("dragover", (event) => {
+      if (activeDrag?.kind !== "worn") {
+        return;
+      }
+      event.preventDefault();
+      if (event.dataTransfer) {
+        event.dataTransfer.dropEffect = "move";
+      }
+    });
+
+    grid.addEventListener("drop", (event) => {
+      event.preventDefault();
+      const source = parseDragPayload(event);
+      if (!source || source.kind !== "worn") {
+        endArmoryDrag(armoryDragHost() ?? root);
+        return;
+      }
+      const worn = dropById(snapshot.progression.armory, source.dropId);
+      if (!worn?.assignedTo) {
+        endArmoryDrag(armoryDragHost() ?? root);
+        return;
+      }
+      publish({ cmd: "unequip", args: [source.classId, source.slot] });
+      endArmoryDrag(armoryDragHost() ?? root);
+    });
   }
 
   function positionComparePopover(anchor: HTMLElement, host: HTMLElement): void {
@@ -359,7 +578,7 @@ export function mountArmorySurface(
     container.append(wrap);
   }
 
-  function applyBrowseSlot(classId: ClassId, slot: EquipmentSlotId, armory: DropInstance[]): void {
+  function applyBrowseSlot(classId: ClassId, slot: EquipmentSlotId): void {
     const next: ArmoryFilters = { ...filters, slot };
     if (slot === "weapon") {
       next.weaponClass = classId;
@@ -368,8 +587,6 @@ export function mountArmorySurface(
     }
     filters = next;
     browseCompatibility = { classId, slot };
-    selectedDropId = equippedDropId(armory, classId, slot);
-    crossEquipConfirm = null;
   }
 
   function renderArmoryCharacterSelector(
@@ -499,9 +716,15 @@ export function mountArmorySurface(
         if (classId === null) {
           return;
         }
-        applyBrowseSlot(classId, slot, snapshot.progression.armory);
+        applyBrowseSlot(classId, slot);
         render(snapshot);
       });
+      if (classId) {
+        bindWornSlotDropTarget(snapshot, classId, slot, button);
+      }
+      if (drop && classId) {
+        bindWornSlotDrag(classId, slot, drop, button);
+      }
       strip.append(button);
     }
 
@@ -533,60 +756,6 @@ export function mountArmorySurface(
           aria: { label: "Locked" },
         }),
       );
-    }
-  }
-
-  function renderDropSummary(card: HTMLElement, drop: DropInstance): void {
-    const base = equipmentBaseForDrop(drop, content);
-    const titleWrap = el("div", { class: "equipment-card-titles" }, [
-      el("p", { class: "equipment-name", text: base.name }),
-      el("p", {
-        class: "equipment-meta",
-        text: `Tier ${base.tier} · Item Level ${drop.itemLevel}`,
-      }),
-    ]);
-
-    const header = el("div", { class: "equipment-card-header" });
-    appendContentTierIcon(header, base.iconKey, base.name);
-    header.append(titleWrap);
-    card.classList.add(`rarity-${drop.rarity}`);
-    card.append(header);
-
-    card.append(
-      el("p", { class: "equipment-guaranteed", text: formatGuaranteedStat(base) }),
-    );
-
-    if (drop.affixes.length > 0) {
-      const affixList = el("ul", { class: "equipment-affix-list" });
-      for (const affix of drop.affixes) {
-        affixList.append(el("li", { text: formatAffix(affix) }));
-      }
-      card.append(affixList);
-    }
-
-    const markerChildren: HTMLElement[] = [];
-    if (!isDropSeen(drop)) {
-      markerChildren.push(
-        el("span", {
-          class: "equipment-marker unseen-marker",
-          data: { unseenMarker: "true" },
-          text: "Unseen",
-        }),
-      );
-    }
-    if (drop.locked) {
-      markerChildren.push(
-        el("span", { class: "equipment-marker locked-marker", text: "Locked" }),
-      );
-    }
-    const assignment = formatAssignment(drop.assignedTo);
-    if (assignment) {
-      markerChildren.push(
-        el("span", { class: "equipment-marker assigned-marker", text: assignment }),
-      );
-    }
-    if (markerChildren.length > 0) {
-      card.append(el("div", { class: "equipment-markers" }, markerChildren));
     }
   }
 
@@ -761,23 +930,19 @@ export function mountArmorySurface(
     const grid = el("div", {
       class: "armory-grid",
       data: { armoryCollection: "true" },
-      props: { role: "listbox" },
+      props: { role: "list" },
       aria: { label: "Armory collection" },
     });
 
     const drops = filteredDrops(snapshot);
     for (const drop of drops) {
-      const selected = selectedDropId === drop.dropId;
       const tile = el("article", {
-        class: selected
-          ? `equipment-card focus-ring selected${drop.locked ? " locked-tile" : ""}`
-          : `equipment-card focus-ring${drop.locked ? " locked-tile" : ""}`,
+        class: `equipment-card focus-ring${drop.locked ? " locked-tile" : ""}`,
         data: {
           dropId: String(drop.dropId),
         },
-        props: { tabIndex: 0, role: "option" },
+        props: { tabIndex: 0, role: "listitem" },
         aria: {
-          selected: selected ? "true" : "false",
           label: equipmentBaseForDrop(drop, content).name,
         },
       });
@@ -830,12 +995,7 @@ export function mountArmorySurface(
 
       bindComparePopover(snapshot, drop, tile, host);
 
-      bindPressable(tile, () => {
-        selectedDropId = drop.dropId;
-        markDropSeen(drop.dropId);
-        crossEquipConfirm = null;
-        render(snapshot);
-      });
+      bindCollectionDrag(snapshot, drop, tile);
       grid.append(tile);
     }
 
@@ -849,272 +1009,9 @@ export function mountArmorySurface(
     }
 
     container.append(grid);
+    bindCollectionDropTarget(snapshot, grid);
     unbindGridOverflow?.();
     unbindGridOverflow = bindScrollOverflowAffordance(grid);
-  }
-
-  function renderComparePanel(
-    snapshot: ReadonlySnapshot,
-    panel: HTMLElement,
-    selectedDrop: DropInstance,
-    classId: ClassId,
-    slot: EquipmentSlotId,
-  ): void {
-    const classKit = classKitFor(content, classId);
-    const talentState = effectiveTalentState(snapshot, classId);
-    const loadout = effectiveLoadout(snapshot, classId);
-    const abilitiesById = new Map(content.abilities.map((ability) => [ability.id, ability]));
-    const basicAbility = abilitiesById.get(classKit.basicAbilityId);
-    if (!basicAbility) {
-      throw new Error(`Missing basic Ability for ${classId}`);
-    }
-
-    const equippedId = equippedDropId(snapshot.progression.armory, classId, slot);
-    const equipped = equippedId
-      ? dropById(snapshot.progression.armory, equippedId)
-      : undefined;
-
-    const currentColumn = el("section", { class: "armory-compare-column" }, [
-      el("h4", { text: "Equipped" }),
-    ]);
-    if (equipped) {
-      renderDropSummary(currentColumn, equipped);
-    } else {
-      currentColumn.append(el("p", { class: "surface-empty", text: "Empty slot" }));
-    }
-
-    const candidateColumn = el("section", { class: "armory-compare-column" }, [
-      el("h4", { text: "Selected" }),
-    ]);
-    renderDropSummary(candidateColumn, selectedDrop);
-
-    panel.append(
-      el("div", { class: "armory-compare-columns" }, [currentColumn, candidateColumn]),
-    );
-
-    const roster = [...snapshot.progression.party, snapshot.progression.reserve];
-    const { current: currentMods, candidate: candidateMods } = statModifiersForSlotSwap(
-      snapshot.progression.armory,
-      roster,
-      classId,
-      slot,
-      selectedDrop,
-      content,
-    );
-    const statDeltas = compareEquipmentStatDeltas(currentMods, candidateMods);
-    if (statDeltas.length > 0) {
-      const deltaList = el("ul", {
-        class: "armory-stat-deltas",
-        data: { statDeltas: "true" },
-      });
-      for (const line of statDeltas) {
-        deltaList.append(
-          el("li", {
-            text: `${line.label}: ${line.before} → ${line.after} (${line.delta})`,
-          }),
-        );
-      }
-      panel.append(deltaList);
-    }
-
-    const loadouts = snapshotEquipmentLoadouts(snapshot.progression.armory, roster);
-    const currentLoadout = { ...loadouts[classId] };
-    const candidateLoadout = { ...currentLoadout, [slot]: selectedDrop.dropId };
-    const currentStats = statsForEquipmentLoadout(
-      classKit,
-      talentState,
-      currentLoadout,
-      snapshot.progression.armory,
-      content,
-    );
-    const candidateStats = statsForEquipmentLoadout(
-      classKit,
-      talentState,
-      candidateLoadout,
-      snapshot.progression.armory,
-      content,
-    );
-    const abilityChanges = compareAbilityRawChanges(
-      loadout,
-      basicAbility,
-      currentStats,
-      candidateStats,
-      abilitiesById,
-    );
-    if (abilityChanges.length > 0) {
-      const abilityList = el("ul");
-      for (const change of abilityChanges) {
-        abilityList.append(
-          el("li", {
-            text: `${change.abilityName}: ${change.before ?? "—"} → ${change.after ?? "—"}`,
-          }),
-        );
-      }
-      panel.append(
-        el(
-          "div",
-          {
-            class: "armory-ability-deltas",
-            data: { abilityDeltas: "true" },
-          },
-          [el("h4", { text: "Ability changes" }), abilityList],
-        ),
-      );
-    } else {
-      panel.append(
-        el("p", {
-          class: "armory-no-ability-change",
-          data: { abilityDeltas: "true" },
-          text: "No Ability raw value changes.",
-        }),
-      );
-    }
-
-    const canEquipSelected = isCompatibleWithSlot(
-      selectedDrop,
-      classId,
-      slot,
-      currentLegality.canEquip,
-    );
-    if (canEquipSelected) {
-      const equipButton = el("button", {
-        class: "armory-equip-button focus-ring",
-        data: { equipButton: "true" },
-        props: { type: "button" },
-        text: "Equip selected",
-      });
-      bindPressable(equipButton, () => {
-        const assigned = selectedDrop.assignedTo;
-        if (assigned && (assigned.classId !== classId || assigned.slot !== slot)) {
-          crossEquipConfirm = {
-            dropId: selectedDrop.dropId,
-            fromClassId: assigned.classId,
-            fromSlot: assigned.slot,
-          };
-          render(snapshot);
-          return;
-        }
-        publish({ cmd: "equip", args: [selectedDrop.dropId, classId, slot] });
-      });
-      panel.append(el("div", { class: "armory-equip-row" }, [equipButton]));
-    }
-
-    if (crossEquipConfirm && crossEquipConfirm.dropId === selectedDrop.dropId) {
-      const yes = el("button", {
-        class: "armory-confirm-yes focus-ring",
-        props: { type: "button" },
-        text: "Confirm equip",
-      });
-      bindPressable(yes, () => {
-        publish({ cmd: "equip", args: [selectedDrop.dropId, classId, slot] });
-        crossEquipConfirm = null;
-      });
-      const no = el("button", {
-        class: "armory-confirm-no focus-ring",
-        props: { type: "button" },
-        text: "Cancel",
-      });
-      bindPressable(no, () => {
-        crossEquipConfirm = null;
-        render(snapshot);
-      });
-      panel.append(
-        el("div", { class: "armory-confirm", data: { crossEquipConfirm: "true" } }, [
-          el("p", {
-            class: "armory-confirm-copy",
-            text: `Move from ${CLASS_LABELS[crossEquipConfirm.fromClassId]} ${SLOT_LABELS[crossEquipConfirm.fromSlot]}? That slot will be empty.`,
-          }),
-          el("div", { class: "armory-confirm-actions" }, [yes, no]),
-        ]),
-      );
-    }
-  }
-
-  function renderDetail(snapshot: ReadonlySnapshot, container: HTMLElement): void {
-    const detail = el("aside", {
-      class: "armory-detail",
-      data: { armoryDetail: "true" },
-      aria: { label: "Equipment detail" },
-    });
-
-    detail.append(
-      el("p", {
-        class: "armory-attempt-note",
-        data: { nextAttemptNote: "true" },
-        text: "Equipment changes apply from the next Stage Attempt.",
-      }),
-    );
-
-    if (selectedDropId === null) {
-      detail.append(
-        el("p", {
-          class: "surface-empty",
-          text: "Select a Drop to inspect it.",
-        }),
-      );
-      container.append(detail);
-      unbindDetailOverflow?.();
-      unbindDetailOverflow = bindScrollOverflowAffordance(detail);
-      return;
-    }
-
-    const selectedDrop = dropById(snapshot.progression.armory, selectedDropId);
-    if (!selectedDrop) {
-      selectedDropId = null;
-      detail.append(
-        el("p", {
-          class: "surface-empty",
-          text: "Select a Drop to inspect it.",
-        }),
-      );
-      container.append(detail);
-      unbindDetailOverflow?.();
-      unbindDetailOverflow = bindScrollOverflowAffordance(detail);
-      return;
-    }
-
-    const summary = el("article", {
-      class: "equipment-card equipment-detail",
-    });
-    renderDropSummary(summary, selectedDrop);
-    detail.append(summary);
-
-    const actions = el("div", { class: "armory-detail-actions" });
-    const lockButton = el("button", {
-      class: "equipment-lock-toggle focus-ring",
-      data: { lockToggle: String(selectedDrop.dropId) },
-      props: { type: "button" },
-      text: selectedDrop.locked ? "Unlock" : "Lock",
-    });
-    bindPressable(lockButton, () => {
-      publish({ cmd: "setLocked", args: [selectedDrop.dropId, !selectedDrop.locked] });
-    });
-    actions.append(lockButton);
-
-    const classId = options.getSelectedClassId();
-    const assigned = selectedDrop.assignedTo;
-    if (classId && assigned?.classId === classId) {
-      const unequip = el("button", {
-        class: "equipment-slot-unequip focus-ring",
-        data: { unequipSlot: assigned.slot },
-        props: { type: "button" },
-        text: "Unequip",
-      });
-      bindPressable(unequip, () => {
-        publish({ cmd: "unequip", args: [classId, assigned.slot] });
-      });
-      actions.append(unequip);
-    }
-    detail.append(actions);
-
-    if (classId) {
-      const slot = equipmentBaseForDrop(selectedDrop, content).slot;
-      renderComparePanel(snapshot, detail, selectedDrop, classId, slot);
-    }
-
-    container.append(detail);
-    unbindDetailOverflow?.();
-    unbindDetailOverflow = bindScrollOverflowAffordance(detail);
   }
 
   const shell = mountSurfaceShell(root, "armory-surface", {
@@ -1125,9 +1022,8 @@ export function mountArmorySurface(
       renderToolbar(snapshot, body);
       renderArmoryCharacterSelector(snapshot, body);
       renderWornStrip(snapshot, body);
-      const panes = el("div", { class: "armory-panes" });
+      const panes = el("div", { class: "armory-panes armory-panes--full" });
       renderGrid(snapshot, panes, body);
-      renderDetail(snapshot, panes);
       body.append(panes);
       body.append(comparePopover);
       return [body];
@@ -1166,7 +1062,12 @@ export function mountArmorySurface(
     render,
     destroy() {
       unbindGridOverflow?.();
-      unbindDetailOverflow?.();
+      const host = armoryDragHost();
+      if (host) {
+        endArmoryDrag(host);
+      } else {
+        activeDrag = null;
+      }
       hideComparePopover();
       shell.destroy();
     },

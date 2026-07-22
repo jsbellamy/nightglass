@@ -125,22 +125,12 @@ test.describe("accessibility keyboard floor", () => {
     await dock.locator('[data-discard-select="1"]').focus();
     await assertFocusRingVisible(dock, '[data-discard-select="1"]');
     await dock.locator('.equipment-card[data-drop-id="1"]').focus();
-    await dock.keyboard.press("Enter");
     await assertFocusRingVisible(dock, '.equipment-card[data-drop-id="1"]');
-    await dock.locator('[data-lock-toggle="1"]').focus();
-    await assertFocusRingVisible(dock, '[data-lock-toggle="1"]');
-    await dock.locator('[data-equip-button="true"]').focus();
-    await dock.keyboard.press("Enter");
+    await dock.locator('[data-tile-lock="1"]').focus();
+    await assertFocusRingVisible(dock, '[data-tile-lock="1"]');
     await expect(dock.locator(".armory-grid")).toBeVisible();
-    await expect(dock.locator('[data-armory-detail="true"]')).toBeVisible();
-    await expect(
-      dock.locator('[data-worn-slot="weapon"][data-slot-filled="true"]'),
-    ).toBeVisible();
-    await dock.locator('[data-worn-slot="weapon"]').focus();
-    await dock.keyboard.press("Enter");
-    await assertFocusRingVisible(dock, '[data-unequip-slot="weapon"]');
-    await dock.locator('[data-unequip-slot="weapon"]').press("Enter");
-    await expect(dock.locator('[data-unequip-slot="weapon"]')).toHaveCount(0);
+    await expect(dock.locator('[data-armory-detail="true"]')).toHaveCount(0);
+    await expect(dock.locator('[data-equip-button="true"]')).toHaveCount(0);
 
     await focusDockTab(dock, "stage");
     await dock.locator('[data-stage-id="1"]').focus();

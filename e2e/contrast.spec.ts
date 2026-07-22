@@ -38,12 +38,11 @@ const DOCK_PRIMARY_TEXT: { tab: "character" | "armory" | "stage"; selector: stri
   },
   { tab: "armory", selector: ".armory-worn-strip .armory-worn-slot-label" },
   { tab: "armory", selector: '.armory-worn-strip [data-slot-filled="false"] .armory-worn-slot-empty' },
-  { tab: "armory", selector: ".armory-detail .equipment-detail .equipment-name" },
+  { tab: "armory", selector: ".armory-character-selector .character-chip-name" },
   { tab: "armory", selector: ".armory-compare-popover .armory-compare-name" },
   { tab: "armory", selector: ".armory-compare-popover .armory-compare-stat-table th" },
   { tab: "armory", selector: ".armory-slot-segment" },
   { tab: "armory", selector: ".armory-state-select" },
-  { tab: "armory", selector: ".armory-detail .armory-attempt-note" },
   { tab: "stage", selector: ".attempt-position" },
 ];
 
@@ -94,11 +93,10 @@ test.describe("accessibility contrast floor", () => {
           }
         }
       }
-      if (tab === "armory" && selector === ".armory-detail .equipment-detail .equipment-name") {
-        const tile = dock.locator('.armory-grid .equipment-card[data-drop-id="99"]');
-        await expect(tile).toBeVisible({ timeout: 15_000 });
-        await tile.click();
-        await expect(dock.locator(selector)).toBeVisible();
+      if (tab === "armory" && selector === ".armory-character-selector .character-chip-name") {
+        await expect(dock.locator(".armory-character-selector .character-chip-name").first()).toBeVisible({
+          timeout: 15_000,
+        });
       }
       if (tab === "armory" && selector.includes("armory-compare-popover")) {
         const tile = dock.locator('.armory-grid .equipment-card[data-drop-id="99"]');
@@ -235,8 +233,6 @@ test.describe("accessibility contrast floor", () => {
     await tile.close();
 
     await focusDockTab(dock, "armory");
-    await dock.locator('.armory-grid .equipment-card[data-drop-id="99"]').click();
-    await expect(dock.locator(".armory-detail .equipment-detail .equipment-name")).toBeVisible();
     const epicCard = dock.locator(".armory-grid .equipment-card.rarity-epic");
     await expect(epicCard).toBeVisible({ timeout: 5_000 });
     await epicCard.hover();
@@ -264,16 +260,9 @@ test.describe("accessibility contrast floor", () => {
     expect(raritySignals.hasNameText).toBe(false);
     expect(raritySignals.hasUnseenWord).toBe(false);
 
-    await epicCard.click();
-    await expect(
-      dock.locator('[data-armory-detail="true"] .equipment-detail .equipment-name'),
-    ).toBeVisible();
-    const detailLock = dock.locator('[data-lock-toggle="99"]');
-    await expect(detailLock).toBeVisible();
-    await expect(detailLock).toContainText(/Unlock/);
-    await expect(
-      dock.locator('[data-armory-detail="true"] .equipment-detail .locked-marker'),
-    ).toContainText(/Locked/);
+    const tileLock = dock.locator('[data-tile-lock="99"]');
+    await expect(tileLock).toBeVisible();
+    await expect(tileLock).toContainText(/Unlock/);
 
     await focusDockTab(dock, "stage");
     const lockedStage = await dock.evaluate(() => {

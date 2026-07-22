@@ -5,6 +5,7 @@ import { cloneSnapshot, type DropInstance, type Snapshot } from "../src/core/sna
 import type { ClassId, EquipmentSlotId } from "../src/core/types";
 import { buildContent } from "../src/data";
 import { NIGHTGLASS_BUS_CHANNEL } from "../src/ui/bus";
+import { serializeEngineLegality } from "../src/ui/engine-legality";
 import { DOCK_HEIGHT, DOCK_WIDTH } from "../src/ui/dock-geometry";
 import { PUMP_INTERVAL_MS } from "../src/ui/pump";
 import {
@@ -147,6 +148,21 @@ function equipmentIconReviewSnapshot(): Snapshot {
   );
   snapshot.progression.armory = armory;
   return snapshot;
+}
+
+async function postArmoryReviewSnapshot(page: Page): Promise<void> {
+  const content = buildContent();
+  const snapshot = equipmentIconReviewSnapshot();
+  const engine = createEngine(content, snapshot, 42);
+  const legality = serializeEngineLegality(engine, snapshot, content);
+  await page.evaluate(
+    ({ channelName, snapshot: snap, legality: leg }) => {
+      const channel = new BroadcastChannel(channelName);
+      channel.postMessage({ type: "snapshot", snapshot: snap, legality: leg });
+      channel.close();
+    },
+    { channelName: NIGHTGLASS_BUS_CHANNEL, snapshot, legality },
+  );
 }
 
 /** Third-peer bus spy on the page — observes delivery without production hooks. */
@@ -695,6 +711,85 @@ test.describe("rendered-output evidence seam", () => {
     expect(popover!.hasStatTable).toBe(true);
     expect(popover!.describedBy).toMatch(/armory-compare-desc-100/);
     expect(popover!.noDuplicateColumns).toBe(true);
+
+    await context.close();
+  });
+
+  test("evidence: armory-drag-equip-unequip / evidence: armory-density-no-outer-scroll — pointer drag equip, unequip, swap, and 800×480 layout without outer-panel scroll", async ({
+    browser,
+  }) => {
+    const { context, tile } = await openTile(browser);
+    const dock = await context.newPage();
+    await dock.setViewportSize({ width: DOCK_WIDTH, height: DOCK_HEIGHT });
+    await dock.goto("/?window=dock", { waitUntil: "networkidle" });
+    await dock.waitForSelector(".management-dock");
+
+    await postArmoryReviewSnapshot(dock);
+    await dock.click('[data-dock-tab="armory"]');
+    await dock.waitForSelector('.armory-grid .equipment-card[data-drop-id="100"]');
+    await dock.click('.armory-character-selector [data-character-chip="wizard"]');
+    await installBusSpy(dock);
+    await dock.evaluate((channelName) => {
+      const w = window as unknown as { __ngCmdLog?: unknown[]; __ngCmdSpy?: BroadcastChannel };
+      w.__ngCmdLog = [];
+      w.__ngCmdSpy?.close();
+      const channel = new BroadcastChannel(channelName);
+      channel.onmessage = (event: MessageEvent<{ type: string; command?: unknown }>) => {
+        if (event.data.type === "command") {
+          w.__ngCmdLog?.push(event.data.command);
+        }
+      };
+      w.__ngCmdSpy = channel;
+    }, NIGHTGLASS_BUS_CHANNEL);
+
+    const layoutBeforeDrag = await dock.evaluate(() => {
+      const panel = document.querySelector<HTMLElement>('[data-dock-panel="armory"]');
+      const body = document.querySelector<HTMLElement>(".armory-body--compare-host");
+      if (!panel || !body) {
+        return null;
+      }
+      return {
+        panelScrollable: panel.scrollHeight > panel.clientHeight + 1,
+        bodyScrollable: body.scrollHeight > body.clientHeight + 1,
+        hasDetail: document.querySelector('[data-armory-detail="true"]') !== null,
+      };
+    });
+    expect(layoutBeforeDrag?.hasDetail).toBe(false);
+    expect(layoutBeforeDrag?.panelScrollable).toBe(false);
+    expect(layoutBeforeDrag?.bodyScrollable).toBe(false);
+
+    const epicTile = dock.locator('.armory-grid .equipment-card[data-drop-id="100"]');
+    const weaponSlot = dock.locator('[data-worn-slot="weapon"]');
+    await epicTile.dragTo(weaponSlot);
+
+    await expect(weaponSlot).toHaveAttribute("data-slot-filled", "true");
+
+    const grid = dock.locator('[data-armory-collection="true"]');
+    const weaponBox = await weaponSlot.boundingBox();
+    const gridBox = await grid.boundingBox();
+    if (weaponBox && gridBox) {
+      await dock.mouse.move(weaponBox.x + weaponBox.width / 2, weaponBox.y + weaponBox.height / 2);
+      await dock.mouse.down();
+      await dock.mouse.move(gridBox.x + gridBox.width / 2, gridBox.y + gridBox.height / 2, {
+        steps: 12,
+      });
+      await dock.mouse.up();
+    }
+
+    const commands = await dock.evaluate(() => {
+      const w = window as unknown as { __ngCmdLog?: unknown[] };
+      return w.__ngCmdLog ?? [];
+    });
+    expect(commands).toContainEqual({ cmd: "equip", args: [100, "wizard", "weapon"] });
+    expect(commands).toContainEqual({ cmd: "unequip", args: ["wizard", "weapon"] });
+
+    const afterUnequip = await dock.evaluate(() => {
+      const weapon = document.querySelector<HTMLElement>('[data-worn-slot="weapon"]');
+      return {
+        weaponEmpty: weapon?.dataset["slotFilled"] === "false",
+      };
+    });
+    expect(afterUnequip.weaponEmpty).toBe(true);
 
     await context.close();
   });

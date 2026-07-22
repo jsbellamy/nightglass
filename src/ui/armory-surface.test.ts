@@ -58,6 +58,25 @@ function activateFocused(): void {
   active.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
 }
 
+function dragBetween(source: HTMLElement, target: HTMLElement): void {
+  const dataTransfer = new DataTransfer();
+  source.dispatchEvent(
+    new DragEvent("dragstart", { bubbles: true, cancelable: true, dataTransfer }),
+  );
+  target.dispatchEvent(
+    new DragEvent("dragenter", { bubbles: true, cancelable: true, dataTransfer }),
+  );
+  target.dispatchEvent(
+    new DragEvent("dragover", { bubbles: true, cancelable: true, dataTransfer }),
+  );
+  target.dispatchEvent(
+    new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer }),
+  );
+  source.dispatchEvent(
+    new DragEvent("dragend", { bubbles: true, cancelable: true, dataTransfer }),
+  );
+}
+
 function drop(overrides: Partial<DropInstance> & Pick<DropInstance, "dropId" | "baseId">): DropInstance {
   return {
     itemLevel: 1,
@@ -162,7 +181,7 @@ describe("Armory surface", () => {
     surface.destroy();
   });
 
-  it("renders a worn loadout strip for the selected Class above grid and detail panes", () => {
+  it("renders a worn loadout strip for the selected Class above the full-width collection grid", () => {
     const root = document.createElement("div");
     const selected = { current: "knight" as ClassId };
     const surface = mountWithSelection(root, selected);
@@ -198,14 +217,14 @@ describe("Armory surface", () => {
 
     const panes = root.querySelector(".armory-panes");
     expect(panes?.querySelector(".armory-grid")).not.toBeNull();
-    expect(panes?.querySelector(".armory-detail")).not.toBeNull();
+    expect(panes?.querySelector(".armory-detail")).toBeNull();
     expect(root.querySelector('[data-armory-collection="true"]')).not.toBeNull();
-    expect(root.querySelector('[data-armory-detail="true"]')).not.toBeNull();
+    expect(root.querySelector('[data-armory-detail="true"]')).toBeNull();
 
     surface.destroy();
   });
 
-  it("applies browse-slot filters and selects the equipped Drop when a filled worn slot is activated", () => {
+  it("applies browse-slot filters when a filled worn slot is activated without a detail pane", () => {
     const root = document.createElement("div");
     const selected = { current: "knight" as ClassId };
     const snapshot = armorySnapshot([
@@ -237,18 +256,12 @@ describe("Armory surface", () => {
       root
         .querySelector<HTMLElement>('.armory-grid .equipment-card[data-drop-id="1"]'),
     ).toBeNull();
-    expect(
-      root
-        .querySelector<HTMLElement>('.armory-grid .equipment-card[aria-selected="true"]'),
-    ).toBeNull();
-    expect(root.querySelector('[data-armory-detail="true"] .equipment-name')?.textContent).toMatch(
-      /Fixture Blade/,
-    );
+    expect(root.querySelector('[data-armory-detail="true"]')).toBeNull();
 
     surface.destroy();
   });
 
-  it("applies browse-slot filters with empty selection when an empty worn slot is activated", () => {
+  it("applies browse-slot filters with an empty compatible collection when an empty worn slot is activated", () => {
     const root = document.createElement("div");
     const selected = { current: "knight" as ClassId };
     const snapshot = armorySnapshot([
@@ -257,11 +270,6 @@ describe("Armory surface", () => {
     ]);
     const surface = mountWithSelection(root, selected);
     renderArmory(surface, snapshot);
-    root.querySelector<HTMLElement>('.equipment-card[data-drop-id="1"]')?.click();
-    renderArmory(surface, snapshot);
-    expect(
-      root.querySelector('.armory-grid .equipment-card[data-drop-id="1"]')?.getAttribute("aria-selected"),
-    ).toBe("true");
 
     root.querySelector<HTMLButtonElement>('[data-worn-slot="armor"]')?.click();
     renderArmory(surface, snapshot);
@@ -276,12 +284,7 @@ describe("Armory surface", () => {
         (card) => card.dataset["dropId"],
       ),
     ).toEqual(["2"]);
-    expect(
-      root.querySelector('.armory-grid .equipment-card[aria-selected="true"]'),
-    ).toBeNull();
-    expect(root.querySelector('[data-armory-detail="true"]')?.textContent).toMatch(
-      /Select a Drop/i,
-    );
+    expect(root.querySelector('[data-armory-detail="true"]')).toBeNull();
 
     surface.destroy();
   });
@@ -383,29 +386,25 @@ describe("Armory surface", () => {
     surface.destroy();
   });
 
-  it("keeps name, markers, and assignment prose in the detail pane", () => {
+  it("does not render interim detail movement controls in the Armory surface", () => {
     const root = document.createElement("div");
     const selected = { current: "knight" as ClassId };
     const snapshot = armorySnapshot([
+      drop({ dropId: 1, baseId: "fixture-blade" }),
       drop({
-        dropId: 1,
+        dropId: 2,
         baseId: "fixture-blade",
-        rarity: "rare",
-        seen: false,
-        locked: true,
         assignedTo: { classId: "knight", slot: "weapon" },
       }),
     ]);
     const surface = mountWithSelection(root, selected);
     renderArmory(surface, snapshot);
-    root.querySelector<HTMLButtonElement>('[data-worn-slot="weapon"]')?.click();
-    renderArmory(surface, snapshot);
 
-    const detail = root.querySelector<HTMLElement>('[data-armory-detail="true"]');
-    expect(detail?.querySelector(".equipment-name")?.textContent).toMatch(/Fixture Blade/);
-    expect(detail?.querySelector(".equipment-meta")?.textContent).toMatch(/Tier/);
-    expect(detail?.querySelector(".assigned-marker")?.textContent).toMatch(/Knight/);
-    expect(detail?.querySelector('[data-unequip-slot="weapon"]')).not.toBeNull();
+    expect(root.querySelector('[data-armory-detail="true"]')).toBeNull();
+    expect(root.querySelector('[data-equip-button="true"]')).toBeNull();
+    expect(root.querySelector('[data-unequip-slot]')).toBeNull();
+    expect(root.querySelector('[data-cross-equip-confirm="true"]')).toBeNull();
+    expect(root.querySelector(".armory-compare-columns")).toBeNull();
 
     surface.destroy();
   });
@@ -497,7 +496,7 @@ describe("Armory surface", () => {
     ).toEqual([2]);
   });
 
-  it("selecting a tile fills the detail panel and publishes markSeen for an unseen Drop", () => {
+  it("publishes markSeen when the comparison popover opens for an unseen Drop", () => {
     const root = document.createElement("div");
     const commands: unknown[] = [];
     const selected = { current: "knight" as ClassId };
@@ -515,25 +514,8 @@ describe("Armory surface", () => {
     const surface = mountWithSelection(root, selected, (command) => commands.push(command));
     renderArmory(surface, snapshot);
 
-    root.querySelector<HTMLElement>('.equipment-card[data-drop-id="2"]')?.click();
-    renderArmory(surface, snapshot);
-
-    expect(root.querySelector('[data-armory-detail="true"] .equipment-name')?.textContent).toMatch(
-      /Fixture Blade/,
-    );
-    expect(root.querySelector(".armory-compare-columns")).not.toBeNull();
-    expect(
-      [...root.querySelectorAll(".armory-compare-column h4")].map((node) => node.textContent),
-    ).toEqual(["Equipped", "Selected"]);
-    expect(root.querySelector('[data-stat-deltas="true"]')).not.toBeNull();
-    expect(root.querySelector('[data-ability-deltas="true"]')).not.toBeNull();
-    expect(root.querySelector('[data-next-attempt-note="true"]')?.textContent).toMatch(
-      /next Stage Attempt/i,
-    );
-    expect(root.querySelector("[data-drop-detail]")).toBeNull();
-    expect(root.textContent?.toLowerCase()).not.toMatch(/\bpower total\b|\baggregate score\b/);
-
-    root.querySelector<HTMLElement>('.equipment-card[data-drop-id="1"]')?.click();
+    const tile = root.querySelector<HTMLElement>('.equipment-card[data-drop-id="1"]')!;
+    tile.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
     renderArmory(surface, snapshot);
     expect(commands).toContainEqual({ cmd: "markSeen", args: [[1]] });
     expect(root.querySelector('[data-unseen-marker="true"]')).toBeNull();
@@ -541,7 +523,7 @@ describe("Armory surface", () => {
     surface.destroy();
   });
 
-  it("equips to the picker-selected Character at the Drop's own Base slot", () => {
+  it("drags from the collection to the compatible worn slot and publishes equip", () => {
     const root = document.createElement("div");
     document.body.append(root);
     const selected = { current: "wizard" as ClassId };
@@ -565,46 +547,29 @@ describe("Armory surface", () => {
     });
 
     renderArmory(surface, engine.snapshot());
-    root.querySelector<HTMLElement>('.equipment-card[data-drop-id="1"]')?.click();
-    renderArmory(surface, engine.snapshot());
 
-    const equip = root.querySelector<HTMLButtonElement>('[data-equip-button="true"]');
-    equip?.focus();
-    activateFocused();
+    const tile = root.querySelector<HTMLElement>('.equipment-card[data-drop-id="1"]')!;
+    const armorSlot = root.querySelector<HTMLElement>('[data-worn-slot="armor"]')!;
+    dragBetween(tile, armorSlot);
     expect(commands).toContainEqual({ cmd: "equip", args: [1, "wizard", "armor"] });
 
     surface.destroy();
     root.remove();
   });
 
-  it("does not offer equip for a Class-restricted Weapon on another Class", () => {
-    const root = document.createElement("div");
-    const selected = { current: "wizard" as ClassId };
-    const snapshot = armorySnapshot([
-      drop({ dropId: 1, baseId: "fixture-blade" }),
-    ]);
-    const surface = mountWithSelection(root, selected);
-    renderArmory(surface, snapshot);
-
-    root.querySelector<HTMLElement>('.equipment-card[data-drop-id="1"]')?.click();
-    renderArmory(surface, snapshot);
-
-    expect(root.querySelector('[data-equip-button="true"]')).toBeNull();
-
-    surface.destroy();
-  });
-
-  it("requires inline confirm before equipping from another Character and leaves that slot empty", () => {
+  it("swaps into an occupied compatible worn slot without confirmation", () => {
     const root = document.createElement("div");
     document.body.append(root);
     const selected = { current: "knight" as ClassId };
     const saved = armorySnapshot([
       drop({
         dropId: 1,
-        baseId: "fixture-armor",
-        assignedTo: { classId: "wizard", slot: "armor" },
+        baseId: "fixture-blade-ii",
+        itemLevel: 3,
+        rarity: "rare",
+        assignedTo: { classId: "knight", slot: "weapon" },
       }),
-      drop({ dropId: 2, baseId: "fixture-armor-ii", itemLevel: 3, rarity: "rare" }),
+      drop({ dropId: 2, baseId: "fixture-blade", awardedAtMs: 100 }),
     ]);
     const engine = createEngine(fixtureContent, saved, LOOT_SEED);
     const commands: unknown[] = [];
@@ -623,39 +588,124 @@ describe("Armory surface", () => {
     });
 
     renderArmory(surface, engine.snapshot());
-    selected.current = "wizard";
-    renderArmory(surface, engine.snapshot());
-    root.querySelector<HTMLButtonElement>('[data-worn-slot="armor"]')?.click();
-    renderArmory(surface, engine.snapshot());
-    selected.current = "knight";
-    renderArmory(surface, engine.snapshot());
-
-    const equip = root.querySelector<HTMLButtonElement>('[data-equip-button="true"]');
-    equip?.focus();
-    activateFocused();
-    renderArmory(surface, engine.snapshot());
-    expect(root.querySelector('[data-cross-equip-confirm="true"]')).not.toBeNull();
-    expect(root.querySelector('[data-cross-equip-confirm="true"]')?.textContent).toMatch(/Wizard/);
-
-    const confirm = root.querySelector<HTMLButtonElement>(".armory-confirm-yes");
-    confirm?.focus();
-    activateFocused();
+    const tile = root.querySelector<HTMLElement>('.equipment-card[data-drop-id="2"]')!;
+    const weaponSlot = root.querySelector<HTMLElement>('[data-worn-slot="weapon"]')!;
+    dragBetween(tile, weaponSlot);
+    expect(commands).toContainEqual({ cmd: "equip", args: [2, "knight", "weapon"] });
+    expect(root.querySelector('[data-cross-equip-confirm="true"]')).toBeNull();
     const snapshot = engine.snapshot();
-    renderArmory(surface, snapshot);
-
-    expect(commands).toContainEqual({ cmd: "equip", args: [1, "knight", "armor"] });
-    expect(
-      snapshot.progression.armory.find(
-        (entry) => entry.assignedTo?.classId === "wizard" && entry.assignedTo.slot === "armor",
-      ),
-    ).toBeUndefined();
-    expect(snapshot.progression.armory.find((entry) => entry.dropId === 1)?.assignedTo).toEqual({
+    expect(snapshot.progression.armory.find((entry) => entry.dropId === 1)?.assignedTo).toBeNull();
+    expect(snapshot.progression.armory.find((entry) => entry.dropId === 2)?.assignedTo).toEqual({
       classId: "knight",
-      slot: "armor",
+      slot: "weapon",
     });
 
     surface.destroy();
     root.remove();
+  });
+
+  it("drags from a filled worn slot to the collection and publishes unequip", () => {
+    const root = document.createElement("div");
+    document.body.append(root);
+    const selected = { current: "knight" as ClassId };
+    const saved = armorySnapshot([
+      drop({
+        dropId: 1,
+        baseId: "fixture-blade",
+        assignedTo: { classId: "knight", slot: "weapon" },
+      }),
+    ]);
+    const engine = createEngine(fixtureContent, saved, LOOT_SEED);
+    const commands: unknown[] = [];
+    const surface = mountArmorySurface(root, {
+      content: fixtureContent,
+      getSelectedClassId: () => selected.current,
+      selectClassId: (classId) => {
+        selected.current = classId;
+      },
+      onCommand: (command) => {
+        commands.push(command);
+        if (command.cmd === "unequip") {
+          engine.unequip(command.args[0], command.args[1]);
+        }
+      },
+    });
+
+    renderArmory(surface, engine.snapshot());
+    const weaponSlot = root.querySelector<HTMLElement>('[data-worn-slot="weapon"]')!;
+    const grid = root.querySelector<HTMLElement>('[data-armory-collection="true"]')!;
+    dragBetween(weaponSlot, grid);
+    expect(commands).toContainEqual({ cmd: "unequip", args: ["knight", "weapon"] });
+
+    surface.destroy();
+    root.remove();
+  });
+
+  it("ignores invalid collection drops onto incompatible worn slots", () => {
+    const root = document.createElement("div");
+    const selected = { current: "wizard" as ClassId };
+    const snapshot = armorySnapshot([
+      drop({ dropId: 1, baseId: "fixture-blade" }),
+    ]);
+    const commands: unknown[] = [];
+    const surface = mountWithSelection(root, selected, (command) => commands.push(command));
+    renderArmory(surface, snapshot);
+
+    const tile = root.querySelector<HTMLElement>('.equipment-card[data-drop-id="1"]')!;
+    const weaponSlot = root.querySelector<HTMLElement>('[data-worn-slot="weapon"]')!;
+    dragBetween(tile, weaponSlot);
+    expect(commands).toEqual([]);
+
+    surface.destroy();
+  });
+
+  it("highlights only the compatible worn slot during a collection drag and clears on drag end", () => {
+    const root = document.createElement("div");
+    document.body.append(root);
+    const selected = { current: "knight" as ClassId };
+    const snapshot = armorySnapshot([drop({ dropId: 1, baseId: "fixture-armor" })]);
+    const surface = mountWithSelection(root, selected);
+    renderArmory(surface, snapshot);
+
+    const tile = root.querySelector<HTMLElement>('.equipment-card[data-drop-id="1"]')!;
+    const dataTransfer = new DataTransfer();
+    tile.dispatchEvent(
+      new DragEvent("dragstart", { bubbles: true, cancelable: true, dataTransfer }),
+    );
+    expect(root.querySelector('[data-worn-slot="armor"]')?.classList.contains("armory-drop-target--valid")).toBe(
+      true,
+    );
+    expect(root.querySelector('[data-worn-slot="weapon"]')?.classList.contains("armory-drop-target--valid")).toBe(
+      false,
+    );
+    expect(root.querySelector<HTMLElement>('[data-armory-compare-popover="true"]')?.hidden).toBe(true);
+
+    tile.dispatchEvent(
+      new DragEvent("dragend", { bubbles: true, cancelable: true, dataTransfer }),
+    );
+    expect(root.querySelector(".armory-drop-target--valid")).toBeNull();
+
+    surface.destroy();
+    root.remove();
+  });
+
+  it("does not expose interim equip controls for assigned pieces on another Character", () => {
+    const root = document.createElement("div");
+    const selected = { current: "knight" as ClassId };
+    const snapshot = armorySnapshot([
+      drop({
+        dropId: 1,
+        baseId: "fixture-armor",
+        assignedTo: { classId: "wizard", slot: "armor" },
+      }),
+    ]);
+    const surface = mountWithSelection(root, selected);
+    renderArmory(surface, snapshot);
+
+    expect(root.querySelector('[data-equip-button="true"]')).toBeNull();
+    expect(root.querySelector('[data-cross-equip-confirm="true"]')).toBeNull();
+
+    surface.destroy();
   });
 
   it("lists Rare and Epic pieces in bulk discard confirm and excludes equipped or Locked rows", () => {
@@ -702,6 +752,7 @@ describe("Armory surface", () => {
 
   it("marks unseen equipment seen without mutating the Snapshot", () => {
     const root = document.createElement("div");
+    const commands: unknown[] = [];
     const selected = { current: "knight" as ClassId };
     const snapshot = armorySnapshot([
       drop({ dropId: 1, baseId: "fixture-blade", seen: false }),
@@ -711,9 +762,10 @@ describe("Armory surface", () => {
     }
     Object.freeze(snapshot.progression.armory);
 
-    const surface = mountWithSelection(root, selected);
+    const surface = mountWithSelection(root, selected, (command) => commands.push(command));
     renderArmory(surface, snapshot);
-    root.querySelector<HTMLElement>('.equipment-card[data-drop-id="1"]')?.click();
+    const tile = root.querySelector<HTMLElement>('.equipment-card[data-drop-id="1"]')!;
+    tile.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
     renderArmory(surface, snapshot);
 
     expect(snapshot.progression.armory[0]!.seen).toBe(false);
@@ -738,7 +790,9 @@ describe("Armory surface", () => {
     dockRoot.querySelector<HTMLButtonElement>('[data-dock-tab="armory"]')?.click();
     renderDock(dock, snapshot);
 
-    dockRoot.querySelector<HTMLElement>('.equipment-card[data-drop-id="1"]')?.click();
+    dockRoot
+      .querySelector<HTMLElement>('.equipment-card[data-drop-id="1"]')
+      ?.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
     renderDock(dock, snapshot);
     expect(commands).toContainEqual({ cmd: "markSeen", args: [[1]] });
     expect(dockRoot.querySelector('[data-unseen-marker="true"]')).toBeNull();
@@ -841,55 +895,10 @@ describe("Armory surface", () => {
     checkbox!.focus();
     expect(document.activeElement).toBe(checkbox);
 
-    tile?.click();
-    renderArmory(surface, snapshot);
     const lock = root.querySelector<HTMLButtonElement>('[data-tile-lock="1"]');
     lock?.focus();
     activateFocused();
     expect(commands).toContainEqual({ cmd: "setLocked", args: [1, true] });
-
-    surface.destroy();
-    root.remove();
-  });
-
-  it("completes a keyboard select-and-equip flow against the picker selection", () => {
-    const root = document.createElement("div");
-    document.body.append(root);
-    const selected = { current: "knight" as ClassId };
-    const saved = armorySnapshot([
-      drop({ dropId: 1, baseId: "fixture-blade-ii", itemLevel: 3, rarity: "rare", seen: false }),
-    ]);
-    const engine = createEngine(fixtureContent, saved, LOOT_SEED);
-    const commands: unknown[] = [];
-    const surface = mountArmorySurface(root, {
-      content: fixtureContent,
-      getSelectedClassId: () => selected.current,
-      selectClassId: (classId) => {
-        selected.current = classId;
-      },
-      onCommand: (command) => {
-        commands.push(command);
-        if (command.cmd === "equip") {
-          engine.equip(command.args[0], command.args[1], command.args[2]);
-        }
-        if (command.cmd === "markSeen") {
-          engine.markSeen(command.args[0]);
-        }
-      },
-    });
-
-    renderArmory(surface, engine.snapshot());
-
-    const tile = root.querySelector<HTMLElement>('.equipment-card[data-drop-id="1"]');
-    tile?.focus();
-    activateFocused();
-    renderArmory(surface, engine.snapshot());
-    expect(commands).toContainEqual({ cmd: "markSeen", args: [[1]] });
-
-    const equip = root.querySelector<HTMLButtonElement>('[data-equip-button="true"]');
-    equip?.focus();
-    activateFocused();
-    expect(commands).toContainEqual({ cmd: "equip", args: [1, "knight", "weapon"] });
 
     surface.destroy();
     root.remove();
@@ -903,5 +912,13 @@ describe("Armory surface source boundary", () => {
       "utf8",
     );
     expect(source).not.toMatch(/from\s+["']\.\.\/core\/engine["']/);
+  });
+
+  it("does not retain interim detail equip movement markup hooks", () => {
+    const source = readFileSync(
+      join(dirname(fileURLToPath(import.meta.url)), "armory-surface.ts"),
+      "utf8",
+    );
+    expect(source).not.toMatch(/armory-detail|equipButton|crossEquipConfirm|unequipSlot/);
   });
 });
