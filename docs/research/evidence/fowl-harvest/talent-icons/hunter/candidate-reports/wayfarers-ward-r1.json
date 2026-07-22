@@ -1,0 +1,8 @@
+{
+  "candidate": "wayfarers-ward-r1",
+  "path": "docs/research/evidence/fowl-harvest/talent-icons/hunter/scratch/wayfarers-ward-r1.png",
+  "status": "fail",
+  "error": "wayfarers-ward-r1.png: overshoot recovered 35\u00d736 (max body 30\u00d730 before outline ring)",
+  "primary": "overshoot",
+  "measurement": "wayfarers-ward-r1.png: overshoot recovered 35\u00d736 (max body 30\u00d730 before outline ring)"
+}

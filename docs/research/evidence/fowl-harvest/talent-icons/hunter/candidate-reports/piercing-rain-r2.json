@@ -1,0 +1,46 @@
+{
+  "candidate": "piercing-rain-r2",
+  "path": "docs/research/evidence/fowl-harvest/talent-icons/hunter/scratch/piercing-rain-r2.png",
+  "status": "pass",
+  "recovered": {
+    "bbox": [
+      46,
+      31,
+      977,
+      985
+    ],
+    "pitch_x": {
+      "pitch": 38.927777777777465,
+      "score": 0.056291611752289805
+    },
+    "pitch_y": {
+      "pitch": 41.727777777777305,
+      "score": 0.0929442968736245
+    },
+    "grid": [
+      24,
+      22
+    ]
+  },
+  "ramp": {
+    "opaque_cells": 267,
+    "far_cells": 3,
+    "far_fraction": 0.0112,
+    "off_ramp_reject": false,
+    "quantize_histogram": {
+      "cream": 61,
+      "contour-plum-deep": 86,
+      "mint-light": 67,
+      "berry-bright": 23,
+      "mint-pale": 2,
+      "berry": 3,
+      "twilight-slate": 4,
+      "sage": 1,
+      "mint-shadow": 18,
+      "mint": 1,
+      "berry-mid": 1
+    }
+  },
+  "primary": "preference-underfill",
+  "measurement": "24\u00d722; far 1.1%"
+}

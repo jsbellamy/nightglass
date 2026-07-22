@@ -1,0 +1,8 @@
+{
+  "candidate": "twin-fang-r2",
+  "path": "docs/research/evidence/fowl-harvest/talent-icons/hunter/scratch/twin-fang-r2.png",
+  "status": "fail",
+  "error": "twin-fang-r2.png: overshoot recovered 35\u00d714 (max body 30\u00d730 before outline ring)",
+  "primary": "overshoot",
+  "measurement": "twin-fang-r2.png: overshoot recovered 35\u00d714 (max body 30\u00d730 before outline ring)"
+}

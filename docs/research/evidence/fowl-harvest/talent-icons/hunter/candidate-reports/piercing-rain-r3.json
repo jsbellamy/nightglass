@@ -1,0 +1,8 @@
+{
+  "candidate": "piercing-rain-r3",
+  "path": "docs/research/evidence/fowl-harvest/talent-icons/hunter/scratch/piercing-rain-r3.png",
+  "status": "fail",
+  "error": "piercing-rain-r3.png: pitch-fail (scores x=0.038, y=0.104, floor=0.04)",
+  "primary": "pitch-fail",
+  "measurement": "piercing-rain-r3.png: pitch-fail (scores x=0.038, y=0.104, floor=0.04)"
+}
