@@ -29,7 +29,7 @@ No rejected candidates.
 | Build / measure report | [`build-report.json`](./build-report.json) |
 | Native tile review | [`tile-review-crooked-cornfield.png`](./tile-review-crooked-cornfield.png) |
 | 4× tile review | [`tile-review-crooked-cornfield@4x.png`](./tile-review-crooked-cornfield@4x.png) |
-| Bare runtime 1× / 4× | [`runtime-1x.png`](./runtime-1x.png), [`runtime@4x.png`](./runtime@4x.png) |
+| Bare runtime 1× (byte copy of shipped runtime) / 4× nearest | [`runtime-1x.png`](./runtime-1x.png), [`runtime@4x.png`](./runtime@4x.png) |
 | Visual review | [`visual-review.md`](./visual-review.md) |
 
 ## Validator
