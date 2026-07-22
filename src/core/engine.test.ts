@@ -186,21 +186,6 @@ const progressionContent: Content = {
   ],
 };
 
-function collectEvents(
-  engine: ReturnType<typeof createEngine>,
-  durationMs: number,
-  chunkMs: number,
-): EngineEvent[] {
-  const events: EngineEvent[] = [];
-  let remaining = durationMs;
-  while (remaining > 0) {
-    const step = Math.min(chunkMs, remaining);
-    events.push(...engine.advanceBy(step));
-    remaining -= step;
-  }
-  return events;
-}
-
 function stable(value: unknown): string {
   return JSON.stringify(value);
 }
@@ -263,7 +248,7 @@ describe("createEngine boot", () => {
 describe("chunk-equivalence advancement", () => {
   it("produces identical events and byte-equal Snapshots for 1ms, 7ms, and single-call chunking", () => {
     const oneMs = createEngine(engineContent, undefined, LOOT_SEED, fixtureNow);
-    const oneMsEvents = collectEvents(oneMs, DURATION_MS, 1);
+    const oneMsEvents = driveBy(oneMs, DURATION_MS, 1);
 
     const sevenMs = createEngine(
       engineContent,
@@ -271,7 +256,7 @@ describe("chunk-equivalence advancement", () => {
       LOOT_SEED,
       fixtureNow,
     );
-    const sevenMsEvents = collectEvents(sevenMs, DURATION_MS, 7);
+    const sevenMsEvents = driveBy(sevenMs, DURATION_MS, 7);
 
     const single = createEngine(
       engineContent,
@@ -415,9 +400,9 @@ describe("save/reload equivalence", () => {
       LOOT_SEED,
       fixtureNow,
     );
-    const continuousEvents = collectEvents(continuous, 13_700, 7);
+    const continuousEvents = driveBy(continuous, 13_700, 7);
     continuousEvents.push(
-      ...collectEvents(continuous, DURATION_MS - 13_700, 7),
+      ...driveBy(continuous, DURATION_MS - 13_700, 7),
     );
 
     const reloaded = createEngine(
@@ -426,7 +411,7 @@ describe("save/reload equivalence", () => {
       LOOT_SEED,
       fixtureNow,
     );
-    const reloadEvents = collectEvents(reloaded, 13_700, 7);
+    const reloadEvents = driveBy(reloaded, 13_700, 7);
     const midFight = structuredClone(reloaded.snapshot());
     const restored = createEngine(
       engineContent,
@@ -434,7 +419,7 @@ describe("save/reload equivalence", () => {
       LOOT_SEED,
       fixtureNow,
     );
-    reloadEvents.push(...collectEvents(restored, DURATION_MS - 13_700, 7));
+    reloadEvents.push(...driveBy(restored, DURATION_MS - 13_700, 7));
 
     expect(stable(reloadEvents)).toBe(stable(continuousEvents));
     expect(stable(restored.snapshot())).toBe(stable(continuous.snapshot()));
