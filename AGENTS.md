@@ -138,9 +138,7 @@ at the seam named by `docs/agents/acceptance-evidence.md`.
 
 These instructions are model-neutral: do not require a particular provider,
 model, or effort setting to delegate work. A reusable issue-implementation
-subagent is defined in `.agents/issue-implementer.md`; tool-specific runtimes
-may provide their own pinned variant (for example
-`.claude/agents/issue-implementer.md`) — prefer the variant native to the
-runtime you are in. The orchestrator independently owns the acceptance gate in
+subagent is defined in `.agents/issue-implementer.md`. The orchestrator
+independently owns the acceptance gate in
 `docs/agents/acceptance-evidence.md` — green CI and a scope-matching file list
 are necessary but never sufficient.
