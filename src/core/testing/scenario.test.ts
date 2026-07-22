@@ -6,6 +6,9 @@ import type { ClassId } from "../types";
 import { fixtureContent } from "./fixture-content";
 import { driveBy, scenario } from "./scenario";
 
+const FIXTURE_NOW_MS = 1_000;
+const fixtureNow = () => FIXTURE_NOW_MS;
+
 describe("scenario builder", () => {
   it("loads a fresh Arrange Snapshot into the Engine without discarding the Stage Attempt", () => {
     const saved = scenario().build();
@@ -303,8 +306,10 @@ describe("scenario builder", () => {
 describe("driveBy", () => {
   it("is chunk-neutral: many small calls match one large call", () => {
     const saved = scenario().withParty(["knight", "wizard", "priest"], "hunter").build();
-    const oneMs = createEngine(fixtureContent, cloneSnapshot(saved));
-    const chunk = createEngine(fixtureContent, cloneSnapshot(saved));
+    // Freeze wall clock so snapshot().savedAtMs cannot flake across the ms boundary
+    // (engine.test.ts chunk-equivalence uses the same fixtureNow seam).
+    const oneMs = createEngine(fixtureContent, cloneSnapshot(saved), undefined, fixtureNow);
+    const chunk = createEngine(fixtureContent, cloneSnapshot(saved), undefined, fixtureNow);
 
     const eventsOne = driveBy(oneMs, 4000, 1);
     const eventsChunk = driveBy(chunk, 4000, 4000);
