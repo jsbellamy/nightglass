@@ -423,7 +423,7 @@ export function mountArmorySurface(
     ]);
     comparePopover.append(meta);
 
-    const roster = [...snapshot.progression.party, snapshot.progression.reserve];
+    const roster = rosterClassIds(snapshot);
     const { current: currentMods, candidate: candidateMods } = statModifiersForSlotSwap(
       snapshot.progression.armory,
       roster,
