@@ -239,6 +239,46 @@
     "source_family": "sunlance",
     "sha256": "b85e0fe4cae55df2ed4c18232f5a518486b3e47bbd9e2c729d00bb9907b5a648"
   },
+  "draw-weight": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "draw-weight",
+    "sha256": "8295caa64a75292527c08819de73f5c7b3179bcb41e1876617d0b910c68b80ae"
+  },
+  "fieldcraft": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "fieldcraft",
+    "sha256": "2f3413515090d9025d994a5d36446cd7dd806e5f1f53f657a0219a6c6f56cf04"
+  },
+  "heartseeker": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "heartseeker",
+    "sha256": "da925237401a6f578a2902a1b272b8c2b8651b641781a10057307d627beff5bc"
+  },
+  "moonwire-trap": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "moonwire-trap",
+    "sha256": "15f1f1e87ee1ccc48b7082d0560ac77d04ea8a2688bcbbe88dfe6c369c71248f"
+  },
   "verify-canary-a": {
     "canvas": [
       34,

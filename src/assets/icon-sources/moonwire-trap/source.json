@@ -1,0 +1,56 @@
+{
+  "provider": "Cursor GenerateImage",
+  "prompt": "TRUE chunky pixel art skill icon ONLY. Drawn on an exact 32x32 logical\npixel grid rendered large; every logical pixel is one clean flat square block\n\u2014 no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A\nsingle centered symbolic skill glyph in three-quarter display angle: a coiled cream-mint wire snare with a single cream moon bead.\nNot a wearable equipment piece and not a full character \u2014 one readable glyph only.\nSubject's long side spans about 26-30 logical pixels, with at least two full\nmagenta cells of clearance on every edge. Flat solid magenta #ff00ff background,\nnothing else in frame. Selective one-logical-pixel dark-plum outline. Use only\nmint / berry / cream / plum Moonberry colours (8-12 flat colors max) \u2014 no brown,\ntan, cyan, pure white, or pure black. Structural members at least 3 logical\npixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "raw_sha256": "84ddc0a9328cef66ada566777b94e82320eb14e0ffb3020e06a41927beb20423",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        278,
+        343,
+        732,
+        682
+      ],
+      "pitch_x": {
+        "pitch": 22.788888888889034,
+        "score": 0.4383697719254528
+      },
+      "pitch_y": {
+        "pitch": 22.53888888888903,
+        "score": 0.5172010080026271
+      },
+      "grid": [
+        20,
+        15
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 171,
+      "far_cells": 1,
+      "far_fraction": 0.0058,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "contour-plum-deep": 74,
+        "cream": 31,
+        "mint-light": 29,
+        "mint": 25,
+        "berry": 4,
+        "cream-gold": 8
+      }
+    }
+  },
+  "palette_subset": [
+    "contour-plum-deepest",
+    "contour-plum-deep",
+    "mint-shadow",
+    "mint",
+    "mint-light",
+    "mint-pale",
+    "cream",
+    "cream-gold",
+    "berry-mid",
+    "berry",
+    "sage",
+    "twilight-slate"
+  ],
+  "evidence_raw": "docs/research/evidence/305-talent-icons-hunter/accepted-raws/moonwire-trap.png"
+}

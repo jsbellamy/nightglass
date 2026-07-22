@@ -1,0 +1,57 @@
+{
+  "provider": "Cursor GenerateImage",
+  "prompt": "TRUE chunky pixel art skill icon ONLY. Drawn on an exact 32x32 logical\npixel grid rendered large; every logical pixel is one clean flat square block\n\u2014 no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A\nsingle centered symbolic skill glyph in three-quarter display angle: a mint-shaft arrow piercing a small berry heart-mark.\nNot a wearable equipment piece and not a full character \u2014 one readable glyph only.\nSubject's long side spans about 26-30 logical pixels, with at least two full\nmagenta cells of clearance on every edge. Flat solid magenta #ff00ff background,\nnothing else in frame. Selective one-logical-pixel dark-plum outline. Use only\nmint / berry / cream / plum Moonberry colours (8-12 flat colors max) \u2014 no brown,\ntan, cyan, pure white, or pure black. Structural members at least 3 logical\npixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "raw_sha256": "0f0766ccd380da627a1d70d6d5955b8218bb69a0bf507a058fa1c4c8c837f176",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        113,
+        95,
+        940,
+        929
+      ],
+      "pitch_x": {
+        "pitch": 31.794444444444565,
+        "score": 0.4771463597086583
+      },
+      "pitch_y": {
+        "pitch": 32.14444444444456,
+        "score": 0.48347398232113736
+      },
+      "grid": [
+        26,
+        26
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 259,
+      "far_cells": 1,
+      "far_fraction": 0.0039,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "contour-plum-deep": 78,
+        "cream": 71,
+        "mint": 45,
+        "mint-light": 39,
+        "berry": 18,
+        "berry-bright": 8
+      }
+    }
+  },
+  "palette_subset": [
+    "contour-plum-deepest",
+    "contour-plum-deep",
+    "mint-shadow",
+    "mint",
+    "mint-light",
+    "mint-pale",
+    "cream",
+    "berry-shadow",
+    "berry-mid",
+    "berry",
+    "berry-bright",
+    "sage",
+    "twilight-slate"
+  ],
+  "evidence_raw": "docs/research/evidence/305-talent-icons-hunter/accepted-raws/heartseeker.png"
+}
