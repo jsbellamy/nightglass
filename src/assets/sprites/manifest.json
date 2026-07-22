@@ -318,5 +318,37 @@
       "provider": "Cursor GenerateImage",
       "raw_sha256": "49a52bf80afa9398295245413b2b9c54f7625cc423b55a0c96f7d9e8f52f6267"
     }
+  },
+  "the-combine": {
+    "action": "still",
+    "frame_size": [
+      110,
+      72
+    ],
+    "visual_bounds": [
+      0,
+      0,
+      110,
+      72
+    ],
+    "foot_anchor": [
+      55,
+      72
+    ],
+    "palette": "fowl-harvest-24",
+    "baseline_row": 71,
+    "total_ms": 1,
+    "frames": [
+      {
+        "name": "the-combine",
+        "duration_ms": 1,
+        "sha256": "f23ddb02e9f700cf2e635a8e0f1f5f9bb692712faa4c2ef5e197bab945633aba"
+      }
+    ],
+    "cues_ms": {},
+    "source": {
+      "provider": "Cursor GenerateImage",
+      "raw_sha256": "460b2d8419e0261af4303496e6ee08e133f34cb46e44059b51dffe91d4318da1"
+    }
   }
 }
