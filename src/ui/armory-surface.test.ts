@@ -20,7 +20,7 @@ import {
   filterArmoryDrops,
   type ArmoryFilters,
 } from "./equipment-format";
-import { rosterClassIds } from "./snapshot-view";
+import { previewEquip, rosterClassIds } from "./snapshot-view";
 
 const fullContent = buildContent();
 
@@ -883,7 +883,7 @@ describe("Armory surface", () => {
     root.remove();
   });
 
-  it("computes comparison popover Equipment stat deltas for a Character pending into the Party", () => {
+  it("renders comparison popover Equipment rows matching previewEquip for a Character pending into the Party", () => {
     const root = document.createElement("div");
     document.body.append(root);
     const selected = { current: "hunter" as ClassId };
@@ -913,6 +913,8 @@ describe("Armory surface", () => {
     });
     expect(rosterClassIds(snapshot)).toEqual(["hunter", "wizard", "priest", "knight"]);
 
+    const expected = previewEquip(snapshot, fullContent, 2, "hunter", "weapon");
+
     const surface = mountArmorySurface(root, {
       content: fullContent,
       getSelectedClassId: () => selected.current,
@@ -935,8 +937,19 @@ describe("Armory surface", () => {
     const rows = [...(popover?.querySelectorAll("tbody tr") ?? [])].map((row) =>
       [...row.querySelectorAll("td")].map((cell) => cell.textContent),
     );
-    // Hunter Bramblesong Bow (2) → Nightvine Longbow (5); not Knight's worn blade.
+    // Pre-slice golden: Hunter Bramblesong Bow (2) → Nightvine Longbow (5); not Knight's worn blade.
     expect(rows).toContainEqual(["Physical", "2", "5", "+3"]);
+    expect(rows).toEqual(
+      expected.statDeltas.map((line) => [line.label, line.before, line.after, line.delta]),
+    );
+    const abilityRows = [...(popover?.querySelectorAll('[data-ability-deltas="true"] li') ?? [])].map(
+      (item) => item.textContent,
+    );
+    expect(abilityRows).toEqual(
+      expected.abilityChanges.map(
+        (change) => `${change.abilityName}: ${change.before ?? "—"} → ${change.after ?? "—"}`,
+      ),
+    );
     expect(rows.some((row) => row[1] === "0" && row[2] === "5")).toBe(false);
 
     surface.destroy();
@@ -1050,14 +1063,29 @@ describe("Armory surface source boundary", () => {
     expect(source).not.toMatch(/armory-detail|equipButton|crossEquipConfirm|unequipSlot/);
   });
 
-  it("does not inline applied Party and Reserve for the comparison popover Roster", () => {
+  it("does not value-import core or data modules", () => {
     const source = readFileSync(
       join(dirname(fileURLToPath(import.meta.url)), "armory-surface.ts"),
       "utf8",
     );
     expect(source).not.toMatch(
-      /\[\.\.\.snapshot\.progression\.party,\s*snapshot\.progression\.reserve\]/,
+      /^\s*import\s+(?!type\b)(?:\{[^}]+\}|\*\s+as\s+\w+|\w+)\s+from\s+["']\.\.\/core\//m,
     );
-    expect(source).toMatch(/const roster = rosterClassIds\(snapshot\);/);
+    expect(source).not.toMatch(
+      /^\s*import\s+(?!type\b)(?:\{[^}]+\}|\*\s+as\s+\w+|\w+)\s+from\s+["']\.\.\/data\//m,
+    );
+  });
+
+  it("routes the comparison popover through previewEquip", () => {
+    const source = readFileSync(
+      join(dirname(fileURLToPath(import.meta.url)), "armory-surface.ts"),
+      "utf8",
+    );
+    expect(source).toMatch(/previewEquip\(/);
+    expect(source).not.toMatch(/statModifiersForSlotSwap/);
+    expect(source).not.toMatch(/compareEquipmentStatDeltas/);
+    expect(source).not.toMatch(/compareAbilityRawChanges/);
+    expect(source).not.toMatch(/statsForEquipmentLoadout/);
+    expect(source).not.toMatch(/snapshotEquipmentLoadouts/);
   });
 });
