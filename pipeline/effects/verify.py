@@ -22,6 +22,7 @@ ROOT = HERE.parent.parent
 FRAMES_ROOT = ROOT / "src" / "assets" / "effects"
 STATUS_DIR = FRAMES_ROOT / "status"
 SPRITES = ROOT / "src" / "assets" / "sprites"
+VERIFY_REPORT = HERE / "verify-report.json"
 PY = sys.executable
 
 sys.path.insert(0, str(HERE.parent))
@@ -104,8 +105,25 @@ def check_status_glyphs() -> tuple[bool, str]:
     return True, f"{len(STATUS_GLYPH_IDS)} glyphs 7x7 glow-only binary-alpha shape-distinct"
 
 
+def write_verify_report(checks: list[dict[str, str]]) -> None:
+    failures = [c["label"] for c in checks if c["status"] != "PASS"]
+    report = {
+        "script": "pipeline/effects/verify.py",
+        "passed": not failures,
+        "failure_count": len(failures),
+        "failures": failures,
+        "checks": checks,
+    }
+    VERIFY_REPORT.write_text(json.dumps(report, indent=2) + "\n")
+
+
 def main() -> int:
-    fail = 0
+    checks: list[dict[str, str]] = []
+
+    def record(label: str, ok: bool, detail: str) -> None:
+        status = "PASS" if ok else "FAIL"
+        checks.append({"label": label, "status": status, "detail": detail})
+        print(f"{label}: {status} ({detail})")
 
     # Capture Character sprites *before* author/derive so a pipeline write to
     # SPRITES can fail this gate (comparing two post-rebuild digests cannot).
@@ -116,11 +134,13 @@ def main() -> int:
         subprocess.run([PY, str(HERE / script)], cwd=HERE, check=True, capture_output=True)
     after = digest_dir(FRAMES_ROOT) | digest_dir(HERE / "source")
     drift = [k for k in before if before[k] != after.get(k)]
-    print(
-        f"1. determinism : {'PASS' if not drift else 'FAIL ' + str(drift)} "
-        f"({len(before)} files rebuilt byte-identically)"
+    record(
+        "1. determinism",
+        not drift,
+        f"{len(before)} files rebuilt byte-identically"
+        if not drift
+        else f"drift={drift}",
     )
-    fail += bool(drift)
 
     knight = Image.open(SPRITES / "knight.png").convert("RGBA")
     ctrl = acquire.validate(knight.copy(), "control")
@@ -134,30 +154,30 @@ def main() -> int:
             unguarded.append((p.name, errs))
     n = len(effect_frame_paths())
     ok = not unguarded and not ctrl
-    print(
-        f"2. separation  : {'PASS' if ok else 'FAIL'} "
-        f"(clean Knight frame passes: {not ctrl}; "
-        f"{n - len(unguarded)}/{n} effect frames baked into it are caught)"
+    record(
+        "2. separation",
+        ok,
+        f"clean Knight frame passes: {not ctrl}; "
+        f"{n - len(unguarded)}/{n} effect frames baked into it are caught",
     )
     for nm, e in unguarded[:5]:
         print(f"     unguarded: {nm} -> {e}")
-    fail += not ok
 
     sprites_after = digest_dir(SPRITES)
     drifted = sorted(
         k for k in sprites_before if sprites_before[k] != sprites_after.get(k)
     ) + sorted(k for k in sprites_after if k not in sprites_before)
     same = not drifted
-    print(
-        f"3. body-free   : {'PASS' if same else 'FAIL'} "
-        f"({len(sprites_before)} canonical Character files unchanged by pipeline"
-        f"{'' if same else '; drifted: ' + str(drifted)})"
+    record(
+        "3. body-free",
+        same,
+        f"{len(sprites_before)} canonical Character files unchanged by pipeline"
+        if same
+        else f"drifted: {drifted}",
     )
-    fail += not same
 
     status_ok, status_detail = check_status_glyphs()
-    print(f"4. status      : {'PASS' if status_ok else 'FAIL'} ({status_detail})")
-    fail += not status_ok
+    record("4. status", status_ok, status_detail)
 
     manifest = json.loads((FRAMES_ROOT / "manifest.json").read_text())
     total = sum(len(m["frames"]) for m in manifest.values())
@@ -166,7 +186,9 @@ def main() -> int:
         f"\nauthored source stills: {len(stills)}   derivations: {len(manifest)}   "
         f"derived frames: {total}"
     )
-    return fail
+
+    write_verify_report(checks)
+    return sum(1 for c in checks if c["status"] != "PASS")
 
 
 if __name__ == "__main__":
