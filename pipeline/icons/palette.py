@@ -13,8 +13,44 @@ PALETTE_PATHS = {
 
 DEFAULT_SOURCE_PALETTE_ID = "moonberry-16"
 
+OUTLINE_SWATCH_BY_PALETTE: dict[str, str] = {
+    "moonberry-16": "contour-plum-deepest",
+    "fowl-harvest-24": "oil-ink",
+}
+
+INK_SWATCHES_BY_PALETTE: dict[str, frozenset[str]] = {
+    "moonberry-16": frozenset(
+        {
+            "contour-plum-deepest",
+            "contour-plum-deep",
+            "contour-plum",
+        }
+    ),
+    "fowl-harvest-24": frozenset(
+        {
+            "oil-ink",
+            "crow-black",
+            "bruise-plum",
+        }
+    ),
+}
+
 # Legacy single-path alias (Moonberry file location).
 PALETTE_PATH = PALETTE_PATHS[DEFAULT_SOURCE_PALETTE_ID]
+
+
+def outline_swatch_name(palette_id: str) -> str:
+    try:
+        return OUTLINE_SWATCH_BY_PALETTE[palette_id]
+    except KeyError as exc:
+        raise ValueError(f"unknown palette id {palette_id!r}") from exc
+
+
+def ink_swatch_names(palette_id: str) -> frozenset[str]:
+    try:
+        return INK_SWATCHES_BY_PALETTE[palette_id]
+    except KeyError as exc:
+        raise ValueError(f"unknown palette id {palette_id!r}") from exc
 
 _RUNTIME_CACHE: dict[str, RuntimePalette] = {}
 

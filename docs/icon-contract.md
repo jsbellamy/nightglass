@@ -1,17 +1,17 @@
 # Equipment icon contract
 
 Sibling of [`acquisition-contract.md`](acquisition-contract.md). Character stills and
-Equipment icons share `moonberry-16` and the same offline Python toolchain, but
-they **deliberately disagree** on acquisition gates, the committed boundary, and
-where provider raws live. One combined document would need exceptions on nearly
-every rule; this file owns the 34×34 icon path only.
+Equipment icons share the same offline Python toolchain and named body palettes
+(`moonberry-16`, `fowl-harvest-24`), but they **deliberately disagree** on acquisition
+gates, the committed boundary, and where provider raws live. One combined document would
+need exceptions on nearly every rule; this file owns the 34×34 icon path only.
 
 ## Committed boundary
 
 | Layer | Artifact | Role |
 | --- | --- | --- |
-| Source | Text grid under `src/assets/icon-sources/<family>/source.grid` | Legend chars → named swatches from the source's declared palette (`moonberry-16` today for committed Equipment); **generated output, never hand-edited** |
-| Runtime | `src/assets/icons/<iconKey>.png` + `manifest.json` | 34×34 inventory icons consumed by the UI |
+| Source | Text grid under `src/assets/icon-sources/<family>/source.grid` | Legend chars → named swatches from the family's declared palette (`moonberry-16` for committed Moonberry Equipment and Talent icons; `fowl-harvest-24` for Fowl Equipment once acquired); **generated output, never hand-edited** |
+| Runtime | `src/assets/icons/<iconKey>.png` + `manifest.json` | 34×34 inventory icons consumed by the UI; manifest records the family's selected `palette` id and palette-specific `outline` swatch name |
 | Review | `src/assets/icons/preview/<iconKey>@8x.png`, `family-sheet@8x.png` | PR-review approval targets (binary PNG diff) |
 
 Provider raws are **evidence, not build inputs**. Archive them under
@@ -50,11 +50,13 @@ re-run ingest, never pixels in the grid file.
 ```
 CANVAS   = 34    # runtime PNG
 DRAWABLE = 32    # centered band inside the canvas
-RING     = 1     # derived contour-plum-deepest outline (build-time only; never prompt for it)
+RING     = 1     # derived outline ring (build-time only; never prompt for it)
 MAX_BODY = 30    # structural: DRAWABLE − 2×RING — not a tunable gate
 ```
 
-Stage 2 strips exterior ink, optionally applies a family `recolor` map, derives the
+Outline swatch is palette-specific: `contour-plum-deepest` on `moonberry-16`,
+`oil-ink` on `fowl-harvest-24`. Stage 2 strips exterior ink using each palette's
+dark contour swatches, optionally applies a family `recolor` map, derives the
 outline ring, and centers the body inside the 34×34 canvas.
 
 ## Ingest gates
@@ -79,15 +81,60 @@ stills (no `MIN_LOGICAL_HEIGHT=40`); that difference stays in `pipeline/icons/`.
 
 ## Palette scoping and recolor
 
-Each family declares the subset of its source palette its ingest quantizer may use
-(`moonberry-16` for all committed Equipment families until a later slice threads
-Fowl through runtime paint).
-Without scoping, adding a ramp or applying a `recolor` map can **flatten** distinct
-cells when the target name already appears in the source histogram (see measured
-`BOW_TO_LONGBOW` mint→`berry-mid` merge in `#125`).
+Each registered family declares a `palette_id` (`moonberry-16` or `fowl-harvest-24`
+today) and the subset of that palette its ingest quantizer may use. Parse, paint,
+recolor, outline derivation, runtime PNG, preview, and manifest all use the same
+selected palette. Recolor map keys and values must name swatches from that palette
+only; cross-palette targets are rejected at registry validation. Without scoping,
+adding a ramp or applying a `recolor` map can **flatten** distinct cells when the
+target name already appears in the source histogram (see measured `BOW_TO_LONGBOW`
+mint→`berry-mid` merge in `#125`).
 
 A `recolor` map whose **target** already appears in the source `palette_subset` is
 **rejected** at build time.
+
+## Runtime manifest
+
+Each `manifest.json` entry records:
+
+```json
+{
+  "canvas": [34, 34],
+  "palette": "fowl-harvest-24",
+  "outline": "oil-ink",
+  "source_family": "<key>",
+  "sha256": "<digest>"
+}
+```
+
+`palette` and `outline` always match the family's selected palette. Moonberry entries
+use `"outline": "contour-plum-deepest"`; Fowl entries use `"outline": "oil-ink"`.
+The family contact sheet may include icons from both palettes.
+
+## Provider prompt shells
+
+Moonberry Equipment acquisition uses the **icon grid shell** in
+[`docs/agents/asset-generation.md`](agents/asset-generation.md) (32×32 logical grid,
+magenta clearance, Moonberry material sentence).
+
+Fowl Equipment acquisition uses the same geometry and clearance discipline with
+**fowl-harvest-24** materials:
+
+> TRUE chunky pixel art inventory icon ONLY. Drawn on an **exact 32×32 logical pixel
+> grid rendered large**; every logical pixel is one clean flat square block — no
+> smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single
+> centered Fowl Harvest rural-mutation item in three-quarter display angle:
+> **\<SUBJECT\>**. Subject's long side spans about **26–30 logical pixels**, with at
+> least **two** full magenta cells of clearance on every edge. Flat solid magenta
+> **`#ff00ff`** background, nothing else in frame. Selective one-logical-pixel oily
+> near-black contour (`oil-ink` read). Use **only** named **fowl-harvest-24**
+> swatches (duck/corn golds, beak and rust oranges, patty/toast browns, field/husk
+> greens, diner cream, restrained condiment red, storm slate, oily near-black) —
+> **8–12 flat colors max**. Structural members at least **3 logical pixels** thick.
+> No shadow, glow, sparkle, particles, text, watermark, or transparency.
+
+Do not prompt for the derived outline ring; build derives `oil-ink` (Fowl) or
+`contour-plum-deepest` (Moonberry) deterministically.
 
 ## Families
 
