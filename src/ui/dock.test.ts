@@ -260,34 +260,27 @@ describe("Management Dock shell", () => {
     dock.destroy();
   });
 
-  it("cycles Character → Armory → Stage with ArrowRight and wraps; Home/End reach ends", () => {
+  it("closes the Management Dock on Escape", () => {
     const root = document.createElement("main");
     const onClose = vi.fn();
     mountDock(root, { onClose });
 
-    const characterTab = root.querySelector<HTMLButtonElement>('[data-dock-tab="character"]');
-    characterTab?.focus();
-    characterTab?.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
-    expect(root.querySelector<HTMLElement>('[data-dock-panel="armory"]')?.hidden).toBe(false);
-
-    const armoryTab = root.querySelector<HTMLButtonElement>('[data-dock-tab="armory"]');
-    armoryTab?.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
-    expect(root.querySelector<HTMLElement>('[data-dock-panel="stage"]')?.hidden).toBe(false);
-
-    const stageTab = root.querySelector<HTMLButtonElement>('[data-dock-tab="stage"]');
-    stageTab?.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
-    expect(root.querySelector<HTMLElement>('[data-dock-panel="character"]')?.hidden).toBe(false);
-
-    armoryTab?.click();
-    expect(root.querySelector<HTMLElement>('[data-dock-panel="armory"]')?.hidden).toBe(false);
-    armoryTab?.dispatchEvent(new KeyboardEvent("keydown", { key: "Home", bubbles: true }));
-    expect(root.querySelector<HTMLElement>('[data-dock-panel="character"]')?.hidden).toBe(false);
-
-    characterTab?.dispatchEvent(new KeyboardEvent("keydown", { key: "End", bubbles: true }));
-    expect(root.querySelector<HTMLElement>('[data-dock-panel="stage"]')?.hidden).toBe(false);
-
     root.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
     expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps Dock panel visibility in sync when the shared tab strip activates a tab", () => {
+    const root = document.createElement("main");
+    mountDock(root);
+
+    root.querySelector<HTMLButtonElement>('[data-dock-tab="armory"]')?.click();
+    expect(root.querySelector<HTMLElement>('[data-dock-panel="armory"]')?.hidden).toBe(false);
+    expect(root.querySelector<HTMLElement>('[data-dock-panel="character"]')?.hidden).toBe(true);
+
+    const stageTab = root.querySelector<HTMLButtonElement>('[data-dock-tab="stage"]');
+    stageTab?.focus();
+    stageTab?.dispatchEvent(new KeyboardEvent("keydown", { key: "Home", bubbles: true }));
+    expect(root.querySelector<HTMLElement>('[data-dock-panel="character"]')?.hidden).toBe(false);
   });
 
   it("renders each management surface without interim placeholders when its tab is active", () => {

@@ -1,10 +1,9 @@
 import type { ReadonlySnapshot } from "../core/snapshot";
 import type { EngineLegalityView } from "./engine-legality";
 import type { DockSurfaceMountOptions } from "./dock";
-import { bindPressable } from "./keyboard";
-import { el } from "./surface-shell";
 import { mountLoadoutSurface } from "./loadout-surface";
 import { mountTalentsSurface } from "./talents-surface";
+import { mountTabStrip } from "./tab-strip";
 
 export type CharacterTabId = "loadout" | "talents";
 
@@ -12,12 +11,6 @@ const CHARACTER_TABS: { id: CharacterTabId; label: string }[] = [
   { id: "loadout", label: "Loadout" },
   { id: "talents", label: "Talents" },
 ];
-
-function cycleCharacterTab(current: CharacterTabId, delta: number): CharacterTabId {
-  const index = CHARACTER_TABS.findIndex((entry) => entry.id === current);
-  const next = (index + delta + CHARACTER_TABS.length) % CHARACTER_TABS.length;
-  return CHARACTER_TABS[next]!.id;
-}
 
 export interface CharacterSurface {
   render(snapshot: ReadonlySnapshot | null, legality?: EngineLegalityView): void;
@@ -32,100 +25,57 @@ export function mountCharacterSurface(
 
   let activeTab: CharacterTabId = "loadout";
 
-  const tabList = el("div", {
-    class: "character-subtabs",
-    props: { role: "tablist" },
-    aria: { label: "Character workspace" },
-  });
-
-  const tabButtons = new Map<CharacterTabId, HTMLButtonElement>();
   const sections = new Map<CharacterTabId, HTMLElement>();
 
-  for (const { id, label } of CHARACTER_TABS) {
-    const tabButton = el("button", {
-      class: "character-subtab focus-ring",
-      data: { characterSubTab: id },
-      props: { type: "button", role: "tab" },
-      text: label,
-    });
-    tabButton.id = `character-subtab-${id}`;
-    tabButtons.set(id, tabButton);
-    tabList.append(tabButton);
-
+  for (const { id } of CHARACTER_TABS) {
     const section = document.createElement("section");
     section.className = "character-section";
     section.dataset["characterSection"] = id;
     section.id = `character-panel-${id}`;
     section.setAttribute("role", "tabpanel");
-    section.setAttribute("aria-labelledby", tabButton.id);
+    section.setAttribute("aria-labelledby", `character-subtab-${id}`);
     sections.set(id, section);
   }
 
-  root.append(tabList, ...sections.values());
+  const tabStrip = mountTabStrip<CharacterTabId>({
+    tabs: CHARACTER_TABS,
+    initial: activeTab,
+    className: "character-subtab",
+    ariaLabel: "Character workspace",
+    panelId: (id) => `character-panel-${id}`,
+    onActivate(id) {
+      setActiveTab(id);
+    },
+  });
+  for (const { id } of CHARACTER_TABS) {
+    const button = tabStrip.element.querySelector<HTMLButtonElement>(`#character-subtab-${id}`);
+    if (button) {
+      // Preserve the existing e2e / unit selector contract (hyphen before "tab").
+      button.dataset["characterSubTab"] = id;
+    }
+  }
+
+  root.append(tabStrip.element, ...sections.values());
 
   const loadout = mountLoadoutSurface(sections.get("loadout")!, options);
   const talents = mountTalentsSurface(sections.get("talents")!, options);
 
-  function syncTabs(): void {
+  function syncPanels(): void {
     for (const { id } of CHARACTER_TABS) {
-      const selected = id === activeTab;
-      const button = tabButtons.get(id);
       const section = sections.get(id);
-      if (button) {
-        button.classList.toggle("active", selected);
-        button.setAttribute("aria-selected", selected ? "true" : "false");
-        button.tabIndex = selected ? 0 : -1;
-      }
       if (section) {
-        section.hidden = !selected;
+        section.hidden = id !== activeTab;
       }
     }
   }
 
   function setActiveTab(next: CharacterTabId): void {
     activeTab = next;
-    syncTabs();
+    tabStrip.setActive(next);
+    syncPanels();
   }
 
-  function onTabKeydown(event: KeyboardEvent, tab: CharacterTabId): void {
-    if (event.key === "ArrowRight" || event.key === "ArrowDown") {
-      event.preventDefault();
-      const next = cycleCharacterTab(tab, 1);
-      setActiveTab(next);
-      tabButtons.get(next)?.focus();
-      return;
-    }
-    if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
-      event.preventDefault();
-      const next = cycleCharacterTab(tab, -1);
-      setActiveTab(next);
-      tabButtons.get(next)?.focus();
-      return;
-    }
-    if (event.key === "Home") {
-      event.preventDefault();
-      setActiveTab(CHARACTER_TABS[0]!.id);
-      tabButtons.get(CHARACTER_TABS[0]!.id)?.focus();
-      return;
-    }
-    if (event.key === "End") {
-      event.preventDefault();
-      const last = CHARACTER_TABS[CHARACTER_TABS.length - 1]!.id;
-      setActiveTab(last);
-      tabButtons.get(last)?.focus();
-    }
-  }
-
-  for (const { id } of CHARACTER_TABS) {
-    const button = tabButtons.get(id);
-    if (!button) {
-      continue;
-    }
-    bindPressable(button, () => setActiveTab(id));
-    button.addEventListener("keydown", (event) => onTabKeydown(event, id));
-  }
-
-  syncTabs();
+  syncPanels();
 
   return {
     render(snapshot, legality) {
@@ -135,6 +85,7 @@ export function mountCharacterSurface(
     destroy() {
       loadout.destroy();
       talents.destroy();
+      tabStrip.destroy();
       root.replaceChildren();
       root.classList.remove("character-surface");
     },

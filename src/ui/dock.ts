@@ -13,6 +13,7 @@ import {
   restoreScrollPositions,
   type MountedSurface,
 } from "./surface-shell";
+import { mountTabStrip } from "./tab-strip";
 
 export type DockTabId = "character" | "armory" | "stage";
 
@@ -90,12 +91,6 @@ function managementRelevantKey(snapshot: ReadonlySnapshot | null): string {
   });
 }
 
-function cycleTab(current: DockTabId, delta: number): DockTabId {
-  const index = DOCK_TABS.findIndex((entry) => entry.id === current);
-  const next = (index + delta + DOCK_TABS.length) % DOCK_TABS.length;
-  return DOCK_TABS[next]!.id;
-}
-
 export function mountManagementDock(
   root: HTMLElement,
   options: ManagementDockOptions = {},
@@ -115,18 +110,11 @@ export function mountManagementDock(
   const header = document.createElement("header");
   header.className = "dock-header";
 
-  const tabList = document.createElement("div");
-  tabList.className = "dock-tabs";
-  tabList.setAttribute("role", "tablist");
-  tabList.setAttribute("aria-label", "Management surfaces");
-
   const closeButton = document.createElement("button");
   closeButton.type = "button";
   closeButton.className = "dock-close focus-ring";
   closeButton.setAttribute("aria-label", "Close Management Dock");
   closeButton.textContent = "✕";
-
-  header.append(tabList, closeButton);
 
   const body = document.createElement("div");
   body.className = "dock-body";
@@ -139,7 +127,6 @@ export function mountManagementDock(
   ];
 
   const panels = new Map<DockTabId, HTMLElement>();
-  const tabButtons = new Map<DockTabId, HTMLButtonElement>();
   const mountedSurfaces = new Map<DockTabId, MountedSurface>();
 
   if (!options.content) {
@@ -170,24 +157,12 @@ export function mountManagementDock(
   body.append(surface);
 
   for (const entry of DOCK_SURFACES) {
-    const tabButton = document.createElement("button");
-    tabButton.type = "button";
-    tabButton.className = "dock-tab focus-ring";
-    tabButton.dataset["dockTab"] = entry.id;
-    tabButton.setAttribute("role", "tab");
-    tabButton.setAttribute("aria-controls", `dock-panel-${entry.id}`);
-    tabButton.id = `dock-tab-${entry.id}`;
-    tabButton.textContent = entry.label;
-
-    tabList.append(tabButton);
-    tabButtons.set(entry.id, tabButton);
-
     const panel = document.createElement("div");
     panel.className = "dock-panel";
     panel.dataset["dockPanel"] = entry.id;
     panel.id = `dock-panel-${entry.id}`;
     panel.setAttribute("role", "tabpanel");
-    panel.setAttribute("aria-labelledby", tabButton.id);
+    panel.setAttribute("aria-labelledby", `dock-tab-${entry.id}`);
 
     const surfaceRoot = document.createElement("div");
     surfaceRoot.className = "dock-surface-root";
@@ -198,8 +173,6 @@ export function mountManagementDock(
     surface.append(panel);
     overflowUnbinds.push(bindScrollOverflowAffordance(panel));
   }
-
-  root.append(header, body);
 
   function syncStageLabel(): void {
     const stageLabel = heldSnapshot?.attempt
@@ -253,15 +226,10 @@ export function mountManagementDock(
     const tabChanged = next !== activeTab;
     activeTab = next;
     syncCharacterRailVisibility();
+    tabStrip.setActive(next);
     for (const { id } of DOCK_SURFACES) {
       const selected = id === activeTab;
-      const button = tabButtons.get(id);
       const panel = panels.get(id);
-      if (button) {
-        button.classList.toggle("active", selected);
-        button.setAttribute("aria-selected", selected ? "true" : "false");
-        button.tabIndex = selected ? 0 : -1;
-      }
       if (panel) {
         panel.hidden = !selected;
       }
@@ -276,51 +244,28 @@ export function mountManagementDock(
     options.onClose?.();
   }
 
-  function onTabActivate(tab: DockTabId): void {
-    if (tab === activeTab) {
+  const tabStrip = mountTabStrip<DockTabId>({
+    tabs: DOCK_TABS,
+    initial: activeTab,
+    className: "dock-tab",
+    ariaLabel: "Management surfaces",
+    panelId: (id) => `dock-panel-${id}`,
+    onActivate(id) {
+      setActiveTab(id);
+    },
+    onReactivate() {
       requestClose();
-      return;
-    }
-    setActiveTab(tab);
-  }
-
-  function onTabKeydown(event: KeyboardEvent, tab: DockTabId): void {
-    if (event.key === "ArrowRight" || event.key === "ArrowDown") {
-      event.preventDefault();
-      const next = cycleTab(tab, 1);
-      setActiveTab(next);
-      tabButtons.get(next)?.focus();
-      return;
-    }
-    if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
-      event.preventDefault();
-      const next = cycleTab(tab, -1);
-      setActiveTab(next);
-      tabButtons.get(next)?.focus();
-      return;
-    }
-    if (event.key === "Home") {
-      event.preventDefault();
-      setActiveTab(DOCK_TABS[0]!.id);
-      tabButtons.get(DOCK_TABS[0]!.id)?.focus();
-      return;
-    }
-    if (event.key === "End") {
-      event.preventDefault();
-      const last = DOCK_TABS[DOCK_TABS.length - 1]!.id;
-      setActiveTab(last);
-      tabButtons.get(last)?.focus();
-    }
-  }
-
+    },
+  });
   for (const { id } of DOCK_SURFACES) {
-    const button = tabButtons.get(id);
-    if (!button) {
-      continue;
+    const button = tabStrip.element.querySelector<HTMLButtonElement>(`#dock-tab-${id}`);
+    if (button) {
+      button.dataset["dockTab"] = id;
     }
-    button.addEventListener("click", () => onTabActivate(id));
-    button.addEventListener("keydown", (event) => onTabKeydown(event, id));
   }
+
+  header.append(tabStrip.element, closeButton);
+  root.append(header, body);
 
   closeButton.addEventListener("click", () => requestClose());
 
@@ -360,6 +305,7 @@ export function mountManagementDock(
       for (const unbind of overflowUnbinds) {
         unbind();
       }
+      tabStrip.destroy();
       characterPicker.destroy();
       for (const mounted of mountedSurfaces.values()) {
         mounted.destroy();
