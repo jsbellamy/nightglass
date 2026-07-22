@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { buildContent } from "../data";
 import { validateContent } from "./validate-content";
-import { fixtureContent } from "./testing/fixture-content";
+import { fixtureContent, fourTierFixtureContent } from "./testing/fixture-content";
 import type { Content } from "./types";
 
 describe("validateContent", () => {
@@ -68,7 +68,42 @@ describe("validateContent", () => {
       equipmentBases: fixtureContent.equipmentBases.slice(0, 2),
     };
     expect(validateContent(sparseEquipment)).toContain(
-      "equipmentBases defines 2 entries, expected exactly 12",
+      "equipmentBases defines 2 entries, expected exactly 6",
+    );
+  });
+
+  it("accepts a complete four-Tier Equipment catalog with Tier III/IV Affix bands", () => {
+    const content: Content = {
+      ...buildContent(),
+      equipmentBases: fourTierFixtureContent.equipmentBases,
+      affixBands: fourTierFixtureContent.affixBands,
+    };
+    expect(validateContent(content)).toEqual([]);
+  });
+
+  it("rejects a four-Tier catalog missing a Tier III weapon base", () => {
+    const bases = fourTierFixtureContent.equipmentBases.filter(
+      (base) => !(base.tier === 3 && base.slot === "weapon" && base.weaponClass === "knight"),
+    );
+    const content: Content = {
+      ...buildContent(),
+      equipmentBases: bases,
+      affixBands: fourTierFixtureContent.affixBands,
+    };
+    expect(validateContent(content)).toContain(
+      'equipmentBases tier 3 missing weapon for Class "knight"',
+    );
+  });
+
+  it("rejects a four-Tier catalog missing Tier IV Affix bands", () => {
+    const affixBands = fourTierFixtureContent.affixBands.map(({ tier4: _tier4, ...band }) => band);
+    const content: Content = {
+      ...buildContent(),
+      equipmentBases: fourTierFixtureContent.equipmentBases,
+      affixBands,
+    };
+    expect(validateContent(content)).toContain(
+      'affixBands missing Equipment Tier 4 band for AffixId "flat-physical"',
     );
   });
 

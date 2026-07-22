@@ -1,4 +1,4 @@
-import type { AffixId, ClassId, Content, EquipmentBaseDef, OpponentDef, TalentTierDef } from "./types";
+import type { AffixId, ClassId, Content, EquipmentBaseDef, EquipmentTier, OpponentDef, TalentTierDef } from "./types";
 
 /** Per-Stage Character XP encounter budgets from issue #5 / vertical-slice-spec §7. */
 export const ENCOUNTER_BUDGETS = {
@@ -243,6 +243,7 @@ export function validateContent(
     }
 
     violations.push(...equipmentBaseCardinalityViolations(content.equipmentBases));
+    violations.push(...affixBandTierViolations(content.affixBands, content.equipmentBases));
   }
 
   return violations;
@@ -301,19 +302,56 @@ function bossSoloWaveViolations(
   return violations;
 }
 
+function authoredEquipmentTiers(bases: EquipmentBaseDef[]): EquipmentTier[] {
+  const present = new Set(bases.map((base) => base.tier));
+  return ([1, 2, 3, 4] as const).filter((tier) => present.has(tier));
+}
+
+function affixBandTierViolations(
+  bands: Content["affixBands"],
+  equipmentBases: EquipmentBaseDef[],
+): string[] {
+  const violations: string[] = [];
+  const authoredTiers = authoredEquipmentTiers(equipmentBases);
+
+  for (const tier of authoredTiers) {
+    if (tier < 3) {
+      continue;
+    }
+    const field = tier === 3 ? "tier3" : "tier4";
+    for (const affixId of ALL_AFFIX_IDS) {
+      const band = bands.find((entry) => entry.id === affixId);
+      if (!band || band[field] === undefined) {
+        violations.push(
+          `affixBands missing Equipment Tier ${tier} band for AffixId "${affixId}"`,
+        );
+      }
+    }
+  }
+
+  return violations;
+}
+
 function equipmentBaseCardinalityViolations(bases: EquipmentBaseDef[]): string[] {
   const violations: string[] = [];
+  const authoredTiers = authoredEquipmentTiers(bases);
 
-  if (bases.length !== 12) {
-    violations.push(`equipmentBases defines ${bases.length} entries, expected exactly 12`);
+  if (authoredTiers.length === 0) {
+    violations.push("equipmentBases defines 0 entries, expected at least 6");
     return violations;
   }
 
-  for (const tier of [1, 2] as const) {
+  const expectedTotal = authoredTiers.length * 6;
+  if (bases.length !== expectedTotal) {
+    violations.push(
+      `equipmentBases defines ${bases.length} entries, expected exactly ${expectedTotal}`,
+    );
+  }
+
+  for (const tier of authoredTiers) {
     const tierBases = bases.filter((base) => base.tier === tier);
     if (tierBases.length !== 6) {
       violations.push(`equipmentBases tier ${tier} defines ${tierBases.length} entries, expected 6`);
-      continue;
     }
 
     for (const classId of CLASS_IDS) {

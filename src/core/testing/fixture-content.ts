@@ -587,3 +587,64 @@ export const fixtureContent: Content = {
     { id: "flat-elemental-resistance", tier1: [2, 4], tier2: [3, 6] },
   ],
 };
+
+const CLASS_WEAPON_SLOTS: Array<{ classId: "knight" | "wizard" | "priest" | "hunter"; suffix: string }> =
+  [
+    { classId: "knight", suffix: "blade" },
+    { classId: "wizard", suffix: "focus" },
+    { classId: "priest", suffix: "relic" },
+    { classId: "hunter", suffix: "bow" },
+  ];
+
+function fixtureTierBases(tier: 3 | 4): Content["equipmentBases"] {
+  const roman = tier === 3 ? "iii" : "iv";
+  const weapons = CLASS_WEAPON_SLOTS.map(({ classId, suffix }) => {
+    const channel = classId === "knight" || classId === "hunter" ? "physical" : "elemental";
+    const stat = tier === 3 ? 8 : 12;
+    return {
+      id: `fixture-${suffix}-${roman}`,
+      name: `Fixture ${suffix} ${roman.toUpperCase()}`,
+      slot: "weapon" as const,
+      tier,
+      weaponClass: classId,
+      guaranteed: { flat: { [channel]: stat } },
+      iconKey: `fixture-${suffix}-${roman}`,
+    };
+  });
+  const armorStat = tier === 3 ? 15 : 22;
+  const charmStat = tier === 3 ? 30 : 44;
+  return [
+    ...weapons,
+    {
+      id: `fixture-armor-${roman}`,
+      name: `Fixture Armor ${roman.toUpperCase()}`,
+      slot: "armor" as const,
+      tier,
+      guaranteed: { flat: { armor: armorStat } },
+      iconKey: `fixture-armor-${roman}`,
+    },
+    {
+      id: `fixture-charm-${roman}`,
+      name: `Fixture Charm ${roman.toUpperCase()}`,
+      slot: "charm" as const,
+      tier,
+      guaranteed: { flat: { maxHealth: charmStat } },
+      iconKey: `fixture-charm-${roman}`,
+    },
+  ];
+}
+
+/** Four-Tier Equipment catalog for Tier III/IV roll and validation tests (not shipped). */
+export const fourTierFixtureContent: Content = {
+  ...fixtureContent,
+  equipmentBases: [
+    ...fixtureContent.equipmentBases,
+    ...fixtureTierBases(3),
+    ...fixtureTierBases(4),
+  ],
+  affixBands: fixtureContent.affixBands.map((band) => ({
+    ...band,
+    tier3: [10, 20] as [number, number],
+    tier4: [30, 40] as [number, number],
+  })),
+};

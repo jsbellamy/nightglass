@@ -7,6 +7,7 @@ import type {
   Content,
   EquipmentBaseDef,
   EquipmentSlotId,
+  EquipmentTier,
   ItemLevel,
   Rarity,
   StageDef,
@@ -69,8 +70,17 @@ function nextUniform(lootRng: LootRng): [number, LootRng] {
   return [value, { state }];
 }
 
-function tierForItemLevel(itemLevel: ItemLevel): 1 | 2 {
-  return itemLevel <= 2 ? 1 : 2;
+export function tierForItemLevel(itemLevel: ItemLevel): EquipmentTier {
+  if (itemLevel <= 2) {
+    return 1;
+  }
+  if (itemLevel === 3) {
+    return 2;
+  }
+  if (itemLevel <= 5) {
+    return 3;
+  }
+  return 4;
 }
 
 function rollSlotCategory(lootRng: LootRng): [EquipmentSlotId, LootRng] {
@@ -88,7 +98,7 @@ function rollClass(lootRng: LootRng): [ClassId, LootRng] {
 function findEquipmentBase(
   bases: EquipmentBaseDef[],
   slot: EquipmentSlotId,
-  tier: 1 | 2,
+  tier: EquipmentTier,
   weaponClass?: ClassId,
 ): EquipmentBaseDef {
   const match = bases.find((base) => {
@@ -137,13 +147,32 @@ function affixPoolForSlot(slot: EquipmentSlotId, weaponClass?: ClassId): AffixId
 function affixBandFor(
   bands: AffixBandDef[],
   affixId: AffixId,
-  tier: 1 | 2,
+  tier: EquipmentTier,
 ): [number, number] {
   const band = bands.find((entry) => entry.id === affixId);
   if (!band) {
-    throw new Error(`Missing Affix band for ${affixId}`);
+    throw new Error(`Missing Affix band for ${affixId} at Equipment Tier ${tier}`);
   }
-  return tier === 1 ? band.tier1 : band.tier2;
+  switch (tier) {
+    case 1:
+      return band.tier1;
+    case 2:
+      return band.tier2;
+    case 3: {
+      if (!band.tier3) {
+        throw new Error(`Missing Affix band for ${affixId} at Equipment Tier 3`);
+      }
+      return band.tier3;
+    }
+    case 4: {
+      if (!band.tier4) {
+        throw new Error(`Missing Affix band for ${affixId} at Equipment Tier 4`);
+      }
+      return band.tier4;
+    }
+    default:
+      throw new Error(`Missing Affix band for ${affixId} at Equipment Tier ${tier}`);
+  }
 }
 
 function rollBandValue(
@@ -168,7 +197,7 @@ function rollAffixes(
   lootRng: LootRng,
   content: Content,
   slot: EquipmentSlotId,
-  tier: 1 | 2,
+  tier: EquipmentTier,
   rarity: Rarity,
   weaponClass?: ClassId,
 ): [{ id: AffixId; value: number }[], LootRng] {

@@ -139,6 +139,8 @@ export interface AffixBandDef {
   id: AffixId;
   tier1: [number, number];
   tier2: [number, number];
+  tier3?: [number, number];
+  tier4?: [number, number];
 }
 
 export interface Content {
