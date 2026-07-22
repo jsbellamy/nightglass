@@ -6,12 +6,13 @@
 ## Context
 
 The vertical slice exposes combat on an always-on-top **Battle Tile** and party
-management on a separate **Management Dock** (`CONTEXT.md`: Battle Tile at 480×112,
-Management Dock at 480×336, docked flush above or below the tile). Geometry is
-centralized in `src/ui/battle-tile-layout.ts` (`TILE_WIDTH` 480, `TILE_HEIGHT` 112,
-`STATUS_LINE_HEIGHT` 24, `BATTLEFIELD_HEIGHT` 86) and `src/ui/dock-geometry.ts`
-(`DOCK_WIDTH` 480, `DOCK_HEIGHT` 336, `dockRect` parking above or below from the
-monitor midpoint).
+management on a separate **Management Dock** (Battle Tile at 480×112,
+Management Dock at 480×336, docked flush above or below the tile). Battle Tile
+geometry was centralized in `src/ui/battle-tile-layout.ts` (`TILE_WIDTH` 480,
+`TILE_HEIGHT` 112, `STATUS_LINE_HEIGHT` 24, `BATTLEFIELD_HEIGHT` 86). Dock
+geometry, as decided here, used equal width and 480×336 via
+`src/ui/dock-geometry.ts` (`dockRect` parking above or below from the monitor
+midpoint).
 
 > **Note:** Dock dimensions and equal-width coupling in this Context (and the
 > Decision below) record the geometry as decided here. ADR-0005 supersedes those
