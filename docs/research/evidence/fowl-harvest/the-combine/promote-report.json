@@ -1,0 +1,34 @@
+{
+  "status": "promoted",
+  "candidate": "docs/research/evidence/fowl-harvest/the-combine/scratch/the-combine-c1.png",
+  "raw": "/Users/jakebellamy/VSProjects/games/game_idea/nightglass-wt-327/assets-raw/grid_raw/the-combine.png",
+  "sidecar": "/Users/jakebellamy/VSProjects/games/game_idea/nightglass-wt-327/assets-raw/grid_raw/the-combine.source.json",
+  "runtime": "/Users/jakebellamy/VSProjects/games/game_idea/nightglass-wt-327/src/assets/sprites/the-combine.png",
+  "manifest": "/Users/jakebellamy/VSProjects/games/game_idea/nightglass-wt-327/src/assets/sprites/manifest.json",
+  "measurement": {
+    "candidate": "docs/research/evidence/fowl-harvest/the-combine/scratch/the-combine-c1.png",
+    "tag": "the-combine",
+    "status": "advance",
+    "primary_failure": null,
+    "next_action": "advance to visual review",
+    "gates": [],
+    "clipped_sides": [],
+    "cursor_stamp_removed": false,
+    "opaque_bounds": [
+      0,
+      0,
+      1321,
+      861
+    ],
+    "fitted_opaque_size": [
+      110,
+      72
+    ],
+    "profile": {
+      "role": "boss",
+      "max_opaque_w": 160,
+      "max_opaque_h": 72,
+      "facing": "left"
+    }
+  }
+}

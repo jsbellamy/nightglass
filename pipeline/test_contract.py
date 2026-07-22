@@ -27,6 +27,7 @@ RUNTIME_SPRITES = {
     "pipcap": "pipcap.png",
     "burger-drake": "burger-drake.png",
     "cornquacker": "cornquacker.png",
+    "the-combine": "the-combine.png",
     "boss": "boss-1.png",
     "boss-2": "boss-2.png",
     "boss-3": "boss-3.png",
@@ -224,6 +225,21 @@ check("Cornquacker flexible opaque bounds fit the ordinary Opponent 30x68 ceilin
       and corn_measure["fitted_opaque_size"][1] <= cornquacker_profile.max_opaque_h
       and corn_measure["clipped_sides"] == [],
       str(corn_measure))
+
+combine_sidecar = _sidecar("the-combine")
+combine_measure = A.measure_candidate(RAW_DIR / "the-combine.png", tag="the-combine")
+check("The Combine archived raw uses flexible Fowl Harvest provenance",
+      combine_sidecar.get("acquisition") == "flexible"
+      and combine_sidecar.get("identity_profile", {}).get("role") == "boss"
+      and combine_sidecar.get("facing") == "left"
+      and combine_sidecar.get("palette") == "fowl-harvest-24@1",
+      str(combine_sidecar))
+check("The Combine flexible opaque bounds fit the Boss 160x72 ceiling",
+      combine_measure["status"] == "advance"
+      and combine_measure["fitted_opaque_size"][0] <= combine_profile.max_opaque_w
+      and combine_measure["fitted_opaque_size"][1] <= combine_profile.max_opaque_h
+      and combine_measure["clipped_sides"] == [],
+      str(combine_measure))
 
 boss3_sidecar = _sidecar("boss-3")
 boss3_measure = A.measure_candidate(RAW_DIR / "boss-3.png", tag="boss-3")
@@ -693,14 +709,14 @@ check("complete body raw tags are lexicographically sorted",
 check("production body bundles discovered in runtime-key order",
       A.default_build_raw_tags() == (
           "boss", "boss-2", "boss-3", "burger-drake", "cornquacker", "hunter",
-          "knight", "pipcap", "priest", "wizard"),
+          "knight", "pipcap", "priest", "the-combine", "wizard"),
       str(A.default_build_raw_tags()))
 check("Burger Drake complete body bundle is discovered",
       "burger-drake" in _discovered_body)
 check("Cornquacker complete body bundle is discovered",
       "cornquacker" in _discovered_body)
-check("declared Fowl identities without raw bundles do not fail discovery",
-      "the-combine" not in _discovered_body)
+check("The Combine complete body bundle is discovered",
+      "the-combine" in _discovered_body)
 with tempfile.TemporaryDirectory() as _body_orphan_temp:
     _body_orphan_raw = pathlib.Path(_body_orphan_temp)
     Image.new("RGBA", (8, 8), (0, 0, 0, 255)).save(_body_orphan_raw / "png-only.png")
