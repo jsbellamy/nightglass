@@ -162,6 +162,11 @@ function characterLevel(
   return levelFromXp(progression.characterXp[classId] ?? 0, thresholds);
 }
 
+/** Snapshot view of EngineState for pending-edit helpers (`savedAtMs` is unused). */
+function pendingEditSnapshot(state: EngineState): Snapshot {
+  return { ...state, savedAtMs: 0 };
+}
+
 function setTalentDraft(state: EngineState, classId: ClassId, draft: ClassTalentState): void {
   state.pendingEdits = state.pendingEdits.filter(
     (edit) => !(edit.kind === "talent" && edit.classId === classId),
@@ -1156,7 +1161,7 @@ function validateLoadout(
   const unlockable = new Set(
     pendingEdits.unlockableAbilityIds(
       classKit,
-      pendingEdits.effectiveTalentState(state as Snapshot, classId),
+      pendingEdits.effectiveTalentState(pendingEditSnapshot(state), classId),
     ),
   );
   const unique = new Set(loadout);
@@ -1287,7 +1292,7 @@ export function createEngine(
     if (!classKit) {
       throw new Error(`Missing Class Kit ${classId}`);
     }
-    const draft = pendingEdits.effectiveTalentState(state as Snapshot, classId);
+    const draft = pendingEdits.effectiveTalentState(pendingEditSnapshot(state), classId);
     const level = characterLevel(state.progression, classId, index.content.xpThresholds);
     allocateTalentPoint(draft, classKit, talentId, level);
     setTalentDraft(state, classId, draft);
@@ -1298,7 +1303,7 @@ export function createEngine(
     if (!classKit) {
       throw new Error(`Missing Class Kit ${classId}`);
     }
-    const draft = pendingEdits.effectiveTalentState(state as Snapshot, classId);
+    const draft = pendingEdits.effectiveTalentState(pendingEditSnapshot(state), classId);
     const level = characterLevel(state.progression, classId, index.content.xpThresholds);
     deallocateTalentPoint(draft, classKit, talentId, level);
     setTalentDraft(state, classId, draft);
@@ -1310,7 +1315,7 @@ export function createEngine(
       return false;
     }
     try {
-      const draft = pendingEdits.effectiveTalentState(state as Snapshot, classId);
+      const draft = pendingEdits.effectiveTalentState(pendingEditSnapshot(state), classId);
       const level = characterLevel(state.progression, classId, index.content.xpThresholds);
       return canAllocateTalentPoint(draft, classKit, talentId, level);
     } catch {
@@ -1324,7 +1329,7 @@ export function createEngine(
       return false;
     }
     try {
-      const draft = pendingEdits.effectiveTalentState(state as Snapshot, classId);
+      const draft = pendingEdits.effectiveTalentState(pendingEditSnapshot(state), classId);
       const level = characterLevel(state.progression, classId, index.content.xpThresholds);
       return canDeallocateTalentPoint(draft, classKit, talentId, level);
     } catch {
