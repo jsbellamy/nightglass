@@ -1,8 +1,12 @@
 # Stage backdrop contract
 
-Asset class for the three Stage battlefield scenes shipped behind Party and
-opponent combatants in the Battle Tile. Frozen by
-[#59](https://github.com/jsbellamy/nightglass/issues/59).
+Asset class for battlefield scenery behind Party and opponent combatants in the
+Battle Tile. Shipped Moonberry Stage scenes use keys `backdrop-1` through
+`backdrop-3`; additional keys (for example Fowl Harvest backdrops in
+`docs/fowl-harvest-theme.md`) are discovered from complete archived bundles.
+Frozen by [#59](https://github.com/jsbellamy/nightglass/issues/59); bundle
+discovery generalized in
+[#319](https://github.com/jsbellamy/nightglass/issues/319).
 
 ```markdown
 Asset class: backdrop
