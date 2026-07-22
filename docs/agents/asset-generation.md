@@ -25,7 +25,9 @@ Asset class: <Character | opponent | Ability effect | interface | backdrop | oth
 Status: <reference-only | candidate for shipping>
 Runtime destination: <path or owning system>
 Runtime shape: <dimensions, colour mode, alpha policy>
-Visual vocabulary: <palette and art-direction source>
+Visual vocabulary: <palette and art-direction source; name the Visual Theme when
+  the asset belongs to a themed battlefield family — see
+  [`../fowl-harvest-theme.md`](../fowl-harvest-theme.md) for Fowl Harvest>
 Geometry: <facing, anchor, safe box, canvas ownership>
 Review context: <native-scale surface or composition>
 Validator: <command or explicit checks>
@@ -77,10 +79,15 @@ gate passes; do not mirror a generated raw as a substitute for reacquisition.
   `moonberry-glow`, effect anchors, deterministic derivation, and runtime
   transforms.
 - For **Stage backdrops**, read [`../backdrop-contract.md`](../backdrop-contract.md).
-  It owns the 480×86 battlefield band, palette exemption from `moonberry-16`,
+  It owns the 480×86 battlefield band, palette exemption from body palettes,
   deliberate large→nearest resize (the body no-resize rule does not apply),
-  Archived Raw Bundle under `assets-raw/backdrops/`, and
-  `pipeline/backdrops.py` byte-identity verify.
+  Archived Raw Bundle under `assets-raw/backdrops/`, deterministic complete-bundle
+  discovery in `pipeline/backdrops.py`, and byte-identity verify.
+- For **Fowl Harvest** opponent bodies and backdrops, read
+  [`../fowl-harvest-theme.md`](../fowl-harvest-theme.md). It owns theme id
+  `fowl-harvest`, body palette `fowl-harvest-24`, identity prompt kits, and
+  toxic rural dusk material rules. Party Characters remain `moonberry-16`; do not
+  retheme existing Moonberry sprites in acquisition prompts.
 - For Moonberry visual language, use the decision and retained references from
   [Prototype the original-IP art direction](https://github.com/jsbellamy/nightglass/issues/3).
 - For another asset class, the task must declare its runtime shape and validator;

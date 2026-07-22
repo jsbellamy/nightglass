@@ -36,6 +36,10 @@ _Avoid_: party order, lineup
 The fixed side-on combat scene where the Party faces right and Opponents face left. Characters may move within it for attacks but do not use multi-directional exploration movement.
 _Avoid_: map, arena, board
 
+**Visual Theme**:
+The authored visual vocabulary shared by a family of battlefield assets, including pigment palette, silhouette and material rules, environmental lighting, and tone. A Visual Theme is independent of Stage progression and does not by itself make content playable.
+_Avoid_: world or biome when referring only to art direction
+
 **Opponent**:
 A combatant fought by the Party on the Battlefield, defined by authored statistics and Abilities. Opponents are not Characters on the Roster.
 _Avoid_: enemy, mob, monster

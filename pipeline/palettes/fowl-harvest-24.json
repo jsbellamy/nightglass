@@ -1,0 +1,36 @@
+{
+  "name": "fowl-harvest-24",
+  "version": 1,
+  "derived_from": [
+    "user-approved Burger Drake identity reference",
+    "user-approved Cornquacker identity reference"
+  ],
+  "method": "hand-authored named ramps from the approved Fowl Harvest references",
+  "note": "Opponent-body palette for the Fowl Harvest Visual Theme. Exact-match disjoint from moonberry-glow and #ff00ff; nearest-in-RGB with no dithering.",
+  "colors": [
+    { "name": "oil-ink", "hex": "#111018", "rgb": [17, 16, 24] },
+    { "name": "crow-black", "hex": "#1e1c29", "rgb": [30, 28, 41] },
+    { "name": "bruise-plum", "hex": "#351524", "rgb": [53, 21, 36] },
+    { "name": "grease-brown-deep", "hex": "#4f2926", "rgb": [79, 41, 38] },
+    { "name": "patty-brown", "hex": "#6f3528", "rgb": [111, 53, 40] },
+    { "name": "toast-brown", "hex": "#9b4f2e", "rgb": [155, 79, 46] },
+    { "name": "rust-orange-deep", "hex": "#bf532f", "rgb": [191, 83, 47] },
+    { "name": "beak-orange", "hex": "#e47a35", "rgb": [228, 122, 53] },
+    { "name": "duck-shadow", "hex": "#d88c35", "rgb": [216, 140, 53] },
+    { "name": "duck-gold", "hex": "#e9a541", "rgb": [233, 165, 65] },
+    { "name": "yolk-gold", "hex": "#ecb34a", "rgb": [236, 179, 74] },
+    { "name": "corn-yellow", "hex": "#f0cf4a", "rgb": [240, 207, 74] },
+    { "name": "corn-light", "hex": "#f6df67", "rgb": [246, 223, 103] },
+    { "name": "diner-cream", "hex": "#f3d897", "rgb": [243, 216, 151] },
+    { "name": "field-green-deep", "hex": "#315e27", "rgb": [49, 94, 39] },
+    { "name": "field-green", "hex": "#487c29", "rgb": [72, 124, 41] },
+    { "name": "husk-green", "hex": "#6aa233", "rgb": [106, 162, 51] },
+    { "name": "leaf-green", "hex": "#9fcb50", "rgb": [159, 203, 80] },
+    { "name": "husk-light", "hex": "#b7d969", "rgb": [183, 217, 105] },
+    { "name": "pond-teal-deep", "hex": "#146451", "rgb": [20, 100, 81] },
+    { "name": "diner-teal", "hex": "#1f9277", "rgb": [31, 146, 119] },
+    { "name": "teal-light", "hex": "#4fb99b", "rgb": [79, 185, 155] },
+    { "name": "condiment-red", "hex": "#c83d3d", "rgb": [200, 61, 61] },
+    { "name": "storm-slate", "hex": "#55586a", "rgb": [85, 88, 106] }
+  ]
+}
