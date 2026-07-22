@@ -1,0 +1,98 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "f74572e63cf5a577a7da7d67bbf93d40c35a4b23b70f8684d6960443d167ee73",
+  "asset_class": "interface",
+  "kind": "talent-skill-glyph",
+  "runtime_destination": null,
+  "source_key": "vanguard",
+  "candidate": "vanguard-r2",
+  "palette_subset": [
+    "contour-plum-deepest",
+    "contour-plum-deep",
+    "mint-shadow",
+    "mint",
+    "mint-light",
+    "mint-pale",
+    "cream",
+    "cream-gold",
+    "berry-shadow",
+    "berry-mid",
+    "berry",
+    "berry-bright",
+    "sage",
+    "twilight-slate"
+  ],
+  "style_references": [
+    {
+      "path": "src/assets/icon-sources/fortitude/source.grid",
+      "sha256": "d3e6578488495324ea317eb4997d64029d1224b915c09034618fd6c7a30943f3",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icon-sources/hold-the-line/source.grid",
+      "sha256": "0af3c532f93cefeb0a69561c424157dc0934d540854936bbbdc4dcc6104f20e5",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icon-sources/swordcraft/source.grid",
+      "sha256": "59144c4ef1a128868adb010e2cf4828a36e0b2fef730b3cc2c991da620a05839",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icon-sources/thornquill-blade/source.grid",
+      "sha256": "907720f005ceb906b9126e7a6ef33264f15b2b432ea354d8f693a89ace16c88f",
+      "role": "style_cohort"
+    },
+    {
+      "path": "docs/research/evidence/305-talent-icons-knight/accepted-raws/hold-the-line.png",
+      "sha256": "6362f20d9f2dc002e4e3f4868428923a90164c34393aa862798be8b6e965241a",
+      "role": "style_reference"
+    }
+  ],
+  "prompt": "TRUE chunky pixel art Talent icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block with no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered symbolic Management Dock skill glyph for Vanguard: three forward shield silhouettes in one compact formation, reading Party protection and advance. Not a wearable Equipment item, not a scene, not a full Character, and not a UI frame. The subject long side spans about 26\u201330 logical pixels, with at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel dark-plum outline. Use only mint, berry, cream, and plum Moonberry colors, 8\u201312 flat colors maximum; no brown, tan, cyan, pure white, or pure black. Structural members are at least three logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        117,
+        204,
+        905,
+        828
+      ],
+      "pitch_x": {
+        "pitch": 28.616666666666763,
+        "score": 0.1515930664787019
+      },
+      "pitch_y": {
+        "pitch": 29.616666666666777,
+        "score": 0.16007088617888224
+      },
+      "grid": [
+        28,
+        21
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 427,
+      "far_cells": 30,
+      "far_fraction": 0.0703,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "contour-plum-deep": 68,
+        "cream": 73,
+        "mint-light": 78,
+        "mint-pale": 32,
+        "berry-shadow": 36,
+        "twilight-slate": 24,
+        "mint": 30,
+        "sage": 7,
+        "mint-shadow": 45,
+        "berry": 16,
+        "berry-bright": 12,
+        "berry-mid": 3,
+        "cream-gold": 3
+      }
+    }
+  },
+  "note": "#390 Knight Talent Tier 2 unregistered one-variant source family; activation deferred"
+}

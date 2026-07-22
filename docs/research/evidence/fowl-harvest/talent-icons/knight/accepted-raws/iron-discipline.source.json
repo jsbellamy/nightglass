@@ -1,0 +1,96 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "e9d40115fb7288b331101b3457f5848ca40804691d9c56ced80a467de443eef5",
+  "asset_class": "interface",
+  "kind": "talent-skill-glyph",
+  "runtime_destination": null,
+  "source_key": "iron-discipline",
+  "candidate": "iron-discipline-r2",
+  "palette_subset": [
+    "contour-plum-deepest",
+    "contour-plum-deep",
+    "mint-shadow",
+    "mint",
+    "mint-light",
+    "mint-pale",
+    "cream",
+    "cream-gold",
+    "berry-shadow",
+    "berry",
+    "berry-bright",
+    "sage",
+    "twilight-slate"
+  ],
+  "style_references": [
+    {
+      "path": "src/assets/icon-sources/fortitude/source.grid",
+      "sha256": "d3e6578488495324ea317eb4997d64029d1224b915c09034618fd6c7a30943f3",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icon-sources/hold-the-line/source.grid",
+      "sha256": "0af3c532f93cefeb0a69561c424157dc0934d540854936bbbdc4dcc6104f20e5",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icon-sources/swordcraft/source.grid",
+      "sha256": "59144c4ef1a128868adb010e2cf4828a36e0b2fef730b3cc2c991da620a05839",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icon-sources/thornquill-blade/source.grid",
+      "sha256": "907720f005ceb906b9126e7a6ef33264f15b2b432ea354d8f693a89ace16c88f",
+      "role": "style_cohort"
+    },
+    {
+      "path": "docs/research/evidence/305-talent-icons-knight/accepted-raws/fortitude.png",
+      "sha256": "62ccd88404930ee81c9b918eae61ee6ecea7a6812b10e23304441516d646742a",
+      "role": "style_reference"
+    }
+  ],
+  "prompt": "TRUE chunky pixel art Talent icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block with no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered symbolic Management Dock skill glyph for Iron Discipline: a closed steel helm over a compact shield, reading Armor and drilled defense. Not a wearable Equipment item, not a scene, not a full Character, and not a UI frame. The subject long side spans about 26\u201330 logical pixels, with at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel dark-plum outline. Use only mint, berry, cream, and plum Moonberry colors, 8\u201312 flat colors maximum; no brown, tan, cyan, pure white, or pure black. Structural members are at least three logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        209,
+        69,
+        814,
+        943
+      ],
+      "pitch_x": {
+        "pitch": 38.60555555555529,
+        "score": 0.1585060554135989
+      },
+      "pitch_y": {
+        "pitch": 38.95555555555527,
+        "score": 0.21663382304155582
+      },
+      "grid": [
+        15,
+        22
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 236,
+      "far_cells": 10,
+      "far_fraction": 0.0424,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "cream": 28,
+        "contour-plum-deep": 47,
+        "mint-shadow": 35,
+        "mint-pale": 40,
+        "berry-shadow": 11,
+        "mint": 23,
+        "mint-light": 32,
+        "sage": 2,
+        "twilight-slate": 6,
+        "berry-bright": 7,
+        "cream-gold": 2,
+        "berry": 3
+      }
+    }
+  },
+  "note": "#390 Knight Talent Tier 2 unregistered one-variant source family; activation deferred"
+}

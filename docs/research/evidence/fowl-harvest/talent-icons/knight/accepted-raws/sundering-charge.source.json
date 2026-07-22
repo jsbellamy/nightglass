@@ -1,0 +1,88 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "ea9e7b3d781c9d1bbeeb21c980a4f22129c92c82e4fc41315b1d4fa637636ec0",
+  "asset_class": "interface",
+  "kind": "talent-skill-glyph",
+  "runtime_destination": null,
+  "source_key": "sundering-charge",
+  "candidate": "sundering-charge-r4",
+  "palette_subset": [
+    "contour-plum-deepest",
+    "contour-plum-deep",
+    "mint-shadow",
+    "mint-light",
+    "cream",
+    "cream-gold",
+    "berry-mid",
+    "berry",
+    "berry-bright"
+  ],
+  "style_references": [
+    {
+      "path": "src/assets/icon-sources/fortitude/source.grid",
+      "sha256": "d3e6578488495324ea317eb4997d64029d1224b915c09034618fd6c7a30943f3",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icon-sources/hold-the-line/source.grid",
+      "sha256": "0af3c532f93cefeb0a69561c424157dc0934d540854936bbbdc4dcc6104f20e5",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icon-sources/swordcraft/source.grid",
+      "sha256": "59144c4ef1a128868adb010e2cf4828a36e0b2fef730b3cc2c991da620a05839",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icon-sources/thornquill-blade/source.grid",
+      "sha256": "907720f005ceb906b9126e7a6ef33264f15b2b432ea354d8f693a89ace16c88f",
+      "role": "style_cohort"
+    },
+    {
+      "path": "docs/research/evidence/305-talent-icons-knight/accepted-raws/swordcraft.png",
+      "sha256": "bace3f53ebf5076482e19a27a3352bb214c000a310de22da78188c4f84d9bc1f",
+      "role": "style_reference"
+    }
+  ],
+  "prompt": "TRUE chunky pixel art Talent icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block with no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered symbolic Management Dock skill glyph for Sundering Charge: a heavy sword driving through a split armor plate, reading single-target Physical Damage plus Exposed. Not a wearable Equipment item, not a scene, not a full Character, and not a UI frame. The subject long side spans about 26\u201330 logical pixels, with at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel dark-plum outline. Use only mint, berry, cream, and plum Moonberry colors, 8\u201312 flat colors maximum; no brown, tan, cyan, pure white, or pure black. Structural members are at least three logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        317,
+        271,
+        711,
+        720
+      ],
+      "pitch_x": {
+        "pitch": 14.65000000000003,
+        "score": 0.43364030463765957
+      },
+      "pitch_y": {
+        "pitch": 16.65000000000006,
+        "score": 0.46767159537390013
+      },
+      "grid": [
+        27,
+        27
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 361,
+      "far_cells": 1,
+      "far_fraction": 0.0028,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "contour-plum-deep": 145,
+        "cream": 38,
+        "mint-light": 39,
+        "berry-bright": 75,
+        "berry-mid": 13,
+        "berry": 42,
+        "cream-gold": 8,
+        "mint-shadow": 1
+      }
+    }
+  },
+  "note": "#390 Knight Talent Tier 2 unregistered one-variant source family; activation deferred"
+}
