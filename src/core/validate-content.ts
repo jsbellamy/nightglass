@@ -156,6 +156,7 @@ export function validateContent(
         );
       });
     }
+    violations.push(...duplicateTalentIdsAcrossTiers(classKit));
 
     const talentAbilityIds = [
       ...classKit.talents.abilityRow,
@@ -424,6 +425,43 @@ function validateStatusTickEffect(statusId: string, effect: AbilityEffect): stri
   if (effect.coefficient === undefined || effect.coefficient < 0) {
     violations.push(`status "${statusId}" tickEffect damage must declare coefficient >= 0`);
   }
+  return violations;
+}
+
+function duplicateTalentIdsAcrossTiers(classKit: Content["classes"][number]): string[] {
+  const violations: string[] = [];
+  const tierDefs: { label: string; def: TalentTierDef }[] = [
+    { label: "talents", def: classKit.talents },
+    ...(classKit.talentTiers?.map((def, tierIndex) => ({
+      label: `talentTiers[${tierIndex}]`,
+      def,
+    })) ?? []),
+  ];
+  const seen = new Map<string, string>();
+
+  for (const { label, def } of tierDefs) {
+    for (const statTalent of def.statRow) {
+      const prior = seen.get(statTalent.id);
+      if (prior) {
+        violations.push(
+          `class "${classKit.id}" talent id "${statTalent.id}" is duplicated across ${prior} and ${label}`,
+        );
+      } else {
+        seen.set(statTalent.id, label);
+      }
+    }
+    for (const abilityId of def.abilityRow) {
+      const prior = seen.get(abilityId);
+      if (prior) {
+        violations.push(
+          `class "${classKit.id}" talent id "${abilityId}" is duplicated across ${prior} and ${label}`,
+        );
+      } else {
+        seen.set(abilityId, label);
+      }
+    }
+  }
+
   return violations;
 }
 

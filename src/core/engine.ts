@@ -1137,10 +1137,10 @@ function applyPendingEdits(
       if (!classKit) {
         throw new Error(`Missing Class Kit ${edit.classId}`);
       }
-      const previousAbility = state.progression.talents[edit.classId]?.abilityTalentId ?? null;
       const previous = state.progression.talents[edit.classId] ?? emptyTalentState(classKit);
-      state.progression.talents[edit.classId] = normalizeClassTalentState(classKit, {
-        ...previous,
+      const previousNormalized = normalizeClassTalentState(classKit, previous);
+      const nextTalent = normalizeClassTalentState(classKit, {
+        ...previousNormalized,
         statRanks: { ...edit.statRanks },
         abilityTalentId: edit.abilityTalentId,
         tierStates: edit.tierStates
@@ -1148,7 +1148,7 @@ function applyPendingEdits(
               statRanks: { ...tier.statRanks },
               abilityTalentId: tier.abilityTalentId,
             }))
-          : previous.tierStates.map((tier, tierIndex) =>
+          : previousNormalized.tierStates.map((tier, tierIndex) =>
               tierIndex === 0
                 ? {
                     statRanks: { ...edit.statRanks },
@@ -1157,12 +1157,17 @@ function applyPendingEdits(
                 : { statRanks: { ...tier.statRanks }, abilityTalentId: tier.abilityTalentId },
             ),
       });
-      if (previousAbility && previousAbility !== edit.abilityTalentId) {
-        state.progression.loadouts[edit.classId] = stripAbilityFromLoadout(
-          state.progression.loadouts[edit.classId],
-          previousAbility,
-          classKit,
-        );
+      state.progression.talents[edit.classId] = nextTalent;
+      for (let tierIndex = 0; tierIndex < previousNormalized.tierStates.length; tierIndex += 1) {
+        const previousAbility = previousNormalized.tierStates[tierIndex]?.abilityTalentId ?? null;
+        const nextAbility = nextTalent.tierStates[tierIndex]?.abilityTalentId ?? null;
+        if (previousAbility && previousAbility !== nextAbility) {
+          state.progression.loadouts[edit.classId] = stripAbilityFromLoadout(
+            state.progression.loadouts[edit.classId]!,
+            previousAbility,
+            classKit,
+          );
+        }
       }
       const combatant = byClassId.get(edit.classId);
       if (combatant) {
