@@ -12,6 +12,8 @@ import { PUMP_INTERVAL_MS } from "./pump";
 
 export const AUDIO_PREFS_KEY = "nightglass-audio-v1";
 
+export const AUDIO_PREFS_DEBOUNCE_MS = 200;
+
 export const MAX_CUES_PER_RELEASE = 4;
 
 const ONE_SHOT_CUE_IDS = [
@@ -268,6 +270,7 @@ export function createSfx(deps: SfxDeps = {}): SfxController {
   let controlsRoot: HTMLElement | null = null;
   let popoverOpen = false;
   let onDocumentClick: ((event: MouseEvent) => void) | null = null;
+  let volumePersistTimer: ReturnType<typeof setTimeout> | null = null;
   const cueQueue: QueuedCue[] = [];
 
   cuePlayer.preload();
@@ -277,7 +280,34 @@ export function createSfx(deps: SfxDeps = {}): SfxController {
   }
 
   function persistPrefs(): void {
-    writePrefs(storage, prefs);
+    try {
+      writePrefs(storage, prefs);
+    } catch {
+      /* storage quota or privacy mode — prefs stay in memory */
+    }
+  }
+
+  function clearVolumePersistTimer(): void {
+    if (volumePersistTimer !== null) {
+      clearTimeout(volumePersistTimer);
+      volumePersistTimer = null;
+    }
+  }
+
+  function scheduleVolumePersist(): void {
+    clearVolumePersistTimer();
+    volumePersistTimer = setTimeout(() => {
+      volumePersistTimer = null;
+      persistPrefs();
+    }, AUDIO_PREFS_DEBOUNCE_MS);
+  }
+
+  function flushVolumePersist(): void {
+    if (volumePersistTimer === null) {
+      return;
+    }
+    clearVolumePersistTimer();
+    persistPrefs();
   }
 
   function applyVolumePreference(volume: number): void {
@@ -383,6 +413,7 @@ export function createSfx(deps: SfxDeps = {}): SfxController {
 
     setMuted(muted: boolean): void {
       prefs = { ...prefs, muted };
+      clearVolumePersistTimer();
       persistPrefs();
       if (!muted && isDefaultCuePlayer(cuePlayer)) {
         void cuePlayer.resumeIfSuspended();
@@ -396,7 +427,7 @@ export function createSfx(deps: SfxDeps = {}): SfxController {
 
     setVolume(volume: number): void {
       applyVolumePreference(volume);
-      persistPrefs();
+      scheduleVolumePersist();
     },
 
     toggleMuted(): void {
@@ -486,6 +517,7 @@ export function createSfx(deps: SfxDeps = {}): SfxController {
       });
 
       slider.addEventListener("change", () => {
+        clearVolumePersistTimer();
         persistPrefs();
       });
 
@@ -508,6 +540,7 @@ export function createSfx(deps: SfxDeps = {}): SfxController {
     },
 
     destroy(): void {
+      flushVolumePersist();
       doc.removeEventListener("visibilitychange", onVisibilityChange);
       if (onDocumentClick) {
         doc.removeEventListener("click", onDocumentClick);
