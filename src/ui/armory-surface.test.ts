@@ -15,6 +15,7 @@ import {
   filterArmoryDrops,
   type ArmoryFilters,
 } from "./equipment-format";
+import { rosterClassIds } from "./snapshot-view";
 
 const LOOT_SEED = 42;
 
@@ -34,6 +35,9 @@ function mountWithSelection(
   return mountArmorySurface(root, {
     content: fixtureContent,
     getSelectedClassId: () => selected.current,
+    selectClassId: (classId) => {
+      selected.current = classId;
+    },
     ...(onCommand ? { onCommand } : {}),
   });
 }
@@ -75,6 +79,89 @@ function armorySnapshot(armory: DropInstance[]): Snapshot {
 }
 
 describe("Armory surface", () => {
+  it("renders a compact horizontal Character selector with name and Level above the worn strip", () => {
+    const root = document.createElement("div");
+    const selected = { current: "knight" as ClassId };
+    const snapshot = armorySnapshot([]);
+    const surface = mountWithSelection(root, selected);
+    renderArmory(surface, snapshot);
+
+    const selector = root.querySelector<HTMLElement>('[data-armory-character-selector="true"]');
+    expect(selector).not.toBeNull();
+    expect(selector?.getAttribute("role")).toBe("tablist");
+    const chips = [...root.querySelectorAll<HTMLElement>(".armory-character-selector [data-character-chip]")];
+    expect(chips.map((chip) => chip.dataset["characterChip"])).toEqual(rosterClassIds(snapshot));
+    expect(chips.every((chip) => chip.querySelector(".character-chip-name")?.textContent?.length)).toBe(
+      true,
+    );
+    expect(chips.every((chip) => chip.querySelector(".character-chip-level")?.textContent?.match(/^Level /))).toBe(
+      true,
+    );
+    expect(root.querySelector(".armory-character-selector .character-chip-position")).toBeNull();
+    expect(
+      root.querySelector('.armory-character-selector [data-character-chip="knight"]')?.getAttribute(
+        "aria-selected",
+      ),
+    ).toBe("true");
+
+    const wornStrip = root.querySelector('[data-armory-worn-strip="true"]');
+    expect(wornStrip).not.toBeNull();
+    expect(selector!.compareDocumentPosition(wornStrip!) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+
+    surface.destroy();
+  });
+
+  it("moves Armory Character selection with Arrow keys and retargets the worn strip", () => {
+    const root = document.createElement("div");
+    const selected = { current: "knight" as ClassId };
+    const snapshot = armorySnapshot([
+      drop({
+        dropId: 1,
+        baseId: "fixture-blade",
+        assignedTo: { classId: "knight", slot: "weapon" },
+      }),
+      drop({
+        dropId: 2,
+        baseId: "fixture-focus",
+        assignedTo: { classId: "wizard", slot: "weapon" },
+      }),
+    ]);
+    const surface = mountWithSelection(root, selected);
+    renderArmory(surface, snapshot);
+
+    const roster = rosterClassIds(snapshot);
+    const knightChip = root.querySelector<HTMLElement>('.armory-character-selector [data-character-chip="knight"]');
+    knightChip?.focus();
+    knightChip?.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
+    renderArmory(surface, snapshot);
+    expect(selected.current).toBe(roster[1]);
+    expect(
+      root.querySelector(`.armory-character-selector [data-character-chip="${roster[1]}"]`)?.getAttribute(
+        "aria-selected",
+      ),
+    ).toBe("true");
+    expect(
+      root.querySelector('[data-worn-slot="weapon"]')?.getAttribute("aria-label"),
+    ).toMatch(/Fixture Focus/);
+
+    const lastClass = roster[roster.length - 1]!;
+    const lastChip = root.querySelector<HTMLElement>(
+      `.armory-character-selector [data-character-chip="${lastClass}"]`,
+    );
+    lastChip?.focus();
+    lastChip?.dispatchEvent(new KeyboardEvent("keydown", { key: "Home", bubbles: true }));
+    renderArmory(surface, snapshot);
+    expect(selected.current).toBe(roster[0]);
+
+    lastChip?.dispatchEvent(new KeyboardEvent("keydown", { key: "End", bubbles: true }));
+    renderArmory(surface, snapshot);
+    expect(selected.current).toBe(lastClass);
+
+    surface.destroy();
+  });
+
   it("renders a worn loadout strip for the selected Class above grid and detail panes", () => {
     const root = document.createElement("div");
     const selected = { current: "knight" as ClassId };
@@ -445,6 +532,9 @@ describe("Armory surface", () => {
     const surface = mountArmorySurface(root, {
       content: fixtureContent,
       getSelectedClassId: () => selected.current,
+      selectClassId: (classId) => {
+        selected.current = classId;
+      },
       onCommand: (command) => {
         commands.push(command);
         if (command.cmd === "equip") {
@@ -500,6 +590,9 @@ describe("Armory surface", () => {
     const surface = mountArmorySurface(root, {
       content: fixtureContent,
       getSelectedClassId: () => selected.current,
+      selectClassId: (classId) => {
+        selected.current = classId;
+      },
       onCommand: (command) => {
         commands.push(command);
         if (command.cmd === "equip") {
@@ -675,6 +768,9 @@ describe("Armory surface", () => {
     const surface = mountArmorySurface(root, {
       content: fixtureContent,
       getSelectedClassId: () => selected.current,
+      selectClassId: (classId) => {
+        selected.current = classId;
+      },
       onCommand: (command) => {
         commands.push(command);
         if (command.cmd === "equip") {

@@ -572,6 +572,25 @@ html.dock-window body {
   min-height: 0;
 }
 
+.dock-body[data-dock-nav="armory"] .dock-surface,
+.dock-body[data-dock-nav="stage"] .dock-surface {
+  flex: 1;
+  min-width: 0;
+}
+
+.armory-character-selector {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 4px;
+  padding: 4px 0 6px;
+}
+
+.armory-character-selector .character-picker-chip {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
 .character-picker {
   display: flex;
   flex-direction: column;
