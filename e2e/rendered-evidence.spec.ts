@@ -715,7 +715,7 @@ test.describe("rendered-output evidence seam", () => {
     await context.close();
   });
 
-  test("evidence: armory-drag-equip-unequip / evidence: armory-density-no-outer-scroll — pointer drag equip, unequip, swap, and 800×480 layout without outer-panel scroll", async ({
+  test("evidence: armory-drag-equip-unequip / evidence: armory-density-no-outer-scroll — pointer drag equip and unequip with 800×480 layout without outer-panel scroll", async ({
     browser,
   }) => {
     const { context, tile } = await openTile(browser);
@@ -790,6 +790,20 @@ test.describe("rendered-output evidence seam", () => {
       };
     });
     expect(afterUnequip.weaponEmpty).toBe(true);
+
+    const layoutAfterDrag = await dock.evaluate(() => {
+      const panel = document.querySelector<HTMLElement>('[data-dock-panel="armory"]');
+      const body = document.querySelector<HTMLElement>(".armory-body--compare-host");
+      if (!panel || !body) {
+        return null;
+      }
+      return {
+        panelScrollable: panel.scrollHeight > panel.clientHeight + 1,
+        bodyScrollable: body.scrollHeight > body.clientHeight + 1,
+      };
+    });
+    expect(layoutAfterDrag?.panelScrollable).toBe(false);
+    expect(layoutAfterDrag?.bodyScrollable).toBe(false);
 
     await context.close();
   });
