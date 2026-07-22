@@ -66,6 +66,34 @@ describe("effect recipes", () => {
     }
   });
 
+  it("maps Talent Tier 2 abilities to the exact effect derivation families", () => {
+    const tier2Frames: Record<string, string> = {
+      vanguard: "buff-halo",
+      "sundering-charge": "arc-slash-heavy",
+      "wildfire-sigil": "spell-bloom-scaled-fire",
+      "absolute-zero": "spell-bloom-scaled-frost",
+      benediction: "heal-rise",
+      "dawn-ascendant": "revive-burst",
+      "piercing-rain": "arrow-bolt",
+      "twin-fang": "arrow-bolt",
+    };
+    for (const [id, frames] of Object.entries(tier2Frames)) {
+      expect(effectRecipes[id]?.frames, id).toBe(frames);
+    }
+  });
+
+  it("presents Twin Fang as one arrow-bolt while gameplay applies two damage effects", () => {
+    const twinFang = classKit.abilities.find((entry) => entry.id === "twin-fang");
+    expect(twinFang).toBeDefined();
+    const damageEffects = twinFang!.effects.filter((effect) => effect.kind === "damage");
+    expect(damageEffects).toHaveLength(2);
+    expect(effectRecipes["twin-fang"]).toMatchObject({
+      stillKey: "arrow-bolt",
+      frames: "arrow-bolt",
+      anchor: "lane_travel",
+    });
+  });
+
   it("references an existing stillKey source family for every recipe", () => {
     const stillKeys = new Set(
       Object.values(effectRecipes).map((recipe: EffectRecipe) => recipe.stillKey),
