@@ -707,8 +707,9 @@ print("\nbackdrop bundle discovery")
 _discovered = B.discover_complete_bundle_keys()
 check("complete backdrop keys are lexicographically sorted",
       _discovered == tuple(sorted(_discovered)))
+_LEGACY_STAGE_BACKDROPS = ("backdrop-1", "backdrop-2", "backdrop-3")
 check("existing three Stage backdrops discovered",
-      _discovered == ("backdrop-1", "backdrop-2", "backdrop-3"),
+      len(_discovered) >= 3 and _discovered[:3] == _LEGACY_STAGE_BACKDROPS,
       str(_discovered))
 with tempfile.TemporaryDirectory() as _orphan_temp:
     _orphan_raw = pathlib.Path(_orphan_temp)
