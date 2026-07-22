@@ -72,6 +72,10 @@ describe("validateContent", () => {
     );
   });
 
+  it("accepts production Content with four Equipment Tiers and Tier III/IV Affix bands", () => {
+    expect(validateContent(buildContent())).toEqual([]);
+  });
+
   it("accepts a complete four-Tier Equipment catalog with Tier III/IV Affix bands", () => {
     const content: Content = {
       ...buildContent(),

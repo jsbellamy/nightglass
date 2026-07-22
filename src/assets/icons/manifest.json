@@ -279,6 +279,126 @@
     "source_family": "moonwire-trap",
     "sha256": "15f1f1e87ee1ccc48b7082d0560ac77d04ea8a2688bcbbe88dfe6c369c71248f"
   },
+  "augerwire-longbow": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "fowl-harvest-24",
+    "outline": "oil-ink",
+    "source_family": "augerwire-longbow",
+    "sha256": "3fa5b73c5ae13058d873a1362a528f53921940f09bf28842e9f44206540b1e09"
+  },
+  "black-oil-locket": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "fowl-harvest-24",
+    "outline": "oil-ink",
+    "source_family": "black-oil-locket",
+    "sha256": "a35a77e7abec53848bf521f4f51da503d6d983763ece9a26da402caa2838b6a1"
+  },
+  "combineplate-harness": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "fowl-harvest-24",
+    "outline": "oil-ink",
+    "source_family": "combineplate-harness",
+    "sha256": "e3d34382e97ac4cb9099ec104223dd58cd53468bb0b475c436fba217551818ae"
+  },
+  "feed-sack-brigandine": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "fowl-harvest-24",
+    "outline": "oil-ink",
+    "source_family": "feed-sack-brigandine",
+    "sha256": "2aa061a7d1e12804076985b07ad302d4b4ab66de23fecc44dad691ba6ed78dee"
+  },
+  "fryerplate-cleaver": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "fowl-harvest-24",
+    "outline": "oil-ink",
+    "source_family": "fryerplate-cleaver",
+    "sha256": "7ed24f556a701224a845b17218200f143651fa13d22645175577b241eeb021bd"
+  },
+  "harvest-warning-lantern": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "fowl-harvest-24",
+    "outline": "oil-ink",
+    "source_family": "harvest-warning-lantern",
+    "sha256": "1cc95758df4772b6c077e8f1469be361d9a83026ea4724c7b55f4bb6503a12d5"
+  },
+  "huskstring-recurve": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "fowl-harvest-24",
+    "outline": "oil-ink",
+    "source_family": "huskstring-recurve",
+    "sha256": "7722657f89863e4a2b507a3ace4ca15d24ca7350dd9df45a2e002ce2e1979505"
+  },
+  "mustard-sky-dynamo": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "fowl-harvest-24",
+    "outline": "oil-ink",
+    "source_family": "mustard-sky-dynamo",
+    "sha256": "f622ef5460ecd7223c26affeb2567aaeae1f374e485258179d975be87458691b"
+  },
+  "neonstorm-coil": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "fowl-harvest-24",
+    "outline": "oil-ink",
+    "source_family": "neonstorm-coil",
+    "sha256": "cd663c68d22201135546634e6ef4f8250e009be6673685a3617f83ff968c16a6"
+  },
+  "red-beacon-token": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "fowl-harvest-24",
+    "outline": "oil-ink",
+    "source_family": "red-beacon-token",
+    "sha256": "51667ee1a7673ef0511d90441ca696a08a86478719bd87ac07f2899937cbff11"
+  },
+  "roadside-reliquary": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "fowl-harvest-24",
+    "outline": "oil-ink",
+    "source_family": "roadside-reliquary",
+    "sha256": "aba6274ebc724fddfb0b35d0df7cce944555becc18de5af88852d23caf3778f5"
+  },
+  "threshertooth-blade": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "fowl-harvest-24",
+    "outline": "oil-ink",
+    "source_family": "threshertooth-blade",
+    "sha256": "f33b41d0e383b1be7e1ce9b300253052974ac1ed484f903406b5092f7f86f509"
+  },
   "verify-canary-a": {
     "canvas": [
       34,
