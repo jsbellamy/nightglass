@@ -1,4 +1,8 @@
 import type { AbilityDef, BaseStats, OpponentDef } from "../core/types";
+import {
+  fowlHarvestOpponentAbilities,
+  fowlHarvestOpponents,
+} from "./fowl-harvest-opponents";
 
 /**
  * Initial combat tuning for vertical-slice opponents (issue #40).
@@ -153,6 +157,7 @@ export const opponentAbilities: AbilityDef[] = [
     recoveryMs: 850,
     cooldownMs: 10_000,
   },
+  ...fowlHarvestOpponentAbilities,
 ];
 
 function pipcap(
@@ -236,4 +241,5 @@ export const opponents: OpponentDef[] = [
     120,
     "boss-3",
   ),
+  ...fowlHarvestOpponents,
 ];
