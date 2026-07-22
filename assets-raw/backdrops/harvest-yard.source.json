@@ -1,0 +1,53 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "prompt": "Ultra-wide panoramic toxic-rural-dusk fantasy battlefield backdrop strip in a chunky, softly painted pixel-art style. Very low contrast and overall dark enough for bright combat sprites, 2-pixel health bars, damage numbers, and luminous effects to remain the strongest signals.\n\nSCENE: the Harvest Yard, a deserted grain-processing yard and thresher shed at the edge of mutant-duck territory. Broad corrugated grain silos, a low open machinery shed, rusted conveyors, hanging chains, stacked feed sacks, and one parked skeletal farm trailer form an industrial rural skyline. Two dim floodlights throw dirty cream pools through mustard dust; a restrained red beacon and oily teal machine shadows cut across rust brown, storm slate, and deep field green.\n\nCOMPOSITION: designed for a short 480\u00d786 crop. Pack silos, shed roof, conveyors, and floodlight structures into the middle horizontal band. Keep a nearly flat dark packed-earth/concrete ground band across the bottom fifth for a very wide Boss. Keep the sky thin. Preserve an especially broad low-detail clearing on the opponent half so a 160\u00d772 Boss silhouette remains distinct. Nothing bright or sharp behind the Boss bar.\n\nEnvironmental evidence of invasion may include bent metal, a split feed sack, large webbed tracks, and a damaged thresher door, but show no complete combine harvester and no creature or body. No ducks, characters, animals, monsters, readable text, logos, watermark, UI, borders, vignette frame, focal weapon, active machinery, fire, gore, or hot-magenta field.\n\nRETRY ADDENDUM (preserve silos, shed, conveyors, hanging chains, feed-sack stacks with split sack, skeletal trailer, twin floodlight poles, and restrained red beacon from the identity reference). CRITICAL CONTRAST FIX ONLY: keep floodlight heads and cream light pools DIM and dirty \u2014 muted dusty cream, never near-white or neon; no lamp pixel should outshine a typical green health bar. Beacon stays small restrained red/orange, never hot magenta or star-flare. Do not remove chains or sacks. Do not brighten the rest of the scene. Do not fill the opponent half.\n\n",
+  "raw_sha256": "31cd27adab8bb4c854d702aba791ae2a34390dfebcc8a9be8d597de99bc0e867",
+  "asset_class": "backdrop",
+  "runtime_destination": "src/assets/backdrops/harvest-yard.png",
+  "direct_inputs": [
+    {
+      "path": "src/assets/backdrops/backdrop-1.png",
+      "role": "style reference",
+      "sha256": "1052210eb5df222aa606abc582204cb912e3fe6131ed84567bfd7e71c10bf230"
+    },
+    {
+      "path": "src/assets/backdrops/backdrop-2.png",
+      "role": "style reference",
+      "sha256": "6f27754718ba1f3cf610aecd560548e04edcffe3bde4f2f8bb1fd1059d665267"
+    },
+    {
+      "path": "src/assets/backdrops/backdrop-3.png",
+      "role": "style reference",
+      "sha256": "29548f1a9d47c5af9aae47d26b0038fc1023d26a5d2c89c394d044572e5e9e1b"
+    },
+    {
+      "path": "docs/research/evidence/fowl-harvest/harvest-yard/scratch/harvest-yard-candidate-c.png",
+      "role": "identity edit target / prior candidate",
+      "sha256": "c49abdec77296d1469d93991f1409860fcf0dd0251b0fdac11915350fdbae7c6"
+    }
+  ],
+  "candidate": "harvest-yard-candidate-d",
+  "canonical_identity": "harvest-yard",
+  "source_resolution": [
+    1536,
+    1024
+  ],
+  "reduction": {
+    "crop_box": [
+      0,
+      374,
+      1536,
+      649
+    ],
+    "crop_size": [
+      1536,
+      275
+    ],
+    "resample": "NEAREST",
+    "runtime_size": [
+      480,
+      86
+    ]
+  }
+}
