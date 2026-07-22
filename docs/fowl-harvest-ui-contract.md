@@ -187,6 +187,9 @@ Crooked Cornfield, Harvest Yard.
    without command.
 4. Extend `e2e/keyboard.spec.ts` (Stage segment) for six-row lists and Fowl
    Harvest rows when Content ships six Stages.
+5. Every focused control shows a visible **focus ring** (`.focus-ring`) on
+   `.stage-row`, `.stage-confirm-yes`, and `.stage-confirm-no`, matching the
+   harness `assertFocusRingVisible` checks.
 
 ---
 
@@ -262,17 +265,20 @@ This contract does not add harness tests; it routes them.
 | Talent icons (both Tiers) | `evidence: talent-icon-content-tier` | `src/ui/talents-surface.test.ts` + review artifact path in acceptance doc |
 | Six-Stage list + group headings | `evidence: stage-list-six` | New rendered-evidence scenario; group labels non-interactive |
 | Stage confirm preserved | `e2e/keyboard.spec.ts` (Stage flow) + `src/ui/stage-surface.test.ts` | Retain `[data-surface-retain]` confirm behavior |
-| Keyboard focus (Talents + Stage) | `e2e/keyboard.spec.ts` | Extend “accessibility keyboard floor” or add `evidence: dock-keyboard-talents-stage` slug tied to test title |
+| Keyboard focus (Talents + Stage) | `e2e/keyboard.spec.ts` | Extend the existing “accessibility keyboard floor” test title; cite that test name from acceptance rows until a dedicated slug is registered in `docs/agents/acceptance-evidence.md` |
 | Pending vs combat (Talents) | `src/ui/talents-surface.test.ts` + `e2e/keyboard.spec.ts` | Marker text and effective rank display |
-| Armory: no Tier filter | `src/ui/armory-surface.test.ts` | Assert absence of `[data-tier-filter]` / tier segment control |
+| Armory: no Tier filter | `src/ui/armory-surface.test.ts` | Toolbar keeps only slot (`[data-slot-filter]`), state (`[data-armory-state]`), and sort (`[data-armory-sort]`); no Equipment Tier segment control |
 | Armory: preserved drag/compare/sort | `evidence: armory-drag-equip-unequip`, `evidence: armory-comparison-popover`, `evidence: equipment-icon-content-tier` | Existing slugs; re-run when Armory layout changes |
-| Dock population / three tabs | `evidence: dock-surfaces` | `e2e/rendered-evidence.spec.ts` |
+| Dock population / three tabs | `evidence: dock-surfaces` | `e2e/rendered-evidence.spec.ts`; 800×480 surface layout |
 | Cross-window Snapshot | `evidence: cross-webview-delivery` | Unchanged bus contract |
-| Native window geometry | `manual-check: dock-*` + `docs/agents/native-observation.md` | Only if dock window attachment or size tokens change |
+| Dock port sequencing / clamp geometry | `manual-check: dock-position-only`, `manual-check: dock-pump-continuity`, `manual-check: dock-no-tile-resize`, `manual-check: dock-shell-port-wiring` | `npm test` Vitest over injected `DockWindowPort` — only when `src/ui/dock-window.ts` or geometry tokens change |
+| Native dock lifecycle / OS chrome | Checklist items in `docs/agents/native-observation.md` | Manual `npm run tauri dev` when `src-tauri/**`, capabilities, or Dock child-window attachment change — cite checklist item name + platform, not an `evidence:` or `manual-check:` slug |
 
 **Interim:** Until a UI slice lands, #411 and related content slices may ship
-two-Tier data while the Dock still renders one Tier; evidence rows for the full
-tree are **needs manual** / blocked on the UI slice, not falsified.
+two-Tier data while the Dock still renders one Tier. Full-tree evidence rows
+follow disposition **2** in `docs/agents/acceptance-evidence.md` (open the UI
+PR, block merge until harness rows exist); they are not falsified by interim
+single-Tier rendering.
 
 ---
 
