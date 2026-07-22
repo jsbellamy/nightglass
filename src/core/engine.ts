@@ -663,7 +663,6 @@ function resolveImpacts(
   state: EngineState,
   index: ContentIndex,
   events: EngineEvent[],
-  _awardDrops: boolean,
 ): void {
   const attempt = state.attempt;
   if (!attempt) {
@@ -1327,7 +1326,7 @@ function resolveBatch(
 ): void {
   resolveStatusExpiries(state, events);
   resolveStatusTicks(state, index, events);
-  resolveImpacts(state, index, events, awardDrops);
+  resolveImpacts(state, index, events);
   resolveKnockouts(state, index, events);
   evaluateEncounterOutcome(state, index, events, awardDrops);
   completeRecoveries(state);
