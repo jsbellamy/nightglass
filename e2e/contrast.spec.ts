@@ -71,7 +71,6 @@ test.describe("accessibility contrast floor", () => {
     expect(toggleSample).not.toBeNull();
     assertAaContrast(toggleSample!);
 
-    let armoryContrastPrepared = false;
     let talentDetailPrepared = false;
     for (const { tab, selector } of DOCK_PRIMARY_TEXT) {
       await focusDockTab(dock, tab);
@@ -95,18 +94,16 @@ test.describe("accessibility contrast floor", () => {
           }
         }
       }
-      if (tab === "armory" && !armoryContrastPrepared) {
+      if (tab === "armory" && selector === ".armory-detail .equipment-detail .equipment-name") {
         const tile = dock.locator('.armory-grid .equipment-card[data-drop-id="99"]');
         await expect(tile).toBeVisible({ timeout: 15_000 });
         await tile.click();
-        await expect(dock.locator(".armory-detail .equipment-detail .equipment-name")).toBeVisible();
-        await tile.hover();
-        await expect(
-          dock.locator('[data-armory-compare-popover="true"]:not([hidden])'),
-        ).toBeVisible();
-        armoryContrastPrepared = true;
+        await expect(dock.locator(selector)).toBeVisible();
       }
       if (tab === "armory" && selector.includes("armory-compare-popover")) {
+        const tile = dock.locator('.armory-grid .equipment-card[data-drop-id="99"]');
+        await expect(tile).toBeVisible();
+        await tile.hover();
         await expect(
           dock.locator('[data-armory-compare-popover="true"]:not([hidden])'),
         ).toBeVisible();
