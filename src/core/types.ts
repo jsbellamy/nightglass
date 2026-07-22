@@ -1,4 +1,7 @@
 export type ClassId = "knight" | "wizard" | "priest" | "hunter";
+export type StageId = 1 | 2 | 3 | 4 | 5 | 6;
+export type ItemLevel = StageId;
+export type EquipmentTier = 1 | 2 | 3 | 4;
 export type DamageChannel = "physical" | "elemental";
 export type Element = "fire" | "frost" | "lightning" | "light";
 export type FormationSlot = "front" | "middle" | "back";
@@ -101,7 +104,7 @@ export interface WaveDef {
 }
 
 export interface StageDef {
-  id: 1 | 2 | 3;
+  id: StageId;
   name: string;
   waves: [WaveDef, WaveDef];
   boss: WaveDef;
@@ -125,7 +128,7 @@ export interface EquipmentBaseDef {
   id: string;
   name: string;
   slot: EquipmentSlotId;
-  tier: 1 | 2;
+  tier: EquipmentTier;
   weaponClass?: ClassId;
   guaranteed: StatModifiers;
   iconKey: string;

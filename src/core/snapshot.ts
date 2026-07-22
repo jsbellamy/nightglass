@@ -1,10 +1,10 @@
 import type { ClassTalentState } from "./talents";
-import type { AffixId, ClassId, EquipmentSlotId, Rarity } from "./types";
+import type { AffixId, ClassId, EquipmentSlotId, ItemLevel, Rarity, StageId } from "./types";
 
 export interface DropInstance {
   dropId: number;
   baseId: string;
-  itemLevel: 1 | 2 | 3;
+  itemLevel: ItemLevel;
   rarity: Rarity;
   affixes: { id: AffixId; value: number }[];
   awardedAtMs: number;
@@ -43,7 +43,7 @@ export interface CombatantState {
 
 export interface AttemptState {
   id: number;
-  stage: 1 | 2 | 3;
+  stage: StageId;
   encounter: 1 | 2 | 3;
   phase: "fighting" | "wave-transition" | "defeat-hold";
   phaseEndsAtMs: number | null;
@@ -63,7 +63,7 @@ export type PendingEdit =
   | { kind: "equipment" };
 
 export interface ProgressionState {
-  unlockedStage: 1 | 2 | 3;
+  unlockedStage: StageId;
   party: [ClassId, ClassId, ClassId];
   reserve: ClassId;
   characterXp: Record<ClassId, number>;

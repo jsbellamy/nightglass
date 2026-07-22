@@ -7,6 +7,7 @@ import type {
   Content,
   EquipmentBaseDef,
   EquipmentSlotId,
+  ItemLevel,
   Rarity,
   StageDef,
   StatModifiers,
@@ -51,7 +52,7 @@ export interface LootRng {
 export interface RollDropInput {
   content: Content;
   stage: StageDef;
-  itemLevel: 1 | 2 | 3;
+  itemLevel: ItemLevel;
   lootRng: LootRng;
   dropId: number;
   awardedAtMs: number;
@@ -68,7 +69,7 @@ function nextUniform(lootRng: LootRng): [number, LootRng] {
   return [value, { state }];
 }
 
-function tierForItemLevel(itemLevel: 1 | 2 | 3): 1 | 2 {
+function tierForItemLevel(itemLevel: ItemLevel): 1 | 2 {
   return itemLevel <= 2 ? 1 : 2;
 }
 

@@ -1,7 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
 import { createEngine, SCHEMA_VERSION } from "./engine";
-import { parseStoredSave, SAVE_SCHEMA_VERSION } from "./load-state";
+import {
+  createDefaultProgression,
+  parseStoredSave,
+  SAVE_SCHEMA_VERSION,
+} from "./load-state";
 import { content as testContent } from "../data";
+import type { Snapshot } from "./snapshot";
 
 const LOOT_SEED = 42;
 
@@ -70,4 +75,163 @@ describe("parseStoredSave", () => {
     expect(parsed.snapshot.attempt).toBeNull();
     expect(parsed.snapshot.progression.unlockedStage).toBe(saved.progression.unlockedStage);
   });
+
+  it("current-schema save with Stage and Item Level 1–3 round-trips without data loss", () => {
+    const progression = createDefaultProgression(testContent);
+    progression.unlockedStage = 3;
+    progression.armory = [
+      {
+        dropId: 1,
+        baseId: "knight-blade",
+        itemLevel: 2,
+        rarity: "rare",
+        affixes: [],
+        awardedAtMs: 100,
+        seen: true,
+        locked: false,
+        assignedTo: null,
+      },
+      {
+        dropId: 2,
+        baseId: "wizard-staff",
+        itemLevel: 3,
+        rarity: "common",
+        affixes: [],
+        awardedAtMs: 200,
+        seen: false,
+        locked: true,
+        assignedTo: null,
+      },
+    ];
+    const snapshot: Snapshot = {
+      schemaVersion: SAVE_SCHEMA_VERSION,
+      savedAtMs: 1,
+      simNowMs: 2,
+      lootRngState: 3,
+      nextEventSeq: 4,
+      nextAttemptId: 5,
+      nextDropId: 6,
+      progression,
+      attempt: null,
+      pendingEdits: [],
+    };
+
+    const parsed = parseStoredSave(JSON.stringify(snapshot), testContent);
+    expect(parsed.kind).toBe("exact");
+    if (parsed.kind !== "exact") {
+      return;
+    }
+    expect(parsed.snapshot.progression.unlockedStage).toBe(3);
+    expect(parsed.snapshot.progression.armory).toEqual(progression.armory);
+  });
+
+  it.each([4, 5, 6] as const)(
+    "tolerant recovery accepts unlockedStage %i and Item Level %i in armory",
+    (stage) => {
+      const progression = createDefaultProgression(testContent);
+      const raw = {
+        schemaVersion: SAVE_SCHEMA_VERSION,
+        savedAtMs: 0,
+        simNowMs: 0,
+        lootRngState: 0,
+        nextEventSeq: 1,
+        nextAttemptId: 1,
+        nextDropId: 1,
+        progression: {
+          ...progression,
+          unlockedStage: stage,
+          armory: [
+            {
+              dropId: 1,
+              baseId: "knight-blade",
+              itemLevel: stage,
+              rarity: "common",
+              affixes: [],
+              awardedAtMs: 0,
+              seen: false,
+              locked: false,
+              assignedTo: null,
+            },
+          ],
+        },
+        attempt: null,
+        pendingEdits: [],
+      };
+
+      const parsed = parseStoredSave(JSON.stringify(raw), testContent);
+      expect(parsed.kind).toBe("exact");
+      if (parsed.kind !== "exact") {
+        return;
+      }
+      expect(parsed.snapshot.progression.unlockedStage).toBe(stage);
+      expect(parsed.snapshot.progression.armory[0]?.itemLevel).toBe(stage);
+    },
+  );
+
+  it.each([0, 7, 1.5, "2", Number.NaN, Number.POSITIVE_INFINITY])(
+    "rejects invalid unlockedStage %p to default Stage 1",
+    (invalid) => {
+      const progression = createDefaultProgression(testContent);
+      const raw = {
+        schemaVersion: SAVE_SCHEMA_VERSION,
+        savedAtMs: 0,
+        simNowMs: 0,
+        lootRngState: 0,
+        nextEventSeq: 1,
+        nextAttemptId: 1,
+        nextDropId: 1,
+        progression: { ...progression, unlockedStage: invalid },
+        attempt: null,
+        pendingEdits: [],
+      };
+
+      const parsed = parseStoredSave(JSON.stringify(raw), testContent);
+      expect(parsed.kind).toBe("exact");
+      if (parsed.kind !== "exact") {
+        return;
+      }
+      expect(parsed.snapshot.progression.unlockedStage).toBe(1);
+    },
+  );
+
+  it.each([0, 7, 1.5, "3", Number.NaN])(
+    "drops armory entries with invalid itemLevel %p",
+    (invalid) => {
+      const progression = createDefaultProgression(testContent);
+      const raw = {
+        schemaVersion: SAVE_SCHEMA_VERSION,
+        savedAtMs: 0,
+        simNowMs: 0,
+        lootRngState: 0,
+        nextEventSeq: 1,
+        nextAttemptId: 1,
+        nextDropId: 1,
+        progression: {
+          ...progression,
+          armory: [
+            {
+              dropId: 1,
+              baseId: "knight-blade",
+              itemLevel: invalid,
+              rarity: "common",
+              affixes: [],
+              awardedAtMs: 0,
+              seen: false,
+              locked: false,
+              assignedTo: null,
+            },
+          ],
+        },
+        attempt: null,
+        pendingEdits: [],
+      };
+
+      const parsed = parseStoredSave(JSON.stringify(raw), testContent);
+      expect(parsed.kind).toBe("exact");
+      if (parsed.kind !== "exact") {
+        return;
+      }
+      expect(parsed.snapshot.progression.armory).toEqual([]);
+    },
+  );
 });
