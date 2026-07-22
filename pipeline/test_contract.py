@@ -11,6 +11,7 @@ from unittest import mock
 from PIL import Image
 
 import acquire as A
+import backdrops as B
 
 HERE = pathlib.Path(__file__).parent
 ROOT = HERE.parent
@@ -566,6 +567,44 @@ loaded = {m for m in sys.modules
 check("no provider/model modules imported", not loaded, str(loaded))
 check("acquire.py opens no socket",
       "socket" not in A.__dict__ and "urllib" not in A.__dict__)
+
+print("\nfowl-harvest-24 palette")
+_fh_path = HERE / "palettes" / "fowl-harvest-24.json"
+_glow_path = HERE / "effects" / "palette_glow.json"
+_fh = json.loads(_fh_path.read_text())
+_fh_colors = _fh["colors"]
+_fh_names = [entry["name"] for entry in _fh_colors]
+_fh_rgbs = [tuple(entry["rgb"]) for entry in _fh_colors]
+_glow_rgbs = {tuple(entry["rgb"]) for entry in json.loads(_glow_path.read_text())["colors"]}
+check("fowl-harvest-24 has exactly 24 named swatches", len(_fh_colors) == 24)
+check("fowl-harvest-24 color names are unique",
+      len(_fh_names) == len(set(_fh_names)))
+check("fowl-harvest-24 RGB values are unique",
+      len(_fh_rgbs) == len(set(_fh_rgbs)))
+check("fowl-harvest-24 excludes acquisition hot magenta",
+      (255, 0, 255) not in _fh_rgbs)
+_fh_glow_overlap = set(_fh_rgbs) & _glow_rgbs
+check("fowl-harvest-24 RGB disjoint from moonberry-glow@1",
+      not _fh_glow_overlap, str(_fh_glow_overlap))
+
+print("\nbackdrop bundle discovery")
+_discovered = B.discover_complete_bundle_keys()
+check("complete backdrop keys are lexicographically sorted",
+      _discovered == tuple(sorted(_discovered)))
+check("existing three Stage backdrops discovered",
+      _discovered == ("backdrop-1", "backdrop-2", "backdrop-3"),
+      str(_discovered))
+with tempfile.TemporaryDirectory() as _orphan_temp:
+    _orphan_raw = pathlib.Path(_orphan_temp)
+    Image.new("RGBA", (8, 8), (0, 0, 0, 255)).save(_orphan_raw / "png-only.png")
+    (_orphan_raw / "sidecar-only.source.json").write_text("{}")
+    with mock.patch.object(B, "RAW_DIR", _orphan_raw):
+        _orphan_msgs = B.discover_orphan_failures()
+check("orphan backdrop bundles are reported",
+      len(_orphan_msgs) == 2
+      and any("sidecar without matching" in message for message in _orphan_msgs)
+      and any("PNG without provenance" in message for message in _orphan_msgs),
+      str(_orphan_msgs))
 
 print()
 if FAILURES:

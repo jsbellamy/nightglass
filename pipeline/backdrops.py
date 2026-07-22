@@ -22,7 +22,37 @@ RUNTIME_WIDTH = 480
 RUNTIME_HEIGHT = 86
 ASPECT = RUNTIME_WIDTH / RUNTIME_HEIGHT
 
-BACKDROP_KEYS = ("backdrop-1", "backdrop-2", "backdrop-3")
+SIDECAR_SUFFIX = ".source.json"
+
+
+def sidecar_key(sidecar_path: pathlib.Path) -> str:
+    """Canonical backdrop key from ``<key>.source.json``."""
+    name = sidecar_path.name
+    if not name.endswith(SIDECAR_SUFFIX):
+        raise ValueError(f"not a backdrop sidecar: {sidecar_path}")
+    return name[: -len(SIDECAR_SUFFIX)]
+
+
+def discover_complete_bundle_keys() -> tuple[str, ...]:
+    """Lexicographically sorted keys with both archived PNG and sidecar."""
+    keys: list[str] = []
+    for sidecar_path in sorted(RAW_DIR.glob(f"*{SIDECAR_SUFFIX}")):
+        key = sidecar_key(sidecar_path)
+        if (RAW_DIR / f"{key}.png").is_file():
+            keys.append(key)
+    return tuple(keys)
+
+
+def discover_orphan_failures() -> list[str]:
+    """Return human-readable failures for half-finished archived bundles."""
+    failures: list[str] = []
+    sidecar_keys = {sidecar_key(p) for p in RAW_DIR.glob(f"*{SIDECAR_SUFFIX}")}
+    png_keys = {p.stem for p in RAW_DIR.glob("*.png")}
+    for key in sorted(sidecar_keys - png_keys):
+        failures.append(f"{key}: sidecar without matching archived PNG")
+    for key in sorted(png_keys - sidecar_keys):
+        failures.append(f"{key}: archived PNG without provenance sidecar")
+    return failures
 
 
 def sha256_file(path: pathlib.Path) -> str:
@@ -108,13 +138,21 @@ def build_one(key: str) -> pathlib.Path:
 
 
 def build_all() -> list[pathlib.Path]:
-    return [build_one(key) for key in BACKDROP_KEYS]
+    orphans = discover_orphan_failures()
+    if orphans:
+        raise ValueError("incomplete backdrop bundles:\n  " + "\n  ".join(orphans))
+    return [build_one(key) for key in discover_complete_bundle_keys()]
 
 
 def verify() -> int:
     fail = 0
     print("backdrop pipeline")
-    for key in BACKDROP_KEYS:
+    orphans = discover_orphan_failures()
+    for message in orphans:
+        print(f"  [FAIL] {message}")
+    fail += len(orphans)
+
+    for key in discover_complete_bundle_keys():
         raw_path = RAW_DIR / f"{key}.png"
         sidecar_path = RAW_DIR / f"{key}.source.json"
         out_path = OUT_DIR / f"{key}.png"

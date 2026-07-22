@@ -93,7 +93,11 @@ Prompts require:
 
 - one complete, strict-side-profile subject;
 - generous clearance on opaque flat **`#ff00ff`**;
-- chunky simplified flat-colour Moonberry pixel-art styling;
+- chunky simplified flat-colour Moonberry pixel-art styling for Party Characters
+  and the default Moonberry opponent cohort;
+- for Fowl Harvest and future themed opponent bodies, chunky simplified flat-colour
+  styling per [`docs/fowl-harvest-theme.md`](fowl-harvest-theme.md) and the
+  identity's named body palette;
 - role-correct facing (RIGHT party, LEFT opponents including Bosses);
 - no effects, shadows, scenery, text, or watermark.
 
@@ -126,8 +130,15 @@ The normalizer performs, in order:
 3. **Key background** at `KEY_TOLERANCE = 40` everywhere else.
 4. **Crop** to subject opaque bounds.
 5. **Proportionally reduce** to the role ceiling if opaque bounds exceed it.
-6. **Quantize** to [`pipeline/palette.json`](../pipeline/palette.json)
-   (`moonberry-16`) **without dithering**.
+6. **Quantize** to the identity's named runtime palette **without dithering**.
+   Party Characters and every existing Moonberry opponent identity use
+   [`pipeline/palette.json`](../pipeline/palette.json) (`moonberry-16`). Fowl
+   Harvest opponent identities use
+   [`pipeline/palettes/fowl-harvest-24.json`](../pipeline/palettes/fowl-harvest-24.json).
+   Palette selection is keyed per asset identity in the pipeline; unknown palette
+   ids fail closed. Until a later wave lands keyed selection in
+   `pipeline/acquire.py`, committed Moonberry bodies remain frozen and
+   byte-identical.
 7. **Binarize alpha**.
 8. **Bottom-centre** on a per-asset canvas; record `frame_size`, `visual_bounds`,
    and `foot_anchor` in the manifest.
@@ -135,7 +146,10 @@ The normalizer performs, in order:
    clipping against the raw, stable baseline where sequences apply).
 
 **Embedded effects** in body frames remain forbidden: opaque colours must be on
-`moonberry-16` only; Ability effects stay separate assets.
+the selected body palette only; Ability effects stay separate assets. For
+`moonberry-16` bodies, the disjoint `moonberry-glow` ramp is still caught when
+baked into pixels. Themed palettes must likewise stay disjoint from
+`moonberry-glow` and from acquisition-only `#ff00ff`.
 
 ## Legacy migration
 

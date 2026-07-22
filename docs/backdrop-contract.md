@@ -7,11 +7,13 @@ opponent combatants in the Battle Tile. Frozen by
 ```markdown
 Asset class: backdrop
 Status: candidate for shipping
-Runtime destination: src/assets/backdrops/backdrop-{1,2,3}.png
+Runtime destination: src/assets/backdrops/<key>.png
   (keyed by StageDef.backdropKey; Battle Tile CSS background-image)
 Runtime shape: 480×86 RGB(A) PNG; opaque preferred; no magenta key
-Visual vocabulary: muted night-garden read (deep plum, twilight slate, muted
-  mint, faint berry); EXEMPT from moonberry-16 body palette
+Visual vocabulary: declared per backdrop — Moonberry night-garden for the three
+  shipped Stage scenes (`backdrop-1` … `backdrop-3`); Fowl Harvest toxic rural
+  dusk for themed keys documented in `docs/fowl-harvest-theme.md`. EXEMPT from
+  body palettes (`moonberry-16`, `fowl-harvest-24`, and future named body palettes)
 Geometry: full battlefield band under the 24px status line; near-flat ground
   band in the bottom fifth; detail concentrated in the upper two thirds;
   no characters, creatures, or UI-like elements
@@ -29,6 +31,8 @@ Validator: python3 pipeline/backdrops.py (build + verify); npm run assets:verify
       v
   assets-raw/backdrops/<key>.png + <key>.source.json   <-- Archived Raw Bundle
       |  OFFLINE — no provider, model, GPU, or network
+      |  complete bundle = both files exist for the same <key>
+      |  build discovers keys from *.source.json stems (lexicographic order)
       v
   center-crop to 480:86 aspect → Image.resize(..., NEAREST) → 480×86
       v
@@ -61,11 +65,27 @@ Do not reintroduce the body pipeline's no-resize rule here.
 
 ## Palette exemption
 
-`moonberry-16` is for Character and opponent bodies. Backdrops are **free** of
-that palette, bound only to the muted night-garden read so combatants,
-`moonberry-glow` effects, 2px health bars, and damage numbers remain the
-brightest signals in the tile. Judgement is the tile review sheet under the
-five-opponent stress case — not a quantize gate.
+Body palettes (`moonberry-16` for Party Characters and the Moonberry opponent
+cohort; `fowl-harvest-24` for Fowl Harvest opponent bodies per
+`docs/fowl-harvest-theme.md`) apply only to Character and opponent **bodies**.
+Backdrops are **free** of those palettes, bound instead to their declared Visual
+Theme read so combatants, `moonberry-glow` effects, 2px health bars, and damage
+numbers remain the brightest signals in the tile. Judgement is the tile review
+sheet under the five-opponent stress case — not a quantize gate.
+
+## Bundle discovery
+
+`pipeline/backdrops.py` discovers archived bundles under `assets-raw/backdrops/`:
+
+- candidate key = stem of `<key>.source.json` (the `<key>` before `.source.json`)
+- complete bundle = `<key>.source.json` and `<key>.png` both exist
+- build order = keys sorted lexicographically
+- runtime destination = `src/assets/backdrops/<key>.png`
+
+An orphan PNG without a sidecar, or a sidecar without a matching PNG, is a
+verification failure — not silently ignored. Adding a new backdrop asset issue
+is create-only: drop the raw and sidecar pair; discovery picks it up without
+editing a fixed key list.
 
 ## Prompt shell
 
