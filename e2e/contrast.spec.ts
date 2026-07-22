@@ -5,7 +5,12 @@ import {
   assertAaContrast,
   readTextContrastSample,
 } from "./helpers/contrast";
-import { attachDockPage, focusDockTab, openTilePage } from "./helpers/dock-context";
+import {
+  attachDockPage,
+  focusCharacterSubTab,
+  focusDockTab,
+  openTilePage,
+} from "./helpers/dock-context";
 import { armoryColourSnapshot } from "./helpers/snapshots";
 
 const DOCK_PRIMARY_TEXT: { tab: "character" | "armory" | "stage"; selector: string }[] = [
@@ -68,18 +73,25 @@ test.describe("accessibility contrast floor", () => {
     let talentDetailPrepared = false;
     for (const { tab, selector } of DOCK_PRIMARY_TEXT) {
       await focusDockTab(dock, tab);
-      if (tab === "character" && !talentDetailPrepared) {
-        await dock
-          .locator(
-            '[data-character-section="talents"] [data-class-id="knight"] .talent-cell[data-talent-id="fortitude"]',
-          )
-          .click();
-        await expect(
-          dock.locator(
-            '[data-character-section="talents"] [data-talent-detail="true"] .talent-name',
-          ),
-        ).toBeVisible();
-        talentDetailPrepared = true;
+      if (tab === "character") {
+        if (selector.includes('[data-character-section="loadout"]')) {
+          await focusCharacterSubTab(dock, "loadout");
+        } else if (selector.includes('[data-character-section="talents"]')) {
+          await focusCharacterSubTab(dock, "talents");
+          if (!talentDetailPrepared) {
+            await dock
+              .locator(
+                '[data-character-section="talents"] [data-class-id="knight"] .talent-cell[data-talent-id="fortitude"]',
+              )
+              .click();
+            await expect(
+              dock.locator(
+                '[data-character-section="talents"] [data-talent-detail="true"] .talent-name',
+              ),
+            ).toBeVisible();
+            talentDetailPrepared = true;
+          }
+        }
       }
       if (tab === "armory" && !armoryDetailPrepared) {
         await dock.locator('.armory-grid .equipment-card[data-drop-id="1"]').click();
