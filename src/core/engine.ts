@@ -37,6 +37,7 @@ import {
   type Snapshot,
 } from "./snapshot";
 import { createDefaultProgression } from "./load-state";
+import * as pendingEdits from "./pending-edits";
 import {
   allocateTalentPoint,
   canAllocateTalentPoint,
@@ -159,23 +160,6 @@ function characterLevel(
   thresholds: number[],
 ): number {
   return levelFromXp(progression.characterXp[classId] ?? 0, thresholds);
-}
-
-function effectiveTalentState(state: EngineState, classId: ClassId): ClassTalentState {
-  const pending = state.pendingEdits.find(
-    (edit) => edit.kind === "talent" && edit.classId === classId,
-  );
-  if (pending?.kind === "talent") {
-    return {
-      statRanks: { ...pending.statRanks },
-      abilityTalentId: pending.abilityTalentId,
-    };
-  }
-  const applied = state.progression.talents[classId];
-  if (!applied) {
-    throw new Error(`Missing Talent state for ${classId}`);
-  }
-  return structuredClone(applied);
 }
 
 function setTalentDraft(state: EngineState, classId: ClassId, draft: ClassTalentState): void {
@@ -933,17 +917,6 @@ function completeRecoveries(state: EngineState): void {
   }
 }
 
-function unlockableAbilityIds(
-  classKit: ClassKitDef,
-  talentState: ClassTalentState,
-): Set<string> {
-  const ids = new Set<string>([classKit.basicAbilityId, ...classKit.coreAbilityIds]);
-  if (talentState.abilityTalentId) {
-    ids.add(talentState.abilityTalentId);
-  }
-  return ids;
-}
-
 function applyPendingEdits(
   state: EngineState,
   index: ContentIndex,
@@ -1180,7 +1153,12 @@ function validateLoadout(
   if (!classKit) {
     throw new Error(`Missing Class Kit ${classId}`);
   }
-  const unlockable = unlockableAbilityIds(classKit, effectiveTalentState(state, classId));
+  const unlockable = new Set(
+    pendingEdits.unlockableAbilityIds(
+      classKit,
+      pendingEdits.effectiveTalentState(state as Snapshot, classId),
+    ),
+  );
   const unique = new Set(loadout);
   if (unique.size !== loadout.length) {
     throw new Error(`Loadout for ${classId} must not contain duplicate Abilities`);
@@ -1309,7 +1287,7 @@ export function createEngine(
     if (!classKit) {
       throw new Error(`Missing Class Kit ${classId}`);
     }
-    const draft = effectiveTalentState(state, classId);
+    const draft = pendingEdits.effectiveTalentState(state as Snapshot, classId);
     const level = characterLevel(state.progression, classId, index.content.xpThresholds);
     allocateTalentPoint(draft, classKit, talentId, level);
     setTalentDraft(state, classId, draft);
@@ -1320,7 +1298,7 @@ export function createEngine(
     if (!classKit) {
       throw new Error(`Missing Class Kit ${classId}`);
     }
-    const draft = effectiveTalentState(state, classId);
+    const draft = pendingEdits.effectiveTalentState(state as Snapshot, classId);
     const level = characterLevel(state.progression, classId, index.content.xpThresholds);
     deallocateTalentPoint(draft, classKit, talentId, level);
     setTalentDraft(state, classId, draft);
@@ -1332,7 +1310,7 @@ export function createEngine(
       return false;
     }
     try {
-      const draft = effectiveTalentState(state, classId);
+      const draft = pendingEdits.effectiveTalentState(state as Snapshot, classId);
       const level = characterLevel(state.progression, classId, index.content.xpThresholds);
       return canAllocateTalentPoint(draft, classKit, talentId, level);
     } catch {
@@ -1346,7 +1324,7 @@ export function createEngine(
       return false;
     }
     try {
-      const draft = effectiveTalentState(state, classId);
+      const draft = pendingEdits.effectiveTalentState(state as Snapshot, classId);
       const level = characterLevel(state.progression, classId, index.content.xpThresholds);
       return canDeallocateTalentPoint(draft, classKit, talentId, level);
     } catch {

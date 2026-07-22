@@ -228,6 +228,10 @@ _Avoid_: ailment (as the general term)
 A Debuff that cancels an unfinished Wind-up and prevents the affected combatant from beginning another Action Cycle for its duration.
 _Avoid_: stagger, interrupt
 
+**Pending Edit**:
+A player configuration change — Formation, Ability Loadout, Talent allocation, or Equipment — recorded during a Stage Attempt and applied at the next Wave or Boss boundary. Until applied, the Pending Edit shapes what the interface shows without changing combat.
+_Avoid_: queued change, staged edit, dirty state
+
 **Talent Tree**:
 A per-Character set of progression choices that shapes how that Character fights. Allocated choices can be manually decremented and reassigned one point at a time; edits made during combat apply at the next Wave or Boss boundary.
 _Avoid_: skill tree, passive tree
