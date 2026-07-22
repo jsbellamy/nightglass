@@ -883,7 +883,7 @@ describe("Armory surface", () => {
     root.remove();
   });
 
-  it("computes compare popover Equipment stat deltas for a Character pending into the Party", () => {
+  it("computes comparison popover Equipment stat deltas for a Character pending into the Party", () => {
     const root = document.createElement("div");
     document.body.append(root);
     const selected = { current: "hunter" as ClassId };
@@ -943,7 +943,7 @@ describe("Armory surface", () => {
     root.remove();
   });
 
-  it("keys equip legality for a Character pending into the Party from serializeEngineLegality, not the false default", () => {
+  it("enables worn-slot equip for a Character pending into the Party when Engine legality allows it", () => {
     const root = document.createElement("div");
     document.body.append(root);
     const selected = { current: "hunter" as ClassId };
@@ -1050,7 +1050,7 @@ describe("Armory surface source boundary", () => {
     expect(source).not.toMatch(/armory-detail|equipButton|crossEquipConfirm|unequipSlot/);
   });
 
-  it("does not inline applied Party and Reserve for the compare popover Roster", () => {
+  it("does not inline applied Party and Reserve for the comparison popover Roster", () => {
     const source = readFileSync(
       join(dirname(fileURLToPath(import.meta.url)), "armory-surface.ts"),
       "utf8",
