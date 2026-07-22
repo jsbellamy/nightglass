@@ -31,12 +31,18 @@ link them from the body.
   - Attach: `gh api repos/jsbellamy/nightglass/issues/<map>/sub_issues -F sub_issue_id=<child_id>`
     where `<child_id>` is the child's REST id (`gh api repos/jsbellamy/nightglass/issues/<n> --jq .id`).
   - List children: `gh api repos/jsbellamy/nightglass/issues/<map>/sub_issues`.
-- **Blocking**: GitHub has no native issue-blocking relationship, so use a body
-  convention — a `Blocked by: #N, #N` line near the top. A ticket is unblocked
-  when every listed issue is closed. (Sub-issues give the parent its
-  completion rollup, but do not express blocking between siblings.)
-- **Frontier**: the map's open sub-issues that are unblocked (every `Blocked by:`
-  issue closed) and unclaimed (no assignee); lowest number wins.
+- **Blocking**: wire native issue dependencies, and keep a human-readable
+  `Blocked by: #N, #N` line near the top of the body for agents that read the
+  body rather than the API. A ticket is unblocked when every blocker is closed.
+  (Sub-issues give the parent its completion rollup, but do not express blocking
+  between siblings.)
+  - Add a blocker: `gh api repos/jsbellamy/nightglass/issues/<N>/dependencies/blocked_by -F issue_id=<blocker REST id>`
+    (`-F` is load-bearing — `issue_id` must arrive as a typed integer; `-f` sends
+    a string and the API returns 422. The REST id comes from
+    `gh api repos/jsbellamy/nightglass/issues/<M> -q .id`.)
+- **Frontier**: the map's open sub-issues that are unblocked (every native
+  blocker closed; the `Blocked by:` body line is the human-readable companion)
+  and unclaimed (no assignee); lowest number wins.
 - **Claim**: assign the ticket to the driving dev before any work —
   `gh issue edit <n> --add-assignee @me`. An open, unassigned sub-issue is unclaimed.
 - **Resolve**: post the answer as a comment (`gh issue comment <n>`), close the

@@ -37,10 +37,12 @@ the runtime supports worktrees.
    row, state a disposition plus specific evidence at the seam the criterion
    names — citing `evidence:` / `manual-check:` scenario slugs where those
    apply, a code location, command result, or scenario-keyed review artifact.
-   Never infer a rendered, contrast, cross-window, or native criterion from a
-   happy-dom or unit test. Readability and review-sheet criteria need the
-   sheet attached; byte-identity criteria name the CI `assets` job as their
-   evidence source (pending until the branch is pushed).
+   Prefer the narrowest seam that doc authorizes (browser harness, pure test
+   that can see the same fact, review artifact, or native observation); do not
+   invent a happy-dom / unit proof for a claim that seam cannot see. Readability
+   and review-sheet criteria need the sheet attached; byte-identity criteria
+   name the CI `assets` job as their evidence source (pending until the branch
+   is pushed).
    Apply that doc's three dispositions: unsupportable → stop (do not open a
    completion PR); agent-blocked native → open the PR and block merge until a
    human adds the row; successor-falsified → flag for editorial disposition,

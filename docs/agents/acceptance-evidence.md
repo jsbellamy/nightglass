@@ -8,23 +8,23 @@ test* — do not merge the two.
 ## The rule
 
 A criterion asserting **rendered geometry**, **colour/contrast**,
-**cross-window delivery**, or **native windowing** may **not** be met from a
-happy-dom or unit test. It must cite one of:
+**cross-window delivery**, or **native windowing** must cite one of:
 
 1. a named browser-harness scenario (`npm run test:evidence`),
-2. a scenario-keyed review artifact, or
-3. a native observation under `docs/agents/native-observation.md`.
+2. a pure test that can see the same fact (`npm test`) — the narrowest seam
+   when layout, cascade, or a second webview are not required,
+3. a scenario-keyed review artifact, or
+4. a native observation under `docs/agents/native-observation.md`.
 
-Engine, content-validator, pure-math, save-boot, and asset-pipeline criteria
-keep their existing seams (`docs/agents/code-style.md`); this rule does not
-re-route them.
+Forbid only happy-dom / unit tests that cannot see the claim (for example
+layout, cascade, or a second webview). Engine, content-validator, pure-math,
+save-boot, and asset-pipeline criteria keep their existing seams
+(`docs/agents/code-style.md`); this rule does not re-route them.
 
 "Rendered" does **not** imply "needs pixels." Native-1× scaling is provable by
 a pure test relating `SPRITE_SOURCES` / PNG IHDR headers to the
 `.combatant-sprite` rule in `styles.css`. The missing thing was the *seam*,
-not the renderer. Prefer the narrowest seam that can prove the claim; forbid
-only happy-dom / unit tests that cannot see layout, cascade, or a second
-webview.
+not the renderer. Prefer the narrowest seam that can prove the claim.
 
 ## Citation naming
 
@@ -35,7 +35,7 @@ named-scenario blind spot from the acceptance-evidence seams audit.)
 
 | Prefix | Seam | Runner |
 | --- | --- | --- |
-| `evidence: <slug>` | Playwright scenarios under `e2e/` | `npm run test:evidence` |
+| `evidence: <slug>` | The rendered-evidence seam — Playwright under `e2e/`, or a pure test that can see the same fact | `npm run test:evidence` (Playwright) or `npm test` (pure) |
 | `manual-check: <slug>` | Port-injected `DockWindowPort` / shell tests | `npm test` |
 
 A title may list several slugs when one scenario body proves several named
