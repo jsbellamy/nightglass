@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { buildContent } from "../data";
 import { initialLootRngState } from "./rng";
 import {
   assignDrop,
@@ -249,6 +250,84 @@ describe("Equipment Tier III/IV rolling", () => {
         awardedAtMs: 100,
       }),
     ).toThrow(/Equipment Tier 4/i);
+  });
+});
+
+describe("production Equipment Drop rolling", () => {
+  const PRODUCTION = buildContent();
+  const PRODUCTION_STAGE = PRODUCTION.stages[0]!;
+  const PRODUCTION_LOOT_SEED = 0x5090;
+
+  it("preserves Item Level 1–3 seeded rolls with four-Tier catalog shipped", () => {
+    const cases: Array<{ itemLevel: ItemLevel; baseId: string; affixValue: number }> = [
+      { itemLevel: 1, baseId: "leafmail-vest", affixValue: 0.08 },
+      { itemLevel: 2, baseId: "leafmail-vest", affixValue: 0.08 },
+      { itemLevel: 3, baseId: "plumweave-aegis", affixValue: 0.14 },
+    ];
+
+    for (const { itemLevel, baseId, affixValue } of cases) {
+      const rolled = rollDrop({
+        content: PRODUCTION,
+        stage: PRODUCTION_STAGE,
+        itemLevel,
+        lootRng: { state: initialLootRngState(PRODUCTION_LOOT_SEED) },
+        dropId: 1,
+        awardedAtMs: 100,
+      });
+      expect(rolled.drop).toEqual({
+        dropId: 1,
+        baseId,
+        itemLevel,
+        rarity: "uncommon",
+        affixes: [{ id: "percent-max-health", value: affixValue }],
+        awardedAtMs: 100,
+        seen: false,
+        locked: false,
+        assignedTo: null,
+      });
+    }
+  });
+
+  it("rolls Tier III/IV bases and Affix bands from shipped tuning", () => {
+    const tier3 = rollDrop({
+      content: PRODUCTION,
+      stage: PRODUCTION_STAGE,
+      itemLevel: 4,
+      lootRng: { state: initialLootRngState(PRODUCTION_LOOT_SEED) },
+      dropId: 1,
+      awardedAtMs: 100,
+    });
+    expect(tier3.drop).toEqual({
+      dropId: 1,
+      baseId: "feed-sack-brigandine",
+      itemLevel: 4,
+      rarity: "uncommon",
+      affixes: [{ id: "percent-max-health", value: 0.2 }],
+      awardedAtMs: 100,
+      seen: false,
+      locked: false,
+      assignedTo: null,
+    });
+
+    const tier4 = rollDrop({
+      content: PRODUCTION,
+      stage: PRODUCTION_STAGE,
+      itemLevel: 6,
+      lootRng: { state: initialLootRngState(PRODUCTION_LOOT_SEED) },
+      dropId: 1,
+      awardedAtMs: 100,
+    });
+    expect(tier4.drop).toEqual({
+      dropId: 1,
+      baseId: "combineplate-harness",
+      itemLevel: 6,
+      rarity: "uncommon",
+      affixes: [{ id: "percent-max-health", value: 0.28 }],
+      awardedAtMs: 100,
+      seen: false,
+      locked: false,
+      assignedTo: null,
+    });
   });
 });
 
