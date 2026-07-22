@@ -57,6 +57,8 @@ ROLE_LAYOUT_KEYS = {
     "boss": "boss",
 }
 
+VALID_FACINGS = frozenset({"left", "right"})
+
 
 @dataclass(frozen=True)
 class BodyProfile:
@@ -104,6 +106,8 @@ OUTPUT_NAMES = {
     "burger-drake": "burger-drake",
     "cornquacker": "cornquacker",
     "the-combine": "the-combine",
+    "the-fryer": "the-fryer",
+    "scarequack": "scarequack",
 }
 
 CANONICAL_RAW_TAGS = {"boss-1": "boss"}
@@ -153,7 +157,22 @@ ASSET_IDENTITIES = {
         "asset_class": "opponent", "role": "boss", "facing": "left",
         "palette": "fowl-harvest-24",
     },
+    "the-fryer": {
+        "asset_class": "opponent", "role": "boss", "facing": "left",
+        "palette": "fowl-harvest-24",
+    },
+    "scarequack": {
+        "asset_class": "opponent", "role": "boss", "facing": "left",
+        "palette": "fowl-harvest-24",
+    },
 }
+
+# Registered identities awaiting archived raw bundles (#384). Behavior-neutral:
+# no runtime rebuild until both PNG and sidecar exist; half-bundles still fail.
+MISSING_BODY_BUNDLE_INTERIM_RAW_TAGS = frozenset({
+    "the-fryer",
+    "scarequack",
+})
 
 LEGACY_MOONBERRY_IDENTITIES = frozenset({
     "knight", "wizard", "priest", "hunter", "pipcap",
@@ -309,21 +328,33 @@ def load_layout() -> dict:
     return json.loads(LAYOUT_PATH.read_text())
 
 
-def body_profile_for_identity(identity: dict) -> BodyProfile:
+def body_profile_for_identity(
+    identity: dict,
+    *,
+    identity_name: str | None = None,
+) -> BodyProfile:
+    label = identity_name or "identity"
+    role = identity.get("role")
+    if role not in ROLE_LAYOUT_KEYS:
+        raise ValueError(f"{label}: unknown role {role!r}")
+    facing = identity.get("facing")
+    if facing not in VALID_FACINGS:
+        raise ValueError(f"{label}: unknown facing {facing!r}")
     layout = load_layout()
-    role_key = ROLE_LAYOUT_KEYS[identity["role"]]
+    role_key = ROLE_LAYOUT_KEYS[role]
     max_w, max_h = layout["roles"][role_key]["max_opaque"]
     return BodyProfile(
-        role=identity["role"],
+        role=role,
         max_opaque_w=max_w,
         max_opaque_h=max_h,
-        facing=identity["facing"],
+        facing=facing,
     )
 
 
 def body_profile_for_tag(tag: str) -> BodyProfile:
-    _, identity = _asset_identity(tag)
-    return body_profile_for_identity(identity)
+    raw_tag, identity = _asset_identity(tag)
+    out_name = OUTPUT_NAMES.get(raw_tag, raw_tag)
+    return body_profile_for_identity(identity, identity_name=out_name)
 
 
 def geometry_from_image(image: Image.Image) -> dict:

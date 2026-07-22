@@ -78,6 +78,8 @@ match any `moonberry-glow@1` RGB value.
 | ordinary opponent | `burger-drake` | squat burger fusion; top hat, monocle, burger torso, yellow duck body |
 | ordinary opponent | `cornquacker` | tall corn-cob head/neck, leafy husk body, red eye, orange bill and feet |
 | Boss | `the-combine` | duck fused with rusted combine harvester |
+| Boss | `the-fryer` | duck fused with chrome roadside deep fryer (Stage 4) |
+| Boss | `scarequack` | duck fused with crooked scarecrow and fencepost (Stage 5) |
 | backdrop | `last-stop-diner` | abandoned roadside hamburger stand |
 | backdrop | `crooked-cornfield` | invaded bent-corn farm lane |
 | backdrop | `harvest-yard` | deserted grain-processing yard |
@@ -145,6 +147,28 @@ Show exactly one complete subject with generous empty clearance on every edge of
 ### Intended read
 
 At native 1× it reads in this order: enormous hostile duck → combine-harvester anatomical fusion → cornfield mutation. It is much wider and heavier than both ordinary opponents without looking like a vehicle prop. The bill-thresher, red eye, hopper body, wheel haunch, webbed forefoot, corn plumage, and auger tail remain distinct after quantization. It occupies the Boss half without colliding with the Boss-bar band.
+
+---
+
+## `the-fryer` (Boss)
+
+Finished generation prompt: blocked acquisition issue
+[#387](https://github.com/jsbellamy/nightglass/issues/387).
+
+### Intended read
+
+At native 1× it reads in this order: hostile duck → chrome deep-fryer anatomical fusion → basket-like back fins and guarded heating-coil glow. The silhouette is hulking and broad-greasy-metal, with one living mutation — never a duck wearing, riding, carrying, or standing beside a fryer. The red eye, orange bill, duck head, fryer torso, coil glow, basket fins, and webbed feet remain distinct after quantization. It occupies the Boss opaque ceiling without colliding with the Boss-bar band.
+
+---
+
+## `scarequack` (Boss)
+
+Finished generation prompt: blocked acquisition issue
+[#388](https://github.com/jsbellamy/nightglass/issues/388).
+
+### Intended read
+
+At native 1× it reads in this order: hostile duck → scarecrow and fencepost anatomical fusion → corn-husk body and lantern-like red eye. The silhouette is tall and crooked, distinct from the broad Fryer and Combine Bosses. Splintered post spine, ragged sackcloth wing panels, sack head, bill, eye, husks, and webbed feet remain separate large shapes after quantization. It is one living mutation — never a duck in a costume or standing beside a scarecrow.
 
 ---
 
