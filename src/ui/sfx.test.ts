@@ -305,20 +305,23 @@ describe("Presentation-event SFX", () => {
 
   it("round-trips audio prefs in nightglass-audio-v1 without touching the save key", () => {
     vi.useFakeTimers();
-    const storage = storageStub({ [SAVE_KEY]: '{"schemaVersion":1}' });
-    const { createAudio, createCuePlayer } = sfxTestDeps({ storage }).deps;
-    const sfx = createSfx({ storage, createAudio, createCuePlayer });
-    sfx.setMuted(false);
-    storage.resetSetItemCalls();
-    sfx.setVolume(0.42);
-    vi.advanceTimersByTime(AUDIO_PREFS_DEBOUNCE_MS);
-    const raw = storage.snapshot()[AUDIO_PREFS_KEY];
-    expect(raw).toBeTruthy();
-    expect(JSON.parse(raw!)).toEqual({ muted: false, volume: 0.42 });
-    expect(storage.snapshot()[SAVE_KEY]).toBe('{"schemaVersion":1}');
-    const reloaded = createSfx({ storage, createAudio, createCuePlayer });
-    expect(reloaded.getPrefs()).toEqual({ muted: false, volume: 0.42 });
-    vi.useRealTimers();
+    try {
+      const storage = storageStub({ [SAVE_KEY]: '{"schemaVersion":1}' });
+      const { createAudio, createCuePlayer } = sfxTestDeps({ storage }).deps;
+      const sfx = createSfx({ storage, createAudio, createCuePlayer });
+      sfx.setMuted(false);
+      storage.resetSetItemCalls();
+      sfx.setVolume(0.42);
+      vi.advanceTimersByTime(AUDIO_PREFS_DEBOUNCE_MS);
+      const raw = storage.snapshot()[AUDIO_PREFS_KEY];
+      expect(raw).toBeTruthy();
+      expect(JSON.parse(raw!)).toEqual({ muted: false, volume: 0.42 });
+      expect(storage.snapshot()[SAVE_KEY]).toBe('{"schemaVersion":1}');
+      const reloaded = createSfx({ storage, createAudio, createCuePlayer });
+      expect(reloaded.getPrefs()).toEqual({ muted: false, volume: 0.42 });
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("stops the ambient loop when the document becomes hidden", () => {
