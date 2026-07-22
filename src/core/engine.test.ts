@@ -4,7 +4,7 @@ import type { EngineEvent } from "./events";
 import type { DropInstance } from "./snapshot";
 import { fixtureContent } from "./testing/fixture-content";
 import { driveBy, scenario } from "./testing/scenario";
-import type { ClassId, Content } from "./types";
+import type { ClassId, Content, StageDef, StageId } from "./types";
 
 const LOOT_SEED = 0x5090;
 const DURATION_MS = 30_000;
@@ -62,6 +62,57 @@ const engineContent: Content = {
     { ...fixtureContent.stages[0]!, id: 3, name: "Fixture Stage 3" },
   ],
 };
+
+const fixtureStageTemplate = fixtureContent.stages[0]!;
+
+function contentWithAuthoredStages(maxStage: StageId): Content {
+  const stages: StageDef[] = [];
+  for (let id = 1; id <= maxStage; id += 1) {
+    stages.push({
+      ...fixtureStageTemplate,
+      id: id as StageId,
+      name: `Fixture Stage ${id}`,
+    });
+  }
+  return { ...engineContent, stages };
+}
+
+function savedAtStageBossEncounter(stage: StageId) {
+  const saved = scenario()
+    .atStage(stage)
+    .atEncounter(3)
+    .withParty(["knight", "wizard", "knight"], "wizard")
+    .build();
+  saved.lootRngState = LOOT_SEED;
+  saved.progression.loadouts = {
+    knight: ["k-shield-brace", "k-rally", "k-sweep"],
+    wizard: ["w-prism", "w-frost", "w-cinder"],
+    priest: ["p-moonwell", "p-resurgence", "p-smite"],
+    hunter: ["k-shield-brace", "k-rally", "k-sweep"],
+  };
+  const boss = saved.attempt!.combatants.find((combatant) => combatant.side === "opponent");
+  if (!boss) {
+    throw new Error("boss encounter missing opponents");
+  }
+  boss.health = 1;
+  return saved;
+}
+
+function driveUntilStageCleared(
+  engine: ReturnType<typeof createEngine>,
+  stage: StageId,
+): EngineEvent[] {
+  const events: EngineEvent[] = [];
+  let elapsed = 0;
+  while (elapsed < 300_000) {
+    elapsed += 1;
+    events.push(...driveBy(engine, 1));
+    if (events.some((event) => event.type === "stage-cleared" && event.stage === stage)) {
+      return events;
+    }
+  }
+  throw new Error(`Stage ${stage} never cleared`);
+}
 
 const progressionContent: Content = {
   ...fixtureContent,
@@ -622,7 +673,71 @@ describe("selectStage", () => {
   it("throws when selecting a locked Stage", () => {
     const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
     engine.advanceBy(1);
+    const before = engine.snapshot();
     expect(() => engine.selectStage(2)).toThrow(/locked/i);
+    expect(engine.snapshot()).toEqual(before);
+  });
+});
+
+describe("content-driven stage progression", () => {
+  it("unlocks Stage 2 then Stage 3 across successive clears with three authored Stages", () => {
+    const content = contentWithAuthoredStages(3);
+    let engine = createEngine(content, savedAtStageBossEncounter(1), LOOT_SEED);
+    driveUntilStageCleared(engine, 1);
+    expect(engine.snapshot().progression.unlockedStage).toBe(2);
+    expect(engine.snapshot().attempt?.stage).toBe(2);
+
+    engine = createEngine(content, savedAtStageBossEncounter(2), LOOT_SEED);
+    driveUntilStageCleared(engine, 2);
+    expect(engine.snapshot().progression.unlockedStage).toBe(3);
+    expect(engine.snapshot().attempt?.stage).toBe(3);
+  });
+
+  it("unlocks Stage 4 on the first Stage 3 clear when six Stages are authored", () => {
+    const content = contentWithAuthoredStages(6);
+    const engine = createEngine(content, savedAtStageBossEncounter(3), LOOT_SEED);
+    driveUntilStageCleared(engine, 3);
+    const snap = engine.snapshot();
+    expect(snap.progression.unlockedStage).toBe(4);
+    expect(snap.attempt?.stage).toBe(4);
+    expect(snap.attempt?.encounter).toBe(1);
+  });
+
+  it("unlocks each authored Stage through Stage 6 in order", () => {
+    const content = contentWithAuthoredStages(6);
+    let engine = createEngine(content, savedAtStageBossEncounter(1), LOOT_SEED);
+    for (let stage = 1; stage <= 6; stage += 1) {
+      let snap = engine.snapshot();
+      const boss = snap.attempt?.combatants.find((combatant) => combatant.side === "opponent");
+      if (boss) {
+        boss.health = 1;
+      }
+      engine = createEngine(content, snap, LOOT_SEED);
+      driveUntilStageCleared(engine, stage as StageId);
+      snap = engine.snapshot();
+      expect(snap.progression.unlockedStage).toBe(Math.min(stage + 1, 6) as StageId);
+      if (stage < 6) {
+        expect(snap.attempt?.stage).toBe((stage + 1) as StageId);
+      } else {
+        expect(snap.attempt?.stage).toBe(6);
+      }
+    }
+  });
+
+  it("repeats Stage 6 after a Stage 6 clear with normal clear events", () => {
+    const content = contentWithAuthoredStages(6);
+    const engine = createEngine(content, savedAtStageBossEncounter(6), LOOT_SEED);
+    const events = driveUntilStageCleared(engine, 6);
+    expect(events.some((event) => event.type === "stage-cleared" && event.stage === 6)).toBe(
+      true,
+    );
+    expect(events.some((event) => event.type === "stage-attempt-started" && event.stage === 6)).toBe(
+      true,
+    );
+    const snap = engine.snapshot();
+    expect(snap.progression.unlockedStage).toBe(6);
+    expect(snap.attempt?.stage).toBe(6);
+    expect(snap.attempt?.encounter).toBe(1);
   });
 });
 
