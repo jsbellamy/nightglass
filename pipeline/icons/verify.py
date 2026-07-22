@@ -27,6 +27,11 @@ from icons.ingest import (  # noqa: E402
 )
 from icons.paint import validate_recolor_map  # noqa: E402
 from icons.registry import VERIFY_CANARY_FAMILY  # noqa: E402
+from icons.palette import (  # noqa: E402
+    DEFAULT_SOURCE_PALETTE_ID,
+    PALETTE_PATHS,
+    load_runtime_palette,
+)
 from icons.text_source import parse_text  # noqa: E402
 
 OUT_DIR = ROOT / "src" / "assets" / "icons"
@@ -89,6 +94,61 @@ check(
     and importlib.import_module("icons.ingest")._ICON_SHARED_RECOVER is acquire.recover_grid,
 )
 
+print("\nnamed palette catalog")
+check(
+    "palette catalog lists exactly two approved ids",
+    set(PALETTE_PATHS.keys()) == {"moonberry-16", "fowl-harvest-24"},
+    str(sorted(PALETTE_PATHS)),
+)
+moonberry = load_runtime_palette("moonberry-16")
+fowl = load_runtime_palette("fowl-harvest-24")
+check(
+    "moonberry catalog loads version and swatch names",
+    moonberry.version == 1 and moonberry.names == frozenset(moonberry.swatches),
+    f"v={moonberry.version} n={len(moonberry.names)}",
+)
+check(
+    "fowl-harvest catalog loads version and RGB swatches",
+    fowl.version == 1
+    and fowl.swatches["beak-orange"].rgb == (228, 122, 53),
+    f"v={fowl.version}",
+)
+try:
+    load_runtime_palette("not-a-palette")
+    check("unknown palette id fails directly", False)
+except ValueError as exc:
+    check("unknown palette id fails directly", "unknown palette id" in str(exc))
+
+bad_palette_id = HERE / "_bad_palette_id.grid"
+bad_palette_id.write_text(
+    "\n".join(
+        [
+            "source_key: bad",
+            "palette: not-a-palette",
+            "palette_subset: mint",
+            "legend",
+            ". .",
+            "grid",
+            ".",
+        ]
+    )
+    + "\n"
+)
+try:
+    parse_text(bad_palette_id)
+    check("parse rejects unknown palette id", False)
+except ValueError as exc:
+    check("parse rejects unknown palette id", "unknown palette id" in str(exc))
+bad_palette_id.unlink()
+
+legacy_path = ROOT / "src" / "assets" / "icon-sources" / "thornquill-blade" / "source.grid"
+legacy = parse_text(legacy_path)
+check(
+    "legacy source without palette line defaults to moonberry-16",
+    legacy.palette_id == DEFAULT_SOURCE_PALETTE_ID,
+    legacy.palette_id,
+)
+
 print("\ntext source parse errors")
 bad_source = HERE / "_bad_palette.grid"
 bad_source.write_text(
@@ -111,6 +171,29 @@ try:
 except ValueError as exc:
     check("off-palette legend name is unrepresentable", "not-a-real-colour" in str(exc))
 bad_source.unlink()
+
+fowl_bad = HERE / "_bad_fowl_subset.grid"
+fowl_bad.write_text(
+    "\n".join(
+        [
+            "source_key: fowl-fixture",
+            "palette: fowl-harvest-24",
+            "palette_subset: mint",
+            "legend",
+            ". .",
+            "A beak-orange",
+            "grid",
+            ".A",
+        ]
+    )
+    + "\n"
+)
+try:
+    parse_text(fowl_bad)
+    check("cross-palette subset name rejected", False)
+except ValueError as exc:
+    check("cross-palette subset name rejected", "mint" in str(exc))
+fowl_bad.unlink()
 
 print("\nrecolor flatten guard")
 bow_subset = frozenset(VERIFY_CANARY_FAMILY.palette_subset)
@@ -192,7 +275,13 @@ with tempfile.TemporaryDirectory() as tmp:
         palette_subset=subset,
         out_path=tmp_path / "out.grid",
     )
-    check("fixture ingest writes text grid", (tmp_path / "out.grid").exists())
+    out_grid = tmp_path / "out.grid"
+    check("fixture ingest writes text grid", out_grid.exists())
+    emitted = out_grid.read_text()
+    check(
+        "newly emitted source carries explicit palette id",
+        f"palette: {DEFAULT_SOURCE_PALETTE_ID}" in emitted,
+    )
 
 print("\nbyte-identical icon rebuild")
 manifest_path = OUT_DIR / "manifest.json"

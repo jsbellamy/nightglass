@@ -25,7 +25,7 @@ from .constants import (  # noqa: E402
     PITCH_MAX_DIVISOR,
     PITCH_MIN_DIVISOR,
 )
-from .palette import PALETTE, Swatch  # noqa: E402
+from .palette import DEFAULT_SOURCE_PALETTE_ID, Swatch, load_runtime_palette  # noqa: E402
 from .paint import nearest  # noqa: E402
 from .text_source import TextSource, cells_to_source, write_text  # noqa: E402
 
@@ -85,8 +85,11 @@ def recover_icon_grid(
 def cells_to_swatches(
     cells: list[list[tuple[int, int, int] | None]],
     palette_subset: tuple[str, ...],
+    *,
+    palette_id: str = DEFAULT_SOURCE_PALETTE_ID,
 ) -> tuple[list[list[Swatch | None]], dict]:
-    allowed = {name: PALETTE[name] for name in palette_subset}
+    runtime = load_runtime_palette(palette_id)
+    allowed = {name: runtime.swatches[name] for name in palette_subset}
     opaque = 0
     far = 0
     distance_hist: dict[str, int] = {}
@@ -122,15 +125,18 @@ def ingest_raw_to_text_source(
     source_key: str,
     palette_subset: tuple[str, ...],
     out_path: pathlib.Path,
+    palette_id: str = DEFAULT_SOURCE_PALETTE_ID,
 ) -> dict:
     rgb_cells, meta = recover_icon_grid(raw_path)
-    swatches, ramp_stats = cells_to_swatches(rgb_cells, palette_subset)
+    swatches, ramp_stats = cells_to_swatches(
+        rgb_cells, palette_subset, palette_id=palette_id
+    )
     if ramp_stats["off_ramp_reject"]:
         raise ValueError(
             f"{raw_path.name}: off-ramp reject "
             f"({ramp_stats['far_fraction']:.1%} > {OFF_RAMP_REJECT:.0%})"
         )
-    source = cells_to_source(source_key, palette_subset, swatches)
+    source = cells_to_source(source_key, palette_id, palette_subset, swatches)
     write_text(out_path, source)
     return {"recovered": meta, "ramp": ramp_stats}
 
