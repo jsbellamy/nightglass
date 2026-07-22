@@ -1,0 +1,3 @@
+# Claude Code–specific config; shared agent guidance lives in AGENTS.md
+.claude/
+CLAUDE.md
