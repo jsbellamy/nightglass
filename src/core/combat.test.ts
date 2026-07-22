@@ -280,7 +280,7 @@ describe("opponent ability candidate priority", () => {
     const candidates = opponentAbilityCandidates(fixtureContent, opponent, abilitiesById);
     const basic = opponentBasicAbility(fixtureContent, opponent);
     expect(basic.id).toBe("fixture-boss-basic-interim");
-    expect(candidates.at(-1)?.id).toBe(basic.id);
+    expect(candidates[candidates.length - 1]?.id).toBe(basic.id);
     expect(candidates.filter((ability) => ability.slot === "basic")).toHaveLength(1);
   });
 });
