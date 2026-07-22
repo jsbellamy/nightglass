@@ -8,6 +8,7 @@ import {
   CHROME_ICON_SIZE,
   CONTENT_ICON_SIZE,
   collectContentEquipmentIconKeys,
+  collectContentTalentIconKeys,
   createEquipmentIconElement,
   isRegisteredIconKey,
   registeredIconKeys,
@@ -15,15 +16,17 @@ import {
 } from "./icons";
 
 describe("equipment icon registry", () => {
-  it("resolves every production Equipment Base iconKey with no missing or orphan entries", () => {
+  it("resolves every production Equipment Base and Talent iconKey with no missing or orphan entries", () => {
     const content = buildContent();
     expect(() => assertRegisteredContentIcons(content)).not.toThrow();
 
-    const contentKeys = collectContentEquipmentIconKeys(content);
-    expect(contentKeys).toHaveLength(12);
-    expect(new Set(registeredIconKeys())).toEqual(new Set(contentKeys));
+    const equipmentKeys = collectContentEquipmentIconKeys(content);
+    const talentKeys = collectContentTalentIconKeys(content);
+    expect(equipmentKeys).toHaveLength(12);
+    expect(talentKeys).toHaveLength(16);
+    expect(registeredIconKeys()).toHaveLength(28);
 
-    for (const key of contentKeys) {
+    for (const key of [...equipmentKeys, ...talentKeys]) {
       expect(() => resolveIcon(key)).not.toThrow();
       expect(isRegisteredIconKey(key)).toBe(true);
       expect(resolveIcon(key).width).toBe(CONTENT_ICON_SIZE);

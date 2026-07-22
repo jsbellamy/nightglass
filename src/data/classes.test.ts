@@ -47,6 +47,24 @@ describe("assembled Class Kit content", () => {
     expect(validateContent(content, { fixture: true })).toEqual([]);
   });
 
+  it("authored Stat Talents and Ability Talents use iconKey equal to id", () => {
+    for (const classKit of content.classes) {
+      for (const statTalent of classKit.talents.statRow) {
+        expect(statTalent.iconKey).toBe(statTalent.id);
+      }
+      for (const abilityId of classKit.talents.abilityRow) {
+        const ability = abilityById(abilityId);
+        expect(ability.iconKey).toBe(ability.id);
+      }
+    }
+    const nonTalentAbilities = content.abilities.filter(
+      (ability) => ability.slot !== "talent",
+    );
+    for (const ability of nonTalentAbilities) {
+      expect(ability.iconKey).toBeUndefined();
+    }
+  });
+
   it("ships 28 Class Abilities: 4 basics, 16 Core, 8 Ability Talents", () => {
     const classAbilities = buildClassKitSlice().abilities;
     expect(classAbilities).toHaveLength(28);
