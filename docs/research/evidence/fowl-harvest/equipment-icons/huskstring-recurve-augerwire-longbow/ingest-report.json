@@ -1,0 +1,119 @@
+{
+  "huskstring-recurve": {
+    "candidate": "huskstring-recurve-r1",
+    "raw_sha256": "9991b5c8cd329ba3ad3ec09d984032a5783d2455ee5f42ffb35f8cbe59d79c51",
+    "palette": "fowl-harvest-24",
+    "palette_subset": [
+      "oil-ink",
+      "crow-black",
+      "bruise-plum",
+      "grease-brown-deep",
+      "patty-brown",
+      "field-green",
+      "husk-green",
+      "leaf-green",
+      "husk-light",
+      "diner-cream",
+      "beak-orange",
+      "condiment-red"
+    ],
+    "recovered": {
+      "bbox": [
+        279,
+        51,
+        686,
+        971
+      ],
+      "pitch_x": {
+        "pitch": 33.933333333333316,
+        "score": 0.23690543226864474
+      },
+      "pitch_y": {
+        "pitch": 33.98333333333331,
+        "score": 0.2616247520333065
+      },
+      "grid": [
+        12,
+        28
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 145,
+      "far_cells": 26,
+      "far_fraction": 0.1793,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "bruise-plum": 29,
+        "husk-light": 11,
+        "leaf-green": 18,
+        "husk-green": 19,
+        "field-green": 8,
+        "grease-brown-deep": 14,
+        "condiment-red": 9,
+        "patty-brown": 18,
+        "crow-black": 8,
+        "diner-cream": 8,
+        "beak-orange": 3
+      }
+    },
+    "source_grid": "src/assets/icon-sources/huskstring-recurve/source.grid",
+    "evidence_raw": "docs/research/evidence/fowl-harvest/equipment-icons/huskstring-recurve-augerwire-longbow/accepted-raws/huskstring-recurve.png"
+  },
+  "augerwire-longbow": {
+    "candidate": "augerwire-longbow-r4",
+    "raw_sha256": "6f0ae552da8fdc7f076872105964297d13d3e3c2c29601a6130fe5d4787b65a3",
+    "palette": "fowl-harvest-24",
+    "palette_subset": [
+      "oil-ink",
+      "crow-black",
+      "storm-slate",
+      "pond-teal-deep",
+      "diner-teal",
+      "teal-light",
+      "grease-brown-deep",
+      "patty-brown",
+      "toast-brown",
+      "field-green-deep",
+      "diner-cream",
+      "bruise-plum"
+    ],
+    "recovered": {
+      "bbox": [
+        329,
+        61,
+        718,
+        957
+      ],
+      "pitch_x": {
+        "pitch": 32.51666666666674,
+        "score": 0.2485103949528676
+      },
+      "pitch_y": {
+        "pitch": 32.566666666666734,
+        "score": 0.250409623146705
+      },
+      "grid": [
+        12,
+        28
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 126,
+      "far_cells": 21,
+      "far_fraction": 0.1667,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "grease-brown-deep": 11,
+        "storm-slate": 35,
+        "oil-ink": 43,
+        "crow-black": 16,
+        "toast-brown": 3,
+        "pond-teal-deep": 16,
+        "diner-teal": 1,
+        "field-green-deep": 1
+      }
+    },
+    "source_grid": "src/assets/icon-sources/augerwire-longbow/source.grid",
+    "evidence_raw": "docs/research/evidence/fowl-harvest/equipment-icons/huskstring-recurve-augerwire-longbow/accepted-raws/augerwire-longbow.png"
+  }
+}
