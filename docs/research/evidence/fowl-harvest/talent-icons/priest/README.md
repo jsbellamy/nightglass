@@ -53,6 +53,7 @@ verbatim issue text.
 | dawn-ascendant-r3 | icon | fail | none | 15×36 | overshoot | shrink bound |
 | dawn-ascendant-r4 | icon | fail | none | 34×35 | overshoot | slight enlarge from r2 |
 | dawn-ascendant-r5 | icon | pass | none | 19×22; far 6.1% | advance | accept |
+| dawn-ascendant-r6 | icon | fail | none | long axis 19 | underfill | keep r5 (Spec scale rework) |
 
 ## Rejected candidates
 
@@ -64,6 +65,7 @@ verbatim issue text.
 | dawn-ascendant-r2 | preference underfill (gate-pass) | 19×21; superseded by r5 |
 | dawn-ascendant-r3 | overshoot | 15×36 |
 | dawn-ascendant-r4 | overshoot | 34×35 |
+| dawn-ascendant-r6 | underfill | long axis 19 (Spec scale rework after review) |
 
 Rejected provider raws were pruned from `scratch/`; durable record is the table
 above. Provider raws are evidence only — **nothing added to `assets-raw/`**.
