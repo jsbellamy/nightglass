@@ -1,0 +1,21 @@
+{
+  "candidate": "feed-sack-brigandine-r4",
+  "raw": "docs/research/evidence/fowl-harvest/equipment-icons/feed-sack-brigandine-combineplate-harness/scratch/feed-sack-brigandine-r4.png",
+  "palette_subset": [
+    "oil-ink",
+    "crow-black",
+    "grease-brown-deep",
+    "patty-brown",
+    "diner-cream",
+    "corn-light",
+    "yolk-gold",
+    "husk-light",
+    "husk-green",
+    "field-green",
+    "field-green-deep",
+    "storm-slate"
+  ],
+  "status": "fail",
+  "error": "feed-sack-brigandine-r4.png: subject clipped by generator at bottom/left of the 1024x1024 raw canvas",
+  "primary": "clip-fail"
+}

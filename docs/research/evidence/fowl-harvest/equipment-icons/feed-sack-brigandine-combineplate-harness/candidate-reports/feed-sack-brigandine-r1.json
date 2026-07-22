@@ -1,0 +1,44 @@
+{
+  "candidate": "feed-sack-brigandine-r1",
+  "raw": "docs/research/evidence/fowl-harvest/equipment-icons/feed-sack-brigandine-combineplate-harness/scratch/feed-sack-brigandine-r1.png",
+  "status": "ok",
+  "recovered": {
+    "bbox": [
+      161,
+      96,
+      877,
+      910
+    ],
+    "pitch_x": {
+      "pitch": 32.88888888888897,
+      "score": 0.1410300514490593
+    },
+    "pitch_y": {
+      "pitch": 32.58888888888899,
+      "score": 0.2692383710738428
+    },
+    "grid": [
+      22,
+      25
+    ]
+  },
+  "ramp": {
+    "opaque_cells": 436,
+    "far_cells": 298,
+    "far_fraction": 0.6835,
+    "off_ramp_reject": true,
+    "quantize_histogram": {
+      "grease-brown-deep": 22,
+      "diner-cream": 163,
+      "husk-green": 6,
+      "crow-black": 18,
+      "diner-teal": 24,
+      "storm-slate": 98,
+      "field-green": 6,
+      "husk-light": 17,
+      "teal-light": 73,
+      "field-green-deep": 9
+    }
+  },
+  "primary": "off-ramp"
+}

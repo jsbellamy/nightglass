@@ -1,0 +1,7 @@
+{
+  "candidate": "combineplate-harness-r1",
+  "raw": "docs/research/evidence/fowl-harvest/equipment-icons/feed-sack-brigandine-combineplate-harness/scratch/combineplate-harness-r1.png",
+  "status": "fail",
+  "error": "combineplate-harness-r1.png: overshoot recovered 31\u00d735 (max body 30\u00d730 before outline ring)",
+  "primary": "overshoot"
+}
