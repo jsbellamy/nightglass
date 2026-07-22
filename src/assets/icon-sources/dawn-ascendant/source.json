@@ -1,0 +1,66 @@
+{
+  "provider": "Cursor GenerateImage",
+  "prompt": "TRUE chunky pixel art Talent icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block with no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. Rebuild the attached Dawn Ascendant glyph slightly larger but still compact: cream-gold sun lifting a mint-cream feather/wing. Target recovered size about 24\u00d726 logical pixels \u2014 bigger than a tiny 19\u00d721, smaller than 30\u00d730. Generous solid magenta #ff00ff margin on all four sides (at least three cells). Not a wearable Equipment item, not a scene, not a full Character, and not a UI frame. Selective one-logical-pixel dark-plum outline. Use only mint, berry, cream, and plum Moonberry colors, 8\u201312 flat colors maximum; no brown, tan, cyan, pure white, or pure black. Structural members are at least three logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "issue_prompt": "TRUE chunky pixel art Talent icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block with no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered symbolic Management Dock skill glyph for Dawn Ascendant: a first-light sun lifting a fallen wing or feather, reading revival plus Sheltered. Not a wearable Equipment item, not a scene, not a full Character, and not a UI frame. The subject long side spans about 26\u201330 logical pixels, with at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel dark-plum outline. Use only mint, berry, cream, and plum Moonberry colors, 8\u201312 flat colors maximum; no brown, tan, cyan, pure white, or pure black. Structural members are at least three logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "raw_sha256": "ba4fa53cb0e3f48c90e20e433a4334e8ba90603abe1dbefb5efe925080a36999",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        188,
+        159,
+        836,
+        861
+      ],
+      "pitch_x": {
+        "pitch": 32.52777777777793,
+        "score": 0.26426269658700324
+      },
+      "pitch_y": {
+        "pitch": 33.37777777777788,
+        "score": 0.26721612468816364
+      },
+      "grid": [
+        19,
+        22
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 247,
+      "far_cells": 15,
+      "far_fraction": 0.0607,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "contour-plum-deep": 76,
+        "cream": 58,
+        "mint-light": 51,
+        "berry-shadow": 3,
+        "mint": 30,
+        "berry": 14,
+        "sage": 3,
+        "berry-mid": 1,
+        "mint-shadow": 5,
+        "mint-pale": 2,
+        "twilight-slate": 2,
+        "cream-gold": 1,
+        "berry-bright": 1
+      }
+    }
+  },
+  "palette_subset": [
+    "contour-plum-deepest",
+    "contour-plum-deep",
+    "mint-shadow",
+    "mint",
+    "mint-light",
+    "mint-pale",
+    "cream",
+    "cream-gold",
+    "berry-shadow",
+    "berry-mid",
+    "berry",
+    "berry-bright",
+    "sage",
+    "twilight-slate"
+  ],
+  "evidence_raw": "docs/research/evidence/fowl-harvest/talent-icons/priest/accepted-raws/dawn-ascendant.png"
+}

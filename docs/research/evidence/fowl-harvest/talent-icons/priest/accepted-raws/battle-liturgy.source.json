@@ -1,0 +1,107 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "f1765e8097edbcc8cb585de379caa6227a88b256a139e47c4cfbe8eaca7eba48",
+  "asset_class": "interface",
+  "kind": "talent-skill-glyph",
+  "runtime_destination": "src/assets/icons/battle-liturgy.png",
+  "candidate": "battle-liturgy-r2",
+  "palette_subset": [
+    "contour-plum-deepest",
+    "contour-plum-deep",
+    "mint-shadow",
+    "mint",
+    "mint-light",
+    "cream",
+    "cream-gold",
+    "berry-shadow",
+    "berry-mid",
+    "berry",
+    "berry-bright"
+  ],
+  "issue_prompt": "TRUE chunky pixel art Talent icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block with no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered symbolic Management Dock skill glyph for Battle Liturgy: a compact prayer-book shield, reading Armor. Not a wearable Equipment item, not a scene, not a full Character, and not a UI frame. The subject long side spans about 26\u201330 logical pixels, with at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel dark-plum outline. Use only mint, berry, cream, and plum Moonberry colors, 8\u201312 flat colors maximum; no brown, tan, cyan, pure white, or pure black. Structural members are at least three logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "style_references": [
+    {
+      "path": "src/assets/icons/preview/devotion@8x.png",
+      "sha256": "d4d4bba239c4490b3998434615f690a48371f8b806362b85dd305670c91db8c2",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/preview/moonwell@8x.png",
+      "sha256": "42584c1f9f87b240a9457272354c9cdbb0c5fcd4f1ca9e4e49ed8db478272b0e",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/preview/warding-lore@8x.png",
+      "sha256": "3f56a78ac79dc69ebcfd1de14003958c0178af0c4feb7f896aba725fef3e5453",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/preview/prismatic-shelter@8x.png",
+      "sha256": "dc6f960d6b2abcb4154c70915627257f37edfcdbb491c0ec3631da7bd8c09d84",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icon-sources/devotion/source.grid",
+      "sha256": "12641b43df3da259cfcb330aa9e35a5464a2414c072060b15469f563be236009",
+      "role": "identity_reference"
+    },
+    {
+      "path": "src/assets/icon-sources/moonwell/source.grid",
+      "sha256": "8f213aa78382d28d63ba50a0a0e311778430bacaa8a8d601e5b3db076b7eba31",
+      "role": "identity_reference"
+    },
+    {
+      "path": "src/assets/icon-sources/warding-lore/source.grid",
+      "sha256": "788c0a43d96884d4ff07155cdba47003c17ad2e940e41018875f779ae471b54b",
+      "role": "identity_reference"
+    },
+    {
+      "path": "src/assets/icon-sources/prismatic-shelter/source.grid",
+      "sha256": "4e0fac5c827ec7962c7b519fea817fba6797f52f6fa8021367a8de2d375618b7",
+      "role": "identity_reference"
+    }
+  ],
+  "prompt": "TRUE chunky pixel art Talent icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block with no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered symbolic Management Dock skill glyph for Battle Liturgy: a compact prayer-book shield, reading Armor. Keep the silhouette SMALLER than before \u2014 long side about 24\u201328 logical pixels (not 31), clearly inset. At least THREE full magenta cells of clearance on every edge, especially top and bottom. Not a wearable Equipment item, not a scene, not a full Character, and not a UI frame. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel dark-plum outline. Use only mint, berry, cream, and plum Moonberry colors, 8\u201312 flat colors maximum; no brown, tan, cyan, pure white, or pure black. Structural members are at least three logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        323,
+        257,
+        705,
+        794
+      ],
+      "pitch_x": {
+        "pitch": 17.344444444444477,
+        "score": 0.39027295855480093
+      },
+      "pitch_y": {
+        "pitch": 17.844444444444484,
+        "score": 0.41920288370628406
+      },
+      "grid": [
+        22,
+        30
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 565,
+      "far_cells": 5,
+      "far_fraction": 0.0088,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "contour-plum-deep": 96,
+        "contour-plum-deepest": 1,
+        "mint-shadow": 35,
+        "cream": 169,
+        "mint": 91,
+        "cream-gold": 9,
+        "berry-shadow": 5,
+        "berry": 77,
+        "berry-mid": 14,
+        "mint-light": 65,
+        "berry-bright": 3
+      }
+    }
+  }
+}

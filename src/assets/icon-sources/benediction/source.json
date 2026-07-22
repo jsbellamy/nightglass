@@ -1,0 +1,56 @@
+{
+  "provider": "Cursor GenerateImage",
+  "prompt": "TRUE chunky pixel art Talent icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block with no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered symbolic Management Dock skill glyph for Benediction: two open hands beneath a small rising sun, reading Party Healing plus Inspired. Not a wearable Equipment item, not a scene, not a full Character, and not a UI frame. The subject long side spans about 26\u201330 logical pixels, with at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel dark-plum outline. Use only mint, berry, cream, and plum Moonberry colors, 8\u201312 flat colors maximum; no brown, tan, cyan, pure white, or pure black. Structural members are at least three logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "issue_prompt": "TRUE chunky pixel art Talent icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block with no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered symbolic Management Dock skill glyph for Benediction: two open hands beneath a small rising sun, reading Party Healing plus Inspired. Not a wearable Equipment item, not a scene, not a full Character, and not a UI frame. The subject long side spans about 26\u201330 logical pixels, with at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel dark-plum outline. Use only mint, berry, cream, and plum Moonberry colors, 8\u201312 flat colors maximum; no brown, tan, cyan, pure white, or pure black. Structural members are at least three logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "raw_sha256": "d51e36d30507752b64d86cb3903ac3040569917663755f7f34f9cc1cea049d74",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        129,
+        128,
+        892,
+        901
+      ],
+      "pitch_x": {
+        "pitch": 25.550000000000058,
+        "score": 0.23192726968204716
+      },
+      "pitch_y": {
+        "pitch": 25.75000000000006,
+        "score": 0.3627672818634636
+      },
+      "grid": [
+        30,
+        30
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 522,
+      "far_cells": 0,
+      "far_fraction": 0.0,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "contour-plum-deep": 153,
+        "cream": 167,
+        "mint-light": 63,
+        "mint": 43,
+        "berry": 41,
+        "mint-shadow": 40,
+        "berry-mid": 13,
+        "berry-shadow": 2
+      }
+    }
+  },
+  "palette_subset": [
+    "contour-plum-deepest",
+    "contour-plum-deep",
+    "mint-shadow",
+    "mint",
+    "mint-light",
+    "cream",
+    "berry-shadow",
+    "berry-mid",
+    "berry"
+  ],
+  "evidence_raw": "docs/research/evidence/fowl-harvest/talent-icons/priest/accepted-raws/benediction.png"
+}

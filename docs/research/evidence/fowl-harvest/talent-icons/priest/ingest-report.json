@@ -1,0 +1,235 @@
+{
+  "battle-liturgy": {
+    "candidate": "battle-liturgy-r2",
+    "raw_sha256": "f1765e8097edbcc8cb585de379caa6227a88b256a139e47c4cfbe8eaca7eba48",
+    "ingest": {
+      "recovered": {
+        "bbox": [
+          323,
+          257,
+          705,
+          794
+        ],
+        "pitch_x": {
+          "pitch": 17.344444444444477,
+          "score": 0.39027295855480093
+        },
+        "pitch_y": {
+          "pitch": 17.844444444444484,
+          "score": 0.41920288370628406
+        },
+        "grid": [
+          22,
+          30
+        ]
+      },
+      "ramp": {
+        "opaque_cells": 565,
+        "far_cells": 5,
+        "far_fraction": 0.0088,
+        "off_ramp_reject": false,
+        "quantize_histogram": {
+          "contour-plum-deep": 96,
+          "contour-plum-deepest": 1,
+          "mint-shadow": 35,
+          "cream": 169,
+          "mint": 91,
+          "cream-gold": 9,
+          "berry-shadow": 5,
+          "berry": 77,
+          "berry-mid": 14,
+          "mint-light": 65,
+          "berry-bright": 3
+        }
+      }
+    },
+    "palette_subset": [
+      "contour-plum-deepest",
+      "contour-plum-deep",
+      "mint-shadow",
+      "mint",
+      "mint-light",
+      "cream",
+      "cream-gold",
+      "berry-shadow",
+      "berry-mid",
+      "berry",
+      "berry-bright"
+    ],
+    "source_grid": "src/assets/icon-sources/battle-liturgy/source.grid"
+  },
+  "sunwarding": {
+    "candidate": "sunwarding-r2",
+    "raw_sha256": "36a1b527872904ef4399d4b5fcc76d153e808513854420d918338a66fbe83fc2",
+    "ingest": {
+      "recovered": {
+        "bbox": [
+          273,
+          241,
+          749,
+          762
+        ],
+        "pitch_x": {
+          "pitch": 18.250000000000053,
+          "score": 0.5720450024066719
+        },
+        "pitch_y": {
+          "pitch": 18.65000000000006,
+          "score": 0.5118987159141624
+        },
+        "grid": [
+          26,
+          28
+        ]
+      },
+      "ramp": {
+        "opaque_cells": 462,
+        "far_cells": 0,
+        "far_fraction": 0.0,
+        "off_ramp_reject": false,
+        "quantize_histogram": {
+          "contour-plum-deep": 152,
+          "cream": 118,
+          "mint-light": 50,
+          "mint": 71,
+          "mint-pale": 1,
+          "berry": 44,
+          "mint-shadow": 10,
+          "berry-mid": 13,
+          "berry-shadow": 3
+        }
+      }
+    },
+    "palette_subset": [
+      "contour-plum-deepest",
+      "contour-plum-deep",
+      "mint-shadow",
+      "mint",
+      "mint-light",
+      "mint-pale",
+      "cream",
+      "berry-shadow",
+      "berry-mid",
+      "berry"
+    ],
+    "source_grid": "src/assets/icon-sources/sunwarding/source.grid"
+  },
+  "benediction": {
+    "candidate": "benediction-r1",
+    "raw_sha256": "d51e36d30507752b64d86cb3903ac3040569917663755f7f34f9cc1cea049d74",
+    "ingest": {
+      "recovered": {
+        "bbox": [
+          129,
+          128,
+          892,
+          901
+        ],
+        "pitch_x": {
+          "pitch": 25.550000000000058,
+          "score": 0.23192726968204716
+        },
+        "pitch_y": {
+          "pitch": 25.75000000000006,
+          "score": 0.3627672818634636
+        },
+        "grid": [
+          30,
+          30
+        ]
+      },
+      "ramp": {
+        "opaque_cells": 522,
+        "far_cells": 0,
+        "far_fraction": 0.0,
+        "off_ramp_reject": false,
+        "quantize_histogram": {
+          "contour-plum-deep": 153,
+          "cream": 167,
+          "mint-light": 63,
+          "mint": 43,
+          "berry": 41,
+          "mint-shadow": 40,
+          "berry-mid": 13,
+          "berry-shadow": 2
+        }
+      }
+    },
+    "palette_subset": [
+      "contour-plum-deepest",
+      "contour-plum-deep",
+      "mint-shadow",
+      "mint",
+      "mint-light",
+      "cream",
+      "berry-shadow",
+      "berry-mid",
+      "berry"
+    ],
+    "source_grid": "src/assets/icon-sources/benediction/source.grid"
+  },
+  "dawn-ascendant": {
+    "candidate": "dawn-ascendant-r5",
+    "raw_sha256": "ba4fa53cb0e3f48c90e20e433a4334e8ba90603abe1dbefb5efe925080a36999",
+    "ingest": {
+      "recovered": {
+        "bbox": [
+          188,
+          159,
+          836,
+          861
+        ],
+        "pitch_x": {
+          "pitch": 32.52777777777793,
+          "score": 0.26426269658700324
+        },
+        "pitch_y": {
+          "pitch": 33.37777777777788,
+          "score": 0.26721612468816364
+        },
+        "grid": [
+          19,
+          22
+        ]
+      },
+      "ramp": {
+        "opaque_cells": 247,
+        "far_cells": 15,
+        "far_fraction": 0.0607,
+        "off_ramp_reject": false,
+        "quantize_histogram": {
+          "contour-plum-deep": 76,
+          "cream": 58,
+          "mint-light": 51,
+          "berry-shadow": 3,
+          "mint": 30,
+          "berry": 14,
+          "sage": 3,
+          "berry-mid": 1,
+          "mint-shadow": 5,
+          "mint-pale": 2,
+          "twilight-slate": 2,
+          "cream-gold": 1,
+          "berry-bright": 1
+        }
+      }
+    },
+    "palette_subset": [
+      "contour-plum-deepest",
+      "contour-plum-deep",
+      "mint-shadow",
+      "mint",
+      "mint-light",
+      "mint-pale",
+      "cream",
+      "cream-gold",
+      "berry-shadow",
+      "berry-mid",
+      "berry",
+      "berry-bright",
+      "sage",
+      "twilight-slate"
+    ],
+    "source_grid": "src/assets/icon-sources/dawn-ascendant/source.grid"
+  }
+}
