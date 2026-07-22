@@ -17,5 +17,5 @@ The Management Dock is **800×480** logical pixels, **independent** of `TILE_WID
 
 - `dockRect`'s returned `width` is always `DOCK_WIDTH`, not `tileRect.width`; changing tile width no longer implies a dock resize.
 - `tileX` on `DockRectResult` is the snapped Battle Tile x after center + clamp; `dock-window` calls `setTilePosition` only when it differs from the read tile origin.
-- Four hand-mirrored literals in `src/styles.css` (`html.dock-window` and `.dock-shell.management-dock`) must stay in lockstep with `DOCK_WIDTH` and `DOCK_HEIGHT` in `dock-geometry.ts`.
+- Dock and tile geometry in `src/styles.css` are declared once under `:root` (`--dock-width`, `--dock-height`, and the four tile tokens) and consumed via `var()`; `src/ui/geometry-tokens.test.ts` guards those custom properties against `DOCK_WIDTH` / `DOCK_HEIGHT` and the Battle Tile constants.
 - Because the dock can be wider than the tile, clamping on x is required so the native dock window does not open off-screen.

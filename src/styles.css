@@ -4,18 +4,27 @@
   box-sizing: border-box;
 }
 
+:root {
+  --tile-width: 480px;
+  --tile-height: 112px;
+  --status-line-height: 24px;
+  --battlefield-height: 86px;
+  --dock-width: 800px;
+  --dock-height: 480px;
+}
+
 html,
 body {
-  width: 480px;
-  height: 112px;
+  width: var(--tile-width);
+  height: var(--tile-height);
   overflow: hidden;
   background: transparent;
 }
 
 .tile-shell,
 .battle-tile {
-  width: 480px;
-  height: 112px;
+  width: var(--tile-width);
+  height: var(--tile-height);
   overflow: hidden;
   background: transparent;
 }
@@ -43,8 +52,8 @@ body {
   display: flex;
   align-items: center;
   gap: 6px;
-  height: 24px;
-  flex: 0 0 24px;
+  height: var(--status-line-height);
+  flex: 0 0 var(--status-line-height);
   padding: 0 6px;
   border-bottom: 1px solid rgba(255, 249, 233, 0.14);
   background: rgba(15, 17, 24, 0.92);
@@ -142,8 +151,8 @@ body {
 .battlefield {
   position: relative;
   flex: 1;
-  min-height: 86px;
-  height: 86px;
+  min-height: var(--battlefield-height);
+  height: var(--battlefield-height);
   overflow: hidden;
   isolation: isolate;
 }
@@ -494,13 +503,13 @@ body {
 
 html.dock-window,
 html.dock-window body {
-  width: 800px;
-  height: 480px;
+  width: var(--dock-width);
+  height: var(--dock-height);
 }
 
 .dock-shell.management-dock {
-  width: 800px;
-  height: 480px;
+  width: var(--dock-width);
+  height: var(--dock-height);
   display: flex;
   flex-direction: column;
   overflow: hidden;
