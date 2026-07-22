@@ -1,7 +1,50 @@
 {
   "provider": "Cursor GenerateImage",
-  "prompt": "TRUE chunky pixel art Talent icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block with no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. Match the reference icons' uniform square-block pitch exactly. A single centered symbolic Management Dock skill glyph for Glassweave: an interlocked faceted hexagonal weave around a small berry heart, reading maximum Health. Not a wearable Equipment item, not a scene, not a full Character, and not a UI frame. The subject long side spans about 26\u201330 logical pixels. CRITICAL clearance: at least THREE full magenta cells of clearance on LEFT and BOTTOM edges, and at least two on top and right \u2014 subject must NOT touch any canvas edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel dark-plum outline. Use only mint, berry, cream, and plum Moonberry colors, 8\u201312 flat colors maximum; no brown, tan, cyan, pure white, or pure black. Structural members are at least three logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "acquisition_tool": "GenerateImage",
   "raw_sha256": "1ea0085bc467ee90d81e2a504ca8b32fc5f9e868cd44752ceac84157f28b4f68",
+  "asset_class": "interface",
+  "kind": "talent-skill-glyph",
+  "runtime_destination": "deferred \u2014 unregistered interim; later activation slice",
+  "source_key": "glassweave",
+  "candidate": "glassweave-r4",
+  "palette_subset": [
+    "contour-plum-deepest",
+    "contour-plum-deep",
+    "mint-shadow",
+    "mint",
+    "mint-light",
+    "mint-pale",
+    "cream",
+    "cream-gold",
+    "berry-mid",
+    "berry",
+    "berry-bright",
+    "berry-shadow",
+    "sage",
+    "twilight-slate"
+  ],
+  "style_references": [
+    {
+      "path": "docs/research/evidence/305-talent-icons-wizard/accepted-raws/elemental-practice.png",
+      "role": "style_cohort",
+      "sha256": "28cef7565489198bd93ca34c0ab2d45bfa7aa220e25199bcf252def7261f03c3"
+    },
+    {
+      "path": "docs/research/evidence/305-talent-icons-wizard/accepted-raws/prismatic-shelter.png",
+      "role": "style_cohort",
+      "sha256": "90c86083ba3459489d524924f72dcf4f53ffe5c849014e62425a17b4098cbc01"
+    },
+    {
+      "path": "docs/research/evidence/fowl-harvest/talent-icons/wizard/accepted-raws/absolute-zero.png",
+      "role": "style_reference",
+      "sha256": "036d246c541fd13fffb3ea3af9a07e7fc6a9b24b53d33fbabfb407fef3e4fcb6",
+      "note": "gate-passing absolute-zero-r1 used as pitch reference during glassweave-r4"
+    }
+  ],
+  "issue_exact_prompt": "TRUE chunky pixel art Talent icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block with no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered symbolic Management Dock skill glyph for Glassweave: an interlocked faceted hexagonal weave around a small heart, reading maximum Health. Not a wearable Equipment item, not a scene, not a full Character, and not a UI frame. The subject long side spans about 26\u201330 logical pixels, with at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel dark-plum outline. Use only mint, berry, cream, and plum Moonberry colors, 8\u201312 flat colors maximum; no brown, tan, cyan, pure white, or pure black. Structural members are at least three logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "issue_exact_prompt_sha256": "1b815db96ac28db0d1fd7387ee9ec887c22d260e93a2b9a43655064c31517642",
+  "issue_exact_prompt_submitted_as": "glassweave-r1",
+  "prompt": "TRUE chunky pixel art Talent icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block with no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. Match the reference icons' uniform square-block pitch exactly. A single centered symbolic Management Dock skill glyph for Glassweave: an interlocked faceted hexagonal weave around a small berry heart, reading maximum Health. Not a wearable Equipment item, not a scene, not a full Character, and not a UI frame. The subject long side spans about 26\u201330 logical pixels. CRITICAL clearance: at least THREE full magenta cells of clearance on LEFT and BOTTOM edges, and at least two on top and right \u2014 subject must NOT touch any canvas edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel dark-plum outline. Use only mint, berry, cream, and plum Moonberry colors, 8\u201312 flat colors maximum; no brown, tan, cyan, pure white, or pure black. Structural members are at least three logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
   "ingest": {
     "recovered": {
       "bbox": [
@@ -45,24 +88,5 @@
       }
     }
   },
-  "palette_subset": [
-    "contour-plum-deepest",
-    "contour-plum-deep",
-    "mint-shadow",
-    "mint",
-    "mint-light",
-    "mint-pale",
-    "cream",
-    "cream-gold",
-    "berry-mid",
-    "berry",
-    "berry-bright",
-    "berry-shadow",
-    "sage",
-    "twilight-slate"
-  ],
-  "asset_class": "interface",
-  "source_key": "glassweave",
-  "accepted_candidate": "glassweave-r4",
-  "issue_exact_prompt_submitted_as": "glassweave-r1"
+  "note": "#391 Wizard Talent Tier 2 unregistered one-variant icon"
 }

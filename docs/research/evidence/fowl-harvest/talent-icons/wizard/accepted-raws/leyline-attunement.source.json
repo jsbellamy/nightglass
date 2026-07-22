@@ -1,7 +1,52 @@
 {
   "provider": "Cursor GenerateImage",
-  "prompt": "TRUE chunky pixel art Talent icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block with no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered symbolic Management Dock skill glyph for Leyline Attunement: a crystal above two converging arcane lines, reading flat Elemental Power. Not a wearable Equipment item, not a scene, not a full Character, and not a UI frame. The subject long side spans about 26\u201330 logical pixels, with at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel dark-plum outline. Use only mint, berry, cream, and plum Moonberry colors, 8\u201312 flat colors maximum; no brown, tan, cyan, pure white, or pure black. Structural members are at least three logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "acquisition_tool": "GenerateImage",
   "raw_sha256": "839344ba32b6d7a13051b0fdd77fbf41473a5b86801df355d06056985a4bb694",
+  "asset_class": "interface",
+  "kind": "talent-skill-glyph",
+  "runtime_destination": "deferred \u2014 unregistered interim; later activation slice",
+  "source_key": "leyline-attunement",
+  "candidate": "leyline-attunement-r1",
+  "palette_subset": [
+    "contour-plum-deepest",
+    "contour-plum-deep",
+    "mint-shadow",
+    "mint",
+    "mint-light",
+    "mint-pale",
+    "cream",
+    "cream-gold",
+    "berry",
+    "berry-bright",
+    "sage",
+    "twilight-slate"
+  ],
+  "style_references": [
+    {
+      "path": "docs/research/evidence/305-talent-icons-wizard/accepted-raws/elemental-practice.png",
+      "role": "style_cohort",
+      "sha256": "28cef7565489198bd93ca34c0ab2d45bfa7aa220e25199bcf252def7261f03c3"
+    },
+    {
+      "path": "docs/research/evidence/305-talent-icons-wizard/accepted-raws/starfall.png",
+      "role": "style_cohort",
+      "sha256": "b1c508bd41646fa468f8c2804fc872f7d783ff568aea968fc90d4ae4fcc3ef42"
+    },
+    {
+      "path": "docs/research/evidence/305-talent-icons-priest/accepted-raws/radiant-study.png",
+      "role": "style_cohort",
+      "sha256": "4393b846d60ef442ca5e08dd5d571db60a05b7c7ad6e7a4ba58321877526095a"
+    },
+    {
+      "path": "docs/research/evidence/305-talent-icons-priest/accepted-raws/sunlance.png",
+      "role": "style_cohort",
+      "sha256": "e7202416f54dab24a7ff29380226ce77e117eb08fd114afa38964d797de6b64f"
+    }
+  ],
+  "issue_exact_prompt": "TRUE chunky pixel art Talent icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block with no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered symbolic Management Dock skill glyph for Leyline Attunement: a crystal above two converging arcane lines, reading flat Elemental Power. Not a wearable Equipment item, not a scene, not a full Character, and not a UI frame. The subject long side spans about 26\u201330 logical pixels, with at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel dark-plum outline. Use only mint, berry, cream, and plum Moonberry colors, 8\u201312 flat colors maximum; no brown, tan, cyan, pure white, or pure black. Structural members are at least three logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "issue_exact_prompt_sha256": "ed3b4fbd3ab6cdc6b20315c502074816ac77db1a929774d290c5d79312d03547",
+  "issue_exact_prompt_submitted_as": "leyline-attunement-r1",
+  "prompt": "TRUE chunky pixel art Talent icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block with no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered symbolic Management Dock skill glyph for Leyline Attunement: a crystal above two converging arcane lines, reading flat Elemental Power. Not a wearable Equipment item, not a scene, not a full Character, and not a UI frame. The subject long side spans about 26\u201330 logical pixels, with at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel dark-plum outline. Use only mint, berry, cream, and plum Moonberry colors, 8\u201312 flat colors maximum; no brown, tan, cyan, pure white, or pure black. Structural members are at least three logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
   "ingest": {
     "recovered": {
       "bbox": [
@@ -43,22 +88,5 @@
       }
     }
   },
-  "palette_subset": [
-    "contour-plum-deepest",
-    "contour-plum-deep",
-    "mint-shadow",
-    "mint",
-    "mint-light",
-    "mint-pale",
-    "cream",
-    "cream-gold",
-    "berry",
-    "berry-bright",
-    "sage",
-    "twilight-slate"
-  ],
-  "asset_class": "interface",
-  "source_key": "leyline-attunement",
-  "accepted_candidate": "leyline-attunement-r1",
-  "issue_exact_prompt_submitted_as": "leyline-attunement-r1"
+  "note": "#391 Wizard Talent Tier 2 unregistered one-variant icon"
 }

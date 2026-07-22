@@ -1,5 +1,6 @@
 {
   "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
   "prompt": "TRUE chunky pixel art Talent icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block \u2014 uniform square pitch matching the style references exactly \u2014 with no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered symbolic Management Dock skill glyph for Wildfire Sigil: a circular flame rune with three outward embers, reading area Fire Damage plus Scorched without becoming a spell-effect frame. Not a wearable Equipment item, not a scene, not a full Character, and not a UI frame. Subject fills the frame with MANY small logical pixels (about 26\u201330 cells across), not a few large soft shapes. At least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel dark-plum outline. Use only mint, berry, cream, and plum Moonberry colors, 8\u201312 flat colors maximum; no brown, tan, cyan, pure white, or pure black. Structural members are at least three logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
   "raw_sha256": "5be73c5d5b11479a56d7836e367b28592e652553a6864730766547830e616c18",
   "ingest": {
@@ -53,5 +54,7 @@
     "berry-shadow",
     "sage"
   ],
-  "evidence_raw": "docs/research/evidence/fowl-harvest/talent-icons/wizard/accepted-raws/wildfire-sigil.png"
+  "evidence_raw": "docs/research/evidence/fowl-harvest/talent-icons/wizard/accepted-raws/wildfire-sigil.png",
+  "issue_exact_prompt_sha256": "76854c6a226458eada654b4c21f4431b3f25bf289c785ec3281732bfcb032d50",
+  "issue_exact_prompts_archive": "docs/research/evidence/fowl-harvest/talent-icons/wizard/issue-exact-prompts.json"
 }

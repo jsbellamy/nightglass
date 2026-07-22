@@ -1,5 +1,6 @@
 {
   "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
   "prompt": "TRUE chunky pixel art Talent icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block with no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered symbolic Management Dock skill glyph for Leyline Attunement: a crystal above two converging arcane lines, reading flat Elemental Power. Not a wearable Equipment item, not a scene, not a full Character, and not a UI frame. The subject long side spans about 26\u201330 logical pixels, with at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel dark-plum outline. Use only mint, berry, cream, and plum Moonberry colors, 8\u201312 flat colors maximum; no brown, tan, cyan, pure white, or pure black. Structural members are at least three logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
   "raw_sha256": "839344ba32b6d7a13051b0fdd77fbf41473a5b86801df355d06056985a4bb694",
   "ingest": {
@@ -57,5 +58,7 @@
     "sage",
     "twilight-slate"
   ],
-  "evidence_raw": "docs/research/evidence/fowl-harvest/talent-icons/wizard/accepted-raws/leyline-attunement.png"
+  "evidence_raw": "docs/research/evidence/fowl-harvest/talent-icons/wizard/accepted-raws/leyline-attunement.png",
+  "issue_exact_prompt_sha256": "ed3b4fbd3ab6cdc6b20315c502074816ac77db1a929774d290c5d79312d03547",
+  "issue_exact_prompts_archive": "docs/research/evidence/fowl-harvest/talent-icons/wizard/issue-exact-prompts.json"
 }

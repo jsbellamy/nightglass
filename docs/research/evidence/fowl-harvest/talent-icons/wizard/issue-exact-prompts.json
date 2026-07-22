@@ -1,0 +1,27 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "source": "https://github.com/jsbellamy/nightglass/issues/391",
+  "prompts": {
+    "leyline-attunement": {
+      "candidate": "leyline-attunement-r1",
+      "prompt": "TRUE chunky pixel art Talent icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block with no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered symbolic Management Dock skill glyph for Leyline Attunement: a crystal above two converging arcane lines, reading flat Elemental Power. Not a wearable Equipment item, not a scene, not a full Character, and not a UI frame. The subject long side spans about 26\u201330 logical pixels, with at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel dark-plum outline. Use only mint, berry, cream, and plum Moonberry colors, 8\u201312 flat colors maximum; no brown, tan, cyan, pure white, or pure black. Structural members are at least three logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+      "prompt_sha256": "ed3b4fbd3ab6cdc6b20315c502074816ac77db1a929774d290c5d79312d03547"
+    },
+    "glassweave": {
+      "candidate": "glassweave-r1",
+      "prompt": "TRUE chunky pixel art Talent icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block with no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered symbolic Management Dock skill glyph for Glassweave: an interlocked faceted hexagonal weave around a small heart, reading maximum Health. Not a wearable Equipment item, not a scene, not a full Character, and not a UI frame. The subject long side spans about 26\u201330 logical pixels, with at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel dark-plum outline. Use only mint, berry, cream, and plum Moonberry colors, 8\u201312 flat colors maximum; no brown, tan, cyan, pure white, or pure black. Structural members are at least three logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+      "prompt_sha256": "1b815db96ac28db0d1fd7387ee9ec887c22d260e93a2b9a43655064c31517642"
+    },
+    "wildfire-sigil": {
+      "candidate": "wildfire-sigil-r1",
+      "prompt": "TRUE chunky pixel art Talent icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block with no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered symbolic Management Dock skill glyph for Wildfire Sigil: a circular flame rune with three outward embers, reading area Fire Damage plus Scorched without becoming a spell-effect frame. Not a wearable Equipment item, not a scene, not a full Character, and not a UI frame. The subject long side spans about 26\u201330 logical pixels, with at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel dark-plum outline. Use only mint, berry, cream, and plum Moonberry colors, 8\u201312 flat colors maximum; no brown, tan, cyan, pure white, or pure black. Structural members are at least three logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+      "prompt_sha256": "76854c6a226458eada654b4c21f4431b3f25bf289c785ec3281732bfcb032d50"
+    },
+    "absolute-zero": {
+      "candidate": "absolute-zero-r1",
+      "prompt": "TRUE chunky pixel art Talent icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block with no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered symbolic Management Dock skill glyph for Absolute Zero: a sharp six-point frost seal with a locked central dot, reading area Frost Damage plus Stun. Not a wearable Equipment item, not a scene, not a full Character, and not a UI frame. The subject long side spans about 26\u201330 logical pixels, with at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel dark-plum outline. Use only mint, berry, cream, and plum Moonberry colors, 8\u201312 flat colors maximum; no brown, tan, cyan, pure white, or pure black. Structural members are at least three logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+      "prompt_sha256": "b5d1702b84529eeb4e8e6b3390b5ed0a06eab1926979cfbba2f80e94110a7f72"
+    }
+  }
+}

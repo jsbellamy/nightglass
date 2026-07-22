@@ -17,7 +17,7 @@ acquisition evidence only — no registry entry, runtime PNG, preview under
 | Visual vocabulary | `moonberry-16`; per-family `palette_subset` in each `source.json` |
 | Geometry | Icon grid shell; long-side preference 26–30; gates in `pipeline/icons/constants.py` |
 | Review context | [`wizard-tier2-talent-sheet@8x.png`](./wizard-tier2-talent-sheet@8x.png) |
-| Validator | targeted ingest + `python3 pipeline/icons/verify.py`; CI `assets` job for catalog |
+| Validator | targeted ingest of the four accepted raws → `source.grid` (byte-identical re-ingest); `python3 pipeline/icons/verify.py` proves existing registered catalog unchanged (new families are unregistered); CI `assets` job for full-catalog byte-identity after push |
 
 ## Style cohort (shared)
 
@@ -35,16 +35,18 @@ acquisition evidence only — no registry entry, runtime PNG, preview under
 ## Exact issue prompts
 
 All four issue-body prompts were submitted as candidate **r1** via Cursor
-`GenerateImage`. Accepted provenance sidecars store the prompt that produced the
-accepted raw (exact for leyline / absolute-zero; gate-retry variants for
-glassweave / wildfire-sigil).
+`GenerateImage`. Verbatim issue prompts + `prompt_sha256` are archived in
+[`issue-exact-prompts.json`](./issue-exact-prompts.json) and copied onto each
+accepted `.source.json` as `issue_exact_prompt` / `issue_exact_prompt_sha256`.
+Accepted provenance also stores the **accepted-candidate prompt** (exact for
+leyline / absolute-zero; gate-retry variants for glassweave / wildfire-sigil).
 
-| iconKey | Exact prompt submitted as | Accepted candidate |
-| --- | --- | --- |
-| `leyline-attunement` | r1 (exact) | **r1** |
-| `glassweave` | r1 (exact) | **r4** (clearance + grid-faithful retry) |
-| `wildfire-sigil` | r1 (exact) | **r4** (grid-faithful retry after enlarge underfills) |
-| `absolute-zero` | r1 (exact) | **r1** |
+| iconKey | Exact prompt submitted as | Accepted candidate | `prompt_sha256` (issue-exact) |
+| --- | --- | --- | --- |
+| `leyline-attunement` | r1 (exact) | **r1** | `ed3b4fbd…d03547` |
+| `glassweave` | r1 (exact) | **r4** (clearance + grid-faithful retry) | `1b815db9…517642` |
+| `wildfire-sigil` | r1 (exact) | **r4** (grid-faithful retry after enlarge underfills) | `76854c6a…032d50` |
+| `absolute-zero` | r1 (exact) | **r1** | `b5d1702b…0a7f72` |
 
 ## Original sample + identity
 
@@ -101,6 +103,7 @@ vs hex weave vs flame sigil vs six-point frost seal). No retry targets.
 ## Artifacts
 
 - Accepted raws + sidecars: [`accepted-raws/`](./accepted-raws/)
+- Issue-exact prompt archive: [`issue-exact-prompts.json`](./issue-exact-prompts.json)
 - Ingest report: [`ingest-report.json`](./ingest-report.json)
 - Wizard Tier 2 review sheet: [`wizard-tier2-talent-sheet@8x.png`](./wizard-tier2-talent-sheet@8x.png)
 - Per-icon @8× copies (evidence only): [`previews/`](./previews/)
