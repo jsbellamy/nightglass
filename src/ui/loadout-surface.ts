@@ -1,7 +1,5 @@
-import { equipmentModifiersForLoadout } from "../core/equipment";
-import { characterStats } from "../core/stats";
 import type { ReadonlySnapshot } from "../core/snapshot";
-import type { AbilityDef, ClassId, Content } from "../core/types";
+import type { AbilityDef, BaseStats, ClassId, Content } from "../core/types";
 import {
   abilityRawDisplay,
   formatAbilityRawLine,
@@ -12,6 +10,7 @@ import type { EngineLegalityView } from "./engine-legality";
 import {
   appliedLoadout,
   CLASS_LABELS,
+  characterStatsFor,
   classKitFor,
   effectiveLoadout,
   effectiveTalentState,
@@ -45,7 +44,7 @@ function newlyInsertedAbilities(
 
 function renderAbilityCard(
   ability: AbilityDef,
-  stats: ReturnType<typeof characterStats>,
+  stats: BaseStats,
   slotIndex: number | "basic",
   activationDelayPending: boolean,
 ): HTMLElement {
@@ -99,13 +98,7 @@ export function mountLoadoutSurface(
 
       const classKit = classKitFor(content, classId);
       const talentState = effectiveTalentState(snapshot, classId);
-      const equipmentLoadout = snapshot.attempt?.equipmentLoadouts[classId] ?? {};
-      const equipmentMods = equipmentModifiersForLoadout(
-        equipmentLoadout,
-        snapshot.progression.armory,
-        content,
-      );
-      const stats = characterStats(classKit, talentState, equipmentMods);
+      const stats = characterStatsFor(snapshot, content, classId);
       const applied = appliedLoadout(snapshot, classId);
       const loadout = effectiveLoadout(snapshot, classId);
       const hasPending = snapshot.pendingEdits.some(

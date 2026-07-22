@@ -285,6 +285,32 @@ export function statsForEquipmentLoadout(
   return characterStats(classKit, talentState, equipmentMods);
 }
 
+/**
+ * A Character's current BaseStats for a Snapshot: Class Kit base, effective
+ * Talent state (Pending Edits included), and worn Equipment from the Armory.
+ */
+export function characterStatsFor(
+  snapshot: Snapshot,
+  content: Content,
+  classId: ClassId,
+): BaseStats {
+  const classKit = content.classes.find((entry) => entry.id === classId);
+  if (!classKit) {
+    throw new Error(`Missing Class Kit for ${classId}`);
+  }
+  const roster = rosterClassIds(snapshot);
+  const loadouts = snapshotEquipmentLoadouts(snapshot.progression.armory, roster);
+  const currentLoadout = { ...loadouts[classId] };
+  const talentState = effectiveTalentState(snapshot, classId);
+  return statsForEquipmentLoadout(
+    classKit,
+    talentState,
+    currentLoadout,
+    snapshot.progression.armory,
+    content,
+  );
+}
+
 export function statModifiersForSlotSwap(
   armory: DropInstance[],
   roster: ClassId[],
@@ -348,13 +374,7 @@ export function previewEquip(
   if (!basicAbility) {
     throw new Error(`Missing basic Ability for ${classId}`);
   }
-  const currentStats = statsForEquipmentLoadout(
-    classKit,
-    talentState,
-    currentLoadout,
-    snapshot.progression.armory,
-    content,
-  );
+  const currentStats = characterStatsFor(snapshot, content, classId);
   const candidateStats = statsForEquipmentLoadout(
     classKit,
     talentState,

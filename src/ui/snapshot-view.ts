@@ -14,10 +14,24 @@ export {
 
 export {
   previewEquip,
+  characterStatsFor,
+  abilityRawDisplay,
+  formatAbilityRawLine,
+  formatStatModifierPerRank,
+  statLines,
+  compareAbilityRawChanges,
+  compareEquipmentStatDeltas,
+  equipmentLoadoutWithSwap,
+  statsForEquipmentLoadout,
+  statModifiersForSlotSwap,
   type AbilityRawChange,
+  type AbilityRawDisplay,
   type EquipPreview,
   type StatDeltaLine,
+  type StatLine,
 } from "../core/equipment-preview";
+
+export { previewEffectRaw } from "../core/combat";
 
 export const CLASS_LABELS: Record<ClassId, string> = {
   knight: "Knight",
