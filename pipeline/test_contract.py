@@ -30,6 +30,8 @@ RUNTIME_SPRITES = {
     "boss-3": "boss-3.png",
 }
 
+PRODUCTION_RAW_TAGS = A.default_build_raw_tags()
+
 
 def check(label, condition, detail=""):
     status = "PASS" if condition else "FAIL"
@@ -61,6 +63,51 @@ check("Boss profile is Boss 160x72 facing left",
       and boss_profile.max_opaque_w == 160
       and boss_profile.max_opaque_h == 72
       and boss_profile.facing == "left")
+burger_profile = A.body_profile_for_tag("burger-drake")
+check("Burger Drake profile is ordinary Opponent 30x68 facing left",
+      burger_profile.role == "ordinary-opponent"
+      and burger_profile.max_opaque_w == 30
+      and burger_profile.max_opaque_h == 68
+      and burger_profile.facing == "left")
+cornquacker_profile = A.body_profile_for_tag("cornquacker")
+check("Cornquacker profile is ordinary Opponent 30x68 facing left",
+      cornquacker_profile.role == "ordinary-opponent"
+      and cornquacker_profile.max_opaque_w == 30
+      and cornquacker_profile.max_opaque_h == 68
+      and cornquacker_profile.facing == "left")
+combine_profile = A.body_profile_for_tag("the-combine")
+check("The Combine profile is Boss 160x72 facing left",
+      combine_profile.role == "boss"
+      and combine_profile.max_opaque_w == 160
+      and combine_profile.max_opaque_h == 72
+      and combine_profile.facing == "left")
+_moonberry = A.load_runtime_palette("moonberry-16")
+_fowl = A.load_runtime_palette("fowl-harvest-24")
+for out_name, expected_id in [
+    ("knight", "moonberry-16"),
+    ("wizard", "moonberry-16"),
+    ("priest", "moonberry-16"),
+    ("hunter", "moonberry-16"),
+    ("pipcap", "moonberry-16"),
+    ("boss-1", "moonberry-16"),
+    ("boss-2", "moonberry-16"),
+    ("boss-3", "moonberry-16"),
+    ("burger-drake", "fowl-harvest-24"),
+    ("cornquacker", "fowl-harvest-24"),
+    ("the-combine", "fowl-harvest-24"),
+]:
+    identity = A.ASSET_IDENTITIES[out_name]
+    check(f"{out_name} selects palette {expected_id}",
+          identity["palette"] == expected_id
+          and A.palette_for_identity(identity, identity_name=out_name).palette_id
+          == expected_id)
+try:
+    A.load_runtime_palette("not-a-palette")
+    unknown_palette_error = ""
+except ValueError as error:
+    unknown_palette_error = str(error)
+check("unknown palette ids fail without fallback",
+      "unknown palette id" in unknown_palette_error, unknown_palette_error)
 layout = A.load_layout()
 check("layout.json matches shared battlefield and anchor contract",
       layout["battlefield"]["floor_y"] == 80
@@ -91,7 +138,7 @@ def png_bytes(frame):
 
 
 print("raw acquisition gates")
-bundle = [RAW_DIR / f"{tag}.png" for tag in A.DEFAULT_TAGS]
+bundle = [RAW_DIR / f"{tag}.png" for tag in PRODUCTION_RAW_TAGS]
 gate_errs = [e for p in bundle for e in A.raw_gates(p)]
 check("archived raws match their unmodified provider hashes", not gate_errs,
       str(gate_errs))
@@ -100,9 +147,9 @@ def _sidecar(tag: str) -> dict:
     return json.loads((RAW_DIR / f"{tag}.png").with_suffix(".source.json").read_text())
 
 flexible_tags = {
-    tag for tag in A.DEFAULT_TAGS if _sidecar(tag).get("acquisition") == "flexible"
+    tag for tag in PRODUCTION_RAW_TAGS if _sidecar(tag).get("acquisition") == "flexible"
 }
-legacy_bundle = [RAW_DIR / f"{tag}.png" for tag in A.DEFAULT_TAGS if tag not in flexible_tags]
+legacy_bundle = [RAW_DIR / f"{tag}.png" for tag in PRODUCTION_RAW_TAGS if tag not in flexible_tags]
 reports = {p.stem: A.recover_grid(p)[1] for p in legacy_bundle}
 check("Knight grid is recoverable without reduction",
       reports["knight"]["grid"] == [32, 45], str(reports["knight"]))
@@ -249,6 +296,7 @@ with tempfile.TemporaryDirectory() as temp_name:
           and promoted_sidecar["raw_sha256"] == hashlib.sha256(candidate.read_bytes()).hexdigest()
           and promoted_sidecar["identity"] == "boss-3"
           and promoted_sidecar["asset_class"] == "opponent"
+          and promoted_sidecar["palette"] == "moonberry-16@1"
           and promoted_sidecar["runtime_destination"] == "src/assets/sprites/boss-3.png"
           and promoted_sidecar["facing"] == "left"
           and "visual_bounds" in promoted_manifest["boss-3"]
@@ -410,8 +458,23 @@ check("unapproved alpha rejected", any("unapproved alpha" in e for e in errs))
 # embedded effects -- an off-palette glow baked into a Character frame
 f = good_frame()
 f.load()[16, 20] = (255, 255, 0, 255)
-errs = A.validate(f, "glow", frame=A.MEDIUM)
+errs = A.validate(f, "glow", frame=A.MEDIUM, palette=_moonberry)
 check("embedded effects rejected", any("embedded effects" in e for e in errs))
+
+_fowl_only = next(
+    rgb for rgb in _fowl.colors if rgb not in _moonberry.color_set)
+_fowl_frame = Image.new("RGBA", (32, 48), (0, 0, 0, 0))
+_fowl_frame.load()[16, 24] = (*_fowl_only, 255)
+errs = A.validate(_fowl_frame, "fowl-on-moonberry", frame=A.MEDIUM, palette=_moonberry)
+check("Moonberry validator rejects Fowl-only opaque colour",
+      any("embedded effects" in e for e in errs), str(errs))
+_moon_only = next(
+    rgb for rgb in _moonberry.colors if rgb not in _fowl.color_set)
+_moon_frame = Image.new("RGBA", (32, 48), (0, 0, 0, 0))
+_moon_frame.load()[16, 24] = (*_moon_only, 255)
+errs = A.validate(_moon_frame, "moon-on-fowl", frame=A.MEDIUM, palette=_fowl)
+check("Fowl validator rejects Moonberry-only opaque colour",
+      any("embedded effects" in e for e in errs), str(errs))
 
 # empty frame
 errs = A.validate(Image.new("RGBA", (32, 48), (0, 0, 0, 0)), "empty",
@@ -515,7 +578,7 @@ check("repeated offline rebuild is byte-identical PNG",
 for raw_tag, runtime_name in RUNTIME_SPRITES.items():
     sidecar = json.loads((RAW_DIR / f"{raw_tag}.png").with_suffix(".source.json").read_text())
     sprite_key = pathlib.Path(runtime_name).stem
-    rebuilt_image, _geometry, adapter, _stamp = A.normalize_archived(
+    rebuilt_image, _geometry, adapter, _stamp, _palette = A.normalize_archived(
         RAW_DIR / f"{raw_tag}.png", sidecar, out_name=sprite_key)
     rebuilt = png_bytes(rebuilt_image)
     committed = (RUNTIME_DIR / runtime_name).read_bytes()
@@ -527,7 +590,7 @@ for raw_tag, runtime_name in RUNTIME_SPRITES.items():
     sprite_key = pathlib.Path(runtime_name).stem
     entry = manifest_data[sprite_key]
     sidecar = json.loads((RAW_DIR / f"{raw_tag}.png").with_suffix(".source.json").read_text())
-    rebuilt_image, _geometry, adapter, _stamp = A.normalize_archived(
+    rebuilt_image, _geometry, adapter, _stamp, _palette = A.normalize_archived(
         RAW_DIR / f"{raw_tag}.png", sidecar, out_name=sprite_key)
     recorded = entry["frames"][0]["sha256"]
     actual = hashlib.sha256(rebuilt_image.tobytes()).hexdigest()
@@ -587,12 +650,66 @@ _fh_glow_overlap = set(_fh_rgbs) & _glow_rgbs
 check("fowl-harvest-24 RGB disjoint from moonberry-glow@1",
       not _fh_glow_overlap, str(_fh_glow_overlap))
 
+print("\nbody bundle discovery")
+_discovered_body = A.discover_complete_body_raw_tags()
+check("complete body raw tags are lexicographically sorted",
+      _discovered_body == tuple(sorted(_discovered_body)))
+check("production body bundles discovered in runtime-key order",
+      A.default_build_raw_tags() == (
+          "boss", "boss-2", "boss-3", "hunter", "knight", "pipcap", "priest", "wizard"),
+      str(A.default_build_raw_tags()))
+check("declared Fowl identities without raw bundles do not fail discovery",
+      "burger-drake" not in _discovered_body
+      and "cornquacker" not in _discovered_body
+      and "the-combine" not in _discovered_body)
+with tempfile.TemporaryDirectory() as _body_orphan_temp:
+    _body_orphan_raw = pathlib.Path(_body_orphan_temp)
+    Image.new("RGBA", (8, 8), (0, 0, 0, 255)).save(_body_orphan_raw / "png-only.png")
+    (_body_orphan_raw / "sidecar-only.source.json").write_text("{}")
+    with mock.patch.object(A, "RAW_DIR", _body_orphan_raw):
+        _body_orphan_msgs = A.discover_body_orphan_failures()
+check("orphan body bundles are reported",
+      len(_body_orphan_msgs) == 2
+      and any("sidecar without matching" in message for message in _body_orphan_msgs)
+      and any("archived PNG without provenance" in message for message in _body_orphan_msgs),
+      str(_body_orphan_msgs))
+with tempfile.TemporaryDirectory() as _unknown_temp:
+    _unknown_raw = pathlib.Path(_unknown_temp)
+    Image.new("RGBA", (8, 8), (0, 0, 0, 255)).save(_unknown_raw / "mystery.png")
+    (_unknown_raw / "mystery.source.json").write_text("{}")
+    with mock.patch.object(A, "RAW_DIR", _unknown_raw):
+        try:
+            A.discover_body_build_raw_tags()
+            unknown_identity_error = ""
+        except ValueError as error:
+            unknown_identity_error = str(error)
+check("unknown discovered body identity fails verification",
+      "no known Nightglass asset identity" in unknown_identity_error,
+      unknown_identity_error)
+with tempfile.TemporaryDirectory() as _collision_temp:
+    _collision_raw = pathlib.Path(_collision_temp)
+    for tag in ("boss", "boss-2"):
+        Image.new("RGBA", (8, 8), (0, 0, 0, 255)).save(_collision_raw / f"{tag}.png")
+        (_collision_raw / f"{tag}.source.json").write_text("{}")
+    collision_names = dict(A.OUTPUT_NAMES)
+    collision_names["boss-2"] = "boss-1"
+    with mock.patch.object(A, "RAW_DIR", _collision_raw), mock.patch.object(
+            A, "OUTPUT_NAMES", collision_names):
+        try:
+            A.discover_body_build_raw_tags()
+            collision_error = ""
+        except ValueError as error:
+            collision_error = str(error)
+check("output key collision fails verification",
+      "collides" in collision_error, collision_error)
+
 print("\nbackdrop bundle discovery")
 _discovered = B.discover_complete_bundle_keys()
 check("complete backdrop keys are lexicographically sorted",
       _discovered == tuple(sorted(_discovered)))
+_LEGACY_STAGE_BACKDROPS = ("backdrop-1", "backdrop-2", "backdrop-3")
 check("existing three Stage backdrops discovered",
-      _discovered == ("backdrop-1", "backdrop-2", "backdrop-3"),
+      len(_discovered) >= 3 and _discovered[:3] == _LEGACY_STAGE_BACKDROPS,
       str(_discovered))
 with tempfile.TemporaryDirectory() as _orphan_temp:
     _orphan_raw = pathlib.Path(_orphan_temp)

@@ -7,6 +7,7 @@ import {
 import type { TileCommand } from "./bus";
 import type { EngineLegalityView } from "./engine-legality";
 import { bindPressable } from "./keyboard";
+import { createEquipmentIconElement } from "./icons";
 import {
   CLASS_LABELS,
   classKitFor,
@@ -68,6 +69,17 @@ export function mountTalentsSurface(
     rerender();
   }
 
+  function appendTalentCellIcon(cell: HTMLElement, iconKey: string, name: string): void {
+    const face = el("span", { class: "talent-cell-face" });
+    const wrap = el("span", {
+      class: "equipment-icon-content",
+      aria: { hidden: "true" },
+    });
+    wrap.append(createEquipmentIconElement(iconKey, "content", { ariaLabel: `${name} icon` }));
+    face.append(wrap);
+    cell.prepend(face);
+  }
+
   function renderStatCell(statTalent: StatTalentDef, rank: number): HTMLElement {
     const selected = selectedTalentId === statTalent.id;
     const cell = el("button", {
@@ -83,6 +95,7 @@ export function mountTalentsSurface(
         text: `${rank}/${statTalent.maxRanks}`,
       }),
     ]);
+    appendTalentCellIcon(cell, statTalent.iconKey, statTalent.name);
     bindPressable(cell, () => {
       selectTalent(statTalent.id);
     });
@@ -101,6 +114,7 @@ export function mountTalentsSurface(
   function renderAbilityCell(
     abilityId: string,
     abilityName: string,
+    iconKey: string,
     chosen: boolean,
   ): HTMLElement {
     const selected = selectedTalentId === abilityId;
@@ -123,6 +137,7 @@ export function mountTalentsSurface(
         aria: { hidden: "true" },
       }),
     ]);
+    appendTalentCellIcon(cell, iconKey, abilityName);
     bindPressable(cell, () => {
       selectTalent(abilityId);
     });
@@ -294,7 +309,12 @@ export function mountTalentsSurface(
       const abilityCells = classKit.talents.abilityRow.map((abilityId) => {
         const ability = content.abilities.find((entry) => entry.id === abilityId);
         const chosen = talentState.abilityTalentId === abilityId;
-        return renderAbilityCell(abilityId, ability?.name ?? abilityId, chosen);
+        return renderAbilityCell(
+          abilityId,
+          ability?.name ?? abilityId,
+          ability?.iconKey ?? abilityId,
+          chosen,
+        );
       });
 
       const grid = el("div", { class: "talent-grid" }, [
