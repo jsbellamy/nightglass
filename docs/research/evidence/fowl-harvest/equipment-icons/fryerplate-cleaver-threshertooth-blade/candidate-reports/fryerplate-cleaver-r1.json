@@ -1,0 +1,46 @@
+{
+  "candidate": "fryerplate-cleaver-r1",
+  "raw_sha256": "7487bb8125dff6c40c4ba3a0b24ae01fe6ae23f43bebe08809a7e8fe691ce305",
+  "raw_size": [
+    1024,
+    1024
+  ],
+  "recovered": {
+    "bbox": [
+      206,
+      75,
+      821,
+      928
+    ],
+    "pitch_x": {
+      "pitch": 34.372222222222206,
+      "score": 0.1334020752351497
+    },
+    "pitch_y": {
+      "pitch": 36.872222222222064,
+      "score": 0.08155543253638162
+    },
+    "grid": [
+      18,
+      24
+    ]
+  },
+  "ramp": {
+    "opaque_cells": 191,
+    "far_cells": 117,
+    "far_fraction": 0.6126,
+    "off_ramp_reject": true,
+    "quantize_histogram": {
+      "oil-ink": 35,
+      "diner-cream": 17,
+      "teal-light": 60,
+      "storm-slate": 51,
+      "bruise-plum": 6,
+      "crow-black": 2,
+      "grease-brown-deep": 6,
+      "patty-brown": 8,
+      "condiment-red": 6
+    }
+  },
+  "status": "off_ramp"
+}

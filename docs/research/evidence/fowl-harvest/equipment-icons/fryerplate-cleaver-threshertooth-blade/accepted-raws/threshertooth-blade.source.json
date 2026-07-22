@@ -1,0 +1,86 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "0fcea0320be6335302f151401a40a20a12c2c0b7ca9b567a8cc8103c5fe1de95",
+  "asset_class": "interface",
+  "kind": "equipment-base-icon",
+  "runtime_destination": "src/assets/icons/threshertooth-blade.png",
+  "source_key": "threshertooth-blade",
+  "candidate": "threshertooth-blade-r4",
+  "palette": "fowl-harvest-24",
+  "palette_subset": [
+    "oil-ink",
+    "crow-black",
+    "bruise-plum",
+    "storm-slate",
+    "rust-orange-deep",
+    "beak-orange",
+    "toast-brown",
+    "husk-green",
+    "field-green",
+    "field-green-deep",
+    "leaf-green",
+    "diner-cream",
+    "grease-brown-deep",
+    "patty-brown"
+  ],
+  "style_references": [
+    {
+      "path": "src/assets/icons/preview/verify-fowl-canary@8x.png",
+      "sha256": "8fdc3206f4e5f5ff228d4651bcd70a6393da3eeed025c24a7b90c2673f3c75cd",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icon-sources/verify-fowl-canary/source.grid",
+      "sha256": "04f1b9aa20d3b67fd0c13c15391c3fd94b55fc7e7df1c92e743e2552e5922a93",
+      "role": "fowl_shell_text_grid"
+    }
+  ],
+  "issue_exact_prompt": "TRUE chunky pixel art inventory icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block with no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered Fowl Harvest Equipment item in three-quarter display angle for Threshertooth Blade: an industrial long blade whose toothed edge is a harvested thresher part, with rust-orange teeth, storm-slate spine, and husk-green binding. The subject long side spans about 26\u201330 logical pixels, with at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel oil-ink outline. Use only named fowl-harvest-24 colors, 8\u201312 flat colors maximum. Structural members are at least three logical pixels thick. No Character, duck body, scene, shadow, glow, sparks, particles, text, watermark, UI frame, or transparency.",
+  "issue_exact_prompt_sha256": "a42cf8e62abd190dae4fcee7201cca4770b931d7565d326e49e4b125ed652fe5",
+  "issue_exact_prompt_submitted_as": "base_prompt_with_gate_retry_adjustments",
+  "prompt": "TRUE chunky pixel art inventory icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block. A single centered Fowl Harvest Equipment item in three-quarter display angle for Threshertooth Blade: a WIDE industrial long blade (not skinny) whose toothed edge is a harvested thresher part \u2014 thick triangular rust-orange teeth along the cutting edge, storm-slate spine, husk-green binding near the grip.\n\nMake the silhouette chunky and wide: long side about 26\u201330 logical pixels, short side at least ~14\u201318 logical pixels. At least three full magenta cells clearance on every edge.\n\nCOLOR LOCK exact hex:\n- spine: storm-slate #55586a\n- teeth: rust-orange-deep #bf532f and beak-orange #e47a35\n- binding: husk-green #6aa233\n- outline: oil-ink #111018\n- tiny highlight: diner-cream #f3d897\n\nFlat solid magenta #ff00ff background only. Selective one-logical-pixel oil-ink outline. Structural members \u22653 logical pixels thick. No Character, duck, scene, shadow, glow, sparks, particles, text, watermark, UI frame, or transparency.",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        124,
+        64,
+        884,
+        953
+      ],
+      "pitch_x": {
+        "pitch": 39.67222222222189,
+        "score": 0.08572775437769704
+      },
+      "pitch_y": {
+        "pitch": 40.32222222222185,
+        "score": 0.28932648590167015
+      },
+      "grid": [
+        19,
+        23
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 165,
+      "far_cells": 12,
+      "far_fraction": 0.0727,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "oil-ink": 41,
+        "storm-slate": 46,
+        "grease-brown-deep": 11,
+        "rust-orange-deep": 32,
+        "beak-orange": 8,
+        "patty-brown": 1,
+        "toast-brown": 1,
+        "field-green-deep": 11,
+        "crow-black": 8,
+        "husk-green": 3,
+        "field-green": 3
+      }
+    }
+  },
+  "evidence_raw": "docs/research/evidence/fowl-harvest/equipment-icons/fryerplate-cleaver-threshertooth-blade/accepted-raws/threshertooth-blade.png",
+  "note": "Unregistered interim Fowl Equipment source family for #394; no registry/runtime activation in this slice."
+}

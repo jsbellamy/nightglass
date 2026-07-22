@@ -1,0 +1,10 @@
+{
+  "candidate": "threshertooth-blade-r1",
+  "raw_sha256": "fde3233c93d62ed3e97043eba30df430f0c21dac60cb1fe8e843be08dd56616e",
+  "raw_size": [
+    1024,
+    1024
+  ],
+  "status": "fail",
+  "error": "threshertooth-blade-r1.png: subject clipped by generator at bottom/left of the 1024x1024 raw canvas"
+}

@@ -1,0 +1,49 @@
+{
+  "candidate": "threshertooth-blade-r2",
+  "raw_sha256": "fd6d460faf870c3712c5a0e54d52e59eaa94253598425f5b285a92a10753be16",
+  "raw_size": [
+    1024,
+    1024
+  ],
+  "recovered": {
+    "bbox": [
+      339,
+      150,
+      699,
+      867
+    ],
+    "pitch_x": {
+      "pitch": 31.344444444444605,
+      "score": 0.29135368735006534
+    },
+    "pitch_y": {
+      "pitch": 31.844444444444612,
+      "score": 0.24981525050211315
+    },
+    "grid": [
+      11,
+      23
+    ]
+  },
+  "ramp": {
+    "opaque_cells": 111,
+    "far_cells": 7,
+    "far_fraction": 0.0631,
+    "off_ramp_reject": false,
+    "quantize_histogram": {
+      "oil-ink": 41,
+      "crow-black": 15,
+      "beak-orange": 8,
+      "storm-slate": 19,
+      "rust-orange-deep": 5,
+      "bruise-plum": 1,
+      "patty-brown": 3,
+      "toast-brown": 4,
+      "grease-brown-deep": 3,
+      "field-green-deep": 5,
+      "field-green": 5,
+      "husk-green": 2
+    }
+  },
+  "status": "gates_pass"
+}
