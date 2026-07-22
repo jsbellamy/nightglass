@@ -1,0 +1,84 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "7d3774a77f344bacdf198ad258854875583171f2be644902f11569dfca17bab5",
+  "asset_class": "interface",
+  "kind": "equipment-base-icon",
+  "runtime_destination": "src/assets/icons/fryerplate-cleaver.png",
+  "source_key": "fryerplate-cleaver",
+  "candidate": "fryerplate-cleaver-r5",
+  "palette": "fowl-harvest-24",
+  "palette_subset": [
+    "oil-ink",
+    "crow-black",
+    "bruise-plum",
+    "storm-slate",
+    "diner-cream",
+    "teal-light",
+    "diner-teal",
+    "pond-teal-deep",
+    "condiment-red",
+    "grease-brown-deep",
+    "patty-brown",
+    "toast-brown"
+  ],
+  "style_references": [
+    {
+      "path": "src/assets/icons/preview/verify-fowl-canary@8x.png",
+      "sha256": "8fdc3206f4e5f5ff228d4651bcd70a6393da3eeed025c24a7b90c2673f3c75cd",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icon-sources/verify-fowl-canary/source.grid",
+      "sha256": "04f1b9aa20d3b67fd0c13c15391c3fd94b55fc7e7df1c92e743e2552e5922a93",
+      "role": "fowl_shell_text_grid"
+    },
+    {
+      "path": "src/assets/icons/preview/thornquill-blade@8x.png",
+      "sha256": "2f161f0c7ca3967e6661ae62cd9ee1e61f186eedcee2f379bc77d94b8cb03b02",
+      "role": "weapon_silhouette_scale"
+    }
+  ],
+  "issue_exact_prompt": "TRUE chunky pixel art inventory icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block with no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered Fowl Harvest Equipment item in three-quarter display angle for Fryerplate Cleaver: a broad butcher cleaver forged from greasy diner chrome, with a squared blade, fryer-basket perforations, and warning-red handle wrap. The subject long side spans about 26\u201330 logical pixels, with at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel oil-ink outline. Use only named fowl-harvest-24 colors, 8\u201312 flat colors maximum. Structural members are at least three logical pixels thick. No Character, duck body, scene, shadow, glow, sparks, particles, text, watermark, UI frame, or transparency.",
+  "issue_exact_prompt_sha256": "1b5615b9a30e42bcb7b881118238bbaf54f293f3beff3c2a52f8782206b07dfa",
+  "issue_exact_prompt_submitted_as": "base_prompt_with_gate_retry_adjustments",
+  "prompt": "TRUE chunky pixel art inventory icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block \u2014 no gradients, anti-aliasing, blur, dithering, metallic sheen.\n\nONE small centered Fryerplate Cleaver inventory item in three-quarter view. Shrink the whole object: the entire cleaver including handle must fit inside roughly a 24\u00d720 logical-pixel bounding box, centered, with at least FIVE full magenta cells of empty space on every edge. It must look like a compact inventory glyph, not a large prop.\n\nIdentity: broad squared butcher cleaver blade with a few oil-ink fryer-basket hole dots; short handle with condiment-red wrap.\n\nCOLOR LOCK exact hex only (no other colors):\n- blade fill: storm-slate #55586a ONLY (dark blue-grey bricks \u2014 NEVER light grey/silver/chrome)\n- highlight rim: diner-cream #f3d897 (thin)\n- holes + outline: oil-ink #111018\n- handle wrap: condiment-red #c83d3d\n\nFlat solid magenta #ff00ff background, nothing else. Selective one-logical-pixel oil-ink outline. Members \u22653 px thick. No Character, duck, scene, shadow, glow, sparks, particles, text, watermark, UI frame, transparency.",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        342,
+        326,
+        696,
+        666
+      ],
+      "pitch_x": {
+        "pitch": 16.91111111111121,
+        "score": 0.4321690598625173
+      },
+      "pitch_y": {
+        "pitch": 16.96111111111121,
+        "score": 0.3971236105544464
+      },
+      "grid": [
+        21,
+        20
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 192,
+      "far_cells": 20,
+      "far_fraction": 0.1042,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "oil-ink": 56,
+        "storm-slate": 93,
+        "diner-cream": 20,
+        "crow-black": 1,
+        "condiment-red": 15,
+        "patty-brown": 7
+      }
+    }
+  },
+  "evidence_raw": "docs/research/evidence/fowl-harvest/equipment-icons/fryerplate-cleaver-threshertooth-blade/accepted-raws/fryerplate-cleaver.png",
+  "note": "Unregistered interim Fowl Equipment source family for #394; no registry/runtime activation in this slice."
+}

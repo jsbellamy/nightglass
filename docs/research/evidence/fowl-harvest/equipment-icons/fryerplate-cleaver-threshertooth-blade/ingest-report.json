@@ -1,0 +1,79 @@
+{
+  "fryerplate-cleaver": {
+    "recovered": {
+      "bbox": [
+        342,
+        326,
+        696,
+        666
+      ],
+      "pitch_x": {
+        "pitch": 16.91111111111121,
+        "score": 0.4321690598625173
+      },
+      "pitch_y": {
+        "pitch": 16.96111111111121,
+        "score": 0.3971236105544464
+      },
+      "grid": [
+        21,
+        20
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 192,
+      "far_cells": 20,
+      "far_fraction": 0.1042,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "oil-ink": 56,
+        "storm-slate": 93,
+        "diner-cream": 20,
+        "crow-black": 1,
+        "condiment-red": 15,
+        "patty-brown": 7
+      }
+    }
+  },
+  "threshertooth-blade": {
+    "recovered": {
+      "bbox": [
+        124,
+        64,
+        884,
+        953
+      ],
+      "pitch_x": {
+        "pitch": 39.67222222222189,
+        "score": 0.08572775437769704
+      },
+      "pitch_y": {
+        "pitch": 40.32222222222185,
+        "score": 0.28932648590167015
+      },
+      "grid": [
+        19,
+        23
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 165,
+      "far_cells": 12,
+      "far_fraction": 0.0727,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "oil-ink": 41,
+        "storm-slate": 46,
+        "grease-brown-deep": 11,
+        "rust-orange-deep": 32,
+        "beak-orange": 8,
+        "patty-brown": 1,
+        "toast-brown": 1,
+        "field-green-deep": 11,
+        "crow-black": 8,
+        "husk-green": 3,
+        "field-green": 3
+      }
+    }
+  }
+}

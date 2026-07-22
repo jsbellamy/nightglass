@@ -1,0 +1,10 @@
+{
+  "candidate": "fryerplate-cleaver-r3",
+  "raw_sha256": "f9b395648757fe792ee6c830e93b00f68b14a56175fec92f5f3f642b166f3277",
+  "raw_size": [
+    1024,
+    1024
+  ],
+  "status": "fail",
+  "error": "fryerplate-cleaver-r3.png: overshoot recovered 20\u00d736 (max body 30\u00d730 before outline ring)"
+}
