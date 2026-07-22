@@ -1,0 +1,81 @@
+{
+  "red-beacon-token": {
+    "recovered": {
+      "bbox": [
+        198,
+        150,
+        825,
+        857
+      ],
+      "pitch_x": {
+        "pitch": 25.116666666666745,
+        "score": 0.2901754658645108
+      },
+      "pitch_y": {
+        "pitch": 25.316666666666748,
+        "score": 0.2846608529588224
+      },
+      "grid": [
+        25,
+        28
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 552,
+      "far_cells": 63,
+      "far_fraction": 0.1141,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "oil-ink": 63,
+        "teal-light": 131,
+        "diner-cream": 14,
+        "pond-teal-deep": 74,
+        "crow-black": 9,
+        "patty-brown": 56,
+        "condiment-red": 200,
+        "rust-orange-deep": 4,
+        "beak-orange": 1
+      }
+    },
+    "preview": "docs/research/evidence/fowl-harvest/equipment-icons/red-beacon-token-black-oil-locket/previews/red-beacon-token@8x.png"
+  },
+  "black-oil-locket": {
+    "recovered": {
+      "bbox": [
+        151,
+        59,
+        901,
+        944
+      ],
+      "pitch_x": {
+        "pitch": 41.86111111111065,
+        "score": 0.10097884345130367
+      },
+      "pitch_y": {
+        "pitch": 42.06111111111064,
+        "score": 0.1760116401362297
+      },
+      "grid": [
+        18,
+        21
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 221,
+      "far_cells": 4,
+      "far_fraction": 0.0181,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "oil-ink": 75,
+        "crow-black": 117,
+        "rust-orange-deep": 9,
+        "toast-brown": 8,
+        "grease-brown-deep": 9,
+        "patty-brown": 1,
+        "condiment-red": 1,
+        "bruise-plum": 1
+      }
+    },
+    "preview": "docs/research/evidence/fowl-harvest/equipment-icons/red-beacon-token-black-oil-locket/previews/black-oil-locket@8x.png"
+  }
+}

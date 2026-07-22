@@ -1,0 +1,63 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "prompt": "TRUE chunky pixel art inventory icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block with no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered Fowl Harvest Equipment item in three-quarter display angle for Black-Oil Locket: a LARGE chunky oil-black heart-or-oval locket filling most of the grid, with a restrained rust-orange (#bf532f) seam and one small condiment-red (#c83d3d) warning glint. Body is oil-ink and crow-black only with bruise-plum depth. Selective one-logical-pixel oil-ink outline. The subject long side MUST span 26\u201330 logical pixels, with exactly two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Use ONLY these named fowl-harvest-24 flat colors: oil-ink, crow-black, bruise-plum, storm-slate, rust-orange-deep, beak-orange, condiment-red, diner-cream \u2014 8 flat colors maximum, no other hues. Structural members are at least three logical pixels thick. No Character, duck body, scene, shadow, glow, sparks, particles, text, watermark, UI frame, or transparency. No purple wash, pink, cyan, wood brown, or off-palette metals.",
+  "issue_contract_prompt": "TRUE chunky pixel art inventory icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block with no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered Fowl Harvest Equipment item in three-quarter display angle for Black-Oil Locket: a small oil-black locket with a restrained rust-orange seam and red warning glint. The subject long side spans about 26\u201330 logical pixels, with at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel oil-ink outline. Use only named fowl-harvest-24 colors, 8\u201312 flat colors maximum. Structural members are at least three logical pixels thick. No Character, duck body, scene, shadow, glow, sparks, particles, text, watermark, UI frame, or transparency.",
+  "raw_sha256": "5ee46997ebd7f3207487482e2db5d0c917d4b84539aa529a129271b7eea2e9bf",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        151,
+        59,
+        901,
+        944
+      ],
+      "pitch_x": {
+        "pitch": 41.86111111111065,
+        "score": 0.10097884345130367
+      },
+      "pitch_y": {
+        "pitch": 42.06111111111064,
+        "score": 0.1760116401362297
+      },
+      "grid": [
+        18,
+        21
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 221,
+      "far_cells": 4,
+      "far_fraction": 0.0181,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "oil-ink": 75,
+        "crow-black": 117,
+        "rust-orange-deep": 9,
+        "toast-brown": 8,
+        "grease-brown-deep": 9,
+        "patty-brown": 1,
+        "condiment-red": 1,
+        "bruise-plum": 1
+      }
+    }
+  },
+  "palette": "fowl-harvest-24",
+  "palette_subset": [
+    "oil-ink",
+    "crow-black",
+    "bruise-plum",
+    "storm-slate",
+    "grease-brown-deep",
+    "patty-brown",
+    "rust-orange-deep",
+    "beak-orange",
+    "duck-shadow",
+    "condiment-red",
+    "diner-cream",
+    "toast-brown"
+  ],
+  "evidence_raw": "docs/research/evidence/fowl-harvest/equipment-icons/red-beacon-token-black-oil-locket/accepted-raws/black-oil-locket.png",
+  "note": "#399 Charm Equipment Tier IV unregistered source family; independent silhouette (not Tier III recolor); activation deferred",
+  "candidate": "black-oil-locket-r2"
+}
