@@ -376,6 +376,8 @@ describe("Armory surface", () => {
     expect(tile?.querySelector(".locked-marker")?.textContent).not.toMatch(/Locked/);
     expect(tile?.querySelector(".assigned-marker")).toBeNull();
     expect(tile?.textContent).not.toMatch(/Knight/);
+    expect(tile?.classList.contains("locked-tile")).toBe(true);
+    expect(tile?.querySelector('[data-tile-lock="2"]')).not.toBeNull();
     expect(root.querySelector(".armory-filter")).toBeNull();
 
     surface.destroy();

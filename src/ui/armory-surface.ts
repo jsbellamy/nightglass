@@ -774,7 +774,6 @@ export function mountArmorySurface(
           : `equipment-card focus-ring${drop.locked ? " locked-tile" : ""}`,
         data: {
           dropId: String(drop.dropId),
-          compareCandidate: String(drop.dropId),
         },
         props: { tabIndex: 0, role: "option" },
         aria: {
@@ -823,7 +822,6 @@ export function mountArmorySurface(
       });
       lockButton.addEventListener("click", (event) => {
         event.stopPropagation();
-        publish({ cmd: "setLocked", args: [drop.dropId, !drop.locked] });
       });
       bindPressable(lockButton, () => {
         publish({ cmd: "setLocked", args: [drop.dropId, !drop.locked] });
