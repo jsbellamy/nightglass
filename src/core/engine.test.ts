@@ -4,6 +4,8 @@ import type { EngineEvent } from "./events";
 import { partyEntityId } from "./entity-id";
 import type { DropInstance, Snapshot } from "./snapshot";
 import { statuses as shippedStatuses } from "../data/statuses";
+import { effectiveTalentState } from "./pending-edits";
+import { characterStats } from "./stats";
 import { fixtureContent, fourTierFixtureContent } from "./testing/fixture-content";
 import { driveBy, scenario } from "./testing/scenario";
 import type { ClassId, Content, StageDef, StageId } from "./types";
@@ -64,6 +66,83 @@ const engineContent: Content = {
     { ...fixtureContent.stages[0]!, id: 3, name: "Fixture Stage 3" },
   ],
 };
+
+const knightFixtureKit = fixtureContent.classes.find((entry) => entry.id === "knight")!;
+
+function tierTwoKnightAbility(id: string, templateId: string) {
+  const template = fixtureContent.abilities.find((ability) => ability.id === templateId)!;
+  return { ...template, id, iconKey: id };
+}
+
+const twoTierEngineContent: Content = {
+  ...engineContent,
+  xpThresholds: [
+    0,
+    100,
+    250,
+    450,
+    650,
+    850,
+    1_100,
+    1_400,
+    1_700,
+    2_000,
+    2_300,
+    2_600,
+  ],
+  abilities: [
+    ...engineContent.abilities,
+    tierTwoKnightAbility("k2-hold-line", "k-hold-line"),
+    tierTwoKnightAbility("k2-falling-star", "k-falling-star"),
+  ],
+  classes: engineContent.classes.map((classKit) =>
+    classKit.id === "knight"
+      ? {
+          ...knightFixtureKit,
+          talentTiers: [
+            {
+              statRow: [
+                {
+                  id: "k2-fortitude",
+                  name: "Fortitude II",
+                  perRank: { percent: { maxHealth: 0.04 } },
+                  maxRanks: 5,
+                  iconKey: "k2-fortitude",
+                },
+                {
+                  id: "k2-swordcraft",
+                  name: "Swordcraft II",
+                  perRank: { percent: { physicalPower: 0.04 } },
+                  maxRanks: 5,
+                  iconKey: "k2-swordcraft",
+                },
+              ],
+              abilityRow: ["k2-hold-line", "k2-falling-star"],
+            },
+          ],
+        }
+      : classKit,
+  ),
+};
+
+function fillKnightTierOne(engine: ReturnType<typeof createEngine>): void {
+  for (let rank = 0; rank < 5; rank += 1) {
+    engine.allocateTalent(
+      "knight",
+      rank % 2 === 0 ? "k-fortitude" : "k-swordcraft",
+    );
+  }
+  engine.allocateTalent("knight", "k-hold-line");
+}
+
+function commandSucceeds(run: () => void): boolean {
+  try {
+    run();
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 const fixtureStageTemplate = fixtureContent.stages[0]!;
 
@@ -2226,6 +2305,131 @@ describe("progression", () => {
       }
     }
     throw new Error("config-applied never emitted for talent boundary");
+  });
+
+  describe("multi-tier Talent commands", () => {
+    it("rejects Tier 2 allocation until Tier 1 is complete and matches legality predicates", () => {
+      const boot = createEngine(twoTierEngineContent, undefined, LOOT_SEED);
+      boot.advanceBy(1);
+      const saved = boot.snapshot();
+      saved.progression.characterXp.knight = 3_000;
+      const engine = createEngine(twoTierEngineContent, saved, LOOT_SEED);
+      for (let rank = 0; rank < 5; rank += 1) {
+        engine.allocateTalent("knight", "k-fortitude");
+      }
+      expect(engine.canAllocateTalent("knight", "k2-fortitude")).toBe(
+        commandSucceeds(() => engine.allocateTalent("knight", "k2-fortitude")),
+      );
+      engine.allocateTalent("knight", "k-hold-line");
+      expect(engine.canAllocateTalent("knight", "k2-fortitude")).toBe(
+        commandSucceeds(() => engine.allocateTalent("knight", "k2-fortitude")),
+      );
+    });
+
+    it("keeps Tier 2 Talent edits pending during an Attempt until the Wave boundary", () => {
+      const boot = createEngine(twoTierEngineContent, undefined, LOOT_SEED);
+      boot.advanceBy(1);
+      const saved = boot.snapshot();
+      saved.progression.characterXp.knight = 3_000;
+      const engine = createEngine(twoTierEngineContent, saved, LOOT_SEED);
+      fillKnightTierOne(engine);
+      engine.selectStage(1);
+      expect(
+        engine.snapshot().progression.talents.knight?.tierStates[1]?.statRanks["k2-fortitude"],
+      ).toBe(0);
+
+      engine.allocateTalent("knight", "k2-fortitude");
+      const pendingSnap = engine.snapshot();
+      expect(pendingSnap.progression.talents.knight?.tierStates[1]?.statRanks["k2-fortitude"]).toBe(
+        0,
+      );
+      expect(effectiveTalentState(pendingSnap, "knight").tierStates[1]!.statRanks["k2-fortitude"]).toBe(
+        1,
+      );
+
+      let elapsed = 0;
+      while (elapsed < 300_000) {
+        elapsed += 1;
+        const events = driveBy(engine, 1);
+        if (events.some((event) => event.type === "config-applied")) {
+          expect(
+            engine.snapshot().progression.talents.knight?.tierStates[1]?.statRanks["k2-fortitude"],
+          ).toBe(1);
+          return;
+        }
+      }
+      throw new Error("config-applied never emitted for Tier 2 talent boundary");
+    });
+
+    it("rejects Tier 1 deallocation while Tier 2 still holds points", () => {
+      const boot = createEngine(twoTierEngineContent, undefined, LOOT_SEED);
+      boot.advanceBy(1);
+      const saved = boot.snapshot();
+      saved.progression.characterXp.knight = 3_000;
+      const engine = createEngine(twoTierEngineContent, saved, LOOT_SEED);
+      fillKnightTierOne(engine);
+      engine.allocateTalent("knight", "k2-fortitude");
+      expect(engine.canDeallocateTalent("knight", "k-fortitude")).toBe(
+        commandSucceeds(() => engine.deallocateTalent("knight", "k-fortitude")),
+      );
+      engine.deallocateTalent("knight", "k2-fortitude");
+      expect(engine.canDeallocateTalent("knight", "k-fortitude")).toBe(
+        commandSucceeds(() => engine.deallocateTalent("knight", "k-fortitude")),
+      );
+    });
+
+    it("strips a removed Tier 2 Ability Talent from the loadout at the Wave boundary", () => {
+      const boot = createEngine(twoTierEngineContent, undefined, LOOT_SEED);
+      boot.advanceBy(1);
+      const saved = boot.snapshot();
+      saved.progression.characterXp.knight = 3_000;
+      const engine = createEngine(twoTierEngineContent, saved, LOOT_SEED);
+      fillKnightTierOne(engine);
+      for (let rank = 0; rank < 5; rank += 1) {
+        engine.allocateTalent(
+          "knight",
+          rank % 2 === 0 ? "k2-fortitude" : "k2-swordcraft",
+        );
+      }
+      engine.allocateTalent("knight", "k2-hold-line");
+      engine.setLoadout("knight", ["k2-hold-line", "k-sweep", "k-rally"]);
+      engine.selectStage(1);
+      engine.deallocateTalent("knight", "k2-hold-line");
+
+      let elapsed = 0;
+      while (elapsed < 300_000) {
+        elapsed += 1;
+        const events = driveBy(engine, 1);
+        if (events.some((event) => event.type === "config-applied")) {
+          const loadout = engine.snapshot().progression.loadouts.knight!;
+          expect(loadout).not.toContain("k2-hold-line");
+          expect(loadout).toHaveLength(3);
+          expect(new Set(loadout).size).toBe(3);
+          return;
+        }
+      }
+      throw new Error("config-applied never emitted for Tier 2 loadout strip");
+    });
+
+    it("aggregates Stat modifiers from both Tiers after pending edits apply", () => {
+      const boot = createEngine(twoTierEngineContent, undefined, LOOT_SEED);
+      boot.advanceBy(1);
+      const saved = boot.snapshot();
+      saved.progression.characterXp.knight = 3_000;
+      const engine = createEngine(twoTierEngineContent, saved, LOOT_SEED);
+      fillKnightTierOne(engine);
+      for (let rank = 0; rank < 5; rank += 1) {
+        engine.allocateTalent("knight", "k2-fortitude");
+      }
+      engine.selectStage(1);
+      const knightKit = twoTierEngineContent.classes.find((entry) => entry.id === "knight")!;
+      const applied = engine.snapshot().progression.talents.knight!;
+      const expected = characterStats(knightKit, applied);
+      const knight = engine.snapshot().attempt?.combatants.find(
+        (combatant) => combatant.defId === "knight",
+      );
+      expect(knight?.maxHealth).toBe(expected.maxHealth);
+    });
   });
 
   it("applies setParty at the next fresh Attempt", () => {
