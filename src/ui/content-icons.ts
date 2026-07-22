@@ -2,35 +2,44 @@ import type { Content } from "../core/types";
 import {
   canonicalEquipmentIconKey,
   collectContentEquipmentIconKeys,
+  collectContentTalentIconKeys,
   isRegisteredIconKey,
   registeredIconKeys,
 } from "./icons";
 
-/** UI-owned completeness check: every `EquipmentBaseDef.iconKey` in Content must resolve through
- * `icons.ts`, and the registry must not carry orphan entries for the canonical keys that Content
- * uses (including fixture aliases in tests). */
-export function assertRegisteredContentIcons(content: Pick<Content, "equipmentBases">): void {
+/** UI-owned completeness check: every content `iconKey` must resolve through `icons.ts`, and the
+ * registry must not carry orphan entries for keys Content uses (including fixture aliases). */
+export function assertRegisteredContentIcons(
+  content: Pick<Content, "equipmentBases" | "classes" | "abilities">,
+): void {
   const registered = new Set(registeredIconKeys());
-  const contentKeys = collectContentEquipmentIconKeys(content as Content);
   const canonicalUsed = new Set<string>();
   const violations: string[] = [];
 
-  for (const key of contentKeys) {
+  const assertKey = (key: string, label: string): void => {
     if (!isRegisteredIconKey(key)) {
-      violations.push(`equipment base declares iconKey "${key}" not in registry`);
-      continue;
+      violations.push(`${label} declares iconKey "${key}" not in registry`);
+      return;
     }
     const canonical = canonicalEquipmentIconKey(key);
     if (!canonical) {
-      violations.push(`equipment base declares iconKey "${key}" not in registry`);
-      continue;
+      violations.push(`${label} declares iconKey "${key}" not in registry`);
+      return;
     }
     canonicalUsed.add(canonical);
+  };
+
+  for (const key of collectContentEquipmentIconKeys(content as Content)) {
+    assertKey(key, "equipment base");
+  }
+
+  for (const key of collectContentTalentIconKeys(content as Content)) {
+    assertKey(key, "talent");
   }
 
   for (const key of registered) {
     if (!canonicalUsed.has(key)) {
-      violations.push(`icons.ts registry entry "${key}" is not referenced by Content equipmentBases`);
+      violations.push(`icons.ts registry entry "${key}" is not referenced by Content`);
     }
   }
 
@@ -39,6 +48,6 @@ export function assertRegisteredContentIcons(content: Pick<Content, "equipmentBa
   }
 
   throw new Error(
-    `Invalid Content equipment icon registry:\n${violations.map((line) => `  - ${line}`).join("\n")}`,
+    `Invalid Content icon registry:\n${violations.map((line) => `  - ${line}`).join("\n")}`,
   );
 }

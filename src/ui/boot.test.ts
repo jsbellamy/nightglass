@@ -3,7 +3,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as battleTile from "./battle-tile";
 import { createEngine } from "../core/engine";
-import { fixtureContent } from "../core/testing/fixture-content";
 import { content as fullContent } from "../data";
 import {
   AUTOSAVE_MS,
@@ -59,7 +58,7 @@ describe("bootTile", () => {
     const storage = createMemoryStorage();
     const root = document.createElement("main");
     const booted = bootTile(root, {
-      content: fixtureContent,
+      content: fullContent,
       now: () => 1_000,
       storage,
       mountTile: (tileRoot, options) => mountTileShell(tileRoot, options),
@@ -78,7 +77,7 @@ describe("bootTile", () => {
 
   it("pre-mount ordering keeps offline Presentation Events away from tile handlers", () => {
     const storage = createMemoryStorage();
-    const engine = createEngine(fixtureContent, undefined, DEFAULT_LOOT_SEED, () => 0);
+    const engine = createEngine(fullContent, undefined, DEFAULT_LOOT_SEED, () => 0);
     engine.advanceBy(1);
     const saved = engine.snapshot();
     saved.savedAtMs = 0;
@@ -94,7 +93,7 @@ describe("bootTile", () => {
     const root = document.createElement("main");
     const nowMs = MIN_OFFLINE_MS + 5_000;
     const booted = bootTile(root, {
-      content: fixtureContent,
+      content: fullContent,
       now: () => nowMs,
       storage,
       mountTile: (tileRoot, options) => mountTileShell(tileRoot, options),
@@ -111,7 +110,7 @@ describe("bootTile", () => {
     storage.setItem("nightglass-mute", "true");
     const root = document.createElement("main");
     const booted = bootTile(root, {
-      content: fixtureContent,
+      content: fullContent,
       storage,
       mountTile: (tileRoot, options) => mountTileShell(tileRoot, options),
     });

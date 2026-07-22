@@ -58,6 +58,8 @@ export interface AbilityDef {
   recoveryMs: number;
   cooldownMs: number;
   validWhile?: "status-absent" | "any-ally-missing-health" | "below-half-health";
+  /** Authored for `slot: "talent"`; omitted on basic/core (interim). */
+  iconKey?: string;
 }
 
 export interface StatTalentDef {
@@ -65,6 +67,7 @@ export interface StatTalentDef {
   name: string;
   perRank: StatModifiers;
   maxRanks: 5;
+  iconKey: string;
 }
 
 export interface TalentTierDef {
