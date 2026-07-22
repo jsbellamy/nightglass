@@ -7,7 +7,7 @@ import { fixtureContent } from "./fixture-content";
 import { driveBy, scenario } from "./scenario";
 
 describe("scenario builder", () => {
-  it("scenario().build() returns a SCHEMA_VERSION Snapshot that loads without discarding the Attempt", () => {
+  it("loads a fresh Arrange Snapshot into the Engine without discarding the Stage Attempt", () => {
     const saved = scenario().build();
     expect(saved.schemaVersion).toBe(SCHEMA_VERSION);
     expect(saved.attempt).not.toBeNull();
@@ -20,7 +20,7 @@ describe("scenario builder", () => {
     expect(loaded.attempt?.id).toBe(saved.attempt?.id);
   });
 
-  it("scenario().build() with no calls matches createDefaultProgression for a fresh game", () => {
+  it("defaults Arrange to a new-game Progression and Wave 1 Stage Attempt in the fighting Phase", () => {
     const saved = scenario().build();
     const defaults = createDefaultProgression(fixtureContent);
     expect(saved.progression.unlockedStage).toBe(defaults.unlockedStage);
@@ -36,7 +36,7 @@ describe("scenario builder", () => {
     expect(saved.attempt?.phase).toBe("fighting");
   });
 
-  it("every engine.test.ts Snapshot literal state is reachable through the builder", () => {
+  it("reaches every Engine seam Snapshot literal Arrange dimension through the builder", () => {
     // Mapping: engine.test.ts line → builder call (arrange dimensions only).
     const cases: {
       line: number;
@@ -301,7 +301,7 @@ describe("scenario builder", () => {
 });
 
 describe("driveBy", () => {
-  it("driveBy(engine, 4000, 1) and driveBy(engine, 4000, 4000) produce identical event batches and Snapshots", () => {
+  it("is chunk-neutral: many small calls match one large call", () => {
     const saved = scenario().withParty(["knight", "wizard", "priest"], "hunter").build();
     const oneMs = createEngine(fixtureContent, cloneSnapshot(saved));
     const chunk = createEngine(fixtureContent, cloneSnapshot(saved));
