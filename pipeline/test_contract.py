@@ -28,6 +28,8 @@ RUNTIME_SPRITES = {
     "burger-drake": "burger-drake.png",
     "cornquacker": "cornquacker.png",
     "the-combine": "the-combine.png",
+    "the-fryer": "the-fryer.png",
+    "scarequack": "scarequack.png",
     "boss": "boss-1.png",
     "boss-2": "boss-2.png",
     "boss-3": "boss-3.png",
@@ -274,6 +276,36 @@ check("The Combine flexible opaque bounds fit the Boss 160x72 ceiling",
       and combine_measure["fitted_opaque_size"][1] <= combine_profile.max_opaque_h
       and combine_measure["clipped_sides"] == [],
       str(combine_measure))
+
+fryer_sidecar = _sidecar("the-fryer")
+fryer_measure = A.measure_candidate(RAW_DIR / "the-fryer.png", tag="the-fryer")
+check("The Fryer archived raw uses flexible Fowl Harvest provenance",
+      fryer_sidecar.get("acquisition") == "flexible"
+      and fryer_sidecar.get("identity_profile", {}).get("role") == "boss"
+      and fryer_sidecar.get("facing") == "left"
+      and fryer_sidecar.get("palette") == "fowl-harvest-24@1",
+      str(fryer_sidecar))
+check("The Fryer flexible opaque bounds fit the Boss 160x72 ceiling",
+      fryer_measure["status"] == "advance"
+      and fryer_measure["fitted_opaque_size"][0] <= fryer_profile.max_opaque_w
+      and fryer_measure["fitted_opaque_size"][1] <= fryer_profile.max_opaque_h
+      and fryer_measure["clipped_sides"] == [],
+      str(fryer_measure))
+
+scare_sidecar = _sidecar("scarequack")
+scare_measure = A.measure_candidate(RAW_DIR / "scarequack.png", tag="scarequack")
+check("Scarequack archived raw uses flexible Fowl Harvest provenance",
+      scare_sidecar.get("acquisition") == "flexible"
+      and scare_sidecar.get("identity_profile", {}).get("role") == "boss"
+      and scare_sidecar.get("facing") == "left"
+      and scare_sidecar.get("palette") == "fowl-harvest-24@1",
+      str(scare_sidecar))
+check("Scarequack flexible opaque bounds fit the Boss 160x72 ceiling",
+      scare_measure["status"] == "advance"
+      and scare_measure["fitted_opaque_size"][0] <= scarequack_profile.max_opaque_w
+      and scare_measure["fitted_opaque_size"][1] <= scarequack_profile.max_opaque_h
+      and scare_measure["clipped_sides"] == [],
+      str(scare_measure))
 
 boss3_sidecar = _sidecar("boss-3")
 boss3_measure = A.measure_candidate(RAW_DIR / "boss-3.png", tag="boss-3")
@@ -743,7 +775,8 @@ check("complete body raw tags are lexicographically sorted",
 check("production body bundles discovered in runtime-key order",
       A.default_build_raw_tags() == (
           "boss", "boss-2", "boss-3", "burger-drake", "cornquacker", "hunter",
-          "knight", "pipcap", "priest", "the-combine", "wizard"),
+          "knight", "pipcap", "priest", "scarequack", "the-combine", "the-fryer",
+          "wizard"),
       str(A.default_build_raw_tags()))
 check("Burger Drake complete body bundle is discovered",
       "burger-drake" in _discovered_body)
@@ -751,21 +784,18 @@ check("Cornquacker complete body bundle is discovered",
       "cornquacker" in _discovered_body)
 check("The Combine complete body bundle is discovered",
       "the-combine" in _discovered_body)
-check("missing-bundle interim set is empty after Fryer and Scarequack raws",
+check("The Fryer complete body bundle is discovered",
+      "the-fryer" in _discovered_body)
+check("Scarequack complete body bundle is discovered",
+      "scarequack" in _discovered_body)
+check("missing-bundle interim set is empty after Fryer and Scarequack promotion",
       A.MISSING_BODY_BUNDLE_INTERIM_RAW_TAGS == frozenset())
-check("archived Fryer raw is discovered without runtime rebuild",
-      "the-fryer" in _discovered_body
-      and "the-fryer" not in A.default_build_raw_tags()
-      and not (RUNTIME_DIR / "the-fryer.png").is_file())
-check("archived Scarequack raw is discovered without runtime rebuild",
-      "scarequack" in _discovered_body
-      and "scarequack" not in A.default_build_raw_tags()
-      and not (RUNTIME_DIR / "scarequack.png").is_file())
-check("unpromoted Fryer and Scarequack leave production body tags unchanged",
-      A.default_build_raw_tags() == (
-          "boss", "boss-2", "boss-3", "burger-drake", "cornquacker", "hunter",
-          "knight", "pipcap", "priest", "the-combine", "wizard"),
-      str(A.default_build_raw_tags()))
+check("promoted Fryer runtime is included in default rebuild",
+      "the-fryer" in A.default_build_raw_tags()
+      and (RUNTIME_DIR / "the-fryer.png").is_file())
+check("promoted Scarequack runtime is included in default rebuild",
+      "scarequack" in A.default_build_raw_tags()
+      and (RUNTIME_DIR / "scarequack.png").is_file())
 with tempfile.TemporaryDirectory() as _fryer_orphan_temp:
     _fryer_orphan_raw = pathlib.Path(_fryer_orphan_temp)
     Image.new("RGBA", (8, 8), (0, 0, 0, 255)).save(

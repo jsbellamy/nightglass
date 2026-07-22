@@ -54,7 +54,7 @@ describe("native-1× sprite dimensions", () => {
       expect(resolved.footAnchor, `${key} footAnchor`).toEqual(manifest.foot_anchor);
 
       const [frameWidth, frameHeight] = resolved.frameSize;
-      expect(resolved.footAnchor[0], `${key} foot x`).toBe(frameWidth / 2);
+      expect(resolved.footAnchor[0], `${key} foot x`).toBe(Math.floor(frameWidth / 2));
       expect(resolved.footAnchor[1], `${key} foot y`).toBe(frameHeight);
 
       const [left, top, right, bottom] = resolved.visualBounds;
