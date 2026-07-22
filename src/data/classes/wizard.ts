@@ -1,4 +1,4 @@
-import type { AbilityDef, ClassKitDef } from "../../core/types";
+import type { AbilityDef, ClassKitDef, TalentTierDef } from "../../core/types";
 
 export const wizardAbilities: AbilityDef[] = [
   {
@@ -85,6 +85,59 @@ export const wizardAbilities: AbilityDef[] = [
     cooldownMs: 15000,
   },
 ];
+
+export const wizardTier2Abilities: AbilityDef[] = [
+  {
+    id: "wildfire-sigil",
+    name: "Wildfire Sigil",
+    classId: "wizard",
+    slot: "talent",
+    iconKey: "wildfire-sigil",
+    targeting: { kind: "all-opponents" },
+    effects: [
+      { kind: "damage", channel: "elemental", element: "fire", coefficient: 0.9 },
+      { kind: "apply-status", statusId: "scorched" },
+    ],
+    windUpMs: 700,
+    recoveryMs: 700,
+    cooldownMs: 14_000,
+  },
+  {
+    id: "absolute-zero",
+    name: "Absolute Zero",
+    classId: "wizard",
+    slot: "talent",
+    iconKey: "absolute-zero",
+    targeting: { kind: "all-opponents" },
+    effects: [
+      { kind: "damage", channel: "elemental", element: "frost", coefficient: 0.65 },
+      { kind: "apply-status", statusId: "stun", stunMs: 1_000 },
+    ],
+    windUpMs: 650,
+    recoveryMs: 750,
+    cooldownMs: 15_000,
+  },
+];
+
+export const wizardTier2: TalentTierDef = {
+  statRow: [
+    {
+      id: "leyline-attunement",
+      name: "Leyline Attunement",
+      perRank: { flat: { elemental: 2 } },
+      maxRanks: 5,
+      iconKey: "leyline-attunement",
+    },
+    {
+      id: "glassweave",
+      name: "Glassweave",
+      perRank: { percent: { maxHealth: 0.05 } },
+      maxRanks: 5,
+      iconKey: "glassweave",
+    },
+  ],
+  abilityRow: ["wildfire-sigil", "absolute-zero"],
+};
 
 export const wizardClass: ClassKitDef = {
   id: "wizard",
