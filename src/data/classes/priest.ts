@@ -1,4 +1,4 @@
-import type { AbilityDef, ClassKitDef } from "../../core/types";
+import type { AbilityDef, ClassKitDef, TalentTierDef } from "../../core/types";
 
 export const priestAbilities: AbilityDef[] = [
   {
@@ -86,6 +86,60 @@ export const priestAbilities: AbilityDef[] = [
     cooldownMs: 12000,
   },
 ];
+
+export const priestTier2Abilities: AbilityDef[] = [
+  {
+    id: "benediction",
+    name: "Benediction",
+    classId: "priest",
+    slot: "talent",
+    iconKey: "benediction",
+    targeting: { kind: "party" },
+    effects: [
+      { kind: "heal", coefficient: 1.2 },
+      { kind: "apply-status", statusId: "inspired" },
+    ],
+    windUpMs: 700,
+    recoveryMs: 700,
+    cooldownMs: 15_000,
+    validWhile: "any-ally-missing-health",
+  },
+  {
+    id: "dawn-ascendant",
+    name: "Dawn Ascendant",
+    classId: "priest",
+    slot: "talent",
+    iconKey: "dawn-ascendant",
+    targeting: { kind: "first-knocked-out-ally" },
+    effects: [
+      { kind: "revive", coefficient: 2.5 },
+      { kind: "apply-status", statusId: "sheltered" },
+    ],
+    windUpMs: 1_200,
+    recoveryMs: 800,
+    cooldownMs: 22_000,
+  },
+];
+
+export const priestTier2: TalentTierDef = {
+  statRow: [
+    {
+      id: "battle-liturgy",
+      name: "Battle Liturgy",
+      perRank: { flat: { armor: 4 } },
+      maxRanks: 5,
+      iconKey: "battle-liturgy",
+    },
+    {
+      id: "sunwarding",
+      name: "Sunwarding",
+      perRank: { flat: { elementalResistance: 4 } },
+      maxRanks: 5,
+      iconKey: "sunwarding",
+    },
+  ],
+  abilityRow: ["benediction", "dawn-ascendant"],
+};
 
 export const priestClass: ClassKitDef = {
   id: "priest",
