@@ -127,11 +127,13 @@ test.describe("accessibility keyboard floor", () => {
     await dock.keyboard.press("Enter");
     await expect(dock.locator(".armory-grid")).toBeVisible();
     await expect(dock.locator('[data-armory-detail="true"]')).toBeVisible();
+    await expect(
+      dock.locator('[data-worn-slot="weapon"][data-slot-filled="true"]'),
+    ).toBeVisible();
     await dock.locator('[data-worn-slot="weapon"]').focus();
     await dock.keyboard.press("Enter");
     await assertFocusRingVisible(dock, '[data-unequip-slot="weapon"]');
-    await dock.locator('[data-unequip-slot="weapon"]').focus();
-    await dock.keyboard.press("Enter");
+    await dock.locator('[data-unequip-slot="weapon"]').press("Enter");
     await expect(dock.locator('[data-unequip-slot="weapon"]')).toHaveCount(0);
 
     await focusDockTab(dock, "stage");
