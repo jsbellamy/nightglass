@@ -1,0 +1,37 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "2c92a97aec8bdfb2ab819a33b0c2f0d4f2a897cb434b431e018dfa2b4f8feab9",
+  "acquisition": "flexible",
+  "identity_profile": {
+    "asset_class": "opponent",
+    "role": "boss",
+    "facing": "left"
+  },
+  "cursor_stamp_removed": false,
+  "identity": "scarequack",
+  "asset_class": "opponent",
+  "runtime_destination": "src/assets/sprites/scarequack.png",
+  "candidate": "scarequack-c2.png",
+  "facing": "left",
+  "role": "boss",
+  "palette": "fowl-harvest-24@1",
+  "style_references": [
+    {
+      "path": "src/assets/sprites/the-combine.png",
+      "sha256": "431f31f1a278a69e7fcd656f458789239a2339a443b3d96ab1cfbe13cd5aba15",
+      "role": "style"
+    },
+    {
+      "path": "src/assets/sprites/burger-drake.png",
+      "sha256": "c8a0e66c892465c9fa9355df19275a1c7385f10246286c4f11c2869272f9563f",
+      "role": "style"
+    },
+    {
+      "path": "src/assets/sprites/cornquacker.png",
+      "sha256": "326ec503bc95de96ab98ce82e54e91ca32577ee5d92eebdcb608bcb50a59a8ca",
+      "role": "style"
+    }
+  ],
+  "prompt": "Single full-body Scarequack Boss opponent game sprite, strict side profile facing LEFT. A towering mutant duck anatomically fused with a crooked scarecrow and fencepost: a corn-husk body wraps a tall splintered-post spine, ragged sackcloth wing panels form broad angular arms, and one lantern-like condiment-red eye shines beneath a crooked sack head and a clear orange duck bill. Keep complete webbed feet, the corn husks, sackcloth wings, fencepost, bill, eye, and tall silhouette as separate large readable shapes. It is one living mutation, never a duck in a costume or standing beside a scarecrow.\n\nIMPORTANT identity accents at native game scale: the single visible eye must be clearly condiment-red (#c83d3d) like a glowing lantern \u2014 not yellow, gold, or orange. The bill and feet stay beak-orange. Use large flat colour planes only.\n\nChunky simplified flat-colour Fowl Harvest rural-mutation pixel art, 70% absurd and 30% unsettling. Use only named fowl-harvest-24 colors with oil-ink and bruise-plum contour. No gore, wounds, realism, gradients, anti-aliasing, blur, dithering, fire, particles, effects, text, watermark, scenery, UI, shadow, transparency, or another subject.\n\nShow exactly one complete subject with generous empty clearance on every edge of an opaque flat solid magenta #ff00ff background.\n"
+}

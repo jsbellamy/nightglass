@@ -1,0 +1,31 @@
+{
+  "tag": "scarequack",
+  "candidates": [
+    {
+      "candidate": "assets-raw/grid_raw/scarequack.png",
+      "tag": "scarequack",
+      "status": "advance",
+      "primary_failure": null,
+      "next_action": "advance to visual review",
+      "gates": [],
+      "clipped_sides": [],
+      "cursor_stamp_removed": false,
+      "opaque_bounds": [
+        0,
+        0,
+        680,
+        954
+      ],
+      "fitted_opaque_size": [
+        51,
+        72
+      ],
+      "profile": {
+        "role": "boss",
+        "max_opaque_w": 160,
+        "max_opaque_h": 72,
+        "facing": "left"
+      }
+    }
+  ]
+}

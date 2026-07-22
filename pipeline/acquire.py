@@ -167,12 +167,11 @@ ASSET_IDENTITIES = {
     },
 }
 
-# Registered identities still awaiting a complete archived raw bundle.
-# Scarequack remains here until #388; The Fryer raw lands in #387 without
-# runtime promotion (#405). Half-bundles still fail orphan discovery.
-MISSING_BODY_BUNDLE_INTERIM_RAW_TAGS = frozenset({
-    "scarequack",
-})
+# Identities still awaiting a complete archived raw bundle. Empty once Fryer
+# (#387) and Scarequack (#388) raws land; shared runtime promotion is #405.
+# Unpromoted complete archives are omitted from default rebuild when the
+# committed runtime PNG is absent. Half-bundles still fail orphan discovery.
+MISSING_BODY_BUNDLE_INTERIM_RAW_TAGS = frozenset()
 
 LEGACY_MOONBERRY_IDENTITIES = frozenset({
     "knight", "wizard", "priest", "hunter", "pipcap",
@@ -299,6 +298,8 @@ def discover_body_build_raw_tags() -> tuple[str, ...]:
     plan: list[tuple[str, str]] = []
     out_to_raw: dict[str, str] = {}
     for raw_tag in discover_complete_body_raw_tags():
+        if raw_tag in MISSING_BODY_BUNDLE_INTERIM_RAW_TAGS:
+            continue
         out_name = OUTPUT_NAMES.get(raw_tag, raw_tag)
         identity = ASSET_IDENTITIES.get(out_name)
         if identity is None:

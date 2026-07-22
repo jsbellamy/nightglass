@@ -172,12 +172,21 @@ Archived unpromoted raw: `assets-raw/grid_raw/the-fryer.png` ([#387](https://git
 
 ## `scarequack` (Boss)
 
-Finished generation prompt: blocked acquisition issue
-[#388](https://github.com/jsbellamy/nightglass/issues/388).
+### Generation prompt
+
+```text
+Single full-body Scarequack Boss opponent game sprite, strict side profile facing LEFT. A towering mutant duck anatomically fused with a crooked scarecrow and fencepost: a corn-husk body wraps a tall splintered-post spine, ragged sackcloth wing panels form broad angular arms, and one lantern-like condiment-red eye shines beneath a crooked sack head and a clear orange duck bill. Keep complete webbed feet, the corn husks, sackcloth wings, fencepost, bill, eye, and tall silhouette as separate large readable shapes. It is one living mutation, never a duck in a costume or standing beside a scarecrow.
+
+Chunky simplified flat-colour Fowl Harvest rural-mutation pixel art, 70% absurd and 30% unsettling. Use only named fowl-harvest-24 colors with oil-ink and bruise-plum contour. No gore, wounds, realism, gradients, anti-aliasing, blur, dithering, fire, particles, effects, text, watermark, scenery, UI, shadow, transparency, or another subject.
+
+Show exactly one complete subject with generous empty clearance on every edge of an opaque flat solid magenta #ff00ff background.
+```
 
 ### Intended read
 
 At native 1× it reads in this order: hostile duck → scarecrow and fencepost anatomical fusion → corn-husk body and lantern-like red eye. The silhouette is tall and crooked, distinct from the broad Fryer and Combine Bosses. Splintered post spine, ragged sackcloth wing panels, sack head, bill, eye, husks, and webbed feet remain separate large shapes after quantization. It is one living mutation — never a duck in a costume or standing beside a scarecrow.
+
+Archived unpromoted raw: `assets-raw/grid_raw/scarequack.png` ([#388](https://github.com/jsbellamy/nightglass/issues/388)); runtime registration is [#405](https://github.com/jsbellamy/nightglass/issues/405).
 
 ---
 

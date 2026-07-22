@@ -751,16 +751,17 @@ check("Cornquacker complete body bundle is discovered",
       "cornquacker" in _discovered_body)
 check("The Combine complete body bundle is discovered",
       "the-combine" in _discovered_body)
-check("Scarequack remains missing-bundle interim identity",
-      A.MISSING_BODY_BUNDLE_INTERIM_RAW_TAGS == frozenset({"scarequack"}))
+check("missing-bundle interim set is empty after Fryer and Scarequack raws",
+      A.MISSING_BODY_BUNDLE_INTERIM_RAW_TAGS == frozenset())
 check("archived Fryer raw is discovered without runtime rebuild",
       "the-fryer" in _discovered_body
       and "the-fryer" not in A.default_build_raw_tags()
       and not (RUNTIME_DIR / "the-fryer.png").is_file())
-check("Scarequack omits discovery until archived",
-      "scarequack" not in _discovered_body
-      and "scarequack" not in A.default_build_raw_tags())
-check("unpromoted Fryer leaves production body tags unchanged",
+check("archived Scarequack raw is discovered without runtime rebuild",
+      "scarequack" in _discovered_body
+      and "scarequack" not in A.default_build_raw_tags()
+      and not (RUNTIME_DIR / "scarequack.png").is_file())
+check("unpromoted Fryer and Scarequack leave production body tags unchanged",
       A.default_build_raw_tags() == (
           "boss", "boss-2", "boss-3", "burger-drake", "cornquacker", "hunter",
           "knight", "pipcap", "priest", "the-combine", "wizard"),

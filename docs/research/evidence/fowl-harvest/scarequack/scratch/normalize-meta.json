@@ -1,0 +1,45 @@
+{
+  "candidate": "scarequack-c2",
+  "normalized_size": [
+    51,
+    72
+  ],
+  "geometry": {
+    "frame_size": [
+      51,
+      72
+    ],
+    "visual_bounds": [
+      0,
+      0,
+      51,
+      72
+    ],
+    "foot_anchor": [
+      25,
+      72
+    ]
+  },
+  "fitted_opaque_size": [
+    51,
+    72
+  ],
+  "bodies": {
+    "burger-drake": [
+      30,
+      35
+    ],
+    "cornquacker": [
+      30,
+      50
+    ],
+    "the-combine": [
+      110,
+      72
+    ],
+    "scarequack": [
+      51,
+      72
+    ]
+  }
+}
