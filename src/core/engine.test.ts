@@ -728,12 +728,20 @@ describe("content-driven stage progression", () => {
     const content = contentWithAuthoredStages(6);
     const engine = createEngine(content, savedAtStageBossEncounter(6), LOOT_SEED);
     const events = driveUntilStageCleared(engine, 6);
+    expect(events.some((event) => event.type === "wave-cleared" && event.encounter === 3)).toBe(
+      true,
+    );
     expect(events.some((event) => event.type === "stage-cleared" && event.stage === 6)).toBe(
       true,
     );
     expect(events.some((event) => event.type === "stage-attempt-started" && event.stage === 6)).toBe(
       true,
     );
+    expect(
+      events
+        .filter((event) => event.type === "stage-attempt-started")
+        .every((event) => event.stage <= 6),
+    ).toBe(true);
     const snap = engine.snapshot();
     expect(snap.progression.unlockedStage).toBe(6);
     expect(snap.attempt?.stage).toBe(6);
