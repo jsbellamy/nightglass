@@ -227,7 +227,7 @@ describe("characterStatsFor", () => {
     expect(characterStatsFor(snapshot, fixtureContent, "knight")).toEqual(engineDerived);
   });
 
-  it("is the single current-side derivation used by previewEquip", () => {
+  it("gives previewEquip the same current BaseStats as characterStatsFor", () => {
     const source = readFileSync(
       join(dirname(fileURLToPath(import.meta.url)), "equipment-preview.ts"),
       "utf8",
