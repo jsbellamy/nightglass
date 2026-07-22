@@ -6,7 +6,6 @@ import type { TileCommand } from "../../src/ui/bus";
 const EMPTY_SERIALIZED_LEGALITY = {
   talentAllocate: {},
   talentDeallocate: {},
-  equip: {},
 };
 
 /** Post a tile command as a third BroadcastChannel peer — no production hook. */

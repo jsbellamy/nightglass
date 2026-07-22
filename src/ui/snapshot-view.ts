@@ -44,7 +44,6 @@ export {
 export {
   canEquipToSlot,
   equipViolation,
-  findDrop,
 } from "../core/equipment";
 
 export const CLASS_LABELS: Record<ClassId, string> = {

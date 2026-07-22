@@ -3,7 +3,6 @@ import type { Snapshot } from "../core/snapshot";
 import type { ClassId, Content, EquipmentSlotId } from "../core/types";
 import {
   canEquipToSlot,
-  findDrop,
   rosterClassIds,
   type Engine,
 } from "./snapshot-view";
@@ -118,7 +117,7 @@ export function legalityViewFromSerialized(
     canDeallocateTalent: (classId, talentId) =>
       data.talentDeallocate[talentKey(classId, talentId)] ?? false,
     canEquip: (dropId, classId, slot) => {
-      const drop = findDrop(snapshot.progression.armory, dropId);
+      const drop = snapshot.progression.armory.find((entry) => entry.dropId === dropId);
       if (!drop) {
         return false;
       }
