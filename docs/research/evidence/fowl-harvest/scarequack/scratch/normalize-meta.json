@@ -1,26 +1,27 @@
 {
+  "candidate": "scarequack-c2",
   "normalized_size": [
-    52,
+    51,
     72
   ],
   "geometry": {
     "frame_size": [
-      52,
+      51,
       72
     ],
     "visual_bounds": [
       0,
       0,
-      52,
+      51,
       72
     ],
     "foot_anchor": [
-      26,
+      25,
       72
     ]
   },
   "fitted_opaque_size": [
-    52,
+    51,
     72
   ],
   "bodies": {
@@ -37,7 +38,7 @@
       72
     ],
     "scarequack": [
-      52,
+      51,
       72
     ]
   }

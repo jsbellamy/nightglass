@@ -1,12 +1,13 @@
 {
-  "status": "promoted",
-  "candidate": "docs/research/evidence/fowl-harvest/scarequack/scratch/scarequack-c1.png",
-  "raw": "/Users/jakebellamy/VSProjects/games/game_idea/nightglass-wt-388/assets-raw/grid_raw/scarequack.png",
-  "sidecar": "/Users/jakebellamy/VSProjects/games/game_idea/nightglass-wt-388/assets-raw/grid_raw/scarequack.source.json",
-  "runtime": "/Users/jakebellamy/VSProjects/games/game_idea/nightglass-wt-388/src/assets/sprites/scarequack.png",
-  "manifest": "/Users/jakebellamy/VSProjects/games/game_idea/nightglass-wt-388/src/assets/sprites/manifest.json",
+  "status": "archived_raw_only",
+  "note": "pipeline promote generated shipping sidecar + validated normalize; runtime/manifest writes were discarded per #388 (shared promotion is #405).",
+  "candidate": "scarequack-c2.png",
+  "raw": "assets-raw/grid_raw/scarequack.png",
+  "sidecar": "assets-raw/grid_raw/scarequack.source.json",
+  "runtime": null,
+  "manifest": null,
   "measurement": {
-    "candidate": "docs/research/evidence/fowl-harvest/scarequack/scratch/scarequack-c1.png",
+    "candidate": "docs/research/evidence/fowl-harvest/scarequack/scratch/scarequack-c2.png",
     "tag": "scarequack",
     "status": "advance",
     "primary_failure": null,
@@ -17,11 +18,11 @@
     "opaque_bounds": [
       0,
       0,
-      699,
-      959
+      680,
+      954
     ],
     "fitted_opaque_size": [
-      52,
+      51,
       72
     ],
     "profile": {
