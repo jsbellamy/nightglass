@@ -7,12 +7,12 @@ Composite reviewed (Step 6, subagent only):
 
 ## Candidate table
 
-| Candidate | Asset class | Raw gates | Measurement | Primary result | Next action |
-| --- | --- | --- | --- | --- | --- |
-| harvest-yard-candidate-a | backdrop | pass | 1536×1024 → 480×86 | identity underfill — trailer / floodlights / beacon not distinct at native | retry |
-| harvest-yard-candidate-b | backdrop | pass | 1536×1024 → 480×86 | Spec unmet — chains / feed sacks weak at native | retry |
-| harvest-yard-candidate-c | backdrop | pass | 1536×1024 → 480×86 | contrast — floodlight peaks near-white (max lum ~249) | retry |
-| harvest-yard-candidate-d | backdrop | pass | 1536×1024 → 480×86; max lum ~131 | pass | accept |
+| Candidate | Asset class | Raw gates | Clipped sides | Measurement | Primary result | Next action |
+| --- | --- | --- | --- | --- | --- | --- |
+| harvest-yard-candidate-a | backdrop | pass | none | 1536×1024 → 480×86 | identity underfill — trailer / floodlights / beacon not distinct at native | retry |
+| harvest-yard-candidate-b | backdrop | pass | none | 1536×1024 → 480×86 | Spec unmet — chains / feed sacks weak at native | retry |
+| harvest-yard-candidate-c | backdrop | pass | none | 1536×1024 → 480×86 | contrast — floodlight peaks near-white (max lum ~249) | retry |
+| harvest-yard-candidate-d | backdrop | pass | none | 1536×1024 → 480×86; max lum ~131 | pass | accept |
 
 Rejected A–C are durable as table rows. Scratch retains candidate C only as the
 hashed identity direct input for D (`scratch/harvest-yard-candidate-c.png`).
