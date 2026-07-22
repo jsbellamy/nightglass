@@ -1,0 +1,62 @@
+{
+  "provider": "Cursor GenerateImage",
+  "prompt": "TRUE chunky pixel art skill icon ONLY. Drawn on an exact 32x32 logical\npixel grid rendered large; every logical pixel is one clean flat square block\n\u2014 no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A\nsingle centered symbolic skill glyph in three-quarter display angle: a mint-sage stave bow drawn to full pull with a taut cream string \u2014 bow only, no archer body.\nNot a wearable equipment piece and not a full character \u2014 one readable glyph only.\nSubject's long side spans about 26-30 logical pixels, with at least two full\nmagenta cells of clearance on every edge. Flat solid magenta #ff00ff background,\nnothing else in frame. Selective one-logical-pixel dark-plum outline. Use only\nmint / berry / cream / plum Moonberry colours (8-12 flat colors max) \u2014 no brown,\ntan, cyan, pure white, or pure black. Structural members at least 3 logical\npixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "raw_sha256": "f460f7ea9f4a2b1bc86fe7ff2f845aa34a463c67385836d14e467f4e65b6460b",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        192,
+        38,
+        852,
+        984
+      ],
+      "pitch_x": {
+        "pitch": 48.755555555554686,
+        "score": 0.24511749312207756
+      },
+      "pitch_y": {
+        "pitch": 48.4555555555547,
+        "score": 0.3046697087449468
+      },
+      "grid": [
+        14,
+        20
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 98,
+      "far_cells": 2,
+      "far_fraction": 0.0204,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "contour-plum-deep": 28,
+        "cream": 21,
+        "mint-light": 15,
+        "sage": 3,
+        "mint-pale": 3,
+        "berry-bright": 3,
+        "mint-shadow": 5,
+        "berry": 13,
+        "mint": 4,
+        "twilight-slate": 1,
+        "berry-mid": 2
+      }
+    }
+  },
+  "palette_subset": [
+    "contour-plum-deepest",
+    "contour-plum-deep",
+    "mint-shadow",
+    "mint",
+    "mint-light",
+    "mint-pale",
+    "cream",
+    "berry-shadow",
+    "berry-mid",
+    "berry",
+    "berry-bright",
+    "sage",
+    "twilight-slate"
+  ],
+  "evidence_raw": "docs/research/evidence/305-talent-icons-hunter/accepted-raws/draw-weight.png"
+}

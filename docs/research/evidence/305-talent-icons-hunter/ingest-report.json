@@ -1,0 +1,153 @@
+{
+  "draw-weight": {
+    "recovered": {
+      "bbox": [
+        192,
+        38,
+        852,
+        984
+      ],
+      "pitch_x": {
+        "pitch": 48.755555555554686,
+        "score": 0.24511749312207756
+      },
+      "pitch_y": {
+        "pitch": 48.4555555555547,
+        "score": 0.3046697087449468
+      },
+      "grid": [
+        14,
+        20
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 98,
+      "far_cells": 2,
+      "far_fraction": 0.0204,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "contour-plum-deep": 28,
+        "cream": 21,
+        "mint-light": 15,
+        "sage": 3,
+        "mint-pale": 3,
+        "berry-bright": 3,
+        "mint-shadow": 5,
+        "berry": 13,
+        "mint": 4,
+        "twilight-slate": 1,
+        "berry-mid": 2
+      }
+    }
+  },
+  "fieldcraft": {
+    "recovered": {
+      "bbox": [
+        78,
+        78,
+        955,
+        925
+      ],
+      "pitch_x": {
+        "pitch": 30.938888888888982,
+        "score": 0.10270993923953696
+      },
+      "pitch_y": {
+        "pitch": 28.73888888888895,
+        "score": 0.2088577684049045
+      },
+      "grid": [
+        28,
+        30
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 457,
+      "far_cells": 3,
+      "far_fraction": 0.0066,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "contour-plum-deep": 129,
+        "cream": 110,
+        "mint-shadow": 14,
+        "mint-light": 101,
+        "berry": 50,
+        "mint": 50,
+        "sage": 2,
+        "cream-gold": 1
+      }
+    }
+  },
+  "heartseeker": {
+    "recovered": {
+      "bbox": [
+        113,
+        95,
+        940,
+        929
+      ],
+      "pitch_x": {
+        "pitch": 31.794444444444565,
+        "score": 0.4771463597086583
+      },
+      "pitch_y": {
+        "pitch": 32.14444444444456,
+        "score": 0.48347398232113736
+      },
+      "grid": [
+        26,
+        26
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 259,
+      "far_cells": 1,
+      "far_fraction": 0.0039,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "contour-plum-deep": 78,
+        "cream": 71,
+        "mint": 45,
+        "mint-light": 39,
+        "berry": 18,
+        "berry-bright": 8
+      }
+    }
+  },
+  "moonwire-trap": {
+    "recovered": {
+      "bbox": [
+        278,
+        343,
+        732,
+        682
+      ],
+      "pitch_x": {
+        "pitch": 22.788888888889034,
+        "score": 0.4383697719254528
+      },
+      "pitch_y": {
+        "pitch": 22.53888888888903,
+        "score": 0.5172010080026271
+      },
+      "grid": [
+        20,
+        15
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 171,
+      "far_cells": 1,
+      "far_fraction": 0.0058,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "contour-plum-deep": 74,
+        "cream": 31,
+        "mint-light": 29,
+        "mint": 25,
+        "berry": 4,
+        "cream-gold": 8
+      }
+    }
+  }
+}
