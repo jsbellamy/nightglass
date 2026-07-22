@@ -20,6 +20,7 @@ Fowl Harvest battlefield backdrop acquisition for `last-stop-diner`.
 | Candidate | Asset class | Raw gates | Clipped sides | Measurement | Primary result | Next action |
 | --- | --- | --- | --- | --- | --- | --- |
 | c1 | backdrop | pass (PNG opaque, 0 magenta, reduce 1536×1024→480×86) | n/a (scenery) | bottom-fifth mean luma 25.1; midband teal/green/brown present; mint~0 | accept | promote + ship |
+| c2 | backdrop | pass (same reduce gates) | n/a | whole mean luma 27.3 (vs c1 31.5) but top-fifth p90 luma 112 > c1 103 — no sky-contrast win; Spec style-retry | reject — keep c1 | stop; retain shipped c1 |
 
 ## Targeted verify
 
