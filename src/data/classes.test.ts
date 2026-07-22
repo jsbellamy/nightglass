@@ -88,7 +88,7 @@ describe("assembled Class Kit content", () => {
     }
   });
 
-  it("ships eight Talent Abilities per Class across both Tiers", () => {
+  it("ships four Ability Talents per Class across both Tiers", () => {
     for (const classKit of content.classes) {
       const talentAbilityIds = talentTierDefs(classKit).flatMap((tier) => tier.abilityRow);
       expect(talentAbilityIds).toHaveLength(4);

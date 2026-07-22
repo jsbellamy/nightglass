@@ -1,4 +1,5 @@
 import type { Content } from "../core/types";
+import { talentTierDefs } from "../core/talents";
 import absoluteZeroUrl from "../assets/icons/absolute-zero.png";
 import augerwireLongbowUrl from "../assets/icons/augerwire-longbow.png";
 import battleLiturgyUrl from "../assets/icons/battle-liturgy.png";
@@ -208,10 +209,7 @@ export function collectContentEquipmentIconKeys(content: Content): string[] {
 export function collectContentTalentIconKeys(content: Content): string[] {
   const keys = new Set<string>();
   for (const classKit of content.classes) {
-    for (const tier of [
-      classKit.talents,
-      ...(classKit.talentTiers ?? []),
-    ]) {
+    for (const tier of talentTierDefs(classKit)) {
       for (const statTalent of tier.statRow) {
         keys.add(statTalent.iconKey);
       }
