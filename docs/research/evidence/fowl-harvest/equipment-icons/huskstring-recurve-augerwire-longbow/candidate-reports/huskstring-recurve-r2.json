@@ -1,0 +1,23 @@
+{
+  "candidate": "huskstring-recurve-r2",
+  "path": "docs/research/evidence/fowl-harvest/equipment-icons/huskstring-recurve-augerwire-longbow/scratch/huskstring-recurve-r2.png",
+  "palette": "fowl-harvest-24",
+  "palette_subset": [
+    "oil-ink",
+    "crow-black",
+    "field-green-deep",
+    "field-green",
+    "husk-green",
+    "leaf-green",
+    "husk-light",
+    "diner-cream",
+    "beak-orange",
+    "rust-orange-deep",
+    "duck-gold",
+    "corn-yellow"
+  ],
+  "status": "fail",
+  "error": "huskstring-recurve-r2.png: overshoot recovered 16\u00d735 (max body 30\u00d730 before outline ring)",
+  "primary_result": "overshoot",
+  "measurement": "huskstring-recurve-r2.png: overshoot recovered 16\u00d735 (max body 30\u00d730 before outline ring)"
+}

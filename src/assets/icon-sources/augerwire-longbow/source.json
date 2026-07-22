@@ -1,0 +1,84 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "6f0ae552da8fdc7f076872105964297d13d3e3c2c29601a6130fe5d4787b65a3",
+  "asset_class": "interface",
+  "kind": "equipment-base-icon",
+  "runtime_destination": "src/assets/icons/augerwire-longbow.png",
+  "note": "Unregistered interim Fowl Equipment source family for #397; no registry/runtime activation in this slice.",
+  "candidate": "augerwire-longbow-r4",
+  "palette": "fowl-harvest-24",
+  "palette_subset": [
+    "oil-ink",
+    "crow-black",
+    "storm-slate",
+    "pond-teal-deep",
+    "diner-teal",
+    "teal-light",
+    "grease-brown-deep",
+    "patty-brown",
+    "toast-brown",
+    "field-green-deep",
+    "diner-cream",
+    "bruise-plum"
+  ],
+  "style_references": [
+    {
+      "path": "src/assets/icons/preview/verify-fowl-canary@8x.png",
+      "sha256": "8fdc3206f4e5f5ff228d4651bcd70a6393da3eeed025c24a7b90c2673f3c75cd",
+      "role": "style"
+    },
+    {
+      "path": "src/assets/icon-sources/verify-fowl-canary/source.grid",
+      "sha256": "04f1b9aa20d3b67fd0c13c15391c3fd94b55fc7e7df1c92e743e2552e5922a93",
+      "role": "style"
+    },
+    {
+      "path": "docs/research/evidence/126-equipment-icons/accepted-raws/bramblesong-bow.png",
+      "sha256": "85f51f5e955969893ab125fcce33c0b9ffa6fe0701411327d4027964f04d2ecc",
+      "role": "style_cohort"
+    }
+  ],
+  "prompt": "TRUE chunky pixel art inventory icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block with no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered Fowl Harvest Equipment item in three-quarter display angle for Augerwire Longbow: a compact industrial longbow with a thick storm-slate auger spine (exact gray-blue #55586a blocks only) and a coiled pond-teal / diner-teal wire string (greenish teal #146451 and #1f9277 only \u2014 NEVER blue-cyan, NEVER purple). Selective oil-ink #111018 outline. Leave at least three full magenta cells clearance on every edge so recovered height stays under 30. Subject long side about 24\u201328 logical pixels. Flat solid magenta #ff00ff background, nothing else in frame. Use only named fowl-harvest-24 colors, 8\u201312 flat colors maximum. Structural members are at least three logical pixels thick. No Character, duck body, scene, shadow, glow, sparks, particles, text, watermark, UI frame, or transparency.",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        329,
+        61,
+        718,
+        957
+      ],
+      "pitch_x": {
+        "pitch": 32.51666666666674,
+        "score": 0.2485103949528676
+      },
+      "pitch_y": {
+        "pitch": 32.566666666666734,
+        "score": 0.250409623146705
+      },
+      "grid": [
+        12,
+        28
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 126,
+      "far_cells": 21,
+      "far_fraction": 0.1667,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "grease-brown-deep": 11,
+        "storm-slate": 35,
+        "oil-ink": 43,
+        "crow-black": 16,
+        "toast-brown": 3,
+        "pond-teal-deep": 16,
+        "diner-teal": 1,
+        "field-green-deep": 1
+      }
+    }
+  },
+  "evidence_raw": "docs/research/evidence/fowl-harvest/equipment-icons/huskstring-recurve-augerwire-longbow/accepted-raws/augerwire-longbow.png",
+  "exact_issue_prompt": "TRUE chunky pixel art inventory icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block with no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered Fowl Harvest Equipment item in three-quarter display angle for Augerwire Longbow: a long industrial bow using a slender storm-slate auger spine and coiled teal wire string. The subject long side spans about 26\u201330 logical pixels, with at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel oil-ink outline. Use only named fowl-harvest-24 colors, 8\u201312 flat colors maximum. Structural members are at least three logical pixels thick. No Character, duck body, scene, shadow, glow, sparks, particles, text, watermark, UI frame, or transparency.",
+  "exact_issue_prompt_candidate": "augerwire-longbow-r1"
+}

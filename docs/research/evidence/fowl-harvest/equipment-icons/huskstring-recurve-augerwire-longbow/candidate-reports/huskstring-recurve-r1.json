@@ -1,0 +1,61 @@
+{
+  "candidate": "huskstring-recurve-r1",
+  "path": "docs/research/evidence/fowl-harvest/equipment-icons/huskstring-recurve-augerwire-longbow/scratch/huskstring-recurve-r1.png",
+  "status": "pass",
+  "palette": "fowl-harvest-24",
+  "palette_subset": [
+    "oil-ink",
+    "crow-black",
+    "bruise-plum",
+    "grease-brown-deep",
+    "patty-brown",
+    "field-green",
+    "husk-green",
+    "leaf-green",
+    "husk-light",
+    "diner-cream",
+    "beak-orange",
+    "condiment-red"
+  ],
+  "recovered": {
+    "bbox": [
+      279,
+      51,
+      686,
+      971
+    ],
+    "pitch_x": {
+      "pitch": 33.933333333333316,
+      "score": 0.23690543226864474
+    },
+    "pitch_y": {
+      "pitch": 33.98333333333331,
+      "score": 0.2616247520333065
+    },
+    "grid": [
+      12,
+      28
+    ]
+  },
+  "ramp": {
+    "opaque_cells": 145,
+    "far_cells": 26,
+    "far_fraction": 0.1793,
+    "off_ramp_reject": false,
+    "quantize_histogram": {
+      "bruise-plum": 29,
+      "husk-light": 11,
+      "leaf-green": 18,
+      "husk-green": 19,
+      "field-green": 8,
+      "grease-brown-deep": 14,
+      "condiment-red": 9,
+      "patty-brown": 18,
+      "crow-black": 8,
+      "diner-cream": 8,
+      "beak-orange": 3
+    }
+  },
+  "primary_result": "advance",
+  "measurement": "12\u00d728; far 17.9%"
+}
