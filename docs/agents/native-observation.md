@@ -78,7 +78,7 @@ Do **not** re-check in Tauri anything the Playwright suite already covers under
 - native-1× sprite sizing (intrinsic vs rendered, excluding knockout transforms)
 - AA contrast on status, dock toggle, and health text
 - five-opponent stress layout after bus-injected `selectStage`
-- Dock tab row fit, surface scroll, five surfaces, ArrowRight tab cycle
+- Dock tab row fit, surface scroll, three tabs, ArrowRight tab cycle
 - in-UI `.dock-close` crossing the channel without disturbing the tile
 - `dock-opened` → snapshot → populated Dock over a shared `BroadcastChannel`
 - Ability effect frames and Status Effect glyphs under Vite (`evidence:

@@ -7,6 +7,8 @@
 
 The Management Dock's five surfaces each rendered all four Roster Characters into a 480×336 logical-pixel workspace. Four of five clipped a live control at the bottom edge with no scroll affordance, and the Armory showed zero inventory rows. Terminal scene review evidence is recorded under `docs/research/evidence/103-terminal-scene-review/`.
 
+> **Note (2026-07-22):** Surface count later became three under the Character-scoped Dock (#338). This Context paragraph records the geometry problem as observed when the ADR was written; it is not a live claim about today's tab list.
+
 ## Decision
 
 The Management Dock is **800×480** logical pixels, **independent** of `TILE_WIDTH` (480). `dockRect` in `src/ui/dock-geometry.ts` **centers** the dock horizontally on the Battle Tile when there is room: `proposedDockX = tile.x - (DOCK_WIDTH - tile.width) / 2`, then **clamps** `x` so the dock stays fully on the monitor, then sets `tileX = dockX + offset` so the tile may snap horizontally when clamping recenters the dock. Vertical placement is unchanged: above the tile when bottom-parked, below when top-parked, with `DOCK_GAP_PX` (8px). The two Tauri windows, the fixed (non-resizable) dock window, and the cross-window bus from ADR-0002 are unchanged — only the equal-width constraint and the 480×336 dimensions are superseded.
