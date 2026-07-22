@@ -1,4 +1,4 @@
-"""Six Equipment Base families — sources, palette subsets, Tier II recolor maps."""
+"""Icon families — Equipment Bases plus Talent / Ability Talent one-variant glyphs."""
 
 from __future__ import annotations
 
@@ -216,6 +216,80 @@ FAMILIES: tuple[IconFamily, ...] = (
             IconVariant("gloamberry-locket", CHARM_TO_LOCKET),
         ),
         "berrybright-charm/source.grid",
+    ),
+    # Talent / Ability Talent — one-variant skill glyphs (#305 Knight batch).
+    # Empty recolor; iconKey equals content id; not Equipment Bases / no Tier II.
+    IconFamily(
+        "fortitude",
+        _subset(
+            "contour-plum-deepest",
+            "contour-plum-deep",
+            "mint-shadow",
+            "mint",
+            "mint-light",
+            "mint-pale",
+            "cream",
+            "berry-shadow",
+            "berry-mid",
+            "berry",
+            "berry-bright",
+            "sage",
+            "twilight-slate",
+        ),
+        (IconVariant("fortitude", {}),),
+        "fortitude/source.grid",
+    ),
+    IconFamily(
+        "swordcraft",
+        _subset(
+            "contour-plum-deepest",
+            "contour-plum-deep",
+            "mint",
+            "mint-light",
+            "cream",
+            "cream-gold",
+            "berry",
+            "berry-bright",
+            "berry-mid",
+        ),
+        (IconVariant("swordcraft", {}),),
+        "swordcraft/source.grid",
+    ),
+    IconFamily(
+        "hold-the-line",
+        _subset(
+            "contour-plum-deepest",
+            "contour-plum-deep",
+            "mint-shadow",
+            "mint",
+            "mint-light",
+            "mint-pale",
+            "cream",
+            "cream-gold",
+            "berry-shadow",
+            "berry-mid",
+            "berry",
+            "berry-bright",
+            "sage",
+            "twilight-slate",
+        ),
+        (IconVariant("hold-the-line", {}),),
+        "hold-the-line/source.grid",
+    ),
+    IconFamily(
+        "falling-star",
+        _subset(
+            "contour-plum-deepest",
+            "contour-plum-deep",
+            "cream",
+            "cream-gold",
+            "berry",
+            "berry-bright",
+            "berry-mid",
+            "berry-shadow",
+        ),
+        (IconVariant("falling-star", {}),),
+        "falling-star/source.grid",
     ),
 )
 

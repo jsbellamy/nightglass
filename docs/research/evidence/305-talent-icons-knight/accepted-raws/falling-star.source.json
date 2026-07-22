@@ -1,0 +1,93 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "ae004a359ad5a7fe47fa5475985a29a7e30d482abc79e9b3cfc58affaf105122",
+  "asset_class": "interface",
+  "kind": "talent-skill-glyph",
+  "runtime_destination": "src/assets/icons/falling-star.png",
+  "candidate": "falling-star-r5",
+  "palette_subset": [
+    "contour-plum-deepest",
+    "contour-plum-deep",
+    "cream",
+    "cream-gold",
+    "berry",
+    "berry-bright",
+    "berry-mid",
+    "berry-shadow"
+  ],
+  "style_references": [
+    {
+      "path": "src/assets/icons/plumweave-aegis.png",
+      "sha256": "2ac2f3a70da9b304301a0d51043123bacfcb72f11519cb083db496f2e805b4a3",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/thornquill-blade.png",
+      "sha256": "35cbfc0aa650db6ad9183ddbf84bc88b5c5258e339b49d46180d645f5167974c",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/berrybright-charm.png",
+      "sha256": "0be0cef8c07c1b7b77864ead0727fa67a7727ceed9727ac75f6135f183c2c138",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/family-sheet@8x.png",
+      "sha256": "178e0e50de6c62f22f7ae8c4fe34e88fcbc9312f9f4c07231db7cbde4f035414",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/sprites/knight.png",
+      "sha256": "6ae9b30bf9157e0cb5054c72a79b3cccc115f2a9aad8b4ab417bf288c3d9d4b6",
+      "role": "style_reference"
+    },
+    {
+      "path": "src/assets/sprites/wizard.png",
+      "sha256": "a8646b1925f434c2d802d69f828d933ebbbbd5a32ef90b339ff558f3682d46d7",
+      "role": "style_reference"
+    },
+    {
+      "path": "src/assets/sprites/priest.png",
+      "sha256": "1decef54968ce8437afbf1d27c6755560542db69d89e554c8eacad1aa4ac2b2a",
+      "role": "style_reference"
+    }
+  ],
+  "prompt": "TRUE chunky pixel art skill icon ONLY. Drawn on an exact 32x32 logical\npixel grid rendered large; every logical pixel is one clean flat square block\n\u2014 no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A\nsingle centered symbolic skill glyph in three-quarter display angle: a descending cream-gold star-blade slash glyph with a short berry spark trail.\nNot a wearable equipment piece and not a full character \u2014 one readable glyph only.\nSubject's long side spans about 26-30 logical pixels, with at least two full\nmagenta cells of clearance on every edge. Flat solid magenta #ff00ff background,\nnothing else in frame. Selective one-logical-pixel dark-plum outline. Use only\nmint / berry / cream / plum Moonberry colours (8-12 flat colors max) \u2014 no brown,\ntan, cyan, pure white, or pure black. Structural members at least 3 logical\npixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        230,
+        200,
+        789,
+        788
+      ],
+      "pitch_x": {
+        "pitch": 25.41111111111124,
+        "score": 0.4755640966376634
+      },
+      "pitch_y": {
+        "pitch": 25.51111111111124,
+        "score": 0.5180207118407598
+      },
+      "grid": [
+        22,
+        23
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 212,
+      "far_cells": 0,
+      "far_fraction": 0.0,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "contour-plum-deep": 92,
+        "cream": 52,
+        "cream-gold": 58,
+        "berry-bright": 3,
+        "berry": 7
+      }
+    }
+  },
+  "note": "#305 Knight Talent / Ability Talent one-variant icon"
+}

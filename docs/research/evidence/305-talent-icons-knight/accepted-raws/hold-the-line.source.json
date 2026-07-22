@@ -1,0 +1,107 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "6362f20d9f2dc002e4e3f4868428923a90164c34393aa862798be8b6e965241a",
+  "asset_class": "interface",
+  "kind": "talent-skill-glyph",
+  "runtime_destination": "src/assets/icons/hold-the-line.png",
+  "candidate": "hold-the-line-r1",
+  "palette_subset": [
+    "contour-plum-deepest",
+    "contour-plum-deep",
+    "mint-shadow",
+    "mint",
+    "mint-light",
+    "mint-pale",
+    "cream",
+    "cream-gold",
+    "berry-shadow",
+    "berry-mid",
+    "berry",
+    "berry-bright",
+    "sage",
+    "twilight-slate"
+  ],
+  "style_references": [
+    {
+      "path": "src/assets/icons/plumweave-aegis.png",
+      "sha256": "2ac2f3a70da9b304301a0d51043123bacfcb72f11519cb083db496f2e805b4a3",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/thornquill-blade.png",
+      "sha256": "35cbfc0aa650db6ad9183ddbf84bc88b5c5258e339b49d46180d645f5167974c",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/berrybright-charm.png",
+      "sha256": "0be0cef8c07c1b7b77864ead0727fa67a7727ceed9727ac75f6135f183c2c138",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/family-sheet@8x.png",
+      "sha256": "178e0e50de6c62f22f7ae8c4fe34e88fcbc9312f9f4c07231db7cbde4f035414",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/sprites/knight.png",
+      "sha256": "6ae9b30bf9157e0cb5054c72a79b3cccc115f2a9aad8b4ab417bf288c3d9d4b6",
+      "role": "style_reference"
+    },
+    {
+      "path": "src/assets/sprites/wizard.png",
+      "sha256": "a8646b1925f434c2d802d69f828d933ebbbbd5a32ef90b339ff558f3682d46d7",
+      "role": "style_reference"
+    },
+    {
+      "path": "src/assets/sprites/priest.png",
+      "sha256": "1decef54968ce8437afbf1d27c6755560542db69d89e554c8eacad1aa4ac2b2a",
+      "role": "style_reference"
+    }
+  ],
+  "prompt": "TRUE chunky pixel art skill icon ONLY. Drawn on an exact 32x32 logical\npixel grid rendered large; every logical pixel is one clean flat square block\n\u2014 no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A\nsingle centered symbolic skill glyph in three-quarter display angle: a braced mint kite shield planted low with berry studs, reading as a shield-wall fragment.\nNot a wearable equipment piece and not a full character \u2014 one readable glyph only.\nSubject's long side spans about 26-30 logical pixels, with at least two full\nmagenta cells of clearance on every edge. Flat solid magenta #ff00ff background,\nnothing else in frame. Selective one-logical-pixel dark-plum outline. Use only\nmint / berry / cream / plum Moonberry colours (8-12 flat colors max) \u2014 no brown,\ntan, cyan, pure white, or pure black. Structural members at least 3 logical\npixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        185,
+        89,
+        834,
+        911
+      ],
+      "pitch_x": {
+        "pitch": 28.811111111111195,
+        "score": 0.2120316522399689
+      },
+      "pitch_y": {
+        "pitch": 29.311111111111202,
+        "score": 0.23947371172544646
+      },
+      "grid": [
+        23,
+        28
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 390,
+      "far_cells": 49,
+      "far_fraction": 0.1256,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "berry-shadow": 39,
+        "mint-pale": 19,
+        "cream": 58,
+        "mint-shadow": 40,
+        "mint-light": 78,
+        "mint": 40,
+        "contour-plum-deep": 33,
+        "sage": 7,
+        "twilight-slate": 32,
+        "berry": 6,
+        "berry-bright": 10,
+        "berry-mid": 15,
+        "cream-gold": 13
+      }
+    }
+  },
+  "note": "#305 Knight Talent / Ability Talent one-variant icon"
+}

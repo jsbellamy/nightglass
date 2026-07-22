@@ -1,0 +1,63 @@
+{
+  "provider": "Cursor GenerateImage",
+  "prompt": "TRUE chunky pixel art skill icon ONLY. Drawn on an exact 32x32 logical pixel grid rendered large; every logical pixel is one clean flat square block \u2014 no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered symbolic skill glyph in three-quarter display angle: a thick upright kite shield of mint plates with a berry boss rivet and cream rim. Not a wearable equipment piece and not a full character \u2014 one readable glyph only. Subject's long side spans about 26-30 logical pixels, with at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel dark-plum outline. Use only mint / berry / cream / plum Moonberry colours (8-12 flat colors max) \u2014 no brown, tan, cyan, pure white, or pure black. Structural members at least 3 logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "raw_sha256": "62ccd88404930ee81c9b918eae61ee6ecea7a6812b10e23304441516d646742a",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        172,
+        54,
+        852,
+        964
+      ],
+      "pitch_x": {
+        "pitch": 31.605555555555647,
+        "score": 0.23170573748586956
+      },
+      "pitch_y": {
+        "pitch": 31.95555555555565,
+        "score": 0.22877996067392636
+      },
+      "grid": [
+        22,
+        28
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 404,
+      "far_cells": 24,
+      "far_fraction": 0.0594,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "berry-shadow": 55,
+        "mint": 19,
+        "cream": 84,
+        "twilight-slate": 13,
+        "mint-light": 80,
+        "mint-shadow": 67,
+        "sage": 11,
+        "contour-plum-deep": 13,
+        "mint-pale": 38,
+        "berry-mid": 10,
+        "berry-bright": 7,
+        "berry": 7
+      }
+    }
+  },
+  "palette_subset": [
+    "contour-plum-deepest",
+    "contour-plum-deep",
+    "mint-shadow",
+    "mint",
+    "mint-light",
+    "mint-pale",
+    "cream",
+    "berry-shadow",
+    "berry-mid",
+    "berry",
+    "berry-bright",
+    "sage",
+    "twilight-slate"
+  ],
+  "evidence_raw": "docs/research/evidence/305-talent-icons-knight/accepted-raws/fortitude.png"
+}

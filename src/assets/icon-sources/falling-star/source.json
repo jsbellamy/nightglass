@@ -1,0 +1,51 @@
+{
+  "provider": "Cursor GenerateImage",
+  "prompt": "TRUE chunky pixel art skill icon ONLY. Drawn on an exact 32x32 logical pixel grid rendered large; every logical pixel is one clean flat square block \u2014 no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered symbolic skill glyph in three-quarter display angle: a descending cream-gold star-blade slash glyph with a short berry spark trail. Not a wearable equipment piece and not a full character \u2014 one readable glyph only. Subject's long side spans about 26-30 logical pixels, with at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel dark-plum outline. Use only mint / berry / cream / plum Moonberry colours (8-12 flat colors max) \u2014 no brown, tan, cyan, pure white, or pure black. Structural members at least 3 logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "raw_sha256": "ae004a359ad5a7fe47fa5475985a29a7e30d482abc79e9b3cfc58affaf105122",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        230,
+        200,
+        789,
+        788
+      ],
+      "pitch_x": {
+        "pitch": 25.41111111111124,
+        "score": 0.4755640966376634
+      },
+      "pitch_y": {
+        "pitch": 25.51111111111124,
+        "score": 0.5180207118407598
+      },
+      "grid": [
+        22,
+        23
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 212,
+      "far_cells": 0,
+      "far_fraction": 0.0,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "contour-plum-deep": 92,
+        "cream": 52,
+        "cream-gold": 58,
+        "berry-bright": 3,
+        "berry": 7
+      }
+    }
+  },
+  "palette_subset": [
+    "contour-plum-deepest",
+    "contour-plum-deep",
+    "cream",
+    "cream-gold",
+    "berry",
+    "berry-bright",
+    "berry-mid",
+    "berry-shadow"
+  ],
+  "evidence_raw": "docs/research/evidence/305-talent-icons-knight/accepted-raws/falling-star.png"
+}

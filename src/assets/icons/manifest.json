@@ -119,6 +119,46 @@
     "source_family": "berrybright-charm",
     "sha256": "7b91664d740161e5916aff7fddccdc96d89b20716cdbb0f90385fb417d62b8ee"
   },
+  "fortitude": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "fortitude",
+    "sha256": "c6788da990b7fea87b4cbeb084f25f10c5281fd8973e2748765984f628b8b984"
+  },
+  "swordcraft": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "swordcraft",
+    "sha256": "4bb58b68f4804bce1b1433dd396d36f2cfdb55c56639fc52ac7200865ffb5649"
+  },
+  "hold-the-line": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "hold-the-line",
+    "sha256": "1f5a636195ca249369fe6b3fefd84a19d82ce7fcb9d1b8ecf2c79d4a3eb85c8d"
+  },
+  "falling-star": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "falling-star",
+    "sha256": "873712f5ed90b9029cbb8ad387c26722d922ff8a215d4dd8ce521db820510639"
+  },
   "verify-canary-a": {
     "canvas": [
       34,
