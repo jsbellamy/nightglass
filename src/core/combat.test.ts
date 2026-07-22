@@ -5,6 +5,8 @@ import {
   effectiveStats,
   hasValidTarget,
   isAbilityValid,
+  opponentAbilityCandidates,
+  opponentBasicAbility,
   partyAbilityCandidates,
   previewEffectRaw,
   revalidateTargets,
@@ -17,7 +19,7 @@ import type { CombatantState } from "./snapshot";
 import { buildContent } from "../data";
 import { fixtureContent } from "./testing/fixture-content";
 import { opponentEntityId, partyEntityId } from "./entity-id";
-import type { AbilityDef, BaseStats, ClassId } from "./types";
+import type { AbilityDef, BaseStats, ClassId, OpponentDef } from "./types";
 
 const abilitiesById = new Map(fixtureContent.abilities.map((ability) => [ability.id, ability]));
 const statusesById = new Map(fixtureContent.statuses.map((status) => [status.id, status]));
@@ -149,6 +151,137 @@ describe("Power math", () => {
       statusesById,
     );
     expect(stats.armor).toBe(80);
+  });
+});
+
+describe("opponent ability candidate priority", () => {
+  const productionContent = buildContent();
+  const productionAbilitiesById = new Map(
+    productionContent.abilities.map((ability) => [ability.id, ability]),
+  );
+
+  it("selects a ready authored special before an authored zero-cooldown Basic Attack", () => {
+    const boss = productionContent.opponents.find((entry) => entry.id === "boss-1")!;
+    const combatants = [
+      partyCombatant("knight", "front"),
+      opponentCombatant("boss-1", { defId: "boss-1" }),
+    ];
+    const actor = combatants[1]!;
+    const candidates = opponentAbilityCandidates(
+      productionContent,
+      boss,
+      productionAbilitiesById,
+    );
+    expect(candidates.map((ability) => ability.id)).toEqual(["boss-1-sweep", "boss-1-basic"]);
+    const chosen = chooseFirstValidAbility(candidates, actor, combatants, 0);
+    expect(chosen?.id).toBe("boss-1-sweep");
+  });
+
+  it("preserves authored priority among multiple specials", () => {
+    const opponent: OpponentDef = {
+      id: "fixture-priority-opponent",
+      name: "Priority Probe",
+      family: "fixture",
+      boss: false,
+      base: fixtureContent.opponents[0]!.base,
+      abilityIds: ["grunt-attack", "boss-smash", "k-sweep"],
+      xpAward: 1,
+      spriteKey: "fixture-grunt",
+    };
+    const candidates = opponentAbilityCandidates(fixtureContent, opponent, abilitiesById);
+    expect(candidates.map((ability) => ability.id)).toEqual([
+      "boss-smash",
+      "k-sweep",
+      "grunt-attack",
+    ]);
+  });
+
+  it("falls through to the Basic Attack when every special is on cooldown", () => {
+    const boss = productionContent.opponents.find((entry) => entry.id === "boss-1")!;
+    const combatants = [
+      partyCombatant("knight", "front"),
+      opponentCombatant("boss-1", {
+        defId: "boss-1",
+        cooldownReadyAtMs: { "boss-1-sweep": 50_000 },
+      }),
+    ];
+    const actor = combatants[1]!;
+    const candidates = opponentAbilityCandidates(
+      productionContent,
+      boss,
+      productionAbilitiesById,
+    );
+    const chosen = chooseFirstValidAbility(candidates, actor, combatants, 0);
+    expect(chosen?.id).toBe("boss-1-basic");
+  });
+
+  it("falls through to the Basic Attack when every special is invalid or lacks a target", () => {
+    const bracedOpponent: OpponentDef = {
+      id: "fixture-braced-opponent",
+      name: "Braced Probe",
+      family: "fixture",
+      boss: false,
+      base: fixtureContent.opponents[0]!.base,
+      abilityIds: ["grunt-attack", "k-shield-brace"],
+      xpAward: 1,
+      spriteKey: "fixture-grunt",
+    };
+    const combatants = [
+      partyCombatant("knight", "front"),
+      opponentCombatant("fixture-grunt", {
+        statuses: [{ statusId: "braced", expiresAtMs: 10_000 }],
+      }),
+    ];
+    const actor = combatants[1]!;
+    const bracedCandidates = opponentAbilityCandidates(
+      fixtureContent,
+      bracedOpponent,
+      abilitiesById,
+    );
+    expect(chooseFirstValidAbility(bracedCandidates, actor, combatants, 0)?.id).toBe(
+      "grunt-attack",
+    );
+
+    const healerOpponent: OpponentDef = {
+      id: "fixture-healer-opponent",
+      name: "Healer Probe",
+      family: "fixture",
+      boss: false,
+      base: fixtureContent.opponents[0]!.base,
+      abilityIds: ["grunt-attack", "p-moonwell"],
+      xpAward: 1,
+      spriteKey: "fixture-grunt",
+    };
+    const healCandidates = opponentAbilityCandidates(
+      fixtureContent,
+      healerOpponent,
+      abilitiesById,
+    );
+    expect(chooseFirstValidAbility(healCandidates, actor, combatants, 0)?.id).toBe(
+      "grunt-attack",
+    );
+  });
+
+  it("lists the Basic Attack exactly once when it is authored in abilityIds", () => {
+    const boss = productionContent.opponents.find((entry) => entry.id === "boss-1")!;
+    const candidates = opponentAbilityCandidates(
+      productionContent,
+      boss,
+      productionAbilitiesById,
+    );
+    const basicIds = candidates
+      .filter((ability) => ability.slot === "basic")
+      .map((ability) => ability.id);
+    expect(basicIds).toEqual(["boss-1-basic"]);
+  });
+
+  it("appends the interim Strike fallback when no Basic Attack is authored", () => {
+    const opponent = fixtureContent.opponents.find((entry) => entry.id === "fixture-boss")!;
+    const candidates = opponentAbilityCandidates(fixtureContent, opponent, abilitiesById);
+    const basic = opponentBasicAbility(fixtureContent, opponent);
+    expect(basic.id).toBe("fixture-boss-basic-interim");
+    expect(candidates[candidates.length - 1]?.id).toBe(basic.id);
+    expect(candidates.filter((ability) => ability.slot === "basic")).toHaveLength(1);
   });
 });
 

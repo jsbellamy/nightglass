@@ -475,11 +475,9 @@ export function opponentAbilityCandidates(
   const authored = opponent.abilityIds
     .map((abilityId) => abilitiesById.get(abilityId))
     .filter((ability): ability is AbilityDef => ability !== undefined);
+  const specials = authored.filter((ability) => ability.slot !== "basic");
   const basic = opponentBasicAbility(content, opponent);
-  if (!authored.some((ability) => ability.id === basic.id)) {
-    return [...authored, basic];
-  }
-  return authored;
+  return [...specials, basic];
 }
 
 function healAmount(power: number, effect: AbilityEffect): number {
