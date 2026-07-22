@@ -1,0 +1,44 @@
+{
+  "normalized_size": [
+    52,
+    72
+  ],
+  "geometry": {
+    "frame_size": [
+      52,
+      72
+    ],
+    "visual_bounds": [
+      0,
+      0,
+      52,
+      72
+    ],
+    "foot_anchor": [
+      26,
+      72
+    ]
+  },
+  "fitted_opaque_size": [
+    52,
+    72
+  ],
+  "bodies": {
+    "burger-drake": [
+      30,
+      35
+    ],
+    "cornquacker": [
+      30,
+      50
+    ],
+    "the-combine": [
+      110,
+      72
+    ],
+    "scarequack": [
+      52,
+      72
+    ]
+  }
+}
