@@ -11,10 +11,6 @@ export const UI_CORE_VALUE_IMPORT_ALLOWLIST: Record<string, string> = {
     "Presentation owns event-to-effect mapping (docs/agents/code-style.md §Layout); data import removed by presentation-effects slice",
   "offline-summary.ts": "levelFromXp moves behind snapshot-view in offline-summary slice (#163)",
   "boot.ts": "Composition root owns Engine wiring until shell/bootstrap slice (#163)",
-  "tile-root.ts":
-    "Battle Tile composition-root slice (#354): Engine construction moved from main.ts",
-  "dock-root.ts":
-    "Management Dock composition-root slice (#354): Content build moved from main.ts",
 };
 
 const VALUE_IMPORT_PATTERN =
@@ -83,6 +79,14 @@ describe("UI layering seam", () => {
       expect(reason.length, file).toBeGreaterThan(10);
       expect(reason, file).toMatch(/slice|legality|presentation|code-style/i);
     }
+  });
+
+  it("keeps only the deferred composition-root allowlist entries", () => {
+    expect(Object.keys(UI_CORE_VALUE_IMPORT_ALLOWLIST).sort()).toEqual([
+      "boot.ts",
+      "offline-summary.ts",
+      "presentation.ts",
+    ]);
   });
 
   it("rejects a fresh surface value-importing the Engine", () => {
