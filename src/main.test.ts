@@ -5,14 +5,15 @@ import { createEngine } from "./core/engine";
 import { buildContent } from "./data";
 import type { EngineEvent } from "./core/events";
 import type { Snapshot } from "./core/snapshot";
-import { mountDockShell, mountTileShell } from "./main";
 import { BATTLEFIELD_HEIGHT, STATUS_LINE_HEIGHT, TILE_HEIGHT, TILE_WIDTH } from "./ui/battle-tile";
 import type { BusMessage, createBusEndpoint } from "./ui/bus";
+import { mountDockShell } from "./ui/dock-root";
 import type { DockWindowPort } from "./ui/dock-window";
 import * as battleTile from "./ui/battle-tile";
-import * as dockModule from "./ui/dock";
+import { mountManagementDock } from "./ui/dock";
 import { serializeEngineLegality } from "./ui/engine-legality";
 import { PUMP_INTERVAL_MS } from "./ui/pump";
+import { mountTileShell } from "./ui/tile-root";
 import type { Page } from "@playwright/test";
 import { advanceSim } from "../e2e/helpers/advance";
 
@@ -129,7 +130,6 @@ describe("Management Dock shell pump coalescing", () => {
 
   afterEach(() => {
     fanoutHandlers.length = 0;
-    vi.restoreAllMocks();
   });
 
   function createDockShellHarness() {
@@ -143,18 +143,21 @@ describe("Management Dock shell pump coalescing", () => {
     };
     const root = document.createElement("main");
     const renderSpy = vi.fn();
-    const { mountManagementDock: realMount } = dockModule;
-    vi.spyOn(dockModule, "mountManagementDock").mockImplementation((mountRoot, options) => {
-      const dock = realMount(mountRoot, options);
+    const dockFactory: typeof mountManagementDock = (mountRoot, options) => {
+      const dock = mountManagementDock(mountRoot, options);
       const originalRender = dock.render.bind(dock);
       dock.render = (...args) => {
         renderSpy();
         return originalRender(...args);
       };
       return dock;
-    });
+    };
 
-    const shell = mountDockShell(root, { schedule, busFactory: createFanoutBus });
+    const shell = mountDockShell(root, {
+      schedule,
+      busFactory: createFanoutBus,
+      dockFactory,
+    });
     const publisher = createFanoutBus({});
     const content = buildContent();
     const engine = createEngine(content, undefined, 42);

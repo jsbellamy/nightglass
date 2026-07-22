@@ -71,3 +71,9 @@ export function createBusEndpoint(
     },
   };
 }
+
+export function applyTileCommand(engine: Engine, command: TileCommand): EngineEvent[] {
+  const method = engine[command.cmd] as (...args: unknown[]) => void | EngineEvent[];
+  const result = method.apply(engine, command.args);
+  return Array.isArray(result) ? result : [];
+}

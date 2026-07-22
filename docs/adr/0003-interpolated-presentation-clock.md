@@ -28,7 +28,7 @@ Use **two clocks**:
 2. **Presentation clock** — an interpolated wall-clock value passed as `nowMs`
    into `BattleTile.render` and forwarded to `presentation.render`.
 
-`mountTileShell` in `src/main.ts` caches the last tick Snapshot and the wall
+`mountTileShell` in `src/ui/tile-root.ts` caches the last tick Snapshot and the wall
 time it was taken (`lastSnapshot`, `lastSnapshotAtMs`). On each render frame:
 
 ```ts

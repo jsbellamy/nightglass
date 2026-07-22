@@ -17,7 +17,7 @@ import {
 import { mountOfflineSummary } from "./offline-summary";
 import type { Snapshot } from "../core/snapshot";
 
-import { mountTileShell } from "../main";
+import { mountTileShell } from "./tile-root";
 
 const SNAPSHOT_KEYS: (keyof Snapshot)[] = [
   "schemaVersion",
