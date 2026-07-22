@@ -95,6 +95,39 @@ describe("Talents surface", () => {
     surface.destroy();
   });
 
+  it("renders content-tier icon faces on Stat and Ability cells with overlays", () => {
+    const root = document.createElement("div");
+    const engine = leveledKnightEngine();
+    for (let rank = 0; rank < 5; rank += 1) {
+      engine.allocateTalent("knight", "k-fortitude");
+    }
+    engine.allocateTalent("knight", "k-hold-line");
+    const selected = { current: "knight" as ClassId };
+    const surface = mountTalentsSurface(root, mountOptions(selected));
+
+    renderTalents(surface, engine);
+
+    const statCell = knightSection(root).querySelector<HTMLElement>(
+      '.talent-cell[data-talent-id="k-fortitude"]',
+    );
+    const statIcon = statCell?.querySelector<HTMLImageElement>(
+      ".equipment-icon-img--content",
+    );
+    expect(statIcon?.dataset["iconKey"]).toBe("k-fortitude");
+    expect(statCell?.querySelector(".talent-rank-badge")?.textContent).toBe("5/5");
+
+    const abilityCell = knightSection(root).querySelector<HTMLElement>(
+      '.talent-cell--chosen[data-talent-id="k-hold-line"]',
+    );
+    const abilityIcon = abilityCell?.querySelector<HTMLImageElement>(
+      ".equipment-icon-img--content",
+    );
+    expect(abilityIcon?.dataset["iconKey"]).toBe("k-hold-line");
+    expect(abilityCell?.querySelector(".talent-ability-mark--chosen")).not.toBeNull();
+
+    surface.destroy();
+  });
+
   it("shows Stat rank badges without name or pip prose on the cell", () => {
     const root = document.createElement("div");
     const engine = leveledKnightEngine();
