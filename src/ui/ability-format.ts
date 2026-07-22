@@ -6,15 +6,6 @@ import type {
 } from "../core/types";
 import { statLines } from "./snapshot-view";
 
-export {
-  abilityRawDisplay,
-  formatAbilityRawLine,
-  formatStatModifierPerRank,
-  statLines,
-  type AbilityRawDisplay,
-  type StatLine,
-} from "./snapshot-view";
-
 export function formatAbilityTimings(ability: AbilityDef): string {
   const cooldown =
     ability.cooldownMs > 0 ? `${ability.cooldownMs}ms` : "none";

@@ -2,14 +2,16 @@ import { describe, expect, it } from "vitest";
 import { fixtureContent } from "../core/testing/fixture-content";
 import type { StatModifiers } from "../core/types";
 import {
-  abilityRawDisplay,
   actionCyclePhase,
   formatCooldownState,
-  formatStatModifierPerRank,
   formatStatTalentDelta,
-  statLines,
 } from "./ability-format";
-import { compareEquipmentStatDeltas } from "./equipment-format";
+import {
+  abilityRawDisplay,
+  compareEquipmentStatDeltas,
+  formatStatModifierPerRank,
+  statLines,
+} from "./snapshot-view";
 
 const knightBasic = fixtureContent.abilities.find((entry) => entry.id === "knight-basic")!;
 

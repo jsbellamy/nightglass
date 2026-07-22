@@ -1,19 +1,17 @@
 import type { ReadonlySnapshot } from "../core/snapshot";
 import type { AbilityDef, BaseStats, ClassId, Content } from "../core/types";
-import {
-  abilityRawDisplay,
-  formatAbilityRawLine,
-  formatAbilityTimings,
-} from "./ability-format";
+import { formatAbilityTimings } from "./ability-format";
 import type { TileCommand } from "./bus";
 import type { EngineLegalityView } from "./engine-legality";
 import {
+  abilityRawDisplay,
   appliedLoadout,
   CLASS_LABELS,
   characterStatsFor,
   classKitFor,
   effectiveLoadout,
   effectiveTalentState,
+  formatAbilityRawLine,
   unlockableAbilityIds,
 } from "./snapshot-view";
 import { el, mountSurfaceShell, pendingMarker } from "./surface-shell";

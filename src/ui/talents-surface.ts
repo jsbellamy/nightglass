@@ -1,9 +1,6 @@
 import type { ReadonlySnapshot } from "../core/snapshot";
 import type { ClassId, Content, StatTalentDef } from "../core/types";
-import {
-  formatStatModifierPerRank,
-  formatStatTalentDelta,
-} from "./ability-format";
+import { formatStatTalentDelta } from "./ability-format";
 import type { TileCommand } from "./bus";
 import { EMPTY_ENGINE_LEGALITY, type EngineLegalityView } from "./engine-legality";
 import { bindPressable } from "./keyboard";
@@ -13,6 +10,7 @@ import {
   classKitFor,
   effectiveLoadout,
   effectiveTalentState,
+  formatStatModifierPerRank,
   levelFor,
 } from "./snapshot-view";
 import { el, mountSurfaceShell, pendingMarker } from "./surface-shell";

@@ -2,13 +2,13 @@ import { describe, expect, it } from "vitest";
 import { fixtureContent } from "../core/testing/fixture-content";
 import type { DropInstance } from "../core/snapshot";
 import {
-  compareEquipmentStatDeltas,
   filterArmoryDrops,
   formatRarityLabel,
   equipmentBaseInitials,
   rareOrEpicDropNames,
   sortArmoryDrops,
 } from "./equipment-format";
+import { compareEquipmentStatDeltas } from "./snapshot-view";
 
 function drop(
   overrides: Partial<DropInstance> & Pick<DropInstance, "dropId" | "baseId">,

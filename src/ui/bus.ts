@@ -1,7 +1,7 @@
-import type { Engine } from "../core/engine";
 import type { EngineEvent } from "../core/events";
 import type { Snapshot } from "../core/snapshot";
 import type { SerializedEngineLegality } from "./engine-legality";
+import type { Engine } from "./snapshot-view";
 
 export const NIGHTGLASS_BUS_CHANNEL = "nightglass";
 
