@@ -883,7 +883,7 @@ describe("Armory surface", () => {
     root.remove();
   });
 
-  it("computes compare popover Equipment stat deltas for a pending-in Character", () => {
+  it("computes compare popover Equipment stat deltas for a Character pending into the Party", () => {
     const root = document.createElement("div");
     document.body.append(root);
     const selected = { current: "hunter" as ClassId };
@@ -899,10 +899,19 @@ describe("Armory surface", () => {
         itemLevel: 3,
         rarity: "rare",
       }),
+      drop({
+        dropId: 3,
+        baseId: "thornquill-blade",
+        assignedTo: { classId: "knight", slot: "weapon" },
+      }),
     ]);
-    expect(snapshot.progression.pendingParty?.members[0]).toBe("hunter");
-    expect(snapshot.progression.pendingParty?.reserve).toBe("knight");
-    expect(rosterClassIds(snapshot)[0]).toBe("hunter");
+    expect(snapshot.progression.party[0]).toBe("knight");
+    expect(snapshot.progression.reserve).toBe("hunter");
+    expect(snapshot.progression.pendingParty).toEqual({
+      members: ["hunter", "wizard", "priest"],
+      reserve: "knight",
+    });
+    expect(rosterClassIds(snapshot)).toEqual(["hunter", "wizard", "priest", "knight"]);
 
     const surface = mountArmorySurface(root, {
       content: fullContent,
@@ -914,6 +923,10 @@ describe("Armory surface", () => {
     const engine = createEngine(fullContent, snapshot, LOOT_SEED);
     surface.render(snapshot, legalityViewFromEngine(engine));
 
+    expect(
+      root.querySelector('[data-worn-slot="weapon"]')?.getAttribute("aria-label"),
+    ).toMatch(/Bramblesong Bow/);
+
     const tile = root.querySelector<HTMLElement>('.equipment-card[data-drop-id="2"]')!;
     tile.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
 
@@ -922,13 +935,15 @@ describe("Armory surface", () => {
     const rows = [...(popover?.querySelectorAll("tbody tr") ?? [])].map((row) =>
       [...row.querySelectorAll("td")].map((cell) => cell.textContent),
     );
+    // Hunter Bramblesong Bow (2) → Nightvine Longbow (5); not Knight's worn blade.
     expect(rows).toContainEqual(["Physical", "2", "5", "+3"]);
+    expect(rows.some((row) => row[1] === "0" && row[2] === "5")).toBe(false);
 
     surface.destroy();
     root.remove();
   });
 
-  it("keeps the pending-in Character's equip legality key in serializeEngineLegality for the compare popover", () => {
+  it("keys equip legality for a Character pending into the Party from serializeEngineLegality, not the false default", () => {
     const root = document.createElement("div");
     document.body.append(root);
     const selected = { current: "hunter" as ClassId };
@@ -957,6 +972,11 @@ describe("Armory surface", () => {
     surface.render(snapshot, legalityViewFromSerialized(serialized));
 
     const tile = root.querySelector<HTMLElement>('.equipment-card[data-drop-id="1"]')!;
+    tile.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
+    expect(root.querySelector<HTMLElement>('[data-armory-compare-popover="true"]')?.hidden).toBe(
+      false,
+    );
+
     const dataTransfer = new DataTransfer();
     tile.dispatchEvent(
       new DragEvent("dragstart", { bubbles: true, cancelable: true, dataTransfer }),
@@ -1030,7 +1050,7 @@ describe("Armory surface source boundary", () => {
     expect(source).not.toMatch(/armory-detail|equipButton|crossEquipConfirm|unequipSlot/);
   });
 
-  it("derives the compare popover Roster through rosterClassIds", () => {
+  it("does not inline applied Party and Reserve for the compare popover Roster", () => {
     const source = readFileSync(
       join(dirname(fileURLToPath(import.meta.url)), "armory-surface.ts"),
       "utf8",
@@ -1038,5 +1058,6 @@ describe("Armory surface source boundary", () => {
     expect(source).not.toMatch(
       /\[\.\.\.snapshot\.progression\.party,\s*snapshot\.progression\.reserve\]/,
     );
+    expect(source).toMatch(/const roster = rosterClassIds\(snapshot\);/);
   });
 });
