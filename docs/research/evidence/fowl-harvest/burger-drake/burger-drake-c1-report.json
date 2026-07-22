@@ -1,0 +1,31 @@
+{
+  "tag": "burger-drake",
+  "candidates": [
+    {
+      "candidate": "docs/research/evidence/fowl-harvest/burger-drake/scratch/burger-drake-c1.png",
+      "tag": "burger-drake",
+      "status": "advance",
+      "primary_failure": null,
+      "next_action": "advance to visual review",
+      "gates": [],
+      "clipped_sides": [],
+      "cursor_stamp_removed": false,
+      "opaque_bounds": [
+        0,
+        0,
+        715,
+        842
+      ],
+      "fitted_opaque_size": [
+        30,
+        35
+      ],
+      "profile": {
+        "role": "ordinary-opponent",
+        "max_opaque_w": 30,
+        "max_opaque_h": 68,
+        "facing": "left"
+      }
+    }
+  ]
+}

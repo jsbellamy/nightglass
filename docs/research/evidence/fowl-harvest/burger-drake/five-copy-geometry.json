@@ -1,0 +1,79 @@
+{
+  "battlefield": {
+    "width": 480,
+    "height": 86,
+    "floor_y": 80
+  },
+  "anchors_x": [
+    312,
+    346,
+    380,
+    414,
+    452
+  ],
+  "burger_drake_geometry": {
+    "frame_size": [
+      30,
+      35
+    ],
+    "visual_bounds": [
+      0,
+      0,
+      30,
+      35
+    ],
+    "foot_anchor": [
+      15,
+      35
+    ]
+  },
+  "opaque_body_rects": [
+    {
+      "anchor_x": 312,
+      "body": [
+        297,
+        45,
+        327,
+        80
+      ]
+    },
+    {
+      "anchor_x": 346,
+      "body": [
+        331,
+        45,
+        361,
+        80
+      ]
+    },
+    {
+      "anchor_x": 380,
+      "body": [
+        365,
+        45,
+        395,
+        80
+      ]
+    },
+    {
+      "anchor_x": 414,
+      "body": [
+        399,
+        45,
+        429,
+        80
+      ]
+    },
+    {
+      "anchor_x": 452,
+      "body": [
+        437,
+        45,
+        467,
+        80
+      ]
+    }
+  ],
+  "inside_battlefield": true,
+  "body_overlaps": []
+}

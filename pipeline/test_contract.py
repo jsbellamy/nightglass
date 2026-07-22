@@ -25,6 +25,7 @@ RUNTIME_SPRITES = {
     "priest": "priest.png",
     "hunter": "hunter.png",
     "pipcap": "pipcap.png",
+    "burger-drake": "burger-drake.png",
     "boss": "boss-1.png",
     "boss-2": "boss-2.png",
     "boss-3": "boss-3.png",
@@ -192,6 +193,21 @@ check("Pipcap flexible opaque bounds fit the ordinary Opponent 30x68 ceiling",
       and pipcap_measure["fitted_opaque_size"][1] <= pipcap_profile.max_opaque_h
       and pipcap_measure["clipped_sides"] == [],
       str(pipcap_measure))
+
+burger_sidecar = _sidecar("burger-drake")
+burger_measure = A.measure_candidate(RAW_DIR / "burger-drake.png", tag="burger-drake")
+check("Burger Drake archived raw uses flexible Fowl Harvest provenance",
+      burger_sidecar.get("acquisition") == "flexible"
+      and burger_sidecar.get("identity_profile", {}).get("role") == "ordinary-opponent"
+      and burger_sidecar.get("facing") == "left"
+      and burger_sidecar.get("palette") == "fowl-harvest-24@1",
+      str(burger_sidecar))
+check("Burger Drake flexible opaque bounds fit the ordinary Opponent 30x68 ceiling",
+      burger_measure["status"] == "advance"
+      and burger_measure["fitted_opaque_size"][0] <= burger_profile.max_opaque_w
+      and burger_measure["fitted_opaque_size"][1] <= burger_profile.max_opaque_h
+      and burger_measure["clipped_sides"] == [],
+      str(burger_measure))
 
 boss3_sidecar = _sidecar("boss-3")
 boss3_measure = A.measure_candidate(RAW_DIR / "boss-3.png", tag="boss-3")
@@ -609,9 +625,13 @@ check("alpha is strictly binary",
 
 print("\ncommitted manifest")
 manifest = manifest_data
-check("manifest records moonberry-16 palette for every sprite",
-      all(entry.get("palette") == "moonberry-16" for entry in manifest.values()),
-      str({k: v.get("palette") for k, v in manifest.items()}))
+_manifest_palettes = {k: v.get("palette") for k, v in manifest.items()}
+_expected_palettes = {
+    name: A.ASSET_IDENTITIES[name]["palette"] for name in manifest
+}
+check("manifest records identity-selected palette for every sprite",
+      _manifest_palettes == _expected_palettes,
+      str(_manifest_palettes))
 check("every manifest entry records visual_bounds and foot_anchor",
       all("visual_bounds" in entry and "foot_anchor" in entry
           for entry in manifest.values()))
@@ -656,11 +676,13 @@ check("complete body raw tags are lexicographically sorted",
       _discovered_body == tuple(sorted(_discovered_body)))
 check("production body bundles discovered in runtime-key order",
       A.default_build_raw_tags() == (
-          "boss", "boss-2", "boss-3", "hunter", "knight", "pipcap", "priest", "wizard"),
+          "boss", "boss-2", "boss-3", "burger-drake", "hunter", "knight",
+          "pipcap", "priest", "wizard"),
       str(A.default_build_raw_tags()))
+check("Burger Drake complete body bundle is discovered",
+      "burger-drake" in _discovered_body)
 check("declared Fowl identities without raw bundles do not fail discovery",
-      "burger-drake" not in _discovered_body
-      and "cornquacker" not in _discovered_body
+      "cornquacker" not in _discovered_body
       and "the-combine" not in _discovered_body)
 with tempfile.TemporaryDirectory() as _body_orphan_temp:
     _body_orphan_raw = pathlib.Path(_body_orphan_temp)
