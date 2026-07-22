@@ -7,6 +7,7 @@ import { describe, expect, it } from "vitest";
 import { createEngine } from "../core/engine";
 import { cloneSnapshot, type DropInstance } from "../core/snapshot";
 import { fixtureContent } from "../core/testing/fixture-content";
+import type { StageId } from "../core/types";
 import { buildContent } from "../data";
 import { createBusEndpoint } from "./bus";
 import { serializeEngineLegality } from "./engine-legality";
@@ -32,12 +33,26 @@ function activateFocused(): void {
   active.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
 }
 
+const fixtureStageTemplate = fixtureContent.stages[0]!;
+
+function contentWithAuthoredStages(maxStage: StageId): typeof fixtureContent {
+  const stages = [];
+  for (let id = 1; id <= maxStage; id += 1) {
+    stages.push({
+      ...fixtureStageTemplate,
+      id: id as StageId,
+      name: `Fixture Stage ${id}`,
+    });
+  }
+  return { ...fixtureContent, stages };
+}
+
 const customStageNamesContent: typeof fixtureContent = {
   ...fixtureContent,
   stages: [
-    { ...fixtureContent.stages[0]!, id: 1 as const, name: "Renamed Stage Alpha" },
-    { ...fixtureContent.stages[0]!, id: 2 as const, name: "Renamed Stage Beta" },
-    { ...fixtureContent.stages[0]!, id: 3 as const, name: "Renamed Stage Gamma" },
+    { ...fixtureStageTemplate, id: 1 as const, name: "Renamed Stage Alpha" },
+    { ...fixtureStageTemplate, id: 2 as const, name: "Renamed Stage Beta" },
+    { ...fixtureStageTemplate, id: 3 as const, name: "Renamed Stage Gamma" },
   ],
 };
 
@@ -228,6 +243,34 @@ describe("Stage surface", () => {
     expect(yesStage2).not.toBeNull();
     expect(yesStage2).not.toBe(yesStage1);
     expect(root.querySelector(".stage-confirm")?.getAttribute("data-pending-stage")).toBe("2");
+
+    surface.destroy();
+  });
+
+  it("renders unlocked Stage 6 and confirms selectStage through the command callback", () => {
+    const sixStageContent = contentWithAuthoredStages(6);
+    const root = document.createElement("div");
+    const saved = cloneSnapshot(createEngine(sixStageContent, undefined, LOOT_SEED).snapshot());
+    saved.progression.unlockedStage = 6;
+    const engine = createEngine(sixStageContent, saved, LOOT_SEED);
+    const commands: unknown[] = [];
+    const surface = mountStageSurface(root, {
+      content: sixStageContent,
+      onCommand: (command) => {
+        commands.push(command);
+      },
+    });
+
+    surface.render(engine.snapshot());
+    expect(root.querySelectorAll(".stage-row")).toHaveLength(6);
+    expect(root.querySelector('[data-stage-id="6"]')?.getAttribute("aria-disabled")).toBe("false");
+
+    root.querySelector<HTMLButtonElement>('[data-stage-id="6"]')?.click();
+    expect(root.querySelector(".stage-confirm")?.getAttribute("data-pending-stage")).toBe("6");
+    root.querySelector<HTMLButtonElement>('[data-stage-confirm="yes"]')?.click();
+
+    expect(commands).toEqual([{ cmd: "selectStage", args: [6] }]);
+    expect(root.querySelector(".stage-confirm")).toBeNull();
 
     surface.destroy();
   });

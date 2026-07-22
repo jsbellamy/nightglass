@@ -5,6 +5,7 @@ import { createEngine } from "../core/engine";
 import { opponentEntityId } from "../core/entity-id";
 import type { Snapshot } from "../core/snapshot";
 import { fixtureContent } from "../core/testing/fixture-content";
+import type { Content, StageDef, StageId } from "../core/types";
 import { buildContent } from "../data";
 import * as presentationModule from "./presentation";
 import * as sfxModule from "./sfx";
@@ -18,6 +19,20 @@ import {
 } from "./battle-tile";
 
 const LOOT_SEED = 42;
+
+const fixtureStageTemplate = fixtureContent.stages[0]!;
+
+function contentWithAuthoredStages(maxStage: StageId): Content {
+  const stages: StageDef[] = [];
+  for (let id = 1; id <= maxStage; id += 1) {
+    stages.push({
+      ...fixtureStageTemplate,
+      id: id as StageId,
+      name: `Expanded Stage ${id}`,
+    });
+  }
+  return { ...fixtureContent, stages };
+}
 
 async function capturePresentationRenderNowMs(
   run: (tile: ReturnType<typeof mountBattleTile>) => void,
@@ -392,6 +407,28 @@ describe("Battle Tile renderer", () => {
     const text = root.querySelector(".stage-wave-text")?.textContent ?? "";
     expect(text).toContain("Orchard Understory");
     expect(text).toContain("Wave 1");
+  });
+
+  it("resolves status line labels for authored StageIds 4 through 6", () => {
+    const content = contentWithAuthoredStages(6);
+    const root = document.createElement("main");
+    const tile = mountBattleTile(root, content);
+    const engine = createEngine(content, undefined, LOOT_SEED);
+    const snapshot = structuredClone(engine.snapshot());
+    const attempt = snapshot.attempt;
+    if (!attempt) {
+      throw new Error("missing attempt");
+    }
+
+    for (const stageId of [4, 5, 6] as const) {
+      attempt.stage = stageId;
+      attempt.encounter = 2;
+      tile.render(snapshot);
+
+      const text = root.querySelector(".stage-wave-text")?.textContent ?? "";
+      expect(text).toContain(`Expanded Stage ${stageId}`);
+      expect(text).toContain("Wave 2");
+    }
   });
 
   it("writes backdrop image once across repeated renders on the same stage", () => {
