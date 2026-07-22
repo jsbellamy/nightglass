@@ -47,6 +47,8 @@ tile chrome; 480×86 describes only the battlefield asset — they do not contra
   Events on the bus;
   they must not assume shared memory with the tile's Engine instance.
 - Layout or evidence tests should import dimensions from `battle-tile-layout.ts` and
-  `dock-geometry.ts`, not duplicate magic numbers.
+  `dock-geometry.ts`, not duplicate magic numbers. Dock dimensions and the
+  equal-width coupling stated in Context/Decision above are superseded by
+  ADR-0005; current dock size and centering live there and in `dock-geometry.ts`.
 - Features that require resizing the combat view while management is open are out
   of scope for this window model unless a future ADR supersedes this one.

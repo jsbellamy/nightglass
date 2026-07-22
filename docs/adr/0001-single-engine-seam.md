@@ -14,9 +14,9 @@ contract: many small `advanceBy` calls and one large call must yield identical
 event batches and Snapshots where timing matters.
 
 The implementation lives almost entirely in `src/core/engine.ts`. The public
-surface is intentionally small: the `Engine` interface (from line 71),
-`createEngine`, and `SCHEMA_VERSION`. Reviews sometimes suggest splitting the
-file into per-subsystem modules.
+surface is intentionally small: the `Engine` interface, `createEngine`, and
+`SCHEMA_VERSION`. Reviews sometimes suggest splitting the file into
+per-subsystem modules.
 
 ## Decision
 
