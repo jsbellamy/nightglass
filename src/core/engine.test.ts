@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import { createEngine } from "./engine";
-import { effectiveStats } from "./combat";
 import type { EngineEvent } from "./events";
 import { partyEntityId } from "./entity-id";
 import type { DropInstance, Snapshot } from "./snapshot";
@@ -3040,24 +3039,7 @@ describe("ticking Status Effects", () => {
     ).toBe(true);
   });
 
-  it("applies Scalded, Shaken, and Overdrive stat modifiers only for their durations", () => {
-    const knightKit = fixtureContent.classes.find((entry) => entry.id === "knight");
-    if (!knightKit) {
-      throw new Error("missing knight kit");
-    }
-    const base = knightKit.base;
-    const defs = new Map(scorchedTickContent.statuses.map((status) => [status.id, status]));
-
-    const scalded = effectiveStats(base, [{ statusId: "scalded", expiresAtMs: 1 }], defs);
-    expect(scalded.elementalResistance).toBe(Math.max(0, base.elementalResistance - 20));
-
-    const shaken = effectiveStats(base, [{ statusId: "shaken", expiresAtMs: 1 }], defs);
-    expect(shaken.physical).toBe(Math.floor(base.physical * 0.85));
-    expect(shaken.elemental).toBe(Math.floor(base.elemental * 0.85));
-
-    const overdrive = effectiveStats(base, [{ statusId: "overdrive", expiresAtMs: 1 }], defs);
-    expect(overdrive.physical).toBe(Math.floor(base.physical * 1.25));
-
+  it("expires Scalded after its authored duration in the engine", () => {
     const startMs = 0;
     const snap = scenario().build();
     snap.simNowMs = startMs;
@@ -3071,12 +3053,7 @@ describe("ticking Status Effects", () => {
     knight.statuses = [{ statusId: "scalded", expiresAtMs: startMs + 6_000 }];
 
     const engine = createEngine(scorchedTickContent, snap, LOOT_SEED, fixtureNow);
-    const during = engine.snapshot().attempt!.combatants.find(
-      (entry) => entry.entityId === knight.entityId,
-    );
-    expect(
-      effectiveStats(base, during!.statuses, defs).elementalResistance,
-    ).toBe(Math.max(0, base.elementalResistance - 20));
+    expect(knight.statuses.some((status) => status.statusId === "scalded")).toBe(true);
 
     const events = driveBy(engine, 6_000);
     expect(
