@@ -172,6 +172,7 @@ describe("Talents surface", () => {
   it("moves allocate and deallocate actions into the sticky detail panel", () => {
     const root = document.createElement("div");
     const engine = leveledKnightEngine();
+    engine.allocateTalent("knight", "k-fortitude");
     const selected = { current: "knight" as ClassId };
     const surface = mountTalentsSurface(root, mountOptions(selected));
 
@@ -184,6 +185,9 @@ describe("Talents surface", () => {
     const detail = root.querySelector('[data-talent-detail="true"]');
     expect(detail?.querySelector(".talent-name")?.textContent).toBe("Fortitude");
     expect(detail?.querySelector(".talent-per-rank")?.textContent).toMatch(/per rank/i);
+    expect(detail?.querySelector('[data-stat-delta="true"]')?.textContent).toMatch(
+      /Max Health|Physical/i,
+    );
     expect(
       detail?.querySelector('[data-talent-action="allocate"]')?.textContent,
     ).toBe("Add point");
@@ -192,6 +196,27 @@ describe("Talents surface", () => {
     ).toBe("Remove point");
 
     surface.destroy();
+  });
+
+  it("selects a Talent cell on keyboard focus without requiring Enter", () => {
+    const root = document.createElement("div");
+    document.body.append(root);
+    const engine = leveledKnightEngine();
+    const selected = { current: "knight" as ClassId };
+    const surface = mountTalentsSurface(root, mountOptions(selected));
+
+    renderTalents(surface, engine);
+    const cell = knightSection(root).querySelector<HTMLElement>(
+      '.talent-cell[data-talent-id="k-fortitude"]',
+    );
+    cell?.focus();
+    expect(root.querySelector('[data-talent-detail="true"] .talent-name')?.textContent).toBe(
+      "Fortitude",
+    );
+    expect(document.activeElement?.getAttribute("data-talent-id")).toBe("k-fortitude");
+
+    surface.destroy();
+    root.remove();
   });
 
   it("shows Ability detail with loadout warning and Choose/Remove only in the panel", () => {

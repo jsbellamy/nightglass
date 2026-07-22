@@ -86,6 +86,15 @@ export function mountTalentsSurface(
     bindPressable(cell, () => {
       selectTalent(statTalent.id);
     });
+    cell.addEventListener("focus", () => {
+      if (selectedTalentId === statTalent.id) {
+        return;
+      }
+      selectTalent(statTalent.id);
+      root
+        .querySelector<HTMLElement>(`.talent-cell[data-talent-id="${statTalent.id}"]`)
+        ?.focus();
+    });
     return cell;
   }
 
@@ -116,6 +125,15 @@ export function mountTalentsSurface(
     ]);
     bindPressable(cell, () => {
       selectTalent(abilityId);
+    });
+    cell.addEventListener("focus", () => {
+      if (selectedTalentId === abilityId) {
+        return;
+      }
+      selectTalent(abilityId);
+      root
+        .querySelector<HTMLElement>(`.talent-cell[data-talent-id="${abilityId}"]`)
+        ?.focus();
     });
     return cell;
   }
