@@ -152,7 +152,11 @@ describe("previewEquip", () => {
 
     const preview = previewEquip(snapshot, fixtureContent, worn.dropId, "knight", "weapon");
 
+    expect(preview.statDeltas.length).toBeGreaterThan(0);
     expect(preview.statDeltas.every((line) => line.delta === "0")).toBe(true);
+    expect(preview.statDeltas).toEqual([
+      { label: "Physical", before: "4", after: "4", delta: "0" },
+    ]);
     expect(preview.abilityChanges).toEqual([]);
   });
 

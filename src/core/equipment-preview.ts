@@ -210,6 +210,20 @@ export function compareEquipmentStatDeltas(
   return lines;
 }
 
+/** Every aggregated label with an explicit `"0"` delta (identical-swap previews). */
+function zeroEquipmentStatDeltas(modifiers: StatModifiers[]): StatDeltaLine[] {
+  const totals = statTotalsFromModifiers(modifiers);
+  return [...totals.keys()].sort().map((label) => {
+    const value = totals.get(label) ?? 0;
+    return {
+      label,
+      before: formatStatValue(label, value),
+      after: formatStatValue(label, value),
+      delta: "0",
+    };
+  });
+}
+
 export interface AbilityRawChange {
   abilityId: string;
   abilityName: string;
@@ -311,15 +325,17 @@ export function previewEquip(
   }
 
   const roster = rosterClassIds(snapshot);
-  const { current: currentMods, candidate: candidateMods } = statModifiersForSlotSwap(
-    snapshot.progression.armory,
-    roster,
-    classId,
-    slot,
-    drop,
-    content,
-  );
-  const statDeltas = compareEquipmentStatDeltas(currentMods, candidateMods);
+  const loadouts = snapshotEquipmentLoadouts(snapshot.progression.armory, roster);
+  const currentLoadout = { ...loadouts[classId] };
+  const candidateLoadout = { ...currentLoadout, [slot]: drop.dropId };
+  const { current: currentMods, candidate: candidateMods } = {
+    current: equipmentModifiersForLoadout(currentLoadout, snapshot.progression.armory, content),
+    candidate: equipmentModifiersForLoadout(candidateLoadout, snapshot.progression.armory, content),
+  };
+  const statDeltas =
+    currentLoadout[slot] === dropId
+      ? zeroEquipmentStatDeltas(currentMods)
+      : compareEquipmentStatDeltas(currentMods, candidateMods);
 
   const classKit = content.classes.find((entry) => entry.id === classId);
   if (!classKit) {
@@ -332,9 +348,6 @@ export function previewEquip(
   if (!basicAbility) {
     throw new Error(`Missing basic Ability for ${classId}`);
   }
-  const loadouts = snapshotEquipmentLoadouts(snapshot.progression.armory, roster);
-  const currentLoadout = { ...loadouts[classId] };
-  const candidateLoadout = { ...currentLoadout, [slot]: drop.dropId };
   const currentStats = statsForEquipmentLoadout(
     classKit,
     talentState,
