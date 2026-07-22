@@ -31,7 +31,8 @@ Test at these public boundaries, nowhere internal:
   fixture Content and a seeded loot stream; pump time synchronously. **Chunk
   neutrality is itself a seam property**: where timing behavior is in scope,
   assert that many small `advanceBy` calls and one large call produce identical
-  event batches and Snapshots.
+  event batches and Snapshots. Arrange Engine state through
+  `src/core/testing/scenario.ts`, not raw Snapshot literals.
 - **Pure functions** — math with an independent worked example (mitigation,
   Power, XP thresholds, Dock window geometry) gets direct unit tests. Expected
   values come from the spec's worked numbers, never recomputed with the code's

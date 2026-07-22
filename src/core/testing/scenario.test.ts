@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { createEngine, SCHEMA_VERSION } from "../engine";
 import { createDefaultProgression } from "../load-state";
@@ -8,6 +10,10 @@ import { driveBy, scenario } from "./scenario";
 
 const FIXTURE_NOW_MS = 1_000;
 const fixtureNow = () => FIXTURE_NOW_MS;
+const ENGINE_TEST_PATH = fileURLToPath(new URL("../engine.test.ts", import.meta.url));
+
+const RAW_SNAPSHOT_LITERAL = /const\s+\w+\s*:\s*Snapshot\s*=\s*\{/;
+const HAND_ROLLED_MS_LOOP = /for\s*\(\s*let\s+ms\s*=\s*0\s*;/;
 
 describe("scenario builder", () => {
   it("loads a fresh Arrange Snapshot into the Engine without discarding the Stage Attempt", () => {
@@ -316,5 +322,21 @@ describe("driveBy", () => {
 
     expect(eventsOne).toEqual(eventsChunk);
     expect(oneMs.snapshot()).toEqual(chunk.snapshot());
+  });
+});
+
+describe("engine.test.ts arrange/drive guard", () => {
+  it("engine.test.ts arranges state through the scenario builder, never a raw Snapshot literal", () => {
+    const source = readFileSync(ENGINE_TEST_PATH, "utf8");
+    expect(source).not.toMatch(RAW_SNAPSHOT_LITERAL);
+    expect(source).not.toMatch(HAND_ROLLED_MS_LOOP);
+  });
+
+  it("rejects a raw Snapshot literal or hand-rolled ms drive loop", () => {
+    // Guard proof: the patterns must catch the forbidden shapes if reintroduced.
+    const literalFixture = "const saved: Snapshot = {\n  schemaVersion: 1,\n};\n";
+    const loopFixture = "for (let ms = 0; ms < 100; ms += 1) {\n  engine.advanceBy(1);\n}\n";
+    expect(literalFixture).toMatch(RAW_SNAPSHOT_LITERAL);
+    expect(loopFixture).toMatch(HAND_ROLLED_MS_LOOP);
   });
 });
