@@ -32,7 +32,7 @@ from icons.palette import (  # noqa: E402
     PALETTE_PATHS,
     load_runtime_palette,
 )
-from icons.text_source import parse_text, write_text  # noqa: E402
+from icons.text_source import parse_text  # noqa: E402
 
 OUT_DIR = ROOT / "src" / "assets" / "icons"
 FAILURES: list[str] = []
@@ -118,6 +118,28 @@ try:
     check("unknown palette id fails directly", False)
 except ValueError as exc:
     check("unknown palette id fails directly", "unknown palette id" in str(exc))
+
+bad_palette_id = HERE / "_bad_palette_id.grid"
+bad_palette_id.write_text(
+    "\n".join(
+        [
+            "source_key: bad",
+            "palette: not-a-palette",
+            "palette_subset: mint",
+            "legend",
+            ". .",
+            "grid",
+            ".",
+        ]
+    )
+    + "\n"
+)
+try:
+    parse_text(bad_palette_id)
+    check("parse rejects unknown palette id", False)
+except ValueError as exc:
+    check("parse rejects unknown palette id", "unknown palette id" in str(exc))
+bad_palette_id.unlink()
 
 legacy_path = ROOT / "src" / "assets" / "icon-sources" / "thornquill-blade" / "source.grid"
 legacy = parse_text(legacy_path)

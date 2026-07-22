@@ -10,7 +10,7 @@ every rule; this file owns the 34×34 icon path only.
 
 | Layer | Artifact | Role |
 | --- | --- | --- |
-| Source | Text grid under `src/assets/icon-sources/<family>/source.grid` | Legend chars → named `moonberry-16` refs; **generated output, never hand-edited** |
+| Source | Text grid under `src/assets/icon-sources/<family>/source.grid` | Legend chars → named swatches from the source's declared palette (`moonberry-16` today for committed Equipment); **generated output, never hand-edited** |
 | Runtime | `src/assets/icons/<iconKey>.png` + `manifest.json` | 34×34 inventory icons consumed by the UI |
 | Review | `src/assets/icons/preview/<iconKey>@8x.png`, `family-sheet@8x.png` | PR-review approval targets (binary PNG diff) |
 
@@ -79,7 +79,9 @@ stills (no `MIN_LOGICAL_HEIGHT=40`); that difference stays in `pipeline/icons/`.
 
 ## Palette scoping and recolor
 
-Each family declares the subset of `moonberry-16` its ingest quantizer may use.
+Each family declares the subset of its source palette its ingest quantizer may use
+(`moonberry-16` for all committed Equipment families until a later slice threads
+Fowl through runtime paint).
 Without scoping, adding a ramp or applying a `recolor` map can **flatten** distinct
 cells when the target name already appears in the source histogram (see measured
 `BOW_TO_LONGBOW` mint→`berry-mid` merge in `#125`).
