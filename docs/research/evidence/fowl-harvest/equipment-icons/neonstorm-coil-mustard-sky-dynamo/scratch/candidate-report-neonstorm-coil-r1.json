@@ -1,0 +1,6 @@
+{
+  "candidate": "neonstorm-coil-r1.png",
+  "raw_sha256": "551f43640e8a09b2f2228f5c6d6755573deb7835a92dd0f491f695bb9202fd75",
+  "result": "fail",
+  "error": "neonstorm-coil-r1.png: overshoot recovered 33\u00d730 (max body 30\u00d730 before outline ring)"
+}

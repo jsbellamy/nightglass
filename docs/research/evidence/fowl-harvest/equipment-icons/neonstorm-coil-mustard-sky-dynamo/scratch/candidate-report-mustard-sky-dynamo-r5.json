@@ -1,0 +1,7 @@
+{
+  "candidate": "mustard-sky-dynamo-r5.png",
+  "raw_sha256": "f4a233432ff606a7002149fac29c6c65c4ac6b9cbb23099f187f45753f503fc9",
+  "result": "fail",
+  "error": "mustard-sky-dynamo-r5.png: underfill recovered long axis 19 (need \u226520)",
+  "primary": "underfill"
+}

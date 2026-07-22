@@ -1,0 +1,120 @@
+{
+  "neonstorm-coil": {
+    "recovered": {
+      "bbox": [
+        405,
+        335,
+        619,
+        689
+      ],
+      "pitch_x": {
+        "pitch": 16.311111111111202,
+        "score": 0.4777528789944123
+      },
+      "pitch_y": {
+        "pitch": 16.711111111111208,
+        "score": 0.6251589042223542
+      },
+      "grid": [
+        13,
+        21
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 227,
+      "far_cells": 40,
+      "far_fraction": 0.1762,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "oil-ink": 85,
+        "storm-slate": 74,
+        "bruise-plum": 2,
+        "diner-teal": 19,
+        "teal-light": 17,
+        "pond-teal-deep": 18,
+        "diner-cream": 5,
+        "crow-black": 6,
+        "condiment-red": 1
+      }
+    },
+    "palette": "fowl-harvest-24",
+    "palette_subset": [
+      "oil-ink",
+      "crow-black",
+      "bruise-plum",
+      "storm-slate",
+      "diner-cream",
+      "diner-teal",
+      "teal-light",
+      "pond-teal-deep",
+      "condiment-red"
+    ],
+    "preview": "docs/research/evidence/fowl-harvest/equipment-icons/neonstorm-coil-mustard-sky-dynamo/previews/neonstorm-coil@8x.png",
+    "source_grid": "src/assets/icon-sources/neonstorm-coil/source.grid",
+    "accepted_raw": "docs/research/evidence/fowl-harvest/equipment-icons/neonstorm-coil-mustard-sky-dynamo/accepted-raws/neonstorm-coil.png",
+    "raw_sha256": "90291e8e9f80a814a25fe93924a3c55e29d00e8d112dddb807f9db53fc2605e3",
+    "candidate": "neonstorm-coil-r5"
+  },
+  "mustard-sky-dynamo": {
+    "recovered": {
+      "bbox": [
+        199,
+        134,
+        862,
+        925
+      ],
+      "pitch_x": {
+        "pitch": 41.249999999999616,
+        "score": 0.24848251669020782
+      },
+      "pitch_y": {
+        "pitch": 41.449999999999605,
+        "score": 0.262084671536103
+      },
+      "grid": [
+        17,
+        20
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 224,
+      "far_cells": 35,
+      "far_fraction": 0.1562,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "oil-ink": 55,
+        "diner-cream": 6,
+        "crow-black": 46,
+        "corn-yellow": 6,
+        "storm-slate": 52,
+        "duck-shadow": 7,
+        "teal-light": 4,
+        "bruise-plum": 11,
+        "yolk-gold": 2,
+        "diner-teal": 10,
+        "duck-gold": 18,
+        "pond-teal-deep": 7
+      }
+    },
+    "palette": "fowl-harvest-24",
+    "palette_subset": [
+      "oil-ink",
+      "crow-black",
+      "bruise-plum",
+      "storm-slate",
+      "diner-cream",
+      "diner-teal",
+      "teal-light",
+      "pond-teal-deep",
+      "corn-yellow",
+      "yolk-gold",
+      "duck-gold",
+      "duck-shadow"
+    ],
+    "preview": "docs/research/evidence/fowl-harvest/equipment-icons/neonstorm-coil-mustard-sky-dynamo/previews/mustard-sky-dynamo@8x.png",
+    "source_grid": "src/assets/icon-sources/mustard-sky-dynamo/source.grid",
+    "accepted_raw": "docs/research/evidence/fowl-harvest/equipment-icons/neonstorm-coil-mustard-sky-dynamo/accepted-raws/mustard-sky-dynamo.png",
+    "raw_sha256": "4c2c672d1cedfbd5968da759242dfe3de6bbf9c9af1d5ea2c21963e591696e03",
+    "candidate": "mustard-sky-dynamo-r6"
+  }
+}

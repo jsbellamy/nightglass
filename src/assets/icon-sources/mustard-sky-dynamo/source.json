@@ -1,0 +1,90 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "4c2c672d1cedfbd5968da759242dfe3de6bbf9c9af1d5ea2c21963e591696e03",
+  "asset_class": "interface",
+  "kind": "equipment-base-icon",
+  "runtime_destination": null,
+  "source_key": "mustard-sky-dynamo",
+  "candidate": "mustard-sky-dynamo-r6",
+  "palette": "fowl-harvest-24",
+  "palette_subset": [
+    "oil-ink",
+    "crow-black",
+    "bruise-plum",
+    "storm-slate",
+    "diner-cream",
+    "diner-teal",
+    "teal-light",
+    "pond-teal-deep",
+    "corn-yellow",
+    "yolk-gold",
+    "duck-gold",
+    "duck-shadow"
+  ],
+  "style_references": [
+    {
+      "path": "docs/research/evidence/126-equipment-icons/accepted-raws/dewlight-focus.png",
+      "role": "style_cohort",
+      "sha256": "4cb24ecd0cc34e878bf47936abb072f3774e4a0fc5fb5b81ec07041d651c26e7"
+    },
+    {
+      "path": "docs/research/evidence/126-equipment-icons/accepted-raws/moonpetal-relic.png",
+      "role": "style_cohort",
+      "sha256": "848f3d82db55a61eadc337acbb6ada7ef261c3513d34471439acce0339078ad2"
+    },
+    {
+      "path": "src/assets/icons/verify-fowl-canary.png",
+      "role": "fowl_palette_canary",
+      "sha256": "fdd8910ed6d6a7fb55b2a105568afcd7ad7b0aef4fbcd52ed7f7257e32bc14c9"
+    }
+  ],
+  "issue_exact_prompt": "TRUE chunky pixel art inventory icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block with no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered Fowl Harvest Equipment item in three-quarter display angle for Mustard-Sky Dynamo: a squat storm-slate generator with a mustard-yellow rotor and teal current-capture prongs. The subject long side spans about 26\u201330 logical pixels, with at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel oil-ink outline. Use only named fowl-harvest-24 colors, 8\u201312 flat colors maximum. Structural members are at least three logical pixels thick. No Character, duck body, scene, shadow, glow, sparks, particles, text, watermark, UI frame, or transparency.",
+  "issue_exact_prompt_sha256": "475a95657ccd44ab7a1ae08b11a929d5865156be134116ea84f654010382d460",
+  "issue_exact_prompt_submitted_as": "mustard-sky-dynamo-r1",
+  "prompt": "TRUE chunky pixel art inventory icon ONLY. Exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one HARD flat square \u2014 zero anti-aliasing, zero soft blends.\n\nCentered Mustard-Sky Dynamo inventory item. Enlarge the silhouette vs the edit target so the subject's long side spans about 24\u201328 logical pixels (NOT tiny). Keep at least THREE full magenta #ff00ff cells of empty clearance on every edge \u2014 do not touch the border.\n\nThree-quarter display: squat generator box with round mustard rotor and teal side prongs. FLAT poster colors only:\n1) storm-slate #55586a housing (warm purple-grey, never blue steel)\n2) crow-black #1e1c29 recesses\n3) corn-yellow #f0cf4a large rotor disk\n4) yolk-gold #ecb34a rotor rim\n5) diner-teal #1f9277 thick prongs\n6) teal-light #4fb99b prong tips (muted green-teal, never mint/cyan)\n7) diner-cream #f3d897 rivets\n8) oil-ink #111018 1px outline\n\nStructural members \u22653 logical pixels thick. Exaggerate the round yellow rotor so identity reads large. No Character, duck, scene, shadow, glow, sparks, particles, text, watermark, UI frame, silver, cyan, or transparency. Magenta background only.",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        199,
+        134,
+        862,
+        925
+      ],
+      "pitch_x": {
+        "pitch": 41.249999999999616,
+        "score": 0.24848251669020782
+      },
+      "pitch_y": {
+        "pitch": 41.449999999999605,
+        "score": 0.262084671536103
+      },
+      "grid": [
+        17,
+        20
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 224,
+      "far_cells": 35,
+      "far_fraction": 0.1562,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "oil-ink": 55,
+        "diner-cream": 6,
+        "crow-black": 46,
+        "corn-yellow": 6,
+        "storm-slate": 52,
+        "duck-shadow": 7,
+        "teal-light": 4,
+        "bruise-plum": 11,
+        "yolk-gold": 2,
+        "diner-teal": 10,
+        "duck-gold": 18,
+        "pond-teal-deep": 7
+      }
+    }
+  },
+  "note": "#395 Wizard Fowl Equipment Tier IV unregistered source family; activation deferred",
+  "evidence_raw": "docs/research/evidence/fowl-harvest/equipment-icons/neonstorm-coil-mustard-sky-dynamo/accepted-raws/mustard-sky-dynamo.png"
+}

@@ -1,0 +1,7 @@
+{
+  "candidate": "mustard-sky-dynamo-r3.png",
+  "raw_sha256": "25019794c352873083bf137a7cd8a9bcb007cc6545368cfbde0043458edc26b3",
+  "result": "fail",
+  "error": "mustard-sky-dynamo-r3.png: subject clipped by generator at bottom/left of the 1024x1024 raw canvas",
+  "primary": "clip-fail"
+}

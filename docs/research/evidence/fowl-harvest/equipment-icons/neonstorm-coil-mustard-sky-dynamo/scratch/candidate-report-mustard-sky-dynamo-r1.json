@@ -1,0 +1,45 @@
+{
+  "candidate": "mustard-sky-dynamo-r1.png",
+  "raw_sha256": "4fd9dfd9f8aa772a07764aca2b9d22ecca7f238ffd00256c6af84dfd3a722e1a",
+  "recovered": {
+    "bbox": [
+      167,
+      93,
+      895,
+      928
+    ],
+    "pitch_x": {
+      "pitch": 29.872222222222316,
+      "score": 0.12022609999134529
+    },
+    "pitch_y": {
+      "pitch": 30.12222222222232,
+      "score": 0.13057491527018533
+    },
+    "grid": [
+      25,
+      28
+    ]
+  },
+  "ramp": {
+    "opaque_cells": 512,
+    "far_cells": 123,
+    "far_fraction": 0.2402,
+    "off_ramp_reject": true,
+    "quantize_histogram": {
+      "oil-ink": 125,
+      "diner-teal": 22,
+      "teal-light": 22,
+      "pond-teal-deep": 69,
+      "duck-shadow": 15,
+      "bruise-plum": 25,
+      "storm-slate": 122,
+      "crow-black": 79,
+      "duck-gold": 12,
+      "corn-yellow": 3,
+      "yolk-gold": 5,
+      "diner-cream": 13
+    }
+  },
+  "result": "off-ramp"
+}
