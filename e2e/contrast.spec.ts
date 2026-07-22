@@ -39,7 +39,8 @@ const DOCK_PRIMARY_TEXT: { tab: "character" | "armory" | "stage"; selector: stri
   { tab: "armory", selector: ".armory-worn-strip .armory-worn-slot-label" },
   { tab: "armory", selector: '.armory-worn-strip [data-slot-filled="false"] .armory-worn-slot-empty' },
   { tab: "armory", selector: ".armory-detail .equipment-detail .equipment-name" },
-  { tab: "armory", selector: ".armory-detail .equipment-detail .equipment-marker" },
+  { tab: "armory", selector: ".armory-compare-popover .armory-compare-name" },
+  { tab: "armory", selector: ".armory-compare-popover .armory-compare-stat-table th" },
   { tab: "armory", selector: ".armory-slot-segment" },
   { tab: "armory", selector: ".armory-state-select" },
   { tab: "armory", selector: ".armory-detail .armory-attempt-note" },
@@ -94,9 +95,13 @@ test.describe("accessibility contrast floor", () => {
         }
       }
       if (tab === "armory" && !armoryDetailPrepared) {
-        await dock.locator('.armory-grid .equipment-card[data-drop-id="1"]').click();
+        await dock.locator('.armory-grid .equipment-card[data-drop-id="99"]').click();
         await expect(dock.locator(".armory-detail .equipment-detail .equipment-name")).toBeVisible();
         armoryDetailPrepared = true;
+      }
+      if (tab === "armory" && selector.includes("armory-compare-popover")) {
+        await dock.locator('.armory-grid .equipment-card[data-drop-id="99"]').hover();
+        await expect(dock.locator('[data-armory-compare-popover="true"]:not([hidden])')).toBeVisible();
       }
       const sample = await readTextContrastSample(dock, selector);
       expect(sample, `sample for ${selector}`).not.toBeNull();
@@ -225,11 +230,22 @@ test.describe("accessibility contrast floor", () => {
     await tile.close();
 
     await focusDockTab(dock, "armory");
-    // Detail needs a selection before name/marker contrast samples run.
-    await dock.locator('.armory-grid .equipment-card[data-drop-id="1"]').click();
+    await dock.locator('.armory-grid .equipment-card[data-drop-id="99"]').click();
     await expect(dock.locator(".armory-detail .equipment-detail .equipment-name")).toBeVisible();
     const epicCard = dock.locator(".armory-grid .equipment-card.rarity-epic");
     await expect(epicCard).toBeVisible({ timeout: 5_000 });
+    await epicCard.hover();
+    await expect(dock.locator('[data-armory-compare-popover="true"]:not([hidden])')).toBeVisible();
+    const popoverFocus = await dock.evaluate(() => {
+      const popover = document.querySelector<HTMLElement>('[data-armory-compare-popover="true"]');
+      const tile = document.querySelector<HTMLElement>('.armory-grid .equipment-card[data-drop-id="99"]');
+      return {
+        pointerEvents: popover ? getComputedStyle(popover).pointerEvents : null,
+        describedBy: tile?.getAttribute("aria-describedby") ?? null,
+      };
+    });
+    expect(popoverFocus.pointerEvents).toBe("none");
+    expect(popoverFocus.describedBy).toMatch(/armory-compare-desc-99/);
     const raritySignals = await epicCard.evaluate((card) => {
       return {
         hasIcon: card.querySelector(".equipment-icon-img--content") !== null,

@@ -1,4 +1,4 @@
-import { dropStatModifiers, snapshotEquipmentLoadouts } from "../core/equipment";
+import { snapshotEquipmentLoadouts } from "../core/equipment";
 import type { DropInstance, ReadonlySnapshot } from "../core/snapshot";
 import type { ClassId, Content, EquipmentSlotId } from "../core/types";
 import type { TileCommand } from "./bus";
@@ -13,10 +13,12 @@ import {
   formatAffix,
   formatAssignment,
   formatGuaranteedStat,
+  formatRarityLabel,
   isCompatibleWithSlot,
   rareOrEpicDropNames,
   SLOT_LABELS,
   sortArmoryDrops,
+  statModifiersForSlotSwap,
   statsForEquipmentLoadout,
 } from "./equipment-format";
 import { bindPressable } from "./keyboard";
@@ -51,7 +53,7 @@ export interface ArmorySurfaceOptions {
 
 type BrowseCompatibility = { classId: ClassId; slot: EquipmentSlotId };
 
-type StateFilterId = "all" | "unseen" | "assigned" | "available" | "locked";
+type StateFilterId = "all" | "unseen" | "locked";
 
 function equippedDropId(
   armory: DropInstance[],
@@ -72,12 +74,6 @@ function stateFilterId(filters: ArmoryFilters): StateFilterId {
   if (filters.unseen === true) {
     return "unseen";
   }
-  if (filters.assigned === "assigned") {
-    return "assigned";
-  }
-  if (filters.assigned === "available") {
-    return "available";
-  }
   if (filters.locked === true) {
     return "locked";
   }
@@ -92,12 +88,6 @@ function applyStateFilter(id: StateFilterId, filters: ArmoryFilters): ArmoryFilt
   switch (id) {
     case "unseen":
       next.unseen = true;
-      break;
-    case "assigned":
-      next.assigned = "assigned";
-      break;
-    case "available":
-      next.assigned = "available";
       break;
     case "locked":
       next.locked = true;
@@ -129,6 +119,16 @@ export function mountArmorySurface(
   let currentLegality: EngineLegalityView = EMPTY_ENGINE_LEGALITY;
   let unbindGridOverflow: (() => void) | null = null;
   let unbindDetailOverflow: (() => void) | null = null;
+  let comparePopoverHost: HTMLElement | null = null;
+  let comparePopoverAnchor: HTMLElement | null = null;
+  let comparePopoverDropId: number | null = null;
+
+  const comparePopover = el("div", {
+    class: "armory-compare-popover",
+    data: { armoryComparePopover: "true" },
+    props: { hidden: true },
+  });
+  comparePopover.style.pointerEvents = "none";
 
   function publish(command: TileCommand): void {
     options.onCommand?.(command);
@@ -153,6 +153,201 @@ export function mountArmorySurface(
     }
     optimisticallySeenDropIds.add(dropId);
     publish({ cmd: "markSeen", args: [[dropId]] });
+  }
+
+  function hideComparePopover(): void {
+    comparePopover.hidden = true;
+    comparePopover.replaceChildren();
+    comparePopoverAnchor = null;
+    comparePopoverDropId = null;
+    comparePopoverHost = null;
+  }
+
+  function positionComparePopover(anchor: HTMLElement, host: HTMLElement): void {
+    comparePopover.hidden = false;
+    comparePopover.style.visibility = "hidden";
+    const margin = 6;
+    const hostRect = host.getBoundingClientRect();
+    const anchorRect = anchor.getBoundingClientRect();
+    const popW = comparePopover.offsetWidth;
+    const popH = comparePopover.offsetHeight;
+    let top = anchorRect.bottom + margin;
+    if (top + popH > hostRect.bottom && anchorRect.top - margin - popH >= hostRect.top) {
+      top = anchorRect.top - margin - popH;
+    }
+    top = Math.min(Math.max(top, hostRect.top + margin), hostRect.bottom - popH - margin);
+    let left = anchorRect.left + anchorRect.width / 2 - popW / 2;
+    left = Math.min(Math.max(left, hostRect.left + margin), hostRect.right - popW - margin);
+    comparePopover.style.position = "fixed";
+    comparePopover.style.left = `${left}px`;
+    comparePopover.style.top = `${top}px`;
+    comparePopover.style.visibility = "";
+  }
+
+  function fillComparePopover(
+    snapshot: ReadonlySnapshot,
+    drop: DropInstance,
+    classId: ClassId,
+  ): string {
+    const base = equipmentBaseForDrop(drop, content);
+    const slot = base.slot;
+    const descId = `armory-compare-desc-${drop.dropId}`;
+    comparePopover.replaceChildren();
+    comparePopover.id = descId;
+
+    const meta = el("div", { class: "armory-compare-meta" }, [
+      el("p", { class: "armory-compare-name", text: base.name }),
+      el("p", {
+        class: "armory-compare-meta-line",
+        text: `${formatRarityLabel(drop.rarity)} · Tier ${base.tier} · Item Level ${drop.itemLevel}${drop.locked ? " · Locked" : ""}`,
+      }),
+    ]);
+    comparePopover.append(meta);
+
+    const roster = [...snapshot.progression.party, snapshot.progression.reserve];
+    const { current: currentMods, candidate: candidateMods } = statModifiersForSlotSwap(
+      snapshot.progression.armory,
+      roster,
+      classId,
+      slot,
+      drop,
+      content,
+    );
+    const statDeltas = compareEquipmentStatDeltas(currentMods, candidateMods);
+
+    const classKit = classKitFor(content, classId);
+    const talentState = effectiveTalentState(snapshot, classId);
+    const loadout = effectiveLoadout(snapshot, classId);
+    const abilitiesById = new Map(content.abilities.map((ability) => [ability.id, ability]));
+    const basicAbility = abilitiesById.get(classKit.basicAbilityId);
+    if (!basicAbility) {
+      throw new Error(`Missing basic Ability for ${classId}`);
+    }
+    const loadouts = snapshotEquipmentLoadouts(snapshot.progression.armory, roster);
+    const currentLoadout = { ...loadouts[classId] };
+    const candidateLoadout = { ...currentLoadout, [slot]: drop.dropId };
+    const currentStats = statsForEquipmentLoadout(
+      classKit,
+      talentState,
+      currentLoadout,
+      snapshot.progression.armory,
+      content,
+    );
+    const candidateStats = statsForEquipmentLoadout(
+      classKit,
+      talentState,
+      candidateLoadout,
+      snapshot.progression.armory,
+      content,
+    );
+    const abilityChanges = compareAbilityRawChanges(
+      loadout,
+      basicAbility,
+      currentStats,
+      candidateStats,
+      abilitiesById,
+    );
+
+    if (statDeltas.length > 0) {
+      const table = el("table", {
+        class: "armory-compare-stat-table",
+        data: { statDeltas: "true" },
+      });
+      const head = el("thead");
+      head.append(
+        el("tr", {}, [
+          el("th", { text: "Stat" }),
+          el("th", { text: "Equipped" }),
+          el("th", { text: "Hovered" }),
+          el("th", { text: "Δ" }),
+        ]),
+      );
+      table.append(head);
+      const body = el("tbody");
+      for (const line of statDeltas) {
+        body.append(
+          el("tr", {}, [
+            el("td", { text: line.label }),
+            el("td", { text: line.before }),
+            el("td", { text: line.after }),
+            el("td", { text: line.delta }),
+          ]),
+        );
+      }
+      table.append(body);
+      comparePopover.append(table);
+    }
+
+    if (abilityChanges.length > 0) {
+      const abilityList = el("ul", {
+        class: "armory-compare-ability-list",
+        data: { abilityDeltas: "true" },
+      });
+      for (const change of abilityChanges) {
+        abilityList.append(
+          el("li", {
+            text: `${change.abilityName}: ${change.before ?? "—"} → ${change.after ?? "—"}`,
+          }),
+        );
+      }
+      comparePopover.append(abilityList);
+    }
+
+    if (statDeltas.length === 0 && abilityChanges.length === 0) {
+      comparePopover.append(
+        el("p", {
+          class: "armory-compare-empty",
+          data: { compareEmpty: "true" },
+          text: "No stat or Ability changes",
+        }),
+      );
+    }
+
+    return descId;
+  }
+
+  function showComparePopover(
+    snapshot: ReadonlySnapshot,
+    drop: DropInstance,
+    anchor: HTMLElement,
+    host: HTMLElement,
+  ): void {
+    const classId = options.getSelectedClassId();
+    if (!classId) {
+      hideComparePopover();
+      return;
+    }
+    markDropSeen(drop.dropId);
+    comparePopoverHost = host;
+    comparePopoverAnchor = anchor;
+    comparePopoverDropId = drop.dropId;
+    const descId = fillComparePopover(snapshot, drop, classId);
+    anchor.setAttribute("aria-describedby", descId);
+    positionComparePopover(anchor, host);
+  }
+
+  function bindComparePopover(
+    snapshot: ReadonlySnapshot,
+    drop: DropInstance,
+    tile: HTMLElement,
+    host: HTMLElement,
+  ): void {
+    const open = () => {
+      showComparePopover(snapshot, drop, tile, host);
+    };
+    const maybeClose = () => {
+      if (tile.matches(":hover") || tile.contains(document.activeElement)) {
+        return;
+      }
+      if (comparePopoverAnchor === tile) {
+        tile.removeAttribute("aria-describedby");
+        hideComparePopover();
+      }
+    };
+    tile.addEventListener("mouseenter", open);
+    tile.addEventListener("mouseleave", maybeClose);
+    tile.addEventListener("focusin", open);
+    tile.addEventListener("focusout", maybeClose);
   }
 
   function appendContentTierIcon(container: HTMLElement, iconKey: string, name: string): void {
@@ -396,7 +591,8 @@ export function mountArmorySurface(
   }
 
   function filteredDrops(snapshot: ReadonlySnapshot): DropInstance[] {
-    let drops = filterArmoryDrops(snapshot.progression.armory, filters, content);
+    const unequipped = snapshot.progression.armory.filter((drop) => !drop.assignedTo);
+    let drops = filterArmoryDrops(unequipped, filters, content);
     if (browseCompatibility) {
       const { classId, slot } = browseCompatibility;
       drops = drops.filter((drop) =>
@@ -454,8 +650,6 @@ export function mountArmorySurface(
     const stateOptions: { id: StateFilterId; label: string }[] = [
       { id: "all", label: "All" },
       { id: "unseen", label: "Unseen" },
-      { id: "assigned", label: "Assigned" },
-      { id: "available", label: "Available" },
       { id: "locked", label: "Locked" },
     ];
     const currentState = stateFilterId(filters);
@@ -504,19 +698,25 @@ export function mountArmorySurface(
       el("label", { class: "armory-sort-label", text: "Sort" }, [sortSelect]),
     );
 
-    const discardButton = el("button", {
-      class: "armory-discard-button focus-ring",
-      data: { bulkDiscard: "true" },
-      props: { type: "button", disabled: selectedDiscard.size === 0 },
-      text: `Discard selected (${selectedDiscard.size})`,
-    });
-    bindPressable(discardButton, () => {
-      discardConfirmOpen = true;
-      render(snapshot);
-    });
-    toolbar.append(el("div", { class: "armory-bulk-actions" }, [discardButton]));
+    if (selectedDiscard.size > 0) {
+      const discardButton = el("button", {
+        class: "armory-discard-button focus-ring",
+        data: { bulkDiscard: "true" },
+        props: { type: "button" },
+        text: `Discard selected (${selectedDiscard.size})`,
+      });
+      bindPressable(discardButton, () => {
+        discardConfirmOpen = true;
+        render(snapshot);
+      });
+      toolbar.append(
+        el("div", { class: "armory-bulk-actions", data: { bulkDiscardStrip: "true" } }, [
+          discardButton,
+        ]),
+      );
+    }
 
-    if (discardConfirmOpen) {
+    if (discardConfirmOpen && selectedDiscard.size > 0) {
       const selectedDrops = [...selectedDiscard]
         .map((dropId) => dropById(snapshot.progression.armory, dropId))
         .filter((entry): entry is DropInstance => entry !== undefined);
@@ -557,7 +757,7 @@ export function mountArmorySurface(
     container.append(toolbar);
   }
 
-  function renderGrid(snapshot: ReadonlySnapshot, container: HTMLElement): void {
+  function renderGrid(snapshot: ReadonlySnapshot, container: HTMLElement, host: HTMLElement): void {
     const grid = el("div", {
       class: "armory-grid",
       data: { armoryCollection: "true" },
@@ -569,7 +769,9 @@ export function mountArmorySurface(
     for (const drop of drops) {
       const selected = selectedDropId === drop.dropId;
       const tile = el("article", {
-        class: selected ? "equipment-card focus-ring selected" : "equipment-card focus-ring",
+        class: selected
+          ? `equipment-card focus-ring selected${drop.locked ? " locked-tile" : ""}`
+          : `equipment-card focus-ring${drop.locked ? " locked-tile" : ""}`,
         data: {
           dropId: String(drop.dropId),
           compareCandidate: String(drop.dropId),
@@ -607,6 +809,28 @@ export function mountArmorySurface(
         });
         tile.append(checkbox);
       }
+
+      const lockButton = el("button", {
+        class: "armory-tile-lock focus-ring",
+        data: { tileLock: String(drop.dropId) },
+        props: { type: "button" },
+        aria: {
+          label: drop.locked
+            ? `Unlock ${equipmentBaseForDrop(drop, content).name}`
+            : `Lock ${equipmentBaseForDrop(drop, content).name}`,
+        },
+        text: drop.locked ? "Unlock" : "Lock",
+      });
+      lockButton.addEventListener("click", (event) => {
+        event.stopPropagation();
+        publish({ cmd: "setLocked", args: [drop.dropId, !drop.locked] });
+      });
+      bindPressable(lockButton, () => {
+        publish({ cmd: "setLocked", args: [drop.dropId, !drop.locked] });
+      });
+      tile.append(lockButton);
+
+      bindComparePopover(snapshot, drop, tile, host);
 
       bindPressable(tile, () => {
         selectedDropId = drop.dropId;
@@ -670,8 +894,15 @@ export function mountArmorySurface(
       el("div", { class: "armory-compare-columns" }, [currentColumn, candidateColumn]),
     );
 
-    const currentMods = equipped ? dropStatModifiers(equipped, content) : [];
-    const candidateMods = dropStatModifiers(selectedDrop, content);
+    const roster = [...snapshot.progression.party, snapshot.progression.reserve];
+    const { current: currentMods, candidate: candidateMods } = statModifiersForSlotSwap(
+      snapshot.progression.armory,
+      roster,
+      classId,
+      slot,
+      selectedDrop,
+      content,
+    );
     const statDeltas = compareEquipmentStatDeltas(currentMods, candidateMods);
     if (statDeltas.length > 0) {
       const deltaList = el("ul", {
@@ -688,7 +919,6 @@ export function mountArmorySurface(
       panel.append(deltaList);
     }
 
-    const roster = [...snapshot.progression.party, snapshot.progression.reserve];
     const loadouts = snapshotEquipmentLoadouts(snapshot.progression.armory, roster);
     const currentLoadout = { ...loadouts[classId] };
     const candidateLoadout = { ...currentLoadout, [slot]: selectedDrop.dropId };
@@ -893,14 +1123,15 @@ export function mountArmorySurface(
     title: "Armory",
     showTitle: false,
     body(snapshot) {
-      const body = el("div", { class: "armory-body" });
+      const body = el("div", { class: "armory-body armory-body--compare-host" });
       renderToolbar(snapshot, body);
       renderArmoryCharacterSelector(snapshot, body);
       renderWornStrip(snapshot, body);
       const panes = el("div", { class: "armory-panes" });
-      renderGrid(snapshot, panes);
+      renderGrid(snapshot, panes, body);
       renderDetail(snapshot, panes);
       body.append(panes);
+      body.append(comparePopover);
       return [body];
     },
   });
@@ -915,6 +1146,22 @@ export function mountArmorySurface(
     }
     lastSnapshot = snapshot;
     shell.render(snapshot);
+    comparePopoverHost = root.querySelector<HTMLElement>(".armory-body--compare-host");
+    if (comparePopoverDropId !== null && comparePopoverHost && snapshot) {
+      const drop = dropById(snapshot.progression.armory, comparePopoverDropId);
+      const classId = options.getSelectedClassId();
+      const anchor = root.querySelector<HTMLElement>(
+        `.armory-grid .equipment-card[data-drop-id="${comparePopoverDropId}"]`,
+      );
+      if (drop && classId && anchor) {
+        comparePopoverAnchor = anchor;
+        const descId = fillComparePopover(snapshot, drop, classId);
+        anchor.setAttribute("aria-describedby", descId);
+        positionComparePopover(anchor, comparePopoverHost);
+      } else if (!anchor) {
+        hideComparePopover();
+      }
+    }
   }
 
   return {
@@ -922,6 +1169,7 @@ export function mountArmorySurface(
     destroy() {
       unbindGridOverflow?.();
       unbindDetailOverflow?.();
+      hideComparePopover();
       shell.destroy();
     },
   };

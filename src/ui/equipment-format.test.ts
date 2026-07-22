@@ -132,6 +132,14 @@ describe("equipment-format filters and sorts", () => {
     ]);
   });
 
+  it("omits zero-delta stat rows", () => {
+    const lines = compareEquipmentStatDeltas(
+      [{ flat: { physical: 5 } }],
+      [{ flat: { physical: 5 } }],
+    );
+    expect(lines).toEqual([]);
+  });
+
   it("detects rare/epic discard names", () => {
     expect(rareOrEpicDropNames(armory, fixtureContent)).toEqual([
       "Fixture Armor",
