@@ -5,7 +5,18 @@ import pathlib
 from dataclasses import dataclass
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
-PALETTE_PATH = ROOT / "pipeline" / "palette.json"
+
+PALETTE_PATHS = {
+    "moonberry-16": ROOT / "pipeline" / "palette.json",
+    "fowl-harvest-24": ROOT / "pipeline" / "palettes" / "fowl-harvest-24.json",
+}
+
+DEFAULT_SOURCE_PALETTE_ID = "moonberry-16"
+
+# Legacy single-path alias (Moonberry file location).
+PALETTE_PATH = PALETTE_PATHS[DEFAULT_SOURCE_PALETTE_ID]
+
+_RUNTIME_CACHE: dict[str, RuntimePalette] = {}
 
 
 @dataclass(frozen=True)
@@ -18,12 +29,38 @@ class Swatch:
         return (*self.rgb, 255)
 
 
-def load_palette() -> dict[str, Swatch]:
-    data = json.loads(PALETTE_PATH.read_text())
-    return {
+@dataclass(frozen=True)
+class RuntimePalette:
+    palette_id: str
+    version: int
+    swatches: dict[str, Swatch]
+    names: frozenset[str]
+
+
+def load_runtime_palette(palette_id: str) -> RuntimePalette:
+    if palette_id not in PALETTE_PATHS:
+        raise ValueError(f"unknown palette id {palette_id!r}")
+    cached = _RUNTIME_CACHE.get(palette_id)
+    if cached is not None:
+        return cached
+    path = PALETTE_PATHS[palette_id]
+    data = json.loads(path.read_text())
+    swatches = {
         entry["name"]: Swatch(entry["name"], tuple(entry["rgb"]))
         for entry in data["colors"]
     }
+    loaded = RuntimePalette(
+        palette_id=palette_id,
+        version=int(data["version"]),
+        swatches=swatches,
+        names=frozenset(swatches.keys()),
+    )
+    _RUNTIME_CACHE[palette_id] = loaded
+    return loaded
+
+
+def load_palette() -> dict[str, Swatch]:
+    return dict(load_runtime_palette(DEFAULT_SOURCE_PALETTE_ID).swatches)
 
 
 PALETTE = load_palette()

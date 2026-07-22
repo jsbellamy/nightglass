@@ -29,13 +29,18 @@ rebuilding committed sources.
 Each `source.grid` file contains:
 
 - `source_key` — family Tier I key
-- `palette_subset` — the `moonberry-16` names this family may quantize into (load-bearing; see below)
+- `palette` — named palette id (`moonberry-16` or `fowl-harvest-24` today); **omitted
+  only on committed legacy Equipment sources**, which parse as `moonberry-16`. New ingest
+  output always emits this line.
+- `palette_subset` — swatch names from the selected palette this family may quantize into
+  (load-bearing; see below)
 - `legend` — one character per line mapping to a palette name or `.` for transparent
 - `grid` — equal-width rows using only legend characters
 
-Off-palette colours are **unrepresentable**: a legend entry naming a colour outside
-`moonberry-16`, or outside the declared `palette_subset`, is a **parse error**, not a
-late validation failure.
+Off-palette colours are **unrepresentable**: a legend entry naming a colour outside the
+selected palette, or outside the declared `palette_subset`, is a **parse error**, not a
+late validation failure. Unknown palette ids and cross-palette swatch names fail at parse
+or ingest with no fallback palette.
 
 Regeneration is the only repair path for a bad source — edit the ingest inputs and
 re-run ingest, never pixels in the grid file.
