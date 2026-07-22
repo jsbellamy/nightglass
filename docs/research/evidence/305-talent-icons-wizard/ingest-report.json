@@ -1,0 +1,161 @@
+{
+  "elemental-practice": {
+    "recovered": {
+      "bbox": [
+        153,
+        132,
+        876,
+        908
+      ],
+      "pitch_x": {
+        "pitch": 25.53333333333339,
+        "score": 0.43168644697373026
+      },
+      "pitch_y": {
+        "pitch": 25.883333333333393,
+        "score": 0.43556824616627005
+      },
+      "grid": [
+        28,
+        30
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 527,
+      "far_cells": 22,
+      "far_fraction": 0.0417,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "contour-plum-deep": 111,
+        "berry": 119,
+        "cream": 123,
+        "mint-light": 70,
+        "mint": 40,
+        "berry-mid": 37,
+        "mint-pale": 1,
+        "twilight-slate": 4,
+        "berry-bright": 2,
+        "mint-shadow": 20
+      }
+    }
+  },
+  "warding-lore": {
+    "recovered": {
+      "bbox": [
+        240,
+        53,
+        787,
+        971
+      ],
+      "pitch_x": {
+        "pitch": 32.17777777777786,
+        "score": 0.11898831815588677
+      },
+      "pitch_y": {
+        "pitch": 34.87777777777771,
+        "score": 0.0650318316014713
+      },
+      "grid": [
+        17,
+        27
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 325,
+      "far_cells": 4,
+      "far_fraction": 0.0123,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "contour-plum-deep": 58,
+        "mint-light": 42,
+        "cream": 109,
+        "mint": 39,
+        "berry": 28,
+        "berry-mid": 5,
+        "sage": 3,
+        "berry-bright": 11,
+        "mint-shadow": 16,
+        "cream-gold": 13,
+        "twilight-slate": 1
+      }
+    }
+  },
+  "starfall": {
+    "recovered": {
+      "bbox": [
+        279,
+        195,
+        775,
+        819
+      ],
+      "pitch_x": {
+        "pitch": 26.211111111111236,
+        "score": 0.11584437921601794
+      },
+      "pitch_y": {
+        "pitch": 27.361111111111253,
+        "score": 0.23760234627227178
+      },
+      "grid": [
+        19,
+        22
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 184,
+      "far_cells": 0,
+      "far_fraction": 0.0,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "contour-plum-deep": 93,
+        "berry-bright": 17,
+        "cream": 57,
+        "berry": 1,
+        "cream-gold": 16
+      }
+    }
+  },
+  "prismatic-shelter": {
+    "recovered": {
+      "bbox": [
+        157,
+        40,
+        864,
+        980
+      ],
+      "pitch_x": {
+        "pitch": 33.2888888888889,
+        "score": 0.13756756862905783
+      },
+      "pitch_y": {
+        "pitch": 34.68888888888882,
+        "score": 0.22154966795341677
+      },
+      "grid": [
+        22,
+        27
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 388,
+      "far_cells": 33,
+      "far_fraction": 0.0851,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "contour-plum-deep": 29,
+        "cream-gold": 6,
+        "berry": 68,
+        "berry-mid": 5,
+        "cream": 92,
+        "mint-pale": 24,
+        "mint-light": 47,
+        "sage": 14,
+        "berry-shadow": 2,
+        "mint": 57,
+        "berry-bright": 15,
+        "mint-shadow": 28,
+        "twilight-slate": 1
+      }
+    }
+  }
+}

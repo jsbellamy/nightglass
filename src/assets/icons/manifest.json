@@ -159,6 +159,46 @@
     "source_family": "falling-star",
     "sha256": "873712f5ed90b9029cbb8ad387c26722d922ff8a215d4dd8ce521db820510639"
   },
+  "elemental-practice": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "elemental-practice",
+    "sha256": "0572db1603feab66c3db3774fb11cf67baec20e9449633f380c3c0387250db7a"
+  },
+  "warding-lore": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "warding-lore",
+    "sha256": "04d9f02284ae6768e9685dd29fa59e129c96121e1e8f597278ae27a93ae8ff0c"
+  },
+  "starfall": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "starfall",
+    "sha256": "bbc436f1eefe93f8e90751b7b9e1ab37f5c69fc69b0e6b2a008d71b80534de56"
+  },
+  "prismatic-shelter": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "prismatic-shelter",
+    "sha256": "d3eeae567f99b0818ddc7a265a331ff9a98eecd85d09c06353d9234332afef44"
+  },
   "verify-canary-a": {
     "canvas": [
       34,

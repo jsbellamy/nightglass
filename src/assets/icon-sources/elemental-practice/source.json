@@ -1,0 +1,59 @@
+{
+  "provider": "Cursor GenerateImage",
+  "prompt": "TRUE chunky pixel art skill icon ONLY. Drawn on an exact 32x32 logical pixel grid rendered large; every logical pixel is one clean flat square block \u2014 no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered symbolic skill glyph in three-quarter display angle: twin glyph sparks \u2014 one berry flame mote and one mint-frost mote \u2014 paired without a caster body. Not a wearable equipment piece and not a full character \u2014 one readable glyph only. Subject's long side spans about 26-30 logical pixels, with at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel dark-plum outline. Use only mint / berry / cream / plum Moonberry colours (8-12 flat colors max) \u2014 no brown, tan, cyan, pure white, or pure black. Structural members at least 3 logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "raw_sha256": "28cef7565489198bd93ca34c0ab2d45bfa7aa220e25199bcf252def7261f03c3",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        153,
+        132,
+        876,
+        908
+      ],
+      "pitch_x": {
+        "pitch": 25.53333333333339,
+        "score": 0.43168644697373026
+      },
+      "pitch_y": {
+        "pitch": 25.883333333333393,
+        "score": 0.43556824616627005
+      },
+      "grid": [
+        28,
+        30
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 527,
+      "far_cells": 22,
+      "far_fraction": 0.0417,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "contour-plum-deep": 111,
+        "berry": 119,
+        "cream": 123,
+        "mint-light": 70,
+        "mint": 40,
+        "berry-mid": 37,
+        "mint-pale": 1,
+        "twilight-slate": 4,
+        "berry-bright": 2,
+        "mint-shadow": 20
+      }
+    }
+  },
+  "palette_subset": [
+    "contour-plum-deepest",
+    "contour-plum-deep",
+    "mint-shadow",
+    "mint",
+    "mint-light",
+    "mint-pale",
+    "cream",
+    "berry-mid",
+    "berry",
+    "berry-bright",
+    "twilight-slate"
+  ],
+  "evidence_raw": "docs/research/evidence/305-talent-icons-wizard/accepted-raws/elemental-practice.png"
+}

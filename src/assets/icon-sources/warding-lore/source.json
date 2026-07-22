@@ -1,0 +1,61 @@
+{
+  "provider": "Cursor GenerateImage",
+  "prompt": "TRUE chunky pixel art skill icon ONLY. Drawn on an exact 32x32 logical pixel grid rendered large; every logical pixel is one clean flat square block \u2014 no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered symbolic skill glyph in three-quarter display angle: a BIG open cream ward-hex tablet / prism bookmark standing almost as tall as the frame, with mint and berry edge marks and a hexagonal window cutout. Not a wearable equipment piece and not a full character \u2014 one readable glyph only. CRITICAL SIZE: the tablet must span about 26-30 logical pixels on its long side \u2014 fill the center of the 32x32 grid like a thick shield silhouette; leave exactly two magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel dark-plum outline. Use only mint / berry / cream / plum Moonberry colours (8-12 flat colors max) \u2014 no brown, tan, cyan, pure white, or pure black. Structural members at least 3 logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "raw_sha256": "e9bc0b1a31aaec782cd40a2b99c1ce5678a5aa1c04ef9ca889be946215e0f7cd",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        240,
+        53,
+        787,
+        971
+      ],
+      "pitch_x": {
+        "pitch": 32.17777777777786,
+        "score": 0.11898831815588677
+      },
+      "pitch_y": {
+        "pitch": 34.87777777777771,
+        "score": 0.0650318316014713
+      },
+      "grid": [
+        17,
+        27
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 325,
+      "far_cells": 4,
+      "far_fraction": 0.0123,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "contour-plum-deep": 58,
+        "mint-light": 42,
+        "cream": 109,
+        "mint": 39,
+        "berry": 28,
+        "berry-mid": 5,
+        "sage": 3,
+        "berry-bright": 11,
+        "mint-shadow": 16,
+        "cream-gold": 13,
+        "twilight-slate": 1
+      }
+    }
+  },
+  "palette_subset": [
+    "contour-plum-deepest",
+    "contour-plum-deep",
+    "mint-shadow",
+    "mint",
+    "mint-light",
+    "cream",
+    "cream-gold",
+    "berry-mid",
+    "berry",
+    "berry-bright",
+    "sage",
+    "twilight-slate"
+  ],
+  "evidence_raw": "docs/research/evidence/305-talent-icons-wizard/accepted-raws/warding-lore.png"
+}
