@@ -54,7 +54,7 @@ Measurement JSON: `scarequack-c1-report.json`, `scarequack-c2-report.json`. Arch
 | --- | --- |
 | Archived raw `scarequack.png` | `2c92a97aec8bdfb2ab819a33b0c2f0d4f2a897cb434b431e018dfa2b4f8feab9` |
 
-Interim note: `scarequack` remains in `MISSING_BODY_BUNDLE_INTERIM_RAW_TAGS` so the complete archive is discoverable but omitted from `default_build_raw_tags()` until #405. CI `assets` job remains authoritative for the production catalog.
+Interim note: `MISSING_BODY_BUNDLE_INTERIM_RAW_TAGS` is empty after Fryer and Scarequack raws land. Both complete archives are discoverable but omitted from `default_build_raw_tags()` until a committed runtime PNG exists (#405). CI `assets` job remains authoritative for the production catalog.
 
 ## Review disposition
 
@@ -76,6 +76,7 @@ Interim note: `scarequack` remains in `MISSING_BODY_BUNDLE_INTERIM_RAW_TAGS` so 
 
 | File | Why |
 | --- | --- |
-| `pipeline/acquire.py` | Exclude interim tags from `discover_body_build_raw_tags` so an archived Scarequack raw does not enter production rebuild before #405 |
-| `pipeline/test_contract.py` | Expect discoverable Scarequack archive while still omitting it from default rebuild |
+| `pipeline/acquire.py` | Complete unpromoted archives must not enter `default_build_raw_tags` until a committed runtime PNG exists; clear `MISSING_BODY_BUNDLE_INTERIM_RAW_TAGS` once Scarequack raw lands beside Fryer |
+| `pipeline/test_contract.py` | Discovery / interim / production-tag expectations for archived-but-unpromoted Fryer and Scarequack |
+| `docs/fowl-harvest-theme.md` | Pin Scarequack finished prompt + archived-raw pointer (same pattern as The Fryer) |
 | `COHORT_*`, `NATIVE_single_*`, `REVIEW_sheet_*` | One-composite native/4× sheets for step-6 review without shipping runtime |
