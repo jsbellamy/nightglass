@@ -23,12 +23,15 @@ doc translates it into testing practice.
 
 Test at these public boundaries, nowhere internal:
 
-- **Engine seam** — `createEngine(content, saved?, lootSeed?)` → commands →
-  `advanceBy(ms)` (returning ordered Presentation Events) → `snapshot()`.
-  Drive it with fixture Content and a seeded loot stream; pump time
-  synchronously. **Chunk neutrality is itself a seam property**: where timing
-  behavior is in scope, assert that many small `advanceBy` calls and one large
-  call produce identical event batches and Snapshots.
+- **Engine seam** — `createEngine(content, saved?, lootSeed?, now?)` →
+  commands → `advanceBy(ms)` / `advanceOffline(ms)` (returning ordered
+  Presentation Events) → `snapshot()`. `advanceBy` is the live and accelerated
+  path (including Drop awards); `advanceOffline` advances the same combat and
+  XP schedule but awards no Drops, for Offline Progress catch-up. Drive it with
+  fixture Content and a seeded loot stream; pump time synchronously. **Chunk
+  neutrality is itself a seam property**: where timing behavior is in scope,
+  assert that many small `advanceBy` calls and one large call produce identical
+  event batches and Snapshots.
 - **Pure functions** — math with an independent worked example (mitigation,
   Power, XP thresholds, Dock window geometry) gets direct unit tests. Expected
   values come from the spec's worked numbers, never recomputed with the code's
