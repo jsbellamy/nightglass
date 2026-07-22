@@ -1,4 +1,4 @@
-import type { AbilityDef, ClassKitDef } from "../../core/types";
+import type { AbilityDef, ClassKitDef, TalentTierDef } from "../../core/types";
 
 export const hunterAbilities: AbilityDef[] = [
   {
@@ -91,6 +91,59 @@ export const hunterAbilities: AbilityDef[] = [
     cooldownMs: 15000,
   },
 ];
+
+export const hunterTier2Abilities: AbilityDef[] = [
+  {
+    id: "piercing-rain",
+    name: "Piercing Rain",
+    classId: "hunter",
+    slot: "talent",
+    iconKey: "piercing-rain",
+    targeting: { kind: "all-opponents" },
+    effects: [
+      { kind: "damage", channel: "physical", coefficient: 0.85 },
+      { kind: "apply-status", statusId: "exposed" },
+    ],
+    windUpMs: 650,
+    recoveryMs: 650,
+    cooldownMs: 13_000,
+  },
+  {
+    id: "twin-fang",
+    name: "Twin Fang",
+    classId: "hunter",
+    slot: "talent",
+    iconKey: "twin-fang",
+    targeting: { kind: "closest-opponent" },
+    effects: [
+      { kind: "damage", channel: "physical", coefficient: 1.15 },
+      { kind: "damage", channel: "physical", coefficient: 1.15 },
+    ],
+    windUpMs: 800,
+    recoveryMs: 650,
+    cooldownMs: 13_000,
+  },
+];
+
+export const hunterTier2: TalentTierDef = {
+  statRow: [
+    {
+      id: "fletchers-eye",
+      name: "Fletcher's Eye",
+      perRank: { flat: { physical: 2 } },
+      maxRanks: 5,
+      iconKey: "fletchers-eye",
+    },
+    {
+      id: "wayfarers-ward",
+      name: "Wayfarer's Ward",
+      perRank: { flat: { elementalResistance: 4 } },
+      maxRanks: 5,
+      iconKey: "wayfarers-ward",
+    },
+  ],
+  abilityRow: ["piercing-rain", "twin-fang"],
+};
 
 export const hunterClass: ClassKitDef = {
   id: "hunter",
