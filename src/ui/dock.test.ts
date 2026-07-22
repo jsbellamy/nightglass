@@ -855,6 +855,55 @@ describe("Management Dock Armory worn strip", () => {
     root.remove();
     dock.destroy();
   });
+
+  it("publishes equip when a collection piece is dragged onto the selected Character worn slot", () => {
+    const root = document.createElement("main");
+    document.body.append(root);
+    const onCommand = vi.fn();
+    const dock = mountManagementDock(root, {
+      content: fixtureContent,
+      onCommand,
+    });
+    const engine = createEngine(fixtureContent, undefined, 3);
+    const snapshot = structuredClone(engine.snapshot());
+    snapshot.progression.armory = [
+      {
+        dropId: 1,
+        baseId: "fixture-armor",
+        itemLevel: 1,
+        rarity: "common",
+        affixes: [],
+        awardedAtMs: 100,
+        seen: true,
+        locked: false,
+        assignedTo: null,
+      },
+    ];
+    const live = createEngine(fixtureContent, snapshot, 3);
+    dock.render(snapshot, legalityViewFromEngine(live));
+    root.querySelector<HTMLButtonElement>('[data-dock-tab="armory"]')?.click();
+
+    const tile = root.querySelector<HTMLElement>('.armory-grid .equipment-card[data-drop-id="1"]')!;
+    const armorSlot = root.querySelector<HTMLElement>('[data-worn-slot="armor"]')!;
+    const dataTransfer = new DataTransfer();
+    tile.dispatchEvent(
+      new DragEvent("dragstart", { bubbles: true, cancelable: true, dataTransfer }),
+    );
+    armorSlot.dispatchEvent(
+      new DragEvent("dragover", { bubbles: true, cancelable: true, dataTransfer }),
+    );
+    armorSlot.dispatchEvent(
+      new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer }),
+    );
+    tile.dispatchEvent(
+      new DragEvent("dragend", { bubbles: true, cancelable: true, dataTransfer }),
+    );
+
+    expect(onCommand).toHaveBeenCalledWith({ cmd: "equip", args: [1, "knight", "armor"] });
+
+    root.remove();
+    dock.destroy();
+  });
 });
 
 describe("Management Dock source boundary", () => {

@@ -1470,6 +1470,31 @@ html.dock-window body {
   flex: 1;
 }
 
+.armory-panes--full .armory-grid {
+  flex: 1;
+  width: 100%;
+}
+
+.armory-body--collection-drag .armory-compare-popover,
+.armory-body--worn-drag .armory-compare-popover {
+  visibility: hidden !important;
+}
+
+.armory-grid.armory-collection-drop-target--valid {
+  outline: 2px dashed #8ec8ff;
+  outline-offset: 2px;
+}
+
+.armory-worn-slot.armory-drop-target--valid {
+  outline: 2px solid #8ec8ff;
+  outline-offset: 2px;
+}
+
+.equipment-card.armory-drag-source,
+.armory-worn-slot.armory-drag-source {
+  opacity: 0.55;
+}
+
 .armory-grid {
   flex: 1;
   min-width: 0;
@@ -1555,9 +1580,13 @@ html.dock-window body {
 
 .armory-grid .equipment-card {
   position: relative;
-  cursor: pointer;
+  cursor: grab;
   min-height: 48px;
   padding: 4px;
+}
+
+.armory-grid .equipment-card:active {
+  cursor: grabbing;
 }
 
 .armory-grid .equipment-card.selected {
