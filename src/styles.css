@@ -576,9 +576,9 @@ html.dock-window body {
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
-  gap: 6px;
+  gap: 4px;
   width: 150px;
-  padding: 8px;
+  padding: 6px;
   overflow-y: auto;
   scrollbar-width: thin;
   border-right: 1px solid rgba(255, 249, 233, 0.14);
@@ -597,33 +597,40 @@ html.dock-window body {
 .character-picker-tabs {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .character-picker-row {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: stretch;
   gap: 4px;
 }
 
 .character-picker-formation-controls {
   display: flex;
-  gap: 4px;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: 2px;
 }
 
-.character-picker-swaps {
+.character-picker-row-swaps {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  flex-shrink: 0;
+  gap: 2px;
+  width: 100%;
 }
 
 .character-picker-chip {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  width: 100%;
+  flex: 1 1 72px;
+  min-width: 0;
   margin: 0;
-  padding: 6px 8px;
+  padding: 4px 6px;
   border: 1px solid rgba(255, 249, 233, 0.16);
   border-radius: 6px;
   background: rgba(25, 28, 38, 0.9);
@@ -765,13 +772,99 @@ html.dock-window body {
 .character-surface {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 6px;
+  min-height: 0;
+  flex: 1;
+}
+
+.character-subtabs {
+  display: flex;
+  flex-shrink: 0;
+  gap: 4px;
+}
+
+.character-subtab {
+  flex: 1;
+  min-width: 0;
+  height: 28px;
+  border: 1px solid rgba(255, 249, 233, 0.18);
+  border-radius: 4px;
+  background: #292d3d;
+  color: var(--dock-text, #fff9e9);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.character-subtab.active {
+  background: #3a4054;
+  border-color: rgba(255, 249, 233, 0.32);
 }
 
 .character-section {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  min-height: 0;
+  flex: 1;
+}
+
+.character-section[hidden] {
+  display: none !important;
+}
+
+.character-section .dock-surface-title {
+  display: none;
+}
+
+.character-section .loadout-order-note {
+  margin: 0;
+}
+
+.character-section .loadout-character,
+.character-section .loadout-slots {
+  gap: 4px;
+}
+
+.character-section .loadout-slots {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.character-section .loadout-slot:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+
+.character-section .surface-section-title {
+  margin: 2px 0 2px;
+}
+
+.character-section .ability-card,
+.character-section .basic-attack,
+.character-section .loadout-slot {
+  padding: 4px 6px;
+}
+
+.character-section .ability-name,
+.character-section .ability-raw,
+.character-section .ability-timings {
+  margin: 0;
+  line-height: 1.25;
+}
+
+.character-section .ability-name {
+  font-size: 11px;
+}
+
+.character-section .slot-label {
+  margin: 0 0 2px;
+}
+
+.character-section .loadout-assign {
+  margin-top: 2px;
+  width: 100%;
+  font-size: 11px;
 }
 
 .armory-worn-strip {
@@ -916,10 +1009,11 @@ html.dock-window body {
   cursor: pointer;
 }
 
-.character-picker-formation-controls .formation-action {
+.character-picker-formation-controls .formation-action,
+.character-picker-row-swaps .party-swap {
   flex: 1;
   min-width: 0;
-  padding: 2px 0;
+  padding: 2px 4px;
   line-height: 1.2;
 }
 

@@ -262,7 +262,7 @@ describe("Character picker", () => {
     picker.destroy();
   });
 
-  it("shows Swap with Reserve for a Party Member and issues setParty", () => {
+  it("shows Swap with Reserve on the selected Party row only", () => {
     const root = document.createElement("div");
     const commands: unknown[] = [];
     const picker = mountCharacterPicker(root, {
@@ -274,7 +274,13 @@ describe("Character picker", () => {
     const { party, reserve } = engine.snapshot().progression;
 
     picker.render(engine.snapshot(), party[0]!);
+    expect(root.querySelector(".character-picker-swaps")).toBeNull();
     expect(root.querySelectorAll(".party-swap")).toHaveLength(1);
+    expect(
+      root.querySelector(`[data-character-chip="${party[0]}"]`)
+        ?.closest(".character-picker-row")
+        ?.querySelector(".party-swap"),
+    ).not.toBeNull();
     root.querySelector<HTMLButtonElement>(`[data-party-swap="${party[0]}"]`)?.click();
 
     expect(commands).toEqual([
@@ -287,7 +293,7 @@ describe("Character picker", () => {
     picker.destroy();
   });
 
-  it("shows → Front/Middle/Back for Reserve and issues setParty", () => {
+  it("shows → Front/Middle/Back on the selected Reserve row only", () => {
     const root = document.createElement("div");
     const commands: unknown[] = [];
     const picker = mountCharacterPicker(root, {
@@ -300,6 +306,11 @@ describe("Character picker", () => {
 
     picker.render(engine.snapshot(), reserve);
     expect(root.querySelectorAll(".party-swap")).toHaveLength(3);
+    expect(
+      root.querySelector(`[data-character-chip="${reserve}"]`)
+        ?.closest(".character-picker-row")
+        ?.querySelectorAll(".party-swap"),
+    ).toHaveLength(3);
     root.querySelector<HTMLButtonElement>('[data-party-swap-slot="1"]')?.click();
 
     expect(commands).toEqual([
