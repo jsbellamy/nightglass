@@ -1,7 +1,7 @@
-import { createEngine, type Engine } from "../core/engine";
 import { parseStoredSave } from "../core/load-state";
 import type { Snapshot } from "../core/snapshot";
 import type { Content } from "../core/types";
+import { createEngine, type Engine } from "./snapshot-view";
 import {
   mountOfflineSummary,
   summarizeOfflineProgress,

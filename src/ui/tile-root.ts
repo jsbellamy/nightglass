@@ -1,8 +1,8 @@
-import { createEngine, type Engine } from "../core/engine";
 import { buildContent } from "../data";
 import type { Content } from "../core/types";
 import type { EngineEvent } from "../core/events";
 import type { Snapshot } from "../core/snapshot";
+import { createEngine, type Engine } from "./snapshot-view";
 import { bootTile, DEFAULT_LOOT_SEED, type BootResult } from "./boot";
 import { applyTileCommand, createBusEndpoint, type BusEndpoint } from "./bus";
 import { mountBattleTile } from "./battle-tile";

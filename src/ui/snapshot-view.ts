@@ -2,6 +2,16 @@ import type { CombatantState, Snapshot } from "../core/snapshot";
 import type { ClassId, ClassKitDef, Content } from "../core/types";
 import { levelFromXp } from "../core/xp";
 
+export { createEngine, type Engine } from "../core/engine";
+
+export {
+  opponentCombatants,
+  partyCombatants,
+  previewEffectRaw,
+} from "../core/combat";
+
+export { FORMATION_SLOT_BY_INDEX, parseEntityId } from "../core/entity-id";
+
 export {
   effectiveParty,
   effectiveFormation,
@@ -30,8 +40,6 @@ export {
   type StatDeltaLine,
   type StatLine,
 } from "../core/equipment-preview";
-
-export { previewEffectRaw } from "../core/combat";
 
 export const CLASS_LABELS: Record<ClassId, string> = {
   knight: "Knight",

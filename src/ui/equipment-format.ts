@@ -8,16 +8,6 @@ import type {
 } from "../core/types";
 import { formatStatModifierPerRank, CLASS_LABELS } from "./snapshot-view";
 
-export {
-  compareAbilityRawChanges,
-  compareEquipmentStatDeltas,
-  equipmentLoadoutWithSwap,
-  statsForEquipmentLoadout,
-  statModifiersForSlotSwap,
-  type AbilityRawChange,
-  type StatDeltaLine,
-} from "./snapshot-view";
-
 export const RARITY_LABELS: Record<Rarity, string> = {
   common: "Common",
   uncommon: "Uncommon",

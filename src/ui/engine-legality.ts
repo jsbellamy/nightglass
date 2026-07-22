@@ -1,8 +1,7 @@
-import type { Engine } from "../core/engine";
 import type { EngineEvent } from "../core/events";
 import type { Snapshot } from "../core/snapshot";
 import type { ClassId, Content, EquipmentSlotId } from "../core/types";
-import { rosterClassIds } from "./snapshot-view";
+import { rosterClassIds, type Engine } from "./snapshot-view";
 
 const SLOTS: EquipmentSlotId[] = ["weapon", "armor", "charm"];
 

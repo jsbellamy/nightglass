@@ -1,14 +1,18 @@
 import backdrop1Url from "../assets/backdrops/backdrop-1.png";
 import backdrop2Url from "../assets/backdrops/backdrop-2.png";
 import backdrop3Url from "../assets/backdrops/backdrop-3.png";
-import { opponentCombatants, partyCombatants } from "../core/combat";
-import { FORMATION_SLOT_BY_INDEX, parseEntityId } from "../core/entity-id";
 import type { EngineEvent } from "../core/events";
 import type { CombatantState, ReadonlySnapshot } from "../core/snapshot";
 import type { Content, StageDef } from "../core/types";
 import { createPresentation, type Presentation } from "./presentation";
 import { createSfx, type SfxController } from "./sfx";
 import { footAnchorXForCombatant } from "./battle-tile-anchors";
+import {
+  FORMATION_SLOT_BY_INDEX,
+  opponentCombatants,
+  parseEntityId,
+  partyCombatants,
+} from "./snapshot-view";
 import { resolveSprite } from "./sprites";
 
 export {
