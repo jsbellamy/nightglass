@@ -279,6 +279,166 @@
     "source_family": "moonwire-trap",
     "sha256": "15f1f1e87ee1ccc48b7082d0560ac77d04ea8a2688bcbbe88dfe6c369c71248f"
   },
+  "iron-discipline": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "iron-discipline",
+    "sha256": "95c78e600886659836bf55795f227c20f50362a543a96b8bc39cfee992fbfcf7"
+  },
+  "veterans-edge": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "veterans-edge",
+    "sha256": "467186fa5fb13183e9fa6763c11b001a851bc0664c301598a9c6d271012a1f7e"
+  },
+  "vanguard": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "vanguard",
+    "sha256": "fd3cdc119667da78e5fffdaeb1725a0f2f1fe56dcd479589ba39653b355f7727"
+  },
+  "sundering-charge": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "sundering-charge",
+    "sha256": "904beabbfe3bf34ea10c9710a6b80718684e374916a92136e715e773844f85a2"
+  },
+  "leyline-attunement": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "leyline-attunement",
+    "sha256": "1347fcd73afdd5f65801285a76fe11656bcb59f2ab43cdf3343335d915d8b7cd"
+  },
+  "glassweave": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "glassweave",
+    "sha256": "dbd5673bd7e6975f8ad285d7c5010c414e218138815f98b54347c9ed1dfa23c7"
+  },
+  "wildfire-sigil": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "wildfire-sigil",
+    "sha256": "324bf36f001b45690588ec5a1344b1fa47a182a1b35899e6fbeb84f9b73ea669"
+  },
+  "absolute-zero": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "absolute-zero",
+    "sha256": "8cdaf300f60ae3af55acf3aeb293c1c3ea6760064581a142eb9fa6791d1afec6"
+  },
+  "battle-liturgy": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "battle-liturgy",
+    "sha256": "355def4d134aa231977313d7130c8fe00ed2a4c6020f7ba268d50ba532c8388a"
+  },
+  "sunwarding": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "sunwarding",
+    "sha256": "db20dc4e47ef4438f489ed4c724fabf5e441f4f731a6202ca6c0858b4ed8b502"
+  },
+  "benediction": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "benediction",
+    "sha256": "d9f946a942656ab44cf0df7e94945e770281c6f4b5dee0cf6b84f580b8ab7308"
+  },
+  "dawn-ascendant": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "dawn-ascendant",
+    "sha256": "4c5d87008adc24d9b701bb0553e24e6c53f06215f5fd0a5924d3fb7fa1a1ec16"
+  },
+  "fletchers-eye": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "fletchers-eye",
+    "sha256": "8d7cd4921e29e3cfc90143cc7137e7b2771a9e44b81d6cd9b9e1d644387a4425"
+  },
+  "wayfarers-ward": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "wayfarers-ward",
+    "sha256": "6b40b81d7981a4fdcebc29e9534b7d96663967a7c3962ec9c6e631ede3e52bc8"
+  },
+  "piercing-rain": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "piercing-rain",
+    "sha256": "49484a3e2fe14e4ecf7541650ba9ed3dfa72ba4d5741e2a277c65776bf2af250"
+  },
+  "twin-fang": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "twin-fang",
+    "sha256": "7272af7ee34a1461a43dcd2ed38b25fbb6cc95bcde87ded08464d25649096624"
+  },
   "augerwire-longbow": {
     "canvas": [
       34,

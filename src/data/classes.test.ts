@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { isAbilityValid } from "../core/combat";
 import type { AbilityDef, ClassKitDef, StatusEffectDef } from "../core/types";
 import type { CombatantState } from "../core/snapshot";
+import { talentTierDefs } from "../core/talents";
 import { validateContent } from "../core/validate-content";
 import {
   REVIEWED_CLASS_BASES,
@@ -49,12 +50,14 @@ describe("assembled Class Kit content", () => {
 
   it("authored Stat Talents and Ability Talents use iconKey equal to id", () => {
     for (const classKit of content.classes) {
-      for (const statTalent of classKit.talents.statRow) {
-        expect(statTalent.iconKey).toBe(statTalent.id);
-      }
-      for (const abilityId of classKit.talents.abilityRow) {
-        const ability = abilityById(abilityId);
-        expect(ability.iconKey).toBe(ability.id);
+      for (const tier of talentTierDefs(classKit)) {
+        for (const statTalent of tier.statRow) {
+          expect(statTalent.iconKey).toBe(statTalent.id);
+        }
+        for (const abilityId of tier.abilityRow) {
+          const ability = abilityById(abilityId);
+          expect(ability.iconKey).toBe(ability.id);
+        }
       }
     }
     const nonTalentAbilities = content.abilities.filter(
@@ -65,12 +68,36 @@ describe("assembled Class Kit content", () => {
     }
   });
 
-  it("ships 28 Class Abilities: 4 basics, 16 Core, 8 Ability Talents", () => {
+  it("ships 36 Class Abilities: 4 basics, 16 Core, 16 Ability Talents", () => {
     const classAbilities = buildClassKitSlice().abilities;
-    expect(classAbilities).toHaveLength(28);
+    expect(classAbilities).toHaveLength(36);
     expect(classAbilities.filter((ability) => ability.slot === "basic")).toHaveLength(4);
     expect(classAbilities.filter((ability) => ability.slot === "core")).toHaveLength(16);
-    expect(classAbilities.filter((ability) => ability.slot === "talent")).toHaveLength(8);
+    expect(classAbilities.filter((ability) => ability.slot === "talent")).toHaveLength(16);
+  });
+
+  it("assembles two ordered Talent Tiers for every Class", () => {
+    for (const classKit of content.classes) {
+      expect(classKit.talentTiers).toHaveLength(1);
+      const tiers = talentTierDefs(classKit);
+      expect(tiers).toHaveLength(2);
+      expect(tiers[0]?.statRow).toHaveLength(2);
+      expect(tiers[0]?.abilityRow).toHaveLength(2);
+      expect(tiers[1]?.statRow).toHaveLength(2);
+      expect(tiers[1]?.abilityRow).toHaveLength(2);
+    }
+  });
+
+  it("ships eight Talent Abilities per Class across both Tiers", () => {
+    for (const classKit of content.classes) {
+      const talentAbilityIds = talentTierDefs(classKit).flatMap((tier) => tier.abilityRow);
+      expect(talentAbilityIds).toHaveLength(4);
+      for (const abilityId of talentAbilityIds) {
+        const ability = abilityById(abilityId);
+        expect(ability.classId).toBe(classKit.id);
+        expect(ability.slot).toBe("talent");
+      }
+    }
   });
 
   it("requires every non-basic Ability cooldown above zero", () => {
@@ -114,7 +141,9 @@ describe("assembled Class Kit content", () => {
 describe("Class Kit number contract", () => {
   it("Ability coefficients, Wind-up, Recovery, and cooldowns match the reviewed contract", () => {
     expect(REVIEWED_CLASS_KIT_ABILITIES).toHaveLength(28);
-    expect(sortById(classKit.abilities)).toEqual(sortById(REVIEWED_CLASS_KIT_ABILITIES));
+    const reviewedIds = new Set(REVIEWED_CLASS_KIT_ABILITIES.map((ability) => ability.id));
+    const tierOneAbilities = classKit.abilities.filter((ability) => reviewedIds.has(ability.id));
+    expect(sortById(tierOneAbilities)).toEqual(sortById(REVIEWED_CLASS_KIT_ABILITIES));
   });
 
   it("Status Effect durations and modifiers match the reviewed contract", () => {
