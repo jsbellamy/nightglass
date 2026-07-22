@@ -1,0 +1,42 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "c99d6f53403da5efdfdce764610304e1deeff1eb9d86c3f53c35ecc54fbbbc8d",
+  "acquisition": "flexible",
+  "identity_profile": {
+    "asset_class": "opponent",
+    "role": "boss",
+    "facing": "left"
+  },
+  "cursor_stamp_removed": false,
+  "identity": "the-fryer",
+  "asset_class": "opponent",
+  "runtime_destination": "src/assets/sprites/the-fryer.png",
+  "candidate": "the-fryer-c1.png",
+  "facing": "left",
+  "role": "boss",
+  "palette": "fowl-harvest-24@1",
+  "style_references": [
+    {
+      "path": "src/assets/sprites/burger-drake.png",
+      "sha256": "c8a0e66c892465c9fa9355df19275a1c7385f10246286c4f11c2869272f9563f",
+      "role": "style"
+    },
+    {
+      "path": "src/assets/sprites/cornquacker.png",
+      "sha256": "326ec503bc95de96ab98ce82e54e91ca32577ee5d92eebdcb608bcb50a59a8ca",
+      "role": "style"
+    },
+    {
+      "path": "src/assets/sprites/the-combine.png",
+      "sha256": "431f31f1a278a69e7fcd656f458789239a2339a443b3d96ab1cfbe13cd5aba15",
+      "role": "style"
+    },
+    {
+      "path": "src/assets/sprites/boss-3.png",
+      "sha256": "308644b487a06641a01f95b14a5371298412372fdce7333b53a4642026836bdf",
+      "role": "style"
+    }
+  ],
+  "prompt": "Single full-body The Fryer Boss opponent game sprite, strict side profile facing LEFT. A hulking mutant golden duck anatomically fused with a chrome roadside deep fryer: the fryer forms one broad greasy-metal torso, basket-like fins rise from its back, and guarded vents show a restrained orange heating-coil glow. Keep one glaring condiment-red eye, an oversized orange duck bill, clear yellow duck head, complete webbed feet, and a broad low Boss silhouette. It is one living mutation, never a duck riding, wearing, carrying, or standing beside a fryer.\n\nChunky simplified flat-colour Fowl Harvest rural-mutation pixel art, 70% absurd and 30% unsettling. Use only named fowl-harvest-24 colors with oil-ink and bruise-plum contour. No gore, wounds, realism, gradients, anti-aliasing, blur, dithering, smoke, sparks, grease droplets, effects, particles, text, watermark, scenery, UI, shadow, transparency, or another subject.\n\nShow exactly one complete subject with generous empty clearance on every edge of an opaque flat solid magenta #ff00ff background.\n"
+}

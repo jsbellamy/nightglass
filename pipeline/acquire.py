@@ -167,10 +167,10 @@ ASSET_IDENTITIES = {
     },
 }
 
-# Registered identities awaiting archived raw bundles (#384). Behavior-neutral:
-# no runtime rebuild until both PNG and sidecar exist; half-bundles still fail.
+# Registered identities still awaiting a complete archived raw bundle.
+# Scarequack remains here until #388; The Fryer raw lands in #387 without
+# runtime promotion (#405). Half-bundles still fail orphan discovery.
 MISSING_BODY_BUNDLE_INTERIM_RAW_TAGS = frozenset({
-    "the-fryer",
     "scarequack",
 })
 
@@ -303,6 +303,10 @@ def discover_body_build_raw_tags() -> tuple[str, ...]:
         identity = ASSET_IDENTITIES.get(out_name)
         if identity is None:
             raise ValueError(f"{raw_tag}: no known Nightglass asset identity")
+        # Complete archived raws may land before shared runtime promotion
+        # (#387/#388 → #405). Skip rebuild until the committed runtime exists.
+        if not (OUT_DIR / f"{out_name}.png").is_file():
+            continue
         if out_name in out_to_raw:
             raise ValueError(
                 f"{raw_tag}: output key {out_name!r} collides with "

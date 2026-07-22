@@ -152,12 +152,21 @@ At native 1× it reads in this order: enormous hostile duck → combine-harveste
 
 ## `the-fryer` (Boss)
 
-Finished generation prompt: blocked acquisition issue
-[#387](https://github.com/jsbellamy/nightglass/issues/387).
+### Generation prompt
+
+```text
+Single full-body The Fryer Boss opponent game sprite, strict side profile facing LEFT. A hulking mutant golden duck anatomically fused with a chrome roadside deep fryer: the fryer forms one broad greasy-metal torso, basket-like fins rise from its back, and guarded vents show a restrained orange heating-coil glow. Keep one glaring condiment-red eye, an oversized orange duck bill, clear yellow duck head, complete webbed feet, and a broad low Boss silhouette. It is one living mutation, never a duck riding, wearing, carrying, or standing beside a fryer.
+
+Chunky simplified flat-colour Fowl Harvest rural-mutation pixel art, 70% absurd and 30% unsettling. Use only named fowl-harvest-24 colors with oil-ink and bruise-plum contour. No gore, wounds, realism, gradients, anti-aliasing, blur, dithering, smoke, sparks, grease droplets, effects, particles, text, watermark, scenery, UI, shadow, transparency, or another subject.
+
+Show exactly one complete subject with generous empty clearance on every edge of an opaque flat solid magenta #ff00ff background.
+```
 
 ### Intended read
 
 At native 1× it reads in this order: hostile duck → chrome deep-fryer anatomical fusion → basket-like back fins and guarded heating-coil glow. The silhouette is hulking and broad-greasy-metal, with one living mutation — never a duck wearing, riding, carrying, or standing beside a fryer. The red eye, orange bill, duck head, fryer torso, coil glow, basket fins, and webbed feet remain distinct after quantization. It occupies the Boss opaque ceiling without colliding with the Boss-bar band.
+
+Archived unpromoted raw: `assets-raw/grid_raw/the-fryer.png` ([#387](https://github.com/jsbellamy/nightglass/issues/387)); runtime registration is [#405](https://github.com/jsbellamy/nightglass/issues/405).
 
 ---
 

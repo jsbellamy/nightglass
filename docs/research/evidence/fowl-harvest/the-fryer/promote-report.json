@@ -1,0 +1,34 @@
+{
+  "status": "promoted",
+  "candidate": "docs/research/evidence/fowl-harvest/the-fryer/scratch/the-fryer-c1.png",
+  "raw": "/Users/jakebellamy/VSProjects/games/game_idea/nightglass-wt-387/assets-raw/grid_raw/the-fryer.png",
+  "sidecar": "/Users/jakebellamy/VSProjects/games/game_idea/nightglass-wt-387/assets-raw/grid_raw/the-fryer.source.json",
+  "runtime": "/var/folders/np/0k8_p_8164g4_j3_9_0604f80000gn/T/tmpmsaeg6h2/sprites/the-fryer.png",
+  "manifest": "/var/folders/np/0k8_p_8164g4_j3_9_0604f80000gn/T/tmpmsaeg6h2/sprites/manifest.json",
+  "measurement": {
+    "candidate": "docs/research/evidence/fowl-harvest/the-fryer/scratch/the-fryer-c1.png",
+    "tag": "the-fryer",
+    "status": "advance",
+    "primary_failure": null,
+    "next_action": "advance to visual review",
+    "gates": [],
+    "clipped_sides": [],
+    "cursor_stamp_removed": false,
+    "opaque_bounds": [
+      0,
+      0,
+      1116,
+      760
+    ],
+    "fitted_opaque_size": [
+      105,
+      72
+    ],
+    "profile": {
+      "role": "boss",
+      "max_opaque_w": 160,
+      "max_opaque_h": 72,
+      "facing": "left"
+    }
+  }
+}

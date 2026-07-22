@@ -1,0 +1,26 @@
+{
+  "candidate": "/Users/jakebellamy/VSProjects/games/game_idea/nightglass-wt-387/assets-raw/grid_raw/the-fryer.png",
+  "tag": "the-fryer",
+  "status": "advance",
+  "primary_failure": null,
+  "next_action": "advance to visual review",
+  "gates": [],
+  "clipped_sides": [],
+  "cursor_stamp_removed": false,
+  "opaque_bounds": [
+    0,
+    0,
+    1116,
+    760
+  ],
+  "fitted_opaque_size": [
+    105,
+    72
+  ],
+  "profile": {
+    "role": "boss",
+    "max_opaque_w": 160,
+    "max_opaque_h": 72,
+    "facing": "left"
+  }
+}
