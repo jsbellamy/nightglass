@@ -6,7 +6,7 @@ import type { DropInstance, Snapshot } from "./snapshot";
 import { statuses as shippedStatuses } from "../data/statuses";
 import { effectiveTalentState } from "./pending-edits";
 import { characterStats } from "./stats";
-import { fixtureContent, fourTierFixtureContent } from "./testing/fixture-content";
+import { fixtureContent, fixtureContentWithAuthoredStages, fourTierFixtureContent } from "./testing/fixture-content";
 import { driveBy, scenario } from "./testing/scenario";
 import type { ClassId, Content, StageDef, StageId } from "./types";
 
@@ -167,10 +167,11 @@ function contentWithAuthoredStages(maxStage: StageId): Content {
   };
 }
 
-function savedAtStageBossEncounter(stage: StageId) {
-  const saved = scenario()
+function savedAtStageBossEncounter(content: Content, stage: StageId) {
+  const saved = scenario(content)
     .atStage(stage)
     .atEncounter(3)
+    .withOpponentsAtOneHealth()
     .withParty(["knight", "wizard", "knight"], "wizard")
     .build();
   saved.lootRngState = LOOT_SEED;
@@ -180,11 +181,6 @@ function savedAtStageBossEncounter(stage: StageId) {
     priest: ["p-moonwell", "p-resurgence", "p-smite"],
     hunter: ["k-shield-brace", "k-rally", "k-sweep"],
   };
-  const boss = saved.attempt!.combatants.find((combatant) => combatant.side === "opponent");
-  if (!boss) {
-    throw new Error("boss encounter missing opponents");
-  }
-  boss.health = 1;
   return saved;
 }
 
@@ -772,12 +768,12 @@ describe("selectStage", () => {
 describe("content-driven stage progression", () => {
   it("unlocks Stage 2 then Stage 3 across successive clears with three authored Stages", () => {
     const content = contentWithAuthoredStages(3);
-    let engine = createEngine(content, savedAtStageBossEncounter(1), LOOT_SEED);
+    let engine = createEngine(content, savedAtStageBossEncounter(content, 1), LOOT_SEED);
     driveUntilStageCleared(engine, 1);
     expect(engine.snapshot().progression.unlockedStage).toBe(2);
     expect(engine.snapshot().attempt?.stage).toBe(2);
 
-    engine = createEngine(content, savedAtStageBossEncounter(2), LOOT_SEED);
+    engine = createEngine(content, savedAtStageBossEncounter(content, 2), LOOT_SEED);
     driveUntilStageCleared(engine, 2);
     expect(engine.snapshot().progression.unlockedStage).toBe(3);
     expect(engine.snapshot().attempt?.stage).toBe(3);
@@ -785,7 +781,7 @@ describe("content-driven stage progression", () => {
 
   it("unlocks Stage 4 on the first Stage 3 clear when six Stages are authored", () => {
     const content = contentWithAuthoredStages(6);
-    const engine = createEngine(content, savedAtStageBossEncounter(3), LOOT_SEED);
+    const engine = createEngine(content, savedAtStageBossEncounter(content, 3), LOOT_SEED);
     driveUntilStageCleared(engine, 3);
     const snap = engine.snapshot();
     expect(snap.progression.unlockedStage).toBe(4);
@@ -795,7 +791,7 @@ describe("content-driven stage progression", () => {
 
   it("unlocks each authored Stage through Stage 6 in order", () => {
     const content = contentWithAuthoredStages(6);
-    let engine = createEngine(content, savedAtStageBossEncounter(1), LOOT_SEED);
+    let engine = createEngine(content, savedAtStageBossEncounter(content, 1), LOOT_SEED);
     for (let stage = 1; stage <= 6; stage += 1) {
       let snap = engine.snapshot();
       const boss = snap.attempt?.combatants.find((combatant) => combatant.side === "opponent");
@@ -816,7 +812,7 @@ describe("content-driven stage progression", () => {
 
   it("repeats Stage 6 after a Stage 6 clear with normal clear events", () => {
     const content = contentWithAuthoredStages(6);
-    const engine = createEngine(content, savedAtStageBossEncounter(6), LOOT_SEED);
+    const engine = createEngine(content, savedAtStageBossEncounter(content, 6), LOOT_SEED);
     const events = driveUntilStageCleared(engine, 6);
     expect(events.some((event) => event.type === "wave-cleared" && event.encounter === 3)).toBe(
       true,
@@ -841,7 +837,8 @@ describe("content-driven stage progression", () => {
 
 describe("Stage 3 clear auto-retry", () => {
   it("begins another Stage 3 Attempt after clearing Stage 3", () => {
-    const saved = scenario()
+    const authored = fixtureContentWithAuthoredStages(3);
+    const saved = scenario(authored)
       .atStage(3)
       .atEncounter(3)
       .withParty(["knight", "wizard", "knight"], "wizard")

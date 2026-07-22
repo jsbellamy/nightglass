@@ -25,7 +25,10 @@ export interface ClassKitBasesContract {
 }
 
 /** Cumulative Character XP thresholds pinned with the Class Kit contract. */
-export const REVIEWED_XP_THRESHOLDS = [0, 100, 250, 450, 650, 850] as const;
+export const REVIEWED_XP_THRESHOLDS = [
+  0, 100, 250, 450, 650, 850,
+  1100, 1400, 2000, 2600, 3250, 3950,
+] as const;
 
 /** Reviewed Level 1 bases and default Ability Loadouts. */
 export const REVIEWED_CLASS_BASES: ClassKitBasesContract[] = [

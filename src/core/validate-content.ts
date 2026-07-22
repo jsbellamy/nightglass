@@ -15,7 +15,19 @@ export const ENCOUNTER_BUDGETS = {
   1: { wave1: 20, wave2: 20, boss: 60 },
   2: { wave1: 30, wave2: 30, boss: 90 },
   3: { wave1: 40, wave2: 40, boss: 120 },
+  4: { wave1: 80, wave2: 80, boss: 240 },
+  5: { wave1: 100, wave2: 100, boss: 300 },
+  6: { wave1: 130, wave2: 130, boss: 390 },
 } as const;
+
+type BudgetedStageId = keyof typeof ENCOUNTER_BUDGETS;
+
+function encounterBudgetFor(stageId: number): (typeof ENCOUNTER_BUDGETS)[BudgetedStageId] | undefined {
+  if (Object.prototype.hasOwnProperty.call(ENCOUNTER_BUDGETS, stageId)) {
+    return ENCOUNTER_BUDGETS[stageId as BudgetedStageId];
+  }
+  return undefined;
+}
 
 const ALL_AFFIX_IDS: AffixId[] = [
   "flat-physical",
@@ -62,7 +74,7 @@ function validateTalentTier(
 
 export interface ValidateContentOptions {
   /**
-   * When true, relaxes full-game cardinality checks (12 Equipment Bases, three
+   * When true, relaxes full-game cardinality checks (12 Equipment Bases, six
    * Stages). Fixture Content for engine tests uses this; shipped content does not.
    */
   fixture?: boolean;
@@ -193,10 +205,7 @@ export function validateContent(
       );
     }
 
-    const budget =
-      stage.id === 1 || stage.id === 2 || stage.id === 3
-        ? ENCOUNTER_BUDGETS[stage.id]
-        : undefined;
+    const budget = encounterBudgetFor(stage.id);
     if (!budget) {
       violations.push(`stage ${stage.id} has no authored encounter budget`);
     } else {
@@ -252,14 +261,31 @@ export function validateContent(
   }
 
   if (!fixture) {
-    if (content.stages.length !== 3) {
-      violations.push(`Content defines ${content.stages.length} stages, expected exactly 3`);
+    if (content.stages.length !== 6) {
+      violations.push(`Content defines ${content.stages.length} stages, expected exactly 6`);
     }
+    violations.push(...shippedStageContiguityViolations(content.stages));
 
     violations.push(...equipmentBaseCardinalityViolations(content.equipmentBases));
     violations.push(...affixBandTierViolations(content.affixBands, content.equipmentBases));
   }
 
+  return violations;
+}
+
+function shippedStageContiguityViolations(stages: Content["stages"]): string[] {
+  const violations: string[] = [];
+  const orderedIds = [...stages].map((stage) => stage.id).sort((left, right) => left - right);
+  for (let index = 0; index < orderedIds.length; index += 1) {
+    const expectedId = index + 1;
+    const actualId = orderedIds[index];
+    if (actualId !== expectedId) {
+      violations.push(
+        `Content stages are not contiguous from 1: expected Stage ${expectedId}, found Stage ${actualId ?? "none"}`,
+      );
+      return violations;
+    }
+  }
   return violations;
 }
 

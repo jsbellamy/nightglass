@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { buildContent } from "./index";
-import { stages as shippedStages } from "./stages";
+import { fowlHarvestStages } from "./fowl-harvest-stages";
 
-describe("inactive Fowl Harvest Stages 4–6", () => {
+describe("Fowl Harvest Stages 4–6", () => {
   it("exports three Stages with approved names, backdrop keys, and rarity odds", async () => {
     const { fowlHarvestStages } = await import("./fowl-harvest-stages");
 
@@ -101,12 +101,11 @@ describe("inactive Fowl Harvest Stages 4–6", () => {
     }
   });
 
-  it("stays inactive until activation: shipped Content still has three Moonberry Stages", () => {
+  it("is wired into shipped Content as Stages 4–6", () => {
     const content = buildContent();
 
-    expect(shippedStages).toHaveLength(3);
-    expect(content.stages).toHaveLength(3);
-    expect(content.stages.map((stage) => stage.id)).toEqual([1, 2, 3]);
-    expect(content.stages).toEqual(shippedStages);
+    expect(content.stages).toHaveLength(6);
+    expect(content.stages.slice(3)).toEqual(fowlHarvestStages);
+    expect(content.stages.map((stage) => stage.id)).toEqual([1, 2, 3, 4, 5, 6]);
   });
 });

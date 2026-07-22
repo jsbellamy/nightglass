@@ -171,6 +171,37 @@ describe("validateContent", () => {
     expect(validateContent(buildContent())).toEqual([]);
   });
 
+  it("requires exactly six contiguous shipped Stages", () => {
+    const shipped = buildContent();
+    expect(validateContent(shipped)).toEqual([]);
+
+    const threeStages = { ...shipped, stages: shipped.stages.slice(0, 3) };
+    expect(validateContent(threeStages)).toContain(
+      "Content defines 3 stages, expected exactly 6",
+    );
+
+    const gap = {
+      ...shipped,
+      stages: shipped.stages.filter((stage) => stage.id !== 5),
+    };
+    expect(validateContent(gap)).toContain(
+      "Content stages are not contiguous from 1: expected Stage 5, found Stage 6",
+    );
+  });
+
+  it("rejects Stage 4–6 encounter budgets that diverge from ENCOUNTER_BUDGETS", () => {
+    const shipped = buildContent();
+    const broken = {
+      ...shipped,
+      opponents: shipped.opponents.map((opponent) =>
+        opponent.id === "burger-drake-s4-20" ? { ...opponent, xpAward: 19 } : opponent,
+      ),
+    };
+    expect(validateContent(broken)).toContain(
+      "stage 4 wave 2 xpAward sum is 76, expected 80",
+    );
+  });
+
   it("accepts shipped expansion status tick definitions", () => {
     const scorched = buildContent().statuses.find((status) => status.id === "scorched");
     expect(scorched?.tickEveryMs).toBe(1_000);

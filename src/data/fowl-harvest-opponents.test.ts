@@ -57,7 +57,7 @@ function xpFromOpponentId(id: string): number {
   return Number(match[1]);
 }
 
-describe("inactive Fowl Harvest Opponents", () => {
+describe("Fowl Harvest Opponents", () => {
   it("exports every Stage roster id with xpAward matching its suffix", async () => {
     const { fowlHarvestOpponents } = await import("./fowl-harvest-opponents");
 
@@ -377,23 +377,21 @@ describe("inactive Fowl Harvest Opponents", () => {
     }
   });
 
-  it("stays inactive until activation: shipped opponents and abilities are unchanged", async () => {
+  it("is wired into shipped opponents and abilities", async () => {
     const { fowlHarvestOpponentAbilities, fowlHarvestOpponents } = await import(
       "./fowl-harvest-opponents"
     );
-    const content = buildContent();
+    const assembled = buildContent();
 
-    expect(shippedOpponents).toHaveLength(content.opponents.length);
-    expect(opponentAbilities.every((ability) => content.abilities.includes(ability))).toBe(true);
+    for (const opponent of fowlHarvestOpponents) {
+      expect(assembled.opponents.find((entry) => entry.id === opponent.id)).toEqual(opponent);
+    }
+    for (const ability of fowlHarvestOpponentAbilities) {
+      expect(assembled.abilities.find((entry) => entry.id === ability.id)).toEqual(ability);
+    }
+    expect(assembled.opponents.length).toBe(shippedOpponents.length);
     expect(
-      fowlHarvestOpponents.every(
-        (opponent) => !content.opponents.some((entry) => entry.id === opponent.id),
-      ),
-    ).toBe(true);
-    expect(
-      fowlHarvestOpponentAbilities.every(
-        (ability) => !content.abilities.some((entry) => entry.id === ability.id),
-      ),
+      opponentAbilities.every((ability) => assembled.abilities.some((entry) => entry.id === ability.id)),
     ).toBe(true);
   });
 });

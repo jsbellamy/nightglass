@@ -1,6 +1,6 @@
 import type { AbilityDef, BaseStats, OpponentDef } from "../core/types";
 
-/** Inactive Fowl Harvest opponents and kits (issue #415). Not wired into shipped Content yet. */
+/** Fowl Harvest opponents and kits (issue #415). */
 
 const BURGER_S4_STATS: BaseStats = {
   maxHealth: 190,

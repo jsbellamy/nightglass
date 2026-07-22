@@ -29,7 +29,10 @@ import { buildStageSlice } from "./stages";
 import { statuses } from "./statuses";
 
 /** Cumulative Character XP thresholds from issue #5 / vertical-slice-spec §7. */
-export const XP_THRESHOLDS = [0, 100, 250, 450, 650, 850] as const;
+export const XP_THRESHOLDS = [
+  0, 100, 250, 450, 650, 850,
+  1100, 1400, 2000, 2600, 3250, 3950,
+] as const;
 
 const CLASS_KIT_ABILITIES = [
   ...knightAbilities,

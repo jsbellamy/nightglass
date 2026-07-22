@@ -1,4 +1,5 @@
 import type { Content, StageDef } from "../core/types";
+import { fowlHarvestStages } from "./fowl-harvest-stages";
 import { opponents } from "./opponents";
 
 /** Stage rosters and rarity odds from issue #40 / issue #5. */
@@ -44,6 +45,7 @@ export const stages: StageDef[] = [
     rarityOdds: [25, 45, 24, 6],
     backdropKey: "backdrop-3",
   },
+  ...fowlHarvestStages,
 ];
 
 export function buildStageSlice(): {
