@@ -2408,8 +2408,10 @@ describe("Equipment and Drops", () => {
     reloaded.advanceBy(1);
     const mid = structuredClone(reloaded.snapshot());
     let reloadedDrop: number | null = null;
-    for (let ms = mid.simNowMs; ms < 300_000; ms += 1) {
-      const events = reloaded.advanceBy(1);
+    let reloadedElapsed = mid.simNowMs;
+    while (reloadedElapsed < 300_000) {
+      reloadedElapsed += 1;
+      const events = driveBy(reloaded, 1);
       const awarded = events.find((event) => event.type === "drop-awarded");
       if (awarded) {
         reloadedDrop = awarded.dropId;
@@ -2419,8 +2421,10 @@ describe("Equipment and Drops", () => {
 
     const restored = createEngine(fixtureContent, mid, LOOT_SEED);
     let restoredDrop: number | null = null;
-    for (let ms = mid.simNowMs; ms < 300_000; ms += 7) {
-      const events = restored.advanceBy(7);
+    let restoredElapsed = mid.simNowMs;
+    while (restoredElapsed < 300_000) {
+      restoredElapsed += 7;
+      const events = driveBy(restored, 7);
       const awarded = events.find((event) => event.type === "drop-awarded");
       if (awarded) {
         restoredDrop = awarded.dropId;
