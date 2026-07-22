@@ -686,6 +686,22 @@ with tempfile.TemporaryDirectory() as _unknown_temp:
 check("unknown discovered body identity fails verification",
       "no known Nightglass asset identity" in unknown_identity_error,
       unknown_identity_error)
+with tempfile.TemporaryDirectory() as _collision_temp:
+    _collision_raw = pathlib.Path(_collision_temp)
+    for tag in ("boss", "boss-2"):
+        Image.new("RGBA", (8, 8), (0, 0, 0, 255)).save(_collision_raw / f"{tag}.png")
+        (_collision_raw / f"{tag}.source.json").write_text("{}")
+    collision_names = dict(A.OUTPUT_NAMES)
+    collision_names["boss-2"] = "boss-1"
+    with mock.patch.object(A, "RAW_DIR", _collision_raw), mock.patch.object(
+            A, "OUTPUT_NAMES", collision_names):
+        try:
+            A.discover_body_build_raw_tags()
+            collision_error = ""
+        except ValueError as error:
+            collision_error = str(error)
+check("output key collision fails verification",
+      "collides" in collision_error, collision_error)
 
 print("\nbackdrop bundle discovery")
 _discovered = B.discover_complete_bundle_keys()

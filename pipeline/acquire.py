@@ -17,8 +17,9 @@ network down reproduces byte-identical runtime frames.
 
 Determinism guarantees:
   * alpha is BINARIZED at 128 -- a runtime frame's alpha is exactly 0 or 255
-  * colour is quantized nearest-in-RGB to palette.json with NO dithering,
-    stochastic or ordered -- identical input always yields identical output
+  * colour is quantized nearest-in-RGB to the identity-selected runtime palette
+    (see PALETTE_PATHS) with NO dithering, stochastic or ordered -- identical
+    input always yields identical output
   * the source logical grid is sampled 1:1; the raw render is never resized
 """
 from __future__ import annotations
