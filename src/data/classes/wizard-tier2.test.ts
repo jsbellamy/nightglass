@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import type { AbilityDef, TalentTierDef } from "../../core/types";
-import { isRegisteredIconKey } from "../../ui/icons";
 import { buildContent } from "../index";
 import {
   wizardAbilities,
@@ -63,14 +62,8 @@ const EXPECTED_WIZARD_TIER2: TalentTierDef = {
 };
 
 const TIER2_ABILITY_IDS = ["wildfire-sigil", "absolute-zero"] as const;
-const TIER2_ICON_KEYS = [
-  "wildfire-sigil",
-  "absolute-zero",
-  "leyline-attunement",
-  "glassweave",
-] as const;
 
-describe("inactive Wizard Talent Tier 2 exports", () => {
+describe("Wizard Talent Tier 2 exports", () => {
   it("matches the approved Ability and Talent Tier definitions", () => {
     expect(wizardTier2Abilities).toEqual(EXPECTED_WIZARD_TIER2_ABILITIES);
     expect(wizardTier2).toEqual(EXPECTED_WIZARD_TIER2);
@@ -116,19 +109,18 @@ describe("inactive Wizard Talent Tier 2 exports", () => {
     ]);
   });
 
-  it("leaves shipped Class Kit and Content unchanged during the inactive interim", () => {
+  it("ships Tier 2 in assembled Class Kit and Content", () => {
     const content = buildContent();
     for (const id of TIER2_ABILITY_IDS) {
       expect(wizardAbilities.some((ability) => ability.id === id)).toBe(false);
-      expect(content.abilities.some((ability) => ability.id === id)).toBe(false);
+      expect(content.abilities.some((ability) => ability.id === id)).toBe(true);
     }
     expect(wizardClass.talentTiers).toBeUndefined();
-    expect(wizardClass.talents).toEqual({
+    const wizard = content.classes.find((entry) => entry.id === "wizard");
+    expect(wizard?.talentTiers).toEqual([wizardTier2]);
+    expect(wizard?.talents).toEqual({
       statRow: wizardClass.talents.statRow,
       abilityRow: ["starfall", "prismatic-shelter"],
     });
-    for (const iconKey of TIER2_ICON_KEYS) {
-      expect(isRegisteredIconKey(iconKey)).toBe(false);
-    }
   });
 });

@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { registeredIconKeys } from "../../ui/icons";
 import { buildContent } from "../index";
 import {
   hunterAbilities,
@@ -9,14 +8,8 @@ import {
 } from "./hunter";
 
 const TIER2_ABILITY_IDS = ["piercing-rain", "twin-fang"] as const;
-const TIER2_ICON_KEYS = [
-  "piercing-rain",
-  "twin-fang",
-  "fletchers-eye",
-  "wayfarers-ward",
-] as const;
 
-describe("inactive Hunter Talent Tier 2 exports", () => {
+describe("Hunter Talent Tier 2 exports", () => {
   it("defines Fletcher's Eye and Wayfarer's Ward as five-rank Stat Talents with approved icon keys", () => {
     const [fletchersEye, wayfarersWard] = hunterTier2.statRow;
     expect(fletchersEye).toEqual({
@@ -70,22 +63,20 @@ describe("inactive Hunter Talent Tier 2 exports", () => {
     });
   });
 
-  it("keeps Tier 2 out of shipped Hunter Class Kit content and icon registration", () => {
+  it("ships Tier 2 in assembled Hunter Class Kit and Content", () => {
     const shippedAbilityIds = hunterAbilities.map((ability) => ability.id);
     for (const abilityId of TIER2_ABILITY_IDS) {
       expect(shippedAbilityIds).not.toContain(abilityId);
     }
     expect(hunterClass.talentTiers).toBeUndefined();
-    expect(hunterClass.talents.abilityRow).toEqual(["heartseeker", "moonwire-trap"]);
+
+    const hunter = buildContent().classes.find((entry) => entry.id === "hunter");
+    expect(hunter?.talentTiers).toEqual([hunterTier2]);
+    expect(hunter?.talents.abilityRow).toEqual(["heartseeker", "moonwire-trap"]);
 
     const contentAbilityIds = buildContent().abilities.map((ability) => ability.id);
     for (const abilityId of TIER2_ABILITY_IDS) {
-      expect(contentAbilityIds).not.toContain(abilityId);
-    }
-
-    const registered = new Set(registeredIconKeys());
-    for (const iconKey of TIER2_ICON_KEYS) {
-      expect(registered.has(iconKey)).toBe(false);
+      expect(contentAbilityIds).toContain(abilityId);
     }
   });
 });

@@ -1,8 +1,28 @@
-import type { Content } from "../core/types";
-import { hunterAbilities, hunterClass } from "./classes/hunter";
-import { knightAbilities, knightClass } from "./classes/knight";
-import { priestAbilities, priestClass } from "./classes/priest";
-import { wizardAbilities, wizardClass } from "./classes/wizard";
+import type { ClassKitDef, Content, TalentTierDef } from "../core/types";
+import {
+  hunterAbilities,
+  hunterClass,
+  hunterTier2,
+  hunterTier2Abilities,
+} from "./classes/hunter";
+import {
+  knightAbilities,
+  knightClass,
+  knightTier2,
+  knightTier2Abilities,
+} from "./classes/knight";
+import {
+  priestAbilities,
+  priestClass,
+  priestTier2,
+  priestTier2Abilities,
+} from "./classes/priest";
+import {
+  wizardAbilities,
+  wizardClass,
+  wizardTier2,
+  wizardTier2Abilities,
+} from "./classes/wizard";
 import { buildEquipmentSlice } from "./equipment";
 import { opponentAbilities } from "./opponents";
 import { buildStageSlice } from "./stages";
@@ -13,14 +33,30 @@ export const XP_THRESHOLDS = [0, 100, 250, 450, 650, 850] as const;
 
 const CLASS_KIT_ABILITIES = [
   ...knightAbilities,
+  ...knightTier2Abilities,
   ...wizardAbilities,
+  ...wizardTier2Abilities,
   ...priestAbilities,
+  ...priestTier2Abilities,
   ...hunterAbilities,
+  ...hunterTier2Abilities,
 ];
 
 const SHIPPED_ABILITIES = [...CLASS_KIT_ABILITIES, ...opponentAbilities];
 
-const CLASS_KITS = [knightClass, wizardClass, priestClass, hunterClass];
+function withTalentTierTwo(
+  classKit: ClassKitDef,
+  tierTwo: TalentTierDef,
+): ClassKitDef {
+  return { ...classKit, talentTiers: [tierTwo] };
+}
+
+const CLASS_KITS: ClassKitDef[] = [
+  withTalentTierTwo(knightClass, knightTier2),
+  withTalentTierTwo(wizardClass, wizardTier2),
+  withTalentTierTwo(priestClass, priestTier2),
+  withTalentTierTwo(hunterClass, hunterTier2),
+];
 
 export interface ClassKitSlice {
   classes: Content["classes"];

@@ -74,6 +74,21 @@ export const effectRecipes: Record<string, EffectRecipe> = {
     durationMs: 330,
     cuesMs: { impact_expected: 700 },
   },
+  vanguard: {
+    stillKey: "buff-halo",
+    frames: "buff-halo",
+    anchor: "strike_target",
+    durationMs: 300,
+    cuesMs: { impact_expected: 400 },
+  },
+  "sundering-charge": {
+    stillKey: "arc-slash",
+    frames: "arc-slash",
+    anchor: "strike_target",
+    anchorDx: -15,
+    durationMs: 250,
+    cuesMs: { impact_expected: 700 },
+  },
 
   // Hunter
   "quickshot": {
@@ -124,6 +139,20 @@ export const effectRecipes: Record<string, EffectRecipe> = {
     anchor: "lane_travel",
     durationMs: 100,
     cuesMs: { release_projectile: 650 },
+  },
+  "piercing-rain": {
+    stillKey: "arrow-bolt",
+    frames: "arrow-bolt",
+    anchor: "lane_travel",
+    durationMs: 100,
+    cuesMs: { release_projectile: 650 },
+  },
+  "twin-fang": {
+    stillKey: "arrow-bolt",
+    frames: "arrow-bolt",
+    anchor: "lane_travel",
+    durationMs: 100,
+    cuesMs: { release_projectile: 800 },
   },
 
   // Wizard
@@ -176,6 +205,20 @@ export const effectRecipes: Record<string, EffectRecipe> = {
     durationMs: 300,
     cuesMs: { impact_expected: 400 },
   },
+  "wildfire-sigil": {
+    stillKey: "spell-bloom",
+    frames: "spell-bloom-scaled-fire",
+    anchor: "strike_target",
+    durationMs: 260,
+    cuesMs: { impact_expected: 700 },
+  },
+  "absolute-zero": {
+    stillKey: "spell-bloom",
+    frames: "spell-bloom-frost",
+    anchor: "strike_target",
+    durationMs: 220,
+    cuesMs: { impact_expected: 650 },
+  },
 
   // Priest
   "sun-mote": {
@@ -226,6 +269,20 @@ export const effectRecipes: Record<string, EffectRecipe> = {
     anchor: "lane_travel",
     durationMs: 100,
     cuesMs: { release_projectile: 800 },
+  },
+  benediction: {
+    stillKey: "heal-rise",
+    frames: "heal-rise",
+    anchor: "band",
+    durationMs: 390,
+    cuesMs: { impact_expected: 700 },
+  },
+  "dawn-ascendant": {
+    stillKey: "revive-burst",
+    frames: "revive-burst",
+    anchor: "strike_target",
+    durationMs: 360,
+    cuesMs: { impact_expected: 1200 },
   },
 };
 

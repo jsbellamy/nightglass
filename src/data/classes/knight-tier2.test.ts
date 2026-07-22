@@ -6,16 +6,10 @@ import {
   knightTier2,
   knightTier2Abilities,
 } from "./knight";
-import { isRegisteredIconKey } from "../../ui/icons";
+import { talentTierDefs } from "../../core/talents";
 
 const TIER2_ABILITY_IDS = ["vanguard", "sundering-charge"] as const;
 const TIER2_STAT_IDS = ["iron-discipline", "veterans-edge"] as const;
-const TIER2_ICON_KEYS = [
-  "vanguard",
-  "sundering-charge",
-  "iron-discipline",
-  "veterans-edge",
-] as const;
 
 function abilityById(id: string) {
   const ability = knightTier2Abilities.find((entry) => entry.id === id);
@@ -25,7 +19,7 @@ function abilityById(id: string) {
   return ability;
 }
 
-describe("Knight Talent Tier 2 (inactive interim)", () => {
+describe("Knight Talent Tier 2 exports", () => {
   it("exports Stat Talents with five ranks and exact per-rank modifiers", () => {
     const [ironDiscipline, veteransEdge] = knightTier2.statRow;
     expect(ironDiscipline).toMatchObject({
@@ -91,24 +85,24 @@ describe("Knight Talent Tier 2 (inactive interim)", () => {
     }
   });
 
-  it("is not assembled into shipped Class Kit or Content", () => {
+  it("is assembled into shipped Class Kit and Content", () => {
     expect(knightClass.talentTiers).toBeUndefined();
+    const shippedKnight = buildContent().classes.find((entry) => entry.id === "knight");
+    expect(shippedKnight?.talentTiers).toEqual([knightTier2]);
+    expect(talentTierDefs(shippedKnight!)).toEqual([knightClass.talents, knightTier2]);
+
     for (const id of TIER2_ABILITY_IDS) {
       expect(knightAbilities.some((ability) => ability.id === id)).toBe(false);
     }
     const shipped = buildContent();
     const classKit = buildClassKitSlice();
     for (const id of TIER2_ABILITY_IDS) {
-      expect(shipped.abilities.some((ability) => ability.id === id)).toBe(false);
-      expect(classKit.abilities.some((ability) => ability.id === id)).toBe(false);
+      expect(shipped.abilities.some((ability) => ability.id === id)).toBe(true);
+      expect(classKit.abilities.some((ability) => ability.id === id)).toBe(true);
     }
-    expect(classKit.abilities).toHaveLength(28);
-    expect(knightAbilities.filter((ability) => ability.slot === "talent")).toHaveLength(2);
-  });
-
-  it("does not register Tier 2 icon keys in the interim slice", () => {
-    for (const key of TIER2_ICON_KEYS) {
-      expect(isRegisteredIconKey(key)).toBe(false);
-    }
+    expect(classKit.abilities).toHaveLength(36);
+    expect(
+      classKit.abilities.filter((ability) => ability.classId === "knight" && ability.slot === "talent"),
+    ).toHaveLength(4);
   });
 });
