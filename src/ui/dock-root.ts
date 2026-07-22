@@ -57,7 +57,7 @@ export function mountDockShell(
     }
     dock.render(
       pendingPumpSnapshot,
-      legalityViewFromSerialized(pendingPumpLegality),
+      legalityViewFromSerialized(pendingPumpLegality, pendingPumpSnapshot, content),
     );
   }
 
@@ -90,7 +90,10 @@ export function mountDockShell(
   bus = (options.busFactory ?? createBusEndpoint)({
     snapshot(message) {
       cancelPendingPumpRender();
-      dock.render(message.snapshot, legalityViewFromSerialized(message.legality));
+      dock.render(
+        message.snapshot,
+        legalityViewFromSerialized(message.legality, message.snapshot, content),
+      );
     },
     pump(message) {
       scheduleCoalescedPumpRender(message.snapshot, message.legality);
