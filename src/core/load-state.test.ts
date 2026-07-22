@@ -126,7 +126,7 @@ describe("parseStoredSave", () => {
   });
 
   it.each([4, 5, 6] as const)(
-    "tolerant recovery accepts unlockedStage %i and Item Level %i in armory",
+    "exact-schema save preserves unlockedStage %i and itemLevel %i in armory",
     (stage) => {
       const progression = createDefaultProgression(testContent);
       const raw = {
