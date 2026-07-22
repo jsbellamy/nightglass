@@ -1,0 +1,84 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "5be73c5d5b11479a56d7836e367b28592e652553a6864730766547830e616c18",
+  "asset_class": "interface",
+  "kind": "talent-skill-glyph",
+  "runtime_destination": "deferred \u2014 unregistered interim; later activation slice",
+  "source_key": "wildfire-sigil",
+  "candidate": "wildfire-sigil-r4",
+  "palette_subset": [
+    "contour-plum-deepest",
+    "contour-plum-deep",
+    "mint-light",
+    "mint-pale",
+    "cream",
+    "cream-gold",
+    "berry-mid",
+    "berry",
+    "berry-shadow",
+    "sage"
+  ],
+  "style_references": [
+    {
+      "path": "docs/research/evidence/305-talent-icons-wizard/accepted-raws/elemental-practice.png",
+      "role": "style_cohort",
+      "sha256": "28cef7565489198bd93ca34c0ab2d45bfa7aa220e25199bcf252def7261f03c3"
+    },
+    {
+      "path": "docs/research/evidence/fowl-harvest/talent-icons/wizard/accepted-raws/absolute-zero.png",
+      "role": "style_reference",
+      "sha256": "036d246c541fd13fffb3ea3af9a07e7fc6a9b24b53d33fbabfb407fef3e4fcb6",
+      "note": "gate-passing absolute-zero-r1 used as pitch reference during wildfire-sigil-r4"
+    },
+    {
+      "path": "docs/research/evidence/305-talent-icons-priest/accepted-raws/sunlance.png",
+      "role": "style_cohort",
+      "sha256": "e7202416f54dab24a7ff29380226ce77e117eb08fd114afa38964d797de6b64f"
+    }
+  ],
+  "issue_exact_prompt": "TRUE chunky pixel art Talent icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block with no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered symbolic Management Dock skill glyph for Wildfire Sigil: a circular flame rune with three outward embers, reading area Fire Damage plus Scorched without becoming a spell-effect frame. Not a wearable Equipment item, not a scene, not a full Character, and not a UI frame. The subject long side spans about 26\u201330 logical pixels, with at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel dark-plum outline. Use only mint, berry, cream, and plum Moonberry colors, 8\u201312 flat colors maximum; no brown, tan, cyan, pure white, or pure black. Structural members are at least three logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "issue_exact_prompt_sha256": "76854c6a226458eada654b4c21f4431b3f25bf289c785ec3281732bfcb032d50",
+  "issue_exact_prompt_submitted_as": "wildfire-sigil-r1",
+  "prompt": "TRUE chunky pixel art Talent icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block \u2014 uniform square pitch matching the style references exactly \u2014 with no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered symbolic Management Dock skill glyph for Wildfire Sigil: a circular flame rune with three outward embers, reading area Fire Damage plus Scorched without becoming a spell-effect frame. Not a wearable Equipment item, not a scene, not a full Character, and not a UI frame. Subject fills the frame with MANY small logical pixels (about 26\u201330 cells across), not a few large soft shapes. At least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel dark-plum outline. Use only mint, berry, cream, and plum Moonberry colors, 8\u201312 flat colors maximum; no brown, tan, cyan, pure white, or pure black. Structural members are at least three logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        65,
+        66,
+        958,
+        891
+      ],
+      "pitch_x": {
+        "pitch": 40.48333333333295,
+        "score": 0.27821630034954953
+      },
+      "pitch_y": {
+        "pitch": 41.23333333333291,
+        "score": 0.22088727076398942
+      },
+      "grid": [
+        23,
+        20
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 238,
+      "far_cells": 7,
+      "far_fraction": 0.0294,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "sage": 6,
+        "contour-plum-deep": 54,
+        "cream": 48,
+        "berry": 49,
+        "mint-light": 46,
+        "mint-pale": 13,
+        "cream-gold": 4,
+        "berry-mid": 10,
+        "berry-shadow": 8
+      }
+    }
+  },
+  "note": "#391 Wizard Talent Tier 2 unregistered one-variant icon"
+}

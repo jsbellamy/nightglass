@@ -1,0 +1,14 @@
+{
+  "glassweave-r3": {
+    "candidate": "glassweave-r3",
+    "sha256": "bbc2ff180b636c2df53a772627fdf12099b47a6c61c55d095d4cfa37c7b85550",
+    "error": "glassweave-r3.png: subject clipped by generator at bottom/left of the 1024x1024 raw canvas",
+    "primary_result": "clip-fail"
+  },
+  "wildfire-sigil-r3": {
+    "candidate": "wildfire-sigil-r3",
+    "sha256": "0c601068a307fb5c5c1ba0da04a1790252b87bbfbd09f89c89caf9d3b16645c2",
+    "error": "wildfire-sigil-r3.png: underfill recovered long axis 19 (need \u226520)",
+    "primary_result": "underfill"
+  }
+}

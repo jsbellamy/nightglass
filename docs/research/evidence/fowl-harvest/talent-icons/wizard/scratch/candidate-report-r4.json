@@ -1,0 +1,100 @@
+{
+  "glassweave-r4": {
+    "candidate": "glassweave-r4",
+    "sha256": "1ea0085bc467ee90d81e2a504ca8b32fc5f9e868cd44752ceac84157f28b4f68",
+    "bbox_size": [
+      703,
+      830
+    ],
+    "recovered": {
+      "bbox": [
+        159,
+        87,
+        861,
+        916
+      ],
+      "pitch_x": {
+        "pitch": 37.80555555555535,
+        "score": 0.272716161043548
+      },
+      "pitch_y": {
+        "pitch": 38.455555555555314,
+        "score": 0.22490957440620432
+      },
+      "grid": [
+        19,
+        22
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 277,
+      "far_cells": 13,
+      "far_fraction": 0.0469,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "cream": 47,
+        "contour-plum-deep": 50,
+        "berry": 32,
+        "mint": 18,
+        "cream-gold": 6,
+        "mint-shadow": 49,
+        "twilight-slate": 14,
+        "mint-light": 32,
+        "berry-shadow": 8,
+        "sage": 6,
+        "berry-bright": 4,
+        "berry-mid": 10,
+        "mint-pale": 1
+      }
+    },
+    "primary_result": "advance",
+    "measurement": "19x22; far 4.7%; pitch x=0.273 y=0.225"
+  },
+  "wildfire-sigil-r4": {
+    "candidate": "wildfire-sigil-r4",
+    "sha256": "5be73c5d5b11479a56d7836e367b28592e652553a6864730766547830e616c18",
+    "bbox_size": [
+      894,
+      826
+    ],
+    "recovered": {
+      "bbox": [
+        65,
+        66,
+        958,
+        891
+      ],
+      "pitch_x": {
+        "pitch": 40.48333333333295,
+        "score": 0.27821630034954953
+      },
+      "pitch_y": {
+        "pitch": 41.23333333333291,
+        "score": 0.22088727076398942
+      },
+      "grid": [
+        23,
+        20
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 238,
+      "far_cells": 7,
+      "far_fraction": 0.0294,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "sage": 6,
+        "contour-plum-deep": 54,
+        "cream": 48,
+        "berry": 49,
+        "mint-light": 46,
+        "mint-pale": 13,
+        "cream-gold": 4,
+        "berry-mid": 10,
+        "berry-shadow": 8
+      }
+    },
+    "primary_result": "advance",
+    "measurement": "23x20; far 2.9%; pitch x=0.278 y=0.221"
+  }
+}
