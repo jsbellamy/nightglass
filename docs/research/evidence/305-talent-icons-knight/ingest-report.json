@@ -1,0 +1,160 @@
+{
+  "fortitude": {
+    "recovered": {
+      "bbox": [
+        172,
+        54,
+        852,
+        964
+      ],
+      "pitch_x": {
+        "pitch": 31.605555555555647,
+        "score": 0.23170573748586956
+      },
+      "pitch_y": {
+        "pitch": 31.95555555555565,
+        "score": 0.22877996067392636
+      },
+      "grid": [
+        22,
+        28
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 404,
+      "far_cells": 24,
+      "far_fraction": 0.0594,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "berry-shadow": 55,
+        "mint": 19,
+        "cream": 84,
+        "twilight-slate": 13,
+        "mint-light": 80,
+        "mint-shadow": 67,
+        "sage": 11,
+        "contour-plum-deep": 13,
+        "mint-pale": 38,
+        "berry-mid": 10,
+        "berry-bright": 7,
+        "berry": 7
+      }
+    }
+  },
+  "swordcraft": {
+    "recovered": {
+      "bbox": [
+        204,
+        168,
+        819,
+        816
+      ],
+      "pitch_x": {
+        "pitch": 22.777777777777846,
+        "score": 0.5294674623287828
+      },
+      "pitch_y": {
+        "pitch": 23.12777777777785,
+        "score": 0.5444213072719916
+      },
+      "grid": [
+        27,
+        28
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 414,
+      "far_cells": 0,
+      "far_fraction": 0.0,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "contour-plum-deep": 151,
+        "cream": 55,
+        "mint-light": 88,
+        "berry": 44,
+        "berry-bright": 34,
+        "mint": 26,
+        "cream-gold": 12,
+        "berry-mid": 4
+      }
+    }
+  },
+  "hold-the-line": {
+    "recovered": {
+      "bbox": [
+        185,
+        89,
+        834,
+        911
+      ],
+      "pitch_x": {
+        "pitch": 28.811111111111195,
+        "score": 0.2120316522399689
+      },
+      "pitch_y": {
+        "pitch": 29.311111111111202,
+        "score": 0.23947371172544646
+      },
+      "grid": [
+        23,
+        28
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 390,
+      "far_cells": 49,
+      "far_fraction": 0.1256,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "berry-shadow": 39,
+        "mint-pale": 19,
+        "cream": 58,
+        "mint-shadow": 40,
+        "mint-light": 78,
+        "mint": 40,
+        "contour-plum-deep": 33,
+        "sage": 7,
+        "twilight-slate": 32,
+        "berry": 6,
+        "berry-bright": 10,
+        "berry-mid": 15,
+        "cream-gold": 13
+      }
+    }
+  },
+  "falling-star": {
+    "recovered": {
+      "bbox": [
+        230,
+        200,
+        789,
+        788
+      ],
+      "pitch_x": {
+        "pitch": 25.41111111111124,
+        "score": 0.4755640966376634
+      },
+      "pitch_y": {
+        "pitch": 25.51111111111124,
+        "score": 0.5180207118407598
+      },
+      "grid": [
+        22,
+        23
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 212,
+      "far_cells": 0,
+      "far_fraction": 0.0,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "contour-plum-deep": 92,
+        "cream": 52,
+        "cream-gold": 58,
+        "berry-bright": 3,
+        "berry": 7
+      }
+    }
+  }
+}

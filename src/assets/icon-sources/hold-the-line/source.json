@@ -1,0 +1,65 @@
+{
+  "provider": "Cursor GenerateImage",
+  "prompt": "TRUE chunky pixel art skill icon ONLY. Drawn on an exact 32x32 logical pixel grid rendered large; every logical pixel is one clean flat square block \u2014 no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered symbolic skill glyph in three-quarter display angle: a braced mint kite shield planted low with berry studs, reading as a shield-wall fragment. Not a wearable equipment piece and not a full character \u2014 one readable glyph only. Subject's long side spans about 26-30 logical pixels, with at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel dark-plum outline. Use only mint / berry / cream / plum Moonberry colours (8-12 flat colors max) \u2014 no brown, tan, cyan, pure white, or pure black. Structural members at least 3 logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "raw_sha256": "6362f20d9f2dc002e4e3f4868428923a90164c34393aa862798be8b6e965241a",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        185,
+        89,
+        834,
+        911
+      ],
+      "pitch_x": {
+        "pitch": 28.811111111111195,
+        "score": 0.2120316522399689
+      },
+      "pitch_y": {
+        "pitch": 29.311111111111202,
+        "score": 0.23947371172544646
+      },
+      "grid": [
+        23,
+        28
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 390,
+      "far_cells": 49,
+      "far_fraction": 0.1256,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "berry-shadow": 39,
+        "mint-pale": 19,
+        "cream": 58,
+        "mint-shadow": 40,
+        "mint-light": 78,
+        "mint": 40,
+        "contour-plum-deep": 33,
+        "sage": 7,
+        "twilight-slate": 32,
+        "berry": 6,
+        "berry-bright": 10,
+        "berry-mid": 15,
+        "cream-gold": 13
+      }
+    }
+  },
+  "palette_subset": [
+    "contour-plum-deepest",
+    "contour-plum-deep",
+    "mint-shadow",
+    "mint",
+    "mint-light",
+    "mint-pale",
+    "cream",
+    "cream-gold",
+    "berry-shadow",
+    "berry-mid",
+    "berry",
+    "berry-bright",
+    "sage",
+    "twilight-slate"
+  ],
+  "evidence_raw": "docs/research/evidence/305-talent-icons-knight/accepted-raws/hold-the-line.png"
+}

@@ -1,0 +1,55 @@
+{
+  "provider": "Cursor GenerateImage",
+  "prompt": "TRUE chunky pixel art skill icon ONLY. Drawn on an exact 32x32 logical pixel grid rendered large; every logical pixel is one clean flat square block \u2014 no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered symbolic skill glyph in three-quarter display angle: two crossed short mint-steel blades with cream grips and berry thorn crossguards. Not a wearable equipment piece and not a full character \u2014 one readable glyph only. Subject's long side spans about 26-30 logical pixels, with at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel dark-plum outline. Use only mint / berry / cream / plum Moonberry colours (8-12 flat colors max) \u2014 no brown, tan, cyan, pure white, or pure black. Structural members at least 3 logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "raw_sha256": "bace3f53ebf5076482e19a27a3352bb214c000a310de22da78188c4f84d9bc1f",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        204,
+        168,
+        819,
+        816
+      ],
+      "pitch_x": {
+        "pitch": 22.777777777777846,
+        "score": 0.5294674623287828
+      },
+      "pitch_y": {
+        "pitch": 23.12777777777785,
+        "score": 0.5444213072719916
+      },
+      "grid": [
+        27,
+        28
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 414,
+      "far_cells": 0,
+      "far_fraction": 0.0,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "contour-plum-deep": 151,
+        "cream": 55,
+        "mint-light": 88,
+        "berry": 44,
+        "berry-bright": 34,
+        "mint": 26,
+        "cream-gold": 12,
+        "berry-mid": 4
+      }
+    }
+  },
+  "palette_subset": [
+    "contour-plum-deepest",
+    "contour-plum-deep",
+    "mint",
+    "mint-light",
+    "cream",
+    "cream-gold",
+    "berry",
+    "berry-bright",
+    "berry-mid"
+  ],
+  "evidence_raw": "docs/research/evidence/305-talent-icons-knight/accepted-raws/swordcraft.png"
+}

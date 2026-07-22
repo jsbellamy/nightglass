@@ -90,6 +90,15 @@ in `pipeline/icons/registry.py`. Family text-grid sources live under
 `src/assets/icons/` ([#131](https://github.com/jsbellamy/nightglass/issues/131)).
 A synthetic `verify-canary` family proves byte-identical rebuild in CI.
 
+**Talent / Ability Talent** icons are additional **one-variant** families under the
+same geometry, ingest, and build contract: a single `IconVariant` with an empty
+`recolor` map, `iconKey` equal to the content id, and no Tier II. They are
+symbolic skill glyphs for Management Dock Talent Tree chrome — not Equipment
+Bases and not wearable Armory pieces. Knight's first batch
+(`fortitude`, `swordcraft`, `hold-the-line`, `falling-star`) lands in
+[#305](https://github.com/jsbellamy/nightglass/issues/305); later Class batches
+extend the same registry without changing gates.
+
 ## Approval
 
 Human approval happens in **PR review** on the 8× previews and family contact sheet
