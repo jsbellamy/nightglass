@@ -1,11 +1,12 @@
 // @vitest-environment happy-dom
 
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { EngineEvent } from "../core/events";
 import { opponentEntityId } from "../core/entity-id";
 import { PUMP_INTERVAL_MS } from "./pump";
 import { SAVE_KEY } from "./boot";
 import {
+  AUDIO_PREFS_DEBOUNCE_MS,
   AUDIO_PREFS_KEY,
   CUE_IDS,
   MAX_CUES_PER_RELEASE,
@@ -303,17 +304,24 @@ describe("Presentation-event SFX", () => {
   });
 
   it("round-trips audio prefs in nightglass-audio-v1 without touching the save key", () => {
-    const storage = storageStub({ [SAVE_KEY]: '{"schemaVersion":1}' });
-    const { createAudio, createCuePlayer } = sfxTestDeps({ storage }).deps;
-    const sfx = createSfx({ storage, createAudio, createCuePlayer });
-    sfx.setMuted(false);
-    sfx.setVolume(0.42);
-    const raw = storage.snapshot()[AUDIO_PREFS_KEY];
-    expect(raw).toBeTruthy();
-    expect(JSON.parse(raw!)).toEqual({ muted: false, volume: 0.42 });
-    expect(storage.snapshot()[SAVE_KEY]).toBe('{"schemaVersion":1}');
-    const reloaded = createSfx({ storage, createAudio, createCuePlayer });
-    expect(reloaded.getPrefs()).toEqual({ muted: false, volume: 0.42 });
+    vi.useFakeTimers();
+    try {
+      const storage = storageStub({ [SAVE_KEY]: '{"schemaVersion":1}' });
+      const { createAudio, createCuePlayer } = sfxTestDeps({ storage }).deps;
+      const sfx = createSfx({ storage, createAudio, createCuePlayer });
+      sfx.setMuted(false);
+      storage.resetSetItemCalls();
+      sfx.setVolume(0.42);
+      vi.advanceTimersByTime(AUDIO_PREFS_DEBOUNCE_MS);
+      const raw = storage.snapshot()[AUDIO_PREFS_KEY];
+      expect(raw).toBeTruthy();
+      expect(JSON.parse(raw!)).toEqual({ muted: false, volume: 0.42 });
+      expect(storage.snapshot()[SAVE_KEY]).toBe('{"schemaVersion":1}');
+      const reloaded = createSfx({ storage, createAudio, createCuePlayer });
+      expect(reloaded.getPrefs()).toEqual({ muted: false, volume: 0.42 });
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("stops the ambient loop when the document becomes hidden", () => {
@@ -417,6 +425,135 @@ describe("Presentation-event SFX", () => {
     slider!.dispatchEvent(new Event("change", { bubbles: true }));
     expect(storage.setItemCalls()).toBe(1);
     expect(sfx.getPrefs().volume).toBe(0.6);
+  });
+
+  describe("debounced volume persistence", () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it("updates in-memory prefs and ambient gain synchronously on setVolume", () => {
+      const storage = storageStub();
+      const { createAudio, instances, createCuePlayer } = sfxTestDeps({ storage });
+      const doc = document.implementation.createHTMLDocument("test");
+      Object.defineProperty(doc, "hidden", { value: false, configurable: true });
+      const sfx = createSfx({ storage, createAudio, createCuePlayer, document: doc });
+      sfx.mountStatusControls();
+      sfx.setMuted(false);
+      storage.resetSetItemCalls();
+
+      sfx.setVolume(0.25);
+      expect(sfx.getPrefs().volume).toBe(0.25);
+      const ambient = instances.find((audio) => audio.src.includes(CUE_IDS["ambient-night-garden"]));
+      expect(ambient?.volume).toBe(0.25);
+      expect(storage.setItemCalls()).toBe(0);
+
+      vi.advanceTimersByTime(AUDIO_PREFS_DEBOUNCE_MS);
+      expect(storage.setItemCalls()).toBe(1);
+      expect(JSON.parse(storage.snapshot()[AUDIO_PREFS_KEY]!).volume).toBe(0.25);
+    });
+
+    it("writes storage once with the last clamped volume after a burst of setVolume calls", () => {
+      const storage = storageStub();
+      const { createAudio, createCuePlayer } = sfxTestDeps({ storage }).deps;
+      const sfx = createSfx({ storage, createAudio, createCuePlayer });
+      sfx.setMuted(false);
+      storage.resetSetItemCalls();
+
+      sfx.setVolume(0.1);
+      sfx.setVolume(0.5);
+      sfx.setVolume(1.5);
+      expect(sfx.getPrefs().volume).toBe(1);
+      expect(storage.setItemCalls()).toBe(0);
+
+      vi.advanceTimersByTime(AUDIO_PREFS_DEBOUNCE_MS);
+      expect(storage.setItemCalls()).toBe(1);
+      expect(JSON.parse(storage.snapshot()[AUDIO_PREFS_KEY]!)).toEqual({
+        muted: false,
+        volume: 1,
+      });
+    });
+
+    it("starts a new debounce cycle when setVolume is called after the window elapses", () => {
+      const storage = storageStub();
+      const { createAudio, createCuePlayer } = sfxTestDeps({ storage }).deps;
+      const sfx = createSfx({ storage, createAudio, createCuePlayer });
+      sfx.setMuted(false);
+      storage.resetSetItemCalls();
+
+      sfx.setVolume(0.2);
+      vi.advanceTimersByTime(AUDIO_PREFS_DEBOUNCE_MS);
+      expect(storage.setItemCalls()).toBe(1);
+      expect(JSON.parse(storage.snapshot()[AUDIO_PREFS_KEY]!).volume).toBe(0.2);
+
+      storage.resetSetItemCalls();
+      sfx.setVolume(0.8);
+      expect(storage.setItemCalls()).toBe(0);
+      vi.advanceTimersByTime(AUDIO_PREFS_DEBOUNCE_MS);
+      expect(storage.setItemCalls()).toBe(1);
+      expect(JSON.parse(storage.snapshot()[AUDIO_PREFS_KEY]!).volume).toBe(0.8);
+    });
+
+    it("persists mute immediately without dropping a pending debounced volume", () => {
+      const storage = storageStub();
+      const { createAudio, createCuePlayer } = sfxTestDeps({ storage }).deps;
+      const sfx = createSfx({ storage, createAudio, createCuePlayer });
+      sfx.setMuted(false);
+      storage.resetSetItemCalls();
+
+      sfx.setVolume(0.55);
+      sfx.setMuted(true);
+      expect(storage.setItemCalls()).toBe(1);
+      expect(JSON.parse(storage.snapshot()[AUDIO_PREFS_KEY]!)).toEqual({
+        muted: true,
+        volume: 0.55,
+      });
+
+      vi.advanceTimersByTime(AUDIO_PREFS_DEBOUNCE_MS);
+      expect(storage.setItemCalls()).toBe(1);
+    });
+
+    it("flushes a pending volume on destroy and leaves no timer running", () => {
+      const storage = storageStub();
+      const { createAudio, createCuePlayer } = sfxTestDeps({ storage }).deps;
+      const sfx = createSfx({ storage, createAudio, createCuePlayer });
+      sfx.setMuted(false);
+      storage.resetSetItemCalls();
+
+      sfx.setVolume(0.33);
+      sfx.destroy();
+      expect(storage.setItemCalls()).toBe(1);
+      expect(JSON.parse(storage.snapshot()[AUDIO_PREFS_KEY]!)).toEqual({
+        muted: false,
+        volume: 0.33,
+      });
+
+      vi.advanceTimersByTime(AUDIO_PREFS_DEBOUNCE_MS);
+      expect(storage.setItemCalls()).toBe(1);
+    });
+
+    it("does not throw when storage.setItem fails during debounced persistence", () => {
+      const storage = storageStub({
+        [AUDIO_PREFS_KEY]: JSON.stringify({ muted: false, volume: 0.75 }),
+      });
+      const { createAudio, createCuePlayer } = sfxTestDeps({ storage }).deps;
+      const sfx = createSfx({ storage, createAudio, createCuePlayer });
+      const originalSetItem = storage.setItem;
+      storage.setItem = () => {
+        throw new Error("quota exceeded");
+      };
+
+      expect(() => {
+        sfx.setVolume(0.4);
+        vi.advanceTimersByTime(AUDIO_PREFS_DEBOUNCE_MS);
+      }).not.toThrow();
+      expect(sfx.getPrefs().volume).toBe(0.4);
+      storage.setItem = originalSetItem;
+    });
   });
 
   it("toggles mute from the status-line control with keyboard", () => {
