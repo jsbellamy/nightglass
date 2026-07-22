@@ -24,3 +24,5 @@ Verdict: **accept**
 | Ground contact | **pass** | Sprites sit on near-flat dark parking band without floating |
 
 Mustard dusk is intentional Fowl Harvest identity (`docs/fowl-harvest-theme.md`); it is darker and more restrained than combat feedback, not a Moonberry night-garden match.
+
+Composite includes Party + five Pipcaps + Boss, 2px health bars, floating damage numerals, `arc-slash` / `spell-bloom` / `heal-rise` frames from `src/assets/effects/`, and status glyphs on the status strip.
