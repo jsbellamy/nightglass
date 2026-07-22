@@ -1,0 +1,15 @@
+STATUS_SHEET_8x.png left-to-right, top-to-bottom (alpha order):
+0: braced
+1: exposed
+2: guarded
+3: inspired
+4: overdrive
+5: riven
+6: scalded
+7: scorched
+8: shaken
+9: sheltered
+10: stun
+11: warded
+
+NEW_FOUR_1x.png L→R: scalded, shaken, scorched, overdrive
