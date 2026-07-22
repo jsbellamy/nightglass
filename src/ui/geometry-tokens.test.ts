@@ -92,14 +92,14 @@ const LIVE_CONSTANTS: GeometryPxConstants = {
 };
 
 describe("geometry CSS custom properties", () => {
-  it("keeps each :root geometry token equal to its TS constant", () => {
+  it("keeps Battle Tile and Management Dock stylesheet geometry aligned with layout constants", () => {
     const css = readFileSync(stylesPath, "utf8");
     const tokens = parseRootGeometryTokens(css);
     expect(geometryTokenMismatches(tokens, LIVE_CONSTANTS)).toEqual([]);
   });
 
-  it("rejects a TILE_WIDTH that disagrees with --tile-width", () => {
-    // Guard proof: a drifted TS constant must fail the mismatch check.
+  it("rejects a Battle Tile width that disagrees with the stylesheet", () => {
+    // Guard proof: a drifted layout constant must fail the mismatch check.
     const css = readFileSync(stylesPath, "utf8");
     const tokens = parseRootGeometryTokens(css);
     const drifted: GeometryPxConstants = {
