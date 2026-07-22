@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { createEngine } from "./engine";
 import type { EngineEvent } from "./events";
-import type { DropInstance, ProgressionState, Snapshot } from "./snapshot";
-import { defaultTalentsForClasses } from "./talents";
+import type { DropInstance } from "./snapshot";
 import { fixtureContent } from "./testing/fixture-content";
+import { driveBy, scenario } from "./testing/scenario";
 import type { ClassId, Content } from "./types";
 
 const LOOT_SEED = 0x5090;
@@ -16,8 +16,10 @@ function dropIdsWhileClearingEncounter(
   encounter: 1 | 2 | 3,
 ): number[] {
   const drops: number[] = [];
-  for (let ms = 0; ms < 300_000; ms += 1) {
-    const events = engine.advanceBy(1);
+  let elapsed = 0;
+  while (elapsed < 300_000) {
+    elapsed += 1;
+    const events = driveBy(engine, 1);
     for (const event of events) {
       if (event.type === "drop-awarded") {
         drops.push(event.dropId);
@@ -35,35 +37,21 @@ function eventsWhileClearingEncounter(
   encounter: 1 | 2 | 3,
 ): EngineEvent[] {
   const collected: EngineEvent[] = [];
-  for (let ms = 0; ms < 300_000; ms += 1) {
-    const events = engine.advanceBy(1);
+  let elapsed = 0;
+  while (elapsed < 300_000) {
+    elapsed += 1;
+    const events = driveBy(engine, 1);
     collected.push(...events);
-    if (events.some((event) => event.type === "wave-cleared" && event.encounter === encounter)) {
+    if (
+      events.some(
+        (event) =>
+          event.type === "wave-cleared" && event.encounter === encounter,
+      )
+    ) {
       return collected;
     }
   }
   throw new Error(`encounter ${encounter} never cleared`);
-}
-
-const fixtureTalents = defaultTalentsForClasses(fixtureContent.classes);
-
-function progressionState(
-  overrides: Partial<ProgressionState> & Pick<ProgressionState, "party" | "reserve">,
-): ProgressionState {
-  return {
-    unlockedStage: 1,
-    characterXp: { knight: 0, wizard: 0, priest: 0, hunter: 0 },
-    loadouts: {
-      knight: ["k-shield-brace", "k-rally", "k-sweep"],
-      wizard: ["w-prism", "w-frost", "w-cinder"],
-      priest: ["p-moonwell", "p-resurgence", "p-smite"],
-      hunter: ["h-snare", "h-mark", "h-volley"],
-    },
-    talents: fixtureTalents,
-    pendingParty: null,
-    armory: [],
-    ...overrides,
-  };
 }
 
 const engineContent: Content = {
@@ -227,22 +215,31 @@ describe("beginFreshAttempt", () => {
 
     const events = engine.beginFreshAttempt();
     const after = engine.snapshot();
-    expect(events.some((event) => event.type === "wave-started" && event.encounter === 1)).toBe(
-      true,
-    );
+    expect(
+      events.some(
+        (event) => event.type === "wave-started" && event.encounter === 1,
+      ),
+    ).toBe(true);
     expect(after.attempt).toMatchObject({
       stage: mid.attempt?.stage ?? 1,
       encounter: 1,
       phase: "fighting",
     });
-    expect(after.attempt?.combatants.every((c) => c.side === "party" || c.health === c.maxHealth)).toBe(
-      true,
-    );
+    expect(
+      after.attempt?.combatants.every(
+        (c) => c.side === "party" || c.health === c.maxHealth,
+      ),
+    ).toBe(true);
   });
 });
 describe("createEngine boot", () => {
   it("starts a fresh Stage 1 Attempt with full Party restore", () => {
-    const engine = createEngine(fixtureContent, undefined, LOOT_SEED, fixtureNow);
+    const engine = createEngine(
+      fixtureContent,
+      undefined,
+      LOOT_SEED,
+      fixtureNow,
+    );
     const snap = engine.snapshot();
 
     expect(snap.attempt).toMatchObject({
@@ -250,8 +247,12 @@ describe("createEngine boot", () => {
       encounter: 1,
       phase: "fighting",
     });
-    expect(snap.attempt?.combatants.filter((c) => c.side === "party")).toHaveLength(3);
-    expect(snap.attempt?.combatants.every((c) => c.health === c.maxHealth)).toBe(true);
+    expect(
+      snap.attempt?.combatants.filter((c) => c.side === "party"),
+    ).toHaveLength(3);
+    expect(
+      snap.attempt?.combatants.every((c) => c.health === c.maxHealth),
+    ).toBe(true);
 
     const events = engine.advanceBy(1);
     expect(events[0]?.type).toBe("stage-attempt-started");
@@ -264,10 +265,20 @@ describe("chunk-equivalence advancement", () => {
     const oneMs = createEngine(engineContent, undefined, LOOT_SEED, fixtureNow);
     const oneMsEvents = collectEvents(oneMs, DURATION_MS, 1);
 
-    const sevenMs = createEngine(engineContent, undefined, LOOT_SEED, fixtureNow);
+    const sevenMs = createEngine(
+      engineContent,
+      undefined,
+      LOOT_SEED,
+      fixtureNow,
+    );
     const sevenMsEvents = collectEvents(sevenMs, DURATION_MS, 7);
 
-    const single = createEngine(engineContent, undefined, LOOT_SEED, fixtureNow);
+    const single = createEngine(
+      engineContent,
+      undefined,
+      LOOT_SEED,
+      fixtureNow,
+    );
     const singleEvents = single.advanceBy(DURATION_MS);
 
     expect(stable(oneMsEvents)).toBe(stable(sevenMsEvents));
@@ -307,7 +318,12 @@ function collectOfflineEvents(
 
 describe("advanceOffline", () => {
   it("awards no drops or drop-awarded events over a span that clears several encounters", () => {
-    const engine = createEngine(engineContent, undefined, LOOT_SEED, fixtureNow);
+    const engine = createEngine(
+      engineContent,
+      undefined,
+      LOOT_SEED,
+      fixtureNow,
+    );
     engine.advanceOffline(1);
     const armoryBefore = engine.snapshot().progression.armory.length;
     const events = engine.advanceOffline(DURATION_MS);
@@ -317,25 +333,47 @@ describe("advanceOffline", () => {
   });
 
   it("matches advanceBy on XP, level-up, and wave or stage events for the same seed and span", () => {
-    const withDrops = createEngine(engineContent, undefined, LOOT_SEED, fixtureNow);
-    const withoutDrops = createEngine(engineContent, undefined, LOOT_SEED, fixtureNow);
+    const withDrops = createEngine(
+      engineContent,
+      undefined,
+      LOOT_SEED,
+      fixtureNow,
+    );
+    const withoutDrops = createEngine(
+      engineContent,
+      undefined,
+      LOOT_SEED,
+      fixtureNow,
+    );
     const byEvents = withDrops.advanceBy(DURATION_MS);
     const offlineEvents = withoutDrops.advanceOffline(DURATION_MS);
-    expect(stableEventsForOfflineParity(offlineEvents)).toBe(stableEventsForOfflineParity(byEvents));
+    expect(stableEventsForOfflineParity(offlineEvents)).toBe(
+      stableEventsForOfflineParity(byEvents),
+    );
     expect(withDrops.snapshot().progression.characterXp).toEqual(
       withoutDrops.snapshot().progression.characterXp,
     );
   });
 
   it("does not change advanceBy drop awarding", () => {
-    const engine = createEngine(engineContent, undefined, LOOT_SEED, fixtureNow);
+    const engine = createEngine(
+      engineContent,
+      undefined,
+      LOOT_SEED,
+      fixtureNow,
+    );
     const events = engine.advanceBy(DURATION_MS);
     expect(events.some((event) => event.type === "drop-awarded")).toBe(true);
     expect(engine.snapshot().progression.armory.length).toBeGreaterThan(0);
   });
 
   it("throws on non-integer and negative elapsedMs like advanceBy", () => {
-    const engine = createEngine(engineContent, undefined, LOOT_SEED, fixtureNow);
+    const engine = createEngine(
+      engineContent,
+      undefined,
+      LOOT_SEED,
+      fixtureNow,
+    );
     expect(() => engine.advanceOffline(-1)).toThrow(/non-negative integer/);
     expect(() => engine.advanceOffline(1.5)).toThrow(/non-negative integer/);
     expect(() => engine.advanceBy(-1)).toThrow(/non-negative integer/);
@@ -346,10 +384,20 @@ describe("advanceOffline", () => {
     const oneMs = createEngine(engineContent, undefined, LOOT_SEED, fixtureNow);
     const oneMsEvents = collectOfflineEvents(oneMs, DURATION_MS, 1);
 
-    const sevenMs = createEngine(engineContent, undefined, LOOT_SEED, fixtureNow);
+    const sevenMs = createEngine(
+      engineContent,
+      undefined,
+      LOOT_SEED,
+      fixtureNow,
+    );
     const sevenMsEvents = collectOfflineEvents(sevenMs, DURATION_MS, 7);
 
-    const single = createEngine(engineContent, undefined, LOOT_SEED, fixtureNow);
+    const single = createEngine(
+      engineContent,
+      undefined,
+      LOOT_SEED,
+      fixtureNow,
+    );
     const singleEvents = single.advanceOffline(DURATION_MS);
 
     expect(stable(oneMsEvents)).toBe(stable(sevenMsEvents));
@@ -361,14 +409,31 @@ describe("advanceOffline", () => {
 
 describe("save/reload equivalence", () => {
   it("continues with identical events after restoring a mid-Attempt Snapshot", () => {
-    const continuous = createEngine(engineContent, undefined, LOOT_SEED, fixtureNow);
+    const continuous = createEngine(
+      engineContent,
+      undefined,
+      LOOT_SEED,
+      fixtureNow,
+    );
     const continuousEvents = collectEvents(continuous, 13_700, 7);
-    continuousEvents.push(...collectEvents(continuous, DURATION_MS - 13_700, 7));
+    continuousEvents.push(
+      ...collectEvents(continuous, DURATION_MS - 13_700, 7),
+    );
 
-    const reloaded = createEngine(engineContent, undefined, LOOT_SEED, fixtureNow);
+    const reloaded = createEngine(
+      engineContent,
+      undefined,
+      LOOT_SEED,
+      fixtureNow,
+    );
     const reloadEvents = collectEvents(reloaded, 13_700, 7);
     const midFight = structuredClone(reloaded.snapshot());
-    const restored = createEngine(engineContent, midFight, LOOT_SEED, fixtureNow);
+    const restored = createEngine(
+      engineContent,
+      midFight,
+      LOOT_SEED,
+      fixtureNow,
+    );
     reloadEvents.push(...collectEvents(restored, DURATION_MS - 13_700, 7));
 
     expect(stable(reloadEvents)).toBe(stable(continuousEvents));
@@ -386,8 +451,10 @@ describe("wave transition", () => {
     let nextWaveStartMs: number | null = null;
     let actionDuringTransition = false;
 
-    for (let ms = 0; ms < 60_000; ms += 1) {
-      const events = engine.advanceBy(1);
+    let elapsed = 0;
+    while (elapsed < 60_000) {
+      elapsed += 1;
+      const events = driveBy(engine, 1);
       const snap = engine.snapshot();
 
       for (const event of events) {
@@ -398,7 +465,10 @@ describe("wave transition", () => {
         if (event.type === "wave-started" && event.encounter === 2) {
           nextWaveStartMs = event.atMs;
         }
-        if (event.type === "action-started" && snap.attempt?.phase === "wave-transition") {
+        if (
+          event.type === "action-started" &&
+          snap.attempt?.phase === "wave-transition"
+        ) {
           actionDuringTransition = true;
         }
       }
@@ -421,107 +491,116 @@ describe("wave transition", () => {
 
 describe("Party Defeat and Retry", () => {
   it("waits 2000ms after Party Defeat then automatically Retries with full restore", () => {
-    const saved: Snapshot = {
-      schemaVersion: 1,
-      savedAtMs: 0,
-      simNowMs: 0,
-      lootRngState: LOOT_SEED,
-      nextEventSeq: 10,
-      nextAttemptId: 5,
-      nextDropId: 1,
-      progression: progressionState({
-        unlockedStage: 1,
-        party: ["knight", "wizard", "knight"],
-        reserve: "wizard",
-        characterXp: { knight: 50, wizard: 0, priest: 0, hunter: 0 },
-        loadouts: {
-          knight: ["k-shield-brace", "k-rally", "k-sweep"],
-          wizard: ["w-prism", "w-frost", "w-cinder"],
-          priest: ["p-moonwell", "p-resurgence", "p-smite"],
-          hunter: ["k-shield-brace", "k-rally", "k-sweep"],
-        },
-      }),
-      attempt: {
-        id: 4,
-        stage: 1,
-        encounter: 1,
-        phase: "fighting",
-        phaseEndsAtMs: null,
-        equipmentLoadouts: { knight: {}, wizard: {}, priest: {}, hunter: {} },
-        combatants: [
-          {
-            entityId: "party:knight:front",
-            side: "party",
-            defId: "knight",
-            health: 0,
-            maxHealth: 180,
-            knockedOut: true,
-            action: null,
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-          {
-            entityId: "party:wizard:middle",
-            side: "party",
-            defId: "wizard",
-            health: 0,
-            maxHealth: 100,
-            knockedOut: true,
-            action: null,
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-          {
-            entityId: "party:knight:back",
-            side: "party",
-            defId: "knight",
-            health: 1,
-            maxHealth: 180,
-            knockedOut: false,
-            action: null,
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-          {
-            entityId: "opp:1:0",
-            side: "opponent",
-            defId: "fixture-grunt",
-            health: 40,
-            maxHealth: 40,
-            knockedOut: false,
-            action: null,
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-        ],
-      },
-      pendingEdits: [],
+    const saved = scenario()
+      .withParty(["knight", "wizard", "knight"], "wizard")
+      .withXp("knight", 50)
+      .knockedOut("knight")
+      .knockedOut("wizard")
+      .build();
+    saved.lootRngState = LOOT_SEED;
+    saved.nextEventSeq = 10;
+    saved.nextAttemptId = 5;
+    saved.attempt!.id = 4;
+    // Former progressionState helper always keyed all four ClassIds.
+    saved.progression.characterXp = {
+      knight: 50,
+      wizard: 0,
+      priest: 0,
+      hunter: 0,
     };
+    saved.progression.loadouts = {
+      knight: ["k-shield-brace", "k-rally", "k-sweep"],
+      wizard: ["w-prism", "w-frost", "w-cinder"],
+      priest: ["p-moonwell", "p-resurgence", "p-smite"],
+      hunter: ["k-shield-brace", "k-rally", "k-sweep"],
+    };
+    saved.attempt!.combatants = [
+      {
+        entityId: "party:knight:front",
+        side: "party",
+        defId: "knight",
+        health: 0,
+        maxHealth: 180,
+        knockedOut: true,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "party:wizard:middle",
+        side: "party",
+        defId: "wizard",
+        health: 0,
+        maxHealth: 100,
+        knockedOut: true,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "party:knight:back",
+        side: "party",
+        defId: "knight",
+        health: 1,
+        maxHealth: 180,
+        knockedOut: false,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "opp:1:0",
+        side: "opponent",
+        defId: "fixture-grunt",
+        health: 40,
+        maxHealth: 40,
+        knockedOut: false,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+    ];
 
     const engine = createEngine(engineContent, saved, LOOT_SEED);
     const events: EngineEvent[] = [];
 
-    for (let ms = 0; ms < 10_000; ms += 1) {
-      events.push(...engine.advanceBy(1));
-      if (events.some((event) => event.type === "stage-attempt-started" && event.attemptId === 5)) {
+    let elapsed = 0;
+    while (elapsed < 10_000) {
+      elapsed += 1;
+      events.push(...driveBy(engine, 1));
+      if (
+        events.some(
+          (event) =>
+            event.type === "stage-attempt-started" && event.attemptId === 5,
+        )
+      ) {
         break;
       }
     }
 
     const defeat = events.find((event) => event.type === "party-defeat");
     const retry = events.find(
-      (event) => event.type === "stage-attempt-started" && event.attemptId === 5,
+      (event) =>
+        event.type === "stage-attempt-started" && event.attemptId === 5,
     );
     expect(defeat).toBeDefined();
     expect(retry).toBeDefined();
     expect((retry?.atMs ?? 0) - (defeat?.atMs ?? 0)).toBe(2_000);
 
     const snap = engine.snapshot();
-    expect(snap.progression.characterXp).toEqual({ knight: 50, wizard: 0, priest: 0, hunter: 0 });
+    expect(snap.progression.characterXp).toEqual({
+      knight: 50,
+      wizard: 0,
+      priest: 0,
+      hunter: 0,
+    });
     expect(
       snap.attempt?.combatants
         .filter((combatant) => combatant.side === "party")
-        .every((combatant) => !combatant.knockedOut && combatant.health === combatant.maxHealth),
+        .every(
+          (combatant) =>
+            !combatant.knockedOut && combatant.health === combatant.maxHealth,
+        ),
     ).toBe(true);
   });
 });
@@ -531,15 +610,27 @@ describe("selectStage", () => {
     const engine = createEngine(engineContent, undefined, LOOT_SEED);
     engine.advanceBy(5_000);
     const before = engine.snapshot();
-    before.progression.characterXp = { knight: 120, wizard: 40, priest: 0, hunter: 0 };
+    before.progression.characterXp = {
+      knight: 120,
+      wizard: 40,
+      priest: 0,
+      hunter: 0,
+    };
     before.progression.unlockedStage = 2;
 
     const restored = createEngine(engineContent, before, LOOT_SEED);
     const events = restored.selectStage(2);
     const after = restored.snapshot();
 
-    expect(events.some((event) => event.type === "stage-attempt-started")).toBe(true);
-    expect(after.progression.characterXp).toEqual({ knight: 120, wizard: 40, priest: 0, hunter: 0 });
+    expect(events.some((event) => event.type === "stage-attempt-started")).toBe(
+      true,
+    );
+    expect(after.progression.characterXp).toEqual({
+      knight: 120,
+      wizard: 40,
+      priest: 0,
+      hunter: 0,
+    });
     expect(after.attempt?.stage).toBe(2);
   });
 
@@ -552,99 +643,93 @@ describe("selectStage", () => {
 
 describe("Stage 3 clear auto-retry", () => {
   it("begins another Stage 3 Attempt after clearing Stage 3", () => {
-    const saved: Snapshot = {
-      schemaVersion: 1,
-      savedAtMs: 0,
-      simNowMs: 0,
-      lootRngState: LOOT_SEED,
-      nextEventSeq: 1,
-      nextAttemptId: 9,
-      nextDropId: 1,
-      progression: progressionState({
-        unlockedStage: 3,
-        party: ["knight", "wizard", "knight"],
-        reserve: "wizard",
-        characterXp: { knight: 0, wizard: 0, priest: 0, hunter: 0 },
-        loadouts: {
-          knight: ["k-shield-brace", "k-rally", "k-sweep"],
-          wizard: ["w-prism", "w-frost", "w-cinder"],
-          priest: ["p-moonwell", "p-resurgence", "p-smite"],
-          hunter: ["k-shield-brace", "k-rally", "k-sweep"],
-        },
-      }),
-      attempt: {
-        id: 8,
-        stage: 3,
-        encounter: 3,
-        phase: "fighting",
-        phaseEndsAtMs: null,
-        equipmentLoadouts: { knight: {}, wizard: {}, priest: {}, hunter: {} },
-        combatants: [
-          {
-            entityId: "party:knight:front",
-            side: "party",
-            defId: "knight",
-            health: 180,
-            maxHealth: 180,
-            knockedOut: false,
-            action: null,
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-          {
-            entityId: "party:wizard:middle",
-            side: "party",
-            defId: "wizard",
-            health: 100,
-            maxHealth: 100,
-            knockedOut: false,
-            action: null,
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-          {
-            entityId: "party:knight:back",
-            side: "party",
-            defId: "knight",
-            health: 180,
-            maxHealth: 180,
-            knockedOut: false,
-            action: null,
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-          {
-            entityId: "opp:3:0",
-            side: "opponent",
-            defId: "fixture-boss",
-            health: 1,
-            maxHealth: 200,
-            knockedOut: false,
-            action: null,
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-        ],
-      },
-      pendingEdits: [],
+    const saved = scenario()
+      .atStage(3)
+      .atEncounter(3)
+      .withParty(["knight", "wizard", "knight"], "wizard")
+      .build();
+    saved.lootRngState = LOOT_SEED;
+    saved.nextAttemptId = 9;
+    saved.attempt!.id = 8;
+    saved.progression.loadouts = {
+      knight: ["k-shield-brace", "k-rally", "k-sweep"],
+      wizard: ["w-prism", "w-frost", "w-cinder"],
+      priest: ["p-moonwell", "p-resurgence", "p-smite"],
+      hunter: ["k-shield-brace", "k-rally", "k-sweep"],
     };
+    saved.attempt!.combatants = [
+      {
+        entityId: "party:knight:front",
+        side: "party",
+        defId: "knight",
+        health: 180,
+        maxHealth: 180,
+        knockedOut: false,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "party:wizard:middle",
+        side: "party",
+        defId: "wizard",
+        health: 100,
+        maxHealth: 100,
+        knockedOut: false,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "party:knight:back",
+        side: "party",
+        defId: "knight",
+        health: 180,
+        maxHealth: 180,
+        knockedOut: false,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "opp:3:0",
+        side: "opponent",
+        defId: "fixture-boss",
+        health: 1,
+        maxHealth: 200,
+        knockedOut: false,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+    ];
 
     const engine = createEngine(engineContent, saved, LOOT_SEED);
     const events: EngineEvent[] = [];
     let snap = engine.snapshot();
 
-    for (let ms = 0; ms < 5_000; ms += 1) {
-      events.push(...engine.advanceBy(1));
-      if (events.some((event) => event.type === "stage-cleared" && event.stage === 3)) {
+    let elapsed = 0;
+    while (elapsed < 5_000) {
+      elapsed += 1;
+      events.push(...driveBy(engine, 1));
+      if (
+        events.some(
+          (event) => event.type === "stage-cleared" && event.stage === 3,
+        )
+      ) {
         snap = engine.snapshot();
         break;
       }
     }
 
-    expect(events.some((event) => event.type === "stage-cleared" && event.stage === 3)).toBe(
+    expect(
+      events.some(
+        (event) => event.type === "stage-cleared" && event.stage === 3,
+      ),
+    ).toBe(true);
+    expect(events.some((event) => event.type === "stage-attempt-started")).toBe(
       true,
     );
-    expect(events.some((event) => event.type === "stage-attempt-started")).toBe(true);
     expect(snap.attempt?.stage).toBe(3);
     expect(snap.attempt?.encounter).toBe(1);
     expect(
@@ -672,851 +757,702 @@ describe("loot RNG persistence", () => {
 
 describe("full combat rules", () => {
   it("starts Ability cooldown at Impact, not Wind-up", () => {
-    const saved: Snapshot = {
-      schemaVersion: 1,
-      savedAtMs: 0,
-      simNowMs: 0,
-      lootRngState: LOOT_SEED,
-      nextEventSeq: 1,
-      nextAttemptId: 1,
-      nextDropId: 1,
-      progression: progressionState({
-        unlockedStage: 1,
-        party: ["knight", "wizard", "priest"],
-        reserve: "hunter",
-        characterXp: { knight: 0, wizard: 0, priest: 0, hunter: 0 },
-        loadouts: {
-          knight: ["k-pommel", "k-sweep", "k-rally"],
-          wizard: ["w-frost", "w-cinder", "w-prism"],
-          priest: ["p-smite", "p-moonwell", "p-resurgence"],
-          hunter: ["k-shield-brace", "k-rally", "k-sweep"],
-        },
-      }),
-      attempt: {
-        id: 1,
-        stage: 1,
-        encounter: 1,
-        phase: "fighting",
-        phaseEndsAtMs: null,
-        equipmentLoadouts: { knight: {}, wizard: {}, priest: {}, hunter: {} },
-        combatants: [
-          {
-            entityId: "party:knight:front",
-            side: "party",
-            defId: "knight",
-            health: 180,
-            maxHealth: 180,
-            knockedOut: false,
-            action: {
-              abilityId: "k-pommel",
-              startedAtMs: 0,
-              impactAtMs: 250,
-              endsAtMs: 900,
-              targetIds: ["opp:1:0"],
-              impactResolved: false,
-            },
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-          {
-            entityId: "party:wizard:middle",
-            side: "party",
-            defId: "wizard",
-            health: 100,
-            maxHealth: 100,
-            knockedOut: false,
-            action: null,
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-          {
-            entityId: "party:priest:back",
-            side: "party",
-            defId: "priest",
-            health: 110,
-            maxHealth: 110,
-            knockedOut: false,
-            action: null,
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-          {
-            entityId: "opp:1:0",
-            side: "opponent",
-            defId: "fixture-grunt",
-            health: 40,
-            maxHealth: 40,
-            knockedOut: false,
-            action: null,
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-        ],
-      },
-      pendingEdits: [],
+    const saved = scenario()
+      .withParty(["knight", "wizard", "priest"], "hunter")
+      .build();
+    saved.lootRngState = LOOT_SEED;
+    saved.progression.loadouts = {
+      knight: ["k-pommel", "k-sweep", "k-rally"],
+      wizard: ["w-frost", "w-cinder", "w-prism"],
+      priest: ["p-smite", "p-moonwell", "p-resurgence"],
+      hunter: ["k-shield-brace", "k-rally", "k-sweep"],
     };
+    saved.attempt!.combatants = [
+      {
+        entityId: "party:knight:front",
+        side: "party",
+        defId: "knight",
+        health: 180,
+        maxHealth: 180,
+        knockedOut: false,
+        action: {
+          abilityId: "k-pommel",
+          startedAtMs: 0,
+          impactAtMs: 250,
+          endsAtMs: 900,
+          targetIds: ["opp:1:0"],
+          impactResolved: false,
+        },
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "party:wizard:middle",
+        side: "party",
+        defId: "wizard",
+        health: 100,
+        maxHealth: 100,
+        knockedOut: false,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "party:priest:back",
+        side: "party",
+        defId: "priest",
+        health: 110,
+        maxHealth: 110,
+        knockedOut: false,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "opp:1:0",
+        side: "opponent",
+        defId: "fixture-grunt",
+        health: 40,
+        maxHealth: 40,
+        knockedOut: false,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+    ];
 
     const engine = createEngine(fixtureContent, saved, LOOT_SEED);
-    expect(engine.snapshot().attempt?.combatants[0]?.cooldownReadyAtMs["k-pommel"]).toBeUndefined();
+    expect(
+      engine.snapshot().attempt?.combatants[0]?.cooldownReadyAtMs["k-pommel"],
+    ).toBeUndefined();
     engine.advanceBy(250);
-    expect(engine.snapshot().attempt?.combatants[0]?.cooldownReadyAtMs["k-pommel"]).toBe(9250);
+    expect(
+      engine.snapshot().attempt?.combatants[0]?.cooldownReadyAtMs["k-pommel"],
+    ).toBe(9250);
   });
 
   it("cancels Wind-up on Stun without starting cooldown and keeps cooldowns elapsing while stunned", () => {
-    const saved: Snapshot = {
-      schemaVersion: 1,
-      savedAtMs: 0,
-      simNowMs: 0,
-      lootRngState: LOOT_SEED,
-      nextEventSeq: 1,
-      nextAttemptId: 1,
-      nextDropId: 1,
-      progression: progressionState({
-        unlockedStage: 1,
-        party: ["knight", "wizard", "priest"],
-        reserve: "hunter",
-        characterXp: { knight: 0, wizard: 0, priest: 0, hunter: 0 },
-        loadouts: {
-          knight: ["k-sweep", "k-rally", "k-pommel"],
-          wizard: ["w-frost", "w-cinder", "w-prism"],
-          priest: ["p-smite", "p-moonwell", "p-resurgence"],
-          hunter: ["k-shield-brace", "k-rally", "k-sweep"],
-        },
-      }),
-      attempt: {
-        id: 1,
-        stage: 1,
-        encounter: 1,
-        phase: "fighting",
-        phaseEndsAtMs: null,
-        equipmentLoadouts: { knight: {}, wizard: {}, priest: {}, hunter: {} },
-        combatants: [
-          {
-            entityId: "party:knight:front",
-            side: "party",
-            defId: "knight",
-            health: 180,
-            maxHealth: 180,
-            knockedOut: false,
-            action: {
-              abilityId: "k-sweep",
-              startedAtMs: 0,
-              impactAtMs: 500,
-              endsAtMs: 1200,
-              targetIds: ["opp:1:0"],
-              impactResolved: false,
-            },
-            cooldownReadyAtMs: { "k-pommel": 3000 },
-            statuses: [{ statusId: "stun", expiresAtMs: 1200 }],
-          },
-          {
-            entityId: "party:wizard:middle",
-            side: "party",
-            defId: "wizard",
-            health: 100,
-            maxHealth: 100,
-            knockedOut: false,
-            action: null,
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-          {
-            entityId: "party:priest:back",
-            side: "party",
-            defId: "priest",
-            health: 110,
-            maxHealth: 110,
-            knockedOut: false,
-            action: null,
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-          {
-            entityId: "opp:1:0",
-            side: "opponent",
-            defId: "fixture-stunner",
-            health: 50,
-            maxHealth: 50,
-            knockedOut: false,
-            action: null,
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-        ],
-      },
-      pendingEdits: [],
+    const saved = scenario()
+      .withParty(["knight", "wizard", "priest"], "hunter")
+      .build();
+    saved.lootRngState = LOOT_SEED;
+    saved.progression.loadouts = {
+      knight: ["k-sweep", "k-rally", "k-pommel"],
+      wizard: ["w-frost", "w-cinder", "w-prism"],
+      priest: ["p-smite", "p-moonwell", "p-resurgence"],
+      hunter: ["k-shield-brace", "k-rally", "k-sweep"],
     };
+    saved.attempt!.combatants = [
+      {
+        entityId: "party:knight:front",
+        side: "party",
+        defId: "knight",
+        health: 180,
+        maxHealth: 180,
+        knockedOut: false,
+        action: {
+          abilityId: "k-sweep",
+          startedAtMs: 0,
+          impactAtMs: 500,
+          endsAtMs: 1200,
+          targetIds: ["opp:1:0"],
+          impactResolved: false,
+        },
+        cooldownReadyAtMs: { "k-pommel": 3000 },
+        statuses: [{ statusId: "stun", expiresAtMs: 1200 }],
+      },
+      {
+        entityId: "party:wizard:middle",
+        side: "party",
+        defId: "wizard",
+        health: 100,
+        maxHealth: 100,
+        knockedOut: false,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "party:priest:back",
+        side: "party",
+        defId: "priest",
+        health: 110,
+        maxHealth: 110,
+        knockedOut: false,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "opp:1:0",
+        side: "opponent",
+        defId: "fixture-stunner",
+        health: 50,
+        maxHealth: 50,
+        knockedOut: false,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+    ];
 
     const engine = createEngine(fixtureContent, saved, LOOT_SEED);
     engine.advanceBy(1200);
-    const knight = engine.snapshot().attempt?.combatants.find((c) => c.defId === "knight");
+    const knight = engine
+      .snapshot()
+      .attempt?.combatants.find((c) => c.defId === "knight");
     expect(knight?.action).toBeNull();
     expect(knight?.cooldownReadyAtMs["k-sweep"]).toBeUndefined();
     expect(knight?.cooldownReadyAtMs["k-pommel"]).toBe(3000);
   });
 
   it("ignores Stun on Boss opponents", () => {
-    const saved: Snapshot = {
-      schemaVersion: 1,
-      savedAtMs: 0,
-      simNowMs: 0,
-      lootRngState: LOOT_SEED,
-      nextEventSeq: 1,
-      nextAttemptId: 1,
-      nextDropId: 1,
-      progression: progressionState({
-        unlockedStage: 1,
-        party: ["knight", "wizard", "priest"],
-        reserve: "hunter",
-        characterXp: { knight: 0, wizard: 0, priest: 0, hunter: 0 },
-        loadouts: {
-          knight: ["k-pommel", "k-sweep", "k-rally"],
-          wizard: ["w-frost", "w-cinder", "w-prism"],
-          priest: ["p-smite", "p-moonwell", "p-resurgence"],
-          hunter: ["k-shield-brace", "k-rally", "k-sweep"],
-        },
-      }),
-      attempt: {
-        id: 1,
-        stage: 1,
-        encounter: 3,
-        phase: "fighting",
-        phaseEndsAtMs: null,
-        equipmentLoadouts: { knight: {}, wizard: {}, priest: {}, hunter: {} },
-        combatants: [
-          {
-            entityId: "party:knight:front",
-            side: "party",
-            defId: "knight",
-            health: 180,
-            maxHealth: 180,
-            knockedOut: false,
-            action: {
-              abilityId: "k-pommel",
-              startedAtMs: 0,
-              impactAtMs: 250,
-              endsAtMs: 900,
-              targetIds: ["opp:3:0"],
-              impactResolved: false,
-            },
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-          {
-            entityId: "party:wizard:middle",
-            side: "party",
-            defId: "wizard",
-            health: 100,
-            maxHealth: 100,
-            knockedOut: false,
-            action: null,
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-          {
-            entityId: "party:priest:back",
-            side: "party",
-            defId: "priest",
-            health: 110,
-            maxHealth: 110,
-            knockedOut: false,
-            action: null,
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-          {
-            entityId: "opp:3:0",
-            side: "opponent",
-            defId: "fixture-boss",
-            health: 200,
-            maxHealth: 200,
-            knockedOut: false,
-            action: null,
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-        ],
-      },
-      pendingEdits: [],
+    const saved = scenario()
+      .atEncounter(3)
+      .withParty(["knight", "wizard", "priest"], "hunter")
+      .build();
+    saved.lootRngState = LOOT_SEED;
+    saved.progression.loadouts = {
+      knight: ["k-pommel", "k-sweep", "k-rally"],
+      wizard: ["w-frost", "w-cinder", "w-prism"],
+      priest: ["p-smite", "p-moonwell", "p-resurgence"],
+      hunter: ["k-shield-brace", "k-rally", "k-sweep"],
     };
+    saved.attempt!.combatants = [
+      {
+        entityId: "party:knight:front",
+        side: "party",
+        defId: "knight",
+        health: 180,
+        maxHealth: 180,
+        knockedOut: false,
+        action: {
+          abilityId: "k-pommel",
+          startedAtMs: 0,
+          impactAtMs: 250,
+          endsAtMs: 900,
+          targetIds: ["opp:3:0"],
+          impactResolved: false,
+        },
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "party:wizard:middle",
+        side: "party",
+        defId: "wizard",
+        health: 100,
+        maxHealth: 100,
+        knockedOut: false,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "party:priest:back",
+        side: "party",
+        defId: "priest",
+        health: 110,
+        maxHealth: 110,
+        knockedOut: false,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "opp:3:0",
+        side: "opponent",
+        defId: "fixture-boss",
+        health: 200,
+        maxHealth: 200,
+        knockedOut: false,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+    ];
 
     const engine = createEngine(fixtureContent, saved, LOOT_SEED);
     const events = engine.advanceBy(250);
-    const boss = engine.snapshot().attempt?.combatants.find((c) => c.defId === "fixture-boss");
-    expect(boss?.statuses.some((status) => status.statusId === "stun")).toBe(false);
-    expect(events.some((event) => event.type === "status-applied" && event.statusId === "stun")).toBe(
+    const boss = engine
+      .snapshot()
+      .attempt?.combatants.find((c) => c.defId === "fixture-boss");
+    expect(boss?.statuses.some((status) => status.statusId === "stun")).toBe(
       false,
     );
+    expect(
+      events.some(
+        (event) => event.type === "status-applied" && event.statusId === "stun",
+      ),
+    ).toBe(false);
   });
 
   it("refreshes Status Effects instead of stacking", () => {
-    const saved: Snapshot = {
-      schemaVersion: 1,
-      savedAtMs: 0,
-      simNowMs: 0,
-      lootRngState: LOOT_SEED,
-      nextEventSeq: 1,
-      nextAttemptId: 1,
-      nextDropId: 1,
-      progression: progressionState({
-        unlockedStage: 1,
-        party: ["knight", "wizard", "priest"],
-        reserve: "hunter",
-        characterXp: { knight: 0, wizard: 0, priest: 0, hunter: 0 },
-        loadouts: {
-          knight: ["k-shield-brace", "k-sweep", "k-rally"],
-          wizard: ["w-frost", "w-cinder", "w-prism"],
-          priest: ["p-smite", "p-moonwell", "p-resurgence"],
-          hunter: ["k-shield-brace", "k-rally", "k-sweep"],
-        },
-      }),
-      attempt: {
-        id: 1,
-        stage: 1,
-        encounter: 1,
-        phase: "fighting",
-        phaseEndsAtMs: null,
-        equipmentLoadouts: { knight: {}, wizard: {}, priest: {}, hunter: {} },
-        combatants: [
-          {
-            entityId: "party:knight:front",
-            side: "party",
-            defId: "knight",
-            health: 180,
-            maxHealth: 180,
-            knockedOut: false,
-            action: {
-              abilityId: "k-shield-brace",
-              startedAtMs: 0,
-              impactAtMs: 100,
-              endsAtMs: 500,
-              targetIds: ["party:knight:front"],
-              impactResolved: false,
-            },
-            cooldownReadyAtMs: {},
-            statuses: [{ statusId: "braced", expiresAtMs: 4000 }],
-          },
-          {
-            entityId: "party:wizard:middle",
-            side: "party",
-            defId: "wizard",
-            health: 100,
-            maxHealth: 100,
-            knockedOut: false,
-            action: null,
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-          {
-            entityId: "party:priest:back",
-            side: "party",
-            defId: "priest",
-            health: 110,
-            maxHealth: 110,
-            knockedOut: false,
-            action: null,
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-          {
-            entityId: "opp:1:0",
-            side: "opponent",
-            defId: "fixture-grunt",
-            health: 40,
-            maxHealth: 40,
-            knockedOut: false,
-            action: null,
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-        ],
-      },
-      pendingEdits: [],
+    const saved = scenario()
+      .withParty(["knight", "wizard", "priest"], "hunter")
+      .build();
+    saved.lootRngState = LOOT_SEED;
+    saved.progression.loadouts = {
+      knight: ["k-shield-brace", "k-sweep", "k-rally"],
+      wizard: ["w-frost", "w-cinder", "w-prism"],
+      priest: ["p-smite", "p-moonwell", "p-resurgence"],
+      hunter: ["k-shield-brace", "k-rally", "k-sweep"],
     };
+    saved.attempt!.combatants = [
+      {
+        entityId: "party:knight:front",
+        side: "party",
+        defId: "knight",
+        health: 180,
+        maxHealth: 180,
+        knockedOut: false,
+        action: {
+          abilityId: "k-shield-brace",
+          startedAtMs: 0,
+          impactAtMs: 100,
+          endsAtMs: 500,
+          targetIds: ["party:knight:front"],
+          impactResolved: false,
+        },
+        cooldownReadyAtMs: {},
+        statuses: [{ statusId: "braced", expiresAtMs: 4000 }],
+      },
+      {
+        entityId: "party:wizard:middle",
+        side: "party",
+        defId: "wizard",
+        health: 100,
+        maxHealth: 100,
+        knockedOut: false,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "party:priest:back",
+        side: "party",
+        defId: "priest",
+        health: 110,
+        maxHealth: 110,
+        knockedOut: false,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "opp:1:0",
+        side: "opponent",
+        defId: "fixture-grunt",
+        health: 40,
+        maxHealth: 40,
+        knockedOut: false,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+    ];
 
     const engine = createEngine(fixtureContent, saved, LOOT_SEED);
     engine.advanceBy(100);
-    const knight = engine.snapshot().attempt?.combatants.find((c) => c.defId === "knight");
-    expect(knight?.statuses.filter((status) => status.statusId === "braced")).toHaveLength(1);
+    const knight = engine
+      .snapshot()
+      .attempt?.combatants.find((c) => c.defId === "knight");
+    expect(
+      knight?.statuses.filter((status) => status.statusId === "braced"),
+    ).toHaveLength(1);
     expect(knight?.statuses[0]?.expiresAtMs).toBe(5100);
   });
 
   it("starts cooldown when retarget fails at Impact", () => {
-    const saved: Snapshot = {
-      schemaVersion: 1,
-      savedAtMs: 0,
-      simNowMs: 0,
-      lootRngState: LOOT_SEED,
-      nextEventSeq: 1,
-      nextAttemptId: 1,
-      nextDropId: 1,
-      progression: progressionState({
-        unlockedStage: 1,
-        party: ["knight", "wizard", "priest"],
-        reserve: "hunter",
-        characterXp: { knight: 0, wizard: 0, priest: 0, hunter: 0 },
-        loadouts: {
-          knight: ["k-pommel", "k-sweep", "k-rally"],
-          wizard: ["w-frost", "w-cinder", "w-prism"],
-          priest: ["p-smite", "p-moonwell", "p-resurgence"],
-          hunter: ["k-shield-brace", "k-rally", "k-sweep"],
-        },
-      }),
-      attempt: {
-        id: 1,
-        stage: 1,
-        encounter: 1,
-        phase: "fighting",
-        phaseEndsAtMs: null,
-        equipmentLoadouts: { knight: {}, wizard: {}, priest: {}, hunter: {} },
-        combatants: [
-          {
-            entityId: "party:knight:front",
-            side: "party",
-            defId: "knight",
-            health: 180,
-            maxHealth: 180,
-            knockedOut: false,
-            action: {
-              abilityId: "k-pommel",
-              startedAtMs: 0,
-              impactAtMs: 250,
-              endsAtMs: 900,
-              targetIds: ["opp:1:0"],
-              impactResolved: false,
-            },
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-          {
-            entityId: "party:wizard:middle",
-            side: "party",
-            defId: "wizard",
-            health: 100,
-            maxHealth: 100,
-            knockedOut: false,
-            action: null,
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-          {
-            entityId: "party:priest:back",
-            side: "party",
-            defId: "priest",
-            health: 110,
-            maxHealth: 110,
-            knockedOut: false,
-            action: null,
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-          {
-            entityId: "opp:1:0",
-            side: "opponent",
-            defId: "fixture-grunt",
-            health: 0,
-            maxHealth: 40,
-            knockedOut: true,
-            action: null,
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-        ],
-      },
-      pendingEdits: [],
+    const saved = scenario()
+      .withParty(["knight", "wizard", "priest"], "hunter")
+      .build();
+    saved.lootRngState = LOOT_SEED;
+    saved.progression.loadouts = {
+      knight: ["k-pommel", "k-sweep", "k-rally"],
+      wizard: ["w-frost", "w-cinder", "w-prism"],
+      priest: ["p-smite", "p-moonwell", "p-resurgence"],
+      hunter: ["k-shield-brace", "k-rally", "k-sweep"],
     };
+    saved.attempt!.combatants = [
+      {
+        entityId: "party:knight:front",
+        side: "party",
+        defId: "knight",
+        health: 180,
+        maxHealth: 180,
+        knockedOut: false,
+        action: {
+          abilityId: "k-pommel",
+          startedAtMs: 0,
+          impactAtMs: 250,
+          endsAtMs: 900,
+          targetIds: ["opp:1:0"],
+          impactResolved: false,
+        },
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "party:wizard:middle",
+        side: "party",
+        defId: "wizard",
+        health: 100,
+        maxHealth: 100,
+        knockedOut: false,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "party:priest:back",
+        side: "party",
+        defId: "priest",
+        health: 110,
+        maxHealth: 110,
+        knockedOut: false,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "opp:1:0",
+        side: "opponent",
+        defId: "fixture-grunt",
+        health: 0,
+        maxHealth: 40,
+        knockedOut: true,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+    ];
 
     const engine = createEngine(fixtureContent, saved, LOOT_SEED);
     const events = engine.advanceBy(250);
     const impact = events.find((event) => event.type === "impact");
     expect(impact?.results).toHaveLength(0);
-    expect(engine.snapshot().attempt?.combatants[0]?.cooldownReadyAtMs["k-pommel"]).toBe(9250);
+    expect(
+      engine.snapshot().attempt?.combatants[0]?.cooldownReadyAtMs["k-pommel"],
+    ).toBe(9250);
   });
 
   it("clamps Healing so it cannot overheal", () => {
-    const saved: Snapshot = {
-      schemaVersion: 1,
-      savedAtMs: 0,
-      simNowMs: 0,
-      lootRngState: LOOT_SEED,
-      nextEventSeq: 1,
-      nextAttemptId: 1,
-      nextDropId: 1,
-      progression: progressionState({
-        unlockedStage: 1,
-        party: ["priest", "knight", "wizard"],
-        reserve: "hunter",
-        characterXp: { knight: 0, wizard: 0, priest: 0, hunter: 0 },
-        loadouts: {
-          knight: ["k-shield-brace", "k-sweep", "k-rally"],
-          wizard: ["w-frost", "w-cinder", "w-prism"],
-          priest: ["p-moonwell", "p-resurgence", "p-smite"],
-          hunter: ["k-shield-brace", "k-rally", "k-sweep"],
-        },
-      }),
-      attempt: {
-        id: 1,
-        stage: 1,
-        encounter: 1,
-        phase: "fighting",
-        phaseEndsAtMs: null,
-        equipmentLoadouts: { knight: {}, wizard: {}, priest: {}, hunter: {} },
-        combatants: [
-          {
-            entityId: "party:priest:front",
-            side: "party",
-            defId: "priest",
-            health: 110,
-            maxHealth: 110,
-            knockedOut: false,
-            action: {
-              abilityId: "p-moonwell",
-              startedAtMs: 0,
-              impactAtMs: 300,
-              endsAtMs: 800,
-              targetIds: ["party:knight:middle"],
-              impactResolved: false,
-            },
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-          {
-            entityId: "party:knight:middle",
-            side: "party",
-            defId: "knight",
-            health: 175,
-            maxHealth: 180,
-            knockedOut: false,
-            action: null,
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-          {
-            entityId: "party:wizard:back",
-            side: "party",
-            defId: "wizard",
-            health: 100,
-            maxHealth: 100,
-            knockedOut: false,
-            action: null,
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-          {
-            entityId: "opp:1:0",
-            side: "opponent",
-            defId: "fixture-grunt",
-            health: 40,
-            maxHealth: 40,
-            knockedOut: false,
-            action: null,
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-        ],
-      },
-      pendingEdits: [],
+    const saved = scenario()
+      .withParty(["priest", "knight", "wizard"], "hunter")
+      .build();
+    saved.lootRngState = LOOT_SEED;
+    saved.progression.loadouts = {
+      knight: ["k-shield-brace", "k-sweep", "k-rally"],
+      wizard: ["w-frost", "w-cinder", "w-prism"],
+      priest: ["p-moonwell", "p-resurgence", "p-smite"],
+      hunter: ["k-shield-brace", "k-rally", "k-sweep"],
     };
+    saved.attempt!.combatants = [
+      {
+        entityId: "party:priest:front",
+        side: "party",
+        defId: "priest",
+        health: 110,
+        maxHealth: 110,
+        knockedOut: false,
+        action: {
+          abilityId: "p-moonwell",
+          startedAtMs: 0,
+          impactAtMs: 300,
+          endsAtMs: 800,
+          targetIds: ["party:knight:middle"],
+          impactResolved: false,
+        },
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "party:knight:middle",
+        side: "party",
+        defId: "knight",
+        health: 175,
+        maxHealth: 180,
+        knockedOut: false,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "party:wizard:back",
+        side: "party",
+        defId: "wizard",
+        health: 100,
+        maxHealth: 100,
+        knockedOut: false,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "opp:1:0",
+        side: "opponent",
+        defId: "fixture-grunt",
+        health: 40,
+        maxHealth: 40,
+        knockedOut: false,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+    ];
 
     const engine = createEngine(fixtureContent, saved, LOOT_SEED);
     engine.advanceBy(300);
-    const knight = engine.snapshot().attempt?.combatants.find((c) => c.defId === "knight");
+    const knight = engine
+      .snapshot()
+      .attempt?.combatants.find((c) => c.defId === "knight");
     expect(knight?.health).toBe(180);
   });
 
   it("cancels unfinished Wind-up on Knockout without starting cooldown", () => {
-    const saved: Snapshot = {
-      schemaVersion: 1,
-      savedAtMs: 0,
-      simNowMs: 0,
-      lootRngState: LOOT_SEED,
-      nextEventSeq: 1,
-      nextAttemptId: 1,
-      nextDropId: 1,
-      progression: progressionState({
-        unlockedStage: 1,
-        party: ["knight", "wizard", "priest"],
-        reserve: "hunter",
-        characterXp: { knight: 0, wizard: 0, priest: 0, hunter: 0 },
-        loadouts: {
-          knight: ["k-sweep", "k-rally", "k-pommel"],
-          wizard: ["w-frost", "w-cinder", "w-prism"],
-          priest: ["p-smite", "p-moonwell", "p-resurgence"],
-          hunter: ["k-shield-brace", "k-rally", "k-sweep"],
-        },
-      }),
-      attempt: {
-        id: 1,
-        stage: 1,
-        encounter: 1,
-        phase: "fighting",
-        phaseEndsAtMs: null,
-        equipmentLoadouts: { knight: {}, wizard: {}, priest: {}, hunter: {} },
-        combatants: [
-          {
-            entityId: "party:knight:front",
-            side: "party",
-            defId: "knight",
-            health: 5,
-            maxHealth: 180,
-            knockedOut: false,
-            action: {
-              abilityId: "k-sweep",
-              startedAtMs: 0,
-              impactAtMs: 500,
-              endsAtMs: 1200,
-              targetIds: ["opp:1:0"],
-              impactResolved: false,
-            },
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-          {
-            entityId: "party:wizard:middle",
-            side: "party",
-            defId: "wizard",
-            health: 100,
-            maxHealth: 100,
-            knockedOut: false,
-            action: null,
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-          {
-            entityId: "party:priest:back",
-            side: "party",
-            defId: "priest",
-            health: 110,
-            maxHealth: 110,
-            knockedOut: false,
-            action: null,
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-          {
-            entityId: "opp:1:0",
-            side: "opponent",
-            defId: "fixture-grunt",
-            health: 40,
-            maxHealth: 40,
-            knockedOut: false,
-            action: {
-              abilityId: "grunt-attack",
-              startedAtMs: 0,
-              impactAtMs: 400,
-              endsAtMs: 1000,
-              targetIds: ["party:knight:front"],
-              impactResolved: false,
-            },
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-        ],
-      },
-      pendingEdits: [],
+    const saved = scenario()
+      .withParty(["knight", "wizard", "priest"], "hunter")
+      .build();
+    saved.lootRngState = LOOT_SEED;
+    saved.progression.loadouts = {
+      knight: ["k-sweep", "k-rally", "k-pommel"],
+      wizard: ["w-frost", "w-cinder", "w-prism"],
+      priest: ["p-smite", "p-moonwell", "p-resurgence"],
+      hunter: ["k-shield-brace", "k-rally", "k-sweep"],
     };
+    saved.attempt!.combatants = [
+      {
+        entityId: "party:knight:front",
+        side: "party",
+        defId: "knight",
+        health: 5,
+        maxHealth: 180,
+        knockedOut: false,
+        action: {
+          abilityId: "k-sweep",
+          startedAtMs: 0,
+          impactAtMs: 500,
+          endsAtMs: 1200,
+          targetIds: ["opp:1:0"],
+          impactResolved: false,
+        },
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "party:wizard:middle",
+        side: "party",
+        defId: "wizard",
+        health: 100,
+        maxHealth: 100,
+        knockedOut: false,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "party:priest:back",
+        side: "party",
+        defId: "priest",
+        health: 110,
+        maxHealth: 110,
+        knockedOut: false,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "opp:1:0",
+        side: "opponent",
+        defId: "fixture-grunt",
+        health: 40,
+        maxHealth: 40,
+        knockedOut: false,
+        action: {
+          abilityId: "grunt-attack",
+          startedAtMs: 0,
+          impactAtMs: 400,
+          endsAtMs: 1000,
+          targetIds: ["party:knight:front"],
+          impactResolved: false,
+        },
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+    ];
 
     const engine = createEngine(fixtureContent, saved, LOOT_SEED);
     engine.advanceBy(400);
-    const knight = engine.snapshot().attempt?.combatants.find((c) => c.defId === "knight");
+    const knight = engine
+      .snapshot()
+      .attempt?.combatants.find((c) => c.defId === "knight");
     expect(knight?.knockedOut).toBe(true);
     expect(knight?.action).toBeNull();
     expect(knight?.cooldownReadyAtMs["k-sweep"]).toBeUndefined();
   });
 
   it("revives the first Knocked Out ally by Formation order with 1000ms Recovery", () => {
-    const saved: Snapshot = {
-      schemaVersion: 1,
-      savedAtMs: 0,
-      simNowMs: 0,
-      lootRngState: LOOT_SEED,
-      nextEventSeq: 1,
-      nextAttemptId: 1,
-      nextDropId: 1,
-      progression: progressionState({
-        unlockedStage: 1,
-        party: ["priest", "knight", "wizard"],
-        reserve: "hunter",
-        characterXp: { knight: 0, wizard: 0, priest: 0, hunter: 0 },
-        loadouts: {
-          knight: ["k-shield-brace", "k-sweep", "k-rally"],
-          wizard: ["w-frost", "w-cinder", "w-prism"],
-          priest: ["p-resurgence", "p-moonwell", "p-smite"],
-          hunter: ["k-shield-brace", "k-rally", "k-sweep"],
-        },
-      }),
-      attempt: {
-        id: 1,
-        stage: 1,
-        encounter: 1,
-        phase: "fighting",
-        phaseEndsAtMs: null,
-        equipmentLoadouts: { knight: {}, wizard: {}, priest: {}, hunter: {} },
-        combatants: [
-          {
-            entityId: "party:priest:front",
-            side: "party",
-            defId: "priest",
-            health: 110,
-            maxHealth: 110,
-            knockedOut: false,
-            action: {
-              abilityId: "p-resurgence",
-              startedAtMs: 0,
-              impactAtMs: 500,
-              endsAtMs: 1200,
-              targetIds: ["party:knight:middle"],
-              impactResolved: false,
-            },
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-          {
-            entityId: "party:knight:middle",
-            side: "party",
-            defId: "knight",
-            health: 0,
-            maxHealth: 180,
-            knockedOut: true,
-            action: null,
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-          {
-            entityId: "party:wizard:back",
-            side: "party",
-            defId: "wizard",
-            health: 0,
-            maxHealth: 100,
-            knockedOut: true,
-            action: null,
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-          {
-            entityId: "opp:1:0",
-            side: "opponent",
-            defId: "fixture-grunt",
-            health: 40,
-            maxHealth: 40,
-            knockedOut: false,
-            action: null,
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-        ],
-      },
-      pendingEdits: [],
+    const saved = scenario()
+      .withParty(["priest", "knight", "wizard"], "hunter")
+      .knockedOut("knight")
+      .knockedOut("wizard")
+      .build();
+    saved.lootRngState = LOOT_SEED;
+    saved.progression.loadouts = {
+      knight: ["k-shield-brace", "k-sweep", "k-rally"],
+      wizard: ["w-frost", "w-cinder", "w-prism"],
+      priest: ["p-resurgence", "p-moonwell", "p-smite"],
+      hunter: ["k-shield-brace", "k-rally", "k-sweep"],
     };
+    saved.attempt!.combatants = [
+      {
+        entityId: "party:priest:front",
+        side: "party",
+        defId: "priest",
+        health: 110,
+        maxHealth: 110,
+        knockedOut: false,
+        action: {
+          abilityId: "p-resurgence",
+          startedAtMs: 0,
+          impactAtMs: 500,
+          endsAtMs: 1200,
+          targetIds: ["party:knight:middle"],
+          impactResolved: false,
+        },
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "party:knight:middle",
+        side: "party",
+        defId: "knight",
+        health: 0,
+        maxHealth: 180,
+        knockedOut: true,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "party:wizard:back",
+        side: "party",
+        defId: "wizard",
+        health: 0,
+        maxHealth: 100,
+        knockedOut: true,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "opp:1:0",
+        side: "opponent",
+        defId: "fixture-grunt",
+        health: 40,
+        maxHealth: 40,
+        knockedOut: false,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+    ];
 
     const engine = createEngine(fixtureContent, saved, LOOT_SEED);
     const events = engine.advanceBy(500);
     const revived = events.find((event) => event.type === "revived");
     expect(revived?.entityId).toBe("party:knight:middle");
     expect(revived?.health).toBe(7);
-    const knight = engine.snapshot().attempt?.combatants.find((c) => c.defId === "knight");
+    const knight = engine
+      .snapshot()
+      .attempt?.combatants.find((c) => c.defId === "knight");
     expect(knight?.knockedOut).toBe(false);
     expect(knight?.action?.endsAtMs).toBe(1500);
   });
 
   it("lets two simultaneous lethal Impacts both land from pre-resolution health", () => {
-    const saved: Snapshot = {
-      schemaVersion: 1,
-      savedAtMs: 0,
-      simNowMs: 0,
-      lootRngState: LOOT_SEED,
-      nextEventSeq: 1,
-      nextAttemptId: 1,
-      nextDropId: 1,
-      progression: progressionState({
-        unlockedStage: 1,
-        party: ["knight", "wizard", "priest"],
-        reserve: "hunter",
-        characterXp: { knight: 0, wizard: 0, priest: 0, hunter: 0 },
-        loadouts: {
-          knight: ["k-sweep", "k-rally", "k-pommel"],
-          wizard: ["w-frost", "w-cinder", "w-prism"],
-          priest: ["p-smite", "p-moonwell", "p-resurgence"],
-          hunter: ["k-shield-brace", "k-rally", "k-sweep"],
-        },
-      }),
-      attempt: {
-        id: 1,
-        stage: 1,
-        encounter: 1,
-        phase: "fighting",
-        phaseEndsAtMs: null,
-        equipmentLoadouts: { knight: {}, wizard: {}, priest: {}, hunter: {} },
-        combatants: [
-          {
-            entityId: "party:knight:front",
-            side: "party",
-            defId: "knight",
-            health: 6,
-            maxHealth: 180,
-            knockedOut: false,
-            action: {
-              abilityId: "knight-basic",
-              startedAtMs: 0,
-              impactAtMs: 350,
-              endsAtMs: 1000,
-              targetIds: ["opp:1:0"],
-              impactResolved: false,
-            },
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-          {
-            entityId: "party:wizard:middle",
-            side: "party",
-            defId: "wizard",
-            health: 100,
-            maxHealth: 100,
-            knockedOut: false,
-            action: null,
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-          {
-            entityId: "party:priest:back",
-            side: "party",
-            defId: "priest",
-            health: 110,
-            maxHealth: 110,
-            knockedOut: false,
-            action: null,
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-          {
-            entityId: "opp:1:0",
-            side: "opponent",
-            defId: "fixture-grunt",
-            health: 13,
-            maxHealth: 40,
-            knockedOut: false,
-            action: {
-              abilityId: "grunt-attack",
-              startedAtMs: 0,
-              impactAtMs: 350,
-              endsAtMs: 1000,
-              targetIds: ["party:knight:front"],
-              impactResolved: false,
-            },
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-        ],
-      },
-      pendingEdits: [],
+    const saved = scenario()
+      .withParty(["knight", "wizard", "priest"], "hunter")
+      .build();
+    saved.lootRngState = LOOT_SEED;
+    saved.progression.loadouts = {
+      knight: ["k-sweep", "k-rally", "k-pommel"],
+      wizard: ["w-frost", "w-cinder", "w-prism"],
+      priest: ["p-smite", "p-moonwell", "p-resurgence"],
+      hunter: ["k-shield-brace", "k-rally", "k-sweep"],
     };
+    saved.attempt!.combatants = [
+      {
+        entityId: "party:knight:front",
+        side: "party",
+        defId: "knight",
+        health: 6,
+        maxHealth: 180,
+        knockedOut: false,
+        action: {
+          abilityId: "knight-basic",
+          startedAtMs: 0,
+          impactAtMs: 350,
+          endsAtMs: 1000,
+          targetIds: ["opp:1:0"],
+          impactResolved: false,
+        },
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "party:wizard:middle",
+        side: "party",
+        defId: "wizard",
+        health: 100,
+        maxHealth: 100,
+        knockedOut: false,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "party:priest:back",
+        side: "party",
+        defId: "priest",
+        health: 110,
+        maxHealth: 110,
+        knockedOut: false,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "opp:1:0",
+        side: "opponent",
+        defId: "fixture-grunt",
+        health: 13,
+        maxHealth: 40,
+        knockedOut: false,
+        action: {
+          abilityId: "grunt-attack",
+          startedAtMs: 0,
+          impactAtMs: 350,
+          endsAtMs: 1000,
+          targetIds: ["party:knight:front"],
+          impactResolved: false,
+        },
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+    ];
 
     const engine = createEngine(fixtureContent, saved, LOOT_SEED);
     const events = engine.advanceBy(350);
     const impacts = events.filter((event) => event.type === "impact");
     expect(impacts).toHaveLength(2);
-    const knight = engine.snapshot().attempt?.combatants.find((c) => c.defId === "knight");
-    const grunt = engine.snapshot().attempt?.combatants.find((c) => c.defId === "fixture-grunt");
+    const knight = engine
+      .snapshot()
+      .attempt?.combatants.find((c) => c.defId === "knight");
+    const grunt = engine
+      .snapshot()
+      .attempt?.combatants.find((c) => c.defId === "fixture-grunt");
     expect(knight?.knockedOut).toBe(true);
     expect(grunt?.knockedOut).toBe(true);
   });
@@ -1527,9 +1463,15 @@ describe("full combat rules", () => {
     engine.setLoadout("knight", ["k-pommel", "k-sweep", "k-rally"]);
 
     let transitionAt: number | null = null;
-    for (let ms = 0; ms < 120_000; ms += 1) {
-      const events = engine.advanceBy(1);
-      if (events.some((event) => event.type === "wave-cleared" && event.encounter === 1)) {
+    let elapsed = 0;
+    while (elapsed < 120_000) {
+      elapsed += 1;
+      const events = driveBy(engine, 1);
+      if (
+        events.some(
+          (event) => event.type === "wave-cleared" && event.encounter === 1,
+        )
+      ) {
         transitionAt = engine.snapshot().simNowMs;
       }
       if (events.some((event) => event.type === "config-applied")) {
@@ -1548,120 +1490,101 @@ describe("full combat rules", () => {
   });
 
   it("does not interrupt an in-flight Wind-up when the actor takes damage mid-fight", () => {
-    const saved: Snapshot = {
-      schemaVersion: 1,
-      savedAtMs: 0,
-      simNowMs: 0,
-      lootRngState: LOOT_SEED,
-      nextEventSeq: 1,
-      nextAttemptId: 1,
-      nextDropId: 1,
-      progression: progressionState({
-        unlockedStage: 1,
-        party: ["knight", "wizard", "priest"],
-        reserve: "knight",
-        characterXp: { knight: 0, wizard: 0, priest: 0, hunter: 0 },
-        loadouts: {
-          knight: ["k-pommel", "k-sweep", "k-rally"],
-          wizard: ["w-frost", "w-cinder", "w-prism"],
-          priest: ["p-smite", "p-moonwell", "p-resurgence"],
-          hunter: ["k-shield-brace", "k-rally", "k-sweep"],
-        },
-      }),
-      attempt: {
-        id: 1,
-        stage: 1,
-        encounter: 1,
-        phase: "fighting",
-        phaseEndsAtMs: null,
-        equipmentLoadouts: { knight: {}, wizard: {}, priest: {}, hunter: {} },
-        combatants: [
-          {
-            entityId: "party:knight:front",
-            side: "party",
-            defId: "knight",
-            health: 180,
-            maxHealth: 180,
-            knockedOut: false,
-            action: {
-              abilityId: "k-pommel",
-              startedAtMs: 0,
-              impactAtMs: 250,
-              endsAtMs: 900,
-              targetIds: ["opp:1:0"],
-              impactResolved: false,
-            },
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-          {
-            entityId: "party:wizard:middle",
-            side: "party",
-            defId: "wizard",
-            health: 100,
-            maxHealth: 100,
-            knockedOut: false,
-            action: null,
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-          {
-            entityId: "party:priest:back",
-            side: "party",
-            defId: "priest",
-            health: 110,
-            maxHealth: 110,
-            knockedOut: false,
-            action: null,
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-          {
-            entityId: "opp:1:0",
-            side: "opponent",
-            defId: "fixture-grunt",
-            health: 40,
-            maxHealth: 40,
-            knockedOut: false,
-            action: {
-              abilityId: "grunt-attack",
-              startedAtMs: 0,
-              impactAtMs: 200,
-              endsAtMs: 1000,
-              targetIds: ["party:knight:front"],
-              impactResolved: false,
-            },
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-        ],
-      },
-      pendingEdits: [],
+    const saved = scenario().build();
+    saved.lootRngState = LOOT_SEED;
+    saved.progression.loadouts = {
+      knight: ["k-pommel", "k-sweep", "k-rally"],
+      wizard: ["w-frost", "w-cinder", "w-prism"],
+      priest: ["p-smite", "p-moonwell", "p-resurgence"],
+      hunter: ["k-shield-brace", "k-rally", "k-sweep"],
     };
+    saved.attempt!.combatants = [
+      {
+        entityId: "party:knight:front",
+        side: "party",
+        defId: "knight",
+        health: 180,
+        maxHealth: 180,
+        knockedOut: false,
+        action: {
+          abilityId: "k-pommel",
+          startedAtMs: 0,
+          impactAtMs: 250,
+          endsAtMs: 900,
+          targetIds: ["opp:1:0"],
+          impactResolved: false,
+        },
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "party:wizard:middle",
+        side: "party",
+        defId: "wizard",
+        health: 100,
+        maxHealth: 100,
+        knockedOut: false,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "party:priest:back",
+        side: "party",
+        defId: "priest",
+        health: 110,
+        maxHealth: 110,
+        knockedOut: false,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "opp:1:0",
+        side: "opponent",
+        defId: "fixture-grunt",
+        health: 40,
+        maxHealth: 40,
+        knockedOut: false,
+        action: {
+          abilityId: "grunt-attack",
+          startedAtMs: 0,
+          impactAtMs: 200,
+          endsAtMs: 1000,
+          targetIds: ["party:knight:front"],
+          impactResolved: false,
+        },
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+    ];
 
     const engine = createEngine(fixtureContent, saved, LOOT_SEED);
     const damageEvents = engine.advanceBy(200);
-    const knightAfterDamage = engine.snapshot().attempt?.combatants.find(
-      (c) => c.entityId === "party:knight:front",
-    );
+    const knightAfterDamage = engine
+      .snapshot()
+      .attempt?.combatants.find((c) => c.entityId === "party:knight:front");
     expect(knightAfterDamage?.action).toMatchObject({
       abilityId: "k-pommel",
       impactAtMs: 250,
       impactResolved: false,
     });
     expect(knightAfterDamage?.health).toBeLessThan(180);
-    expect(damageEvents.some((event) => event.type === "impact" && event.entityId === "opp:1:0")).toBe(
-      true,
-    );
+    expect(
+      damageEvents.some(
+        (event) => event.type === "impact" && event.entityId === "opp:1:0",
+      ),
+    ).toBe(true);
 
     const impactEvents = engine.advanceBy(50);
-    const knightAfterImpact = engine.snapshot().attempt?.combatants.find(
-      (c) => c.entityId === "party:knight:front",
-    );
+    const knightAfterImpact = engine
+      .snapshot()
+      .attempt?.combatants.find((c) => c.entityId === "party:knight:front");
     expect(knightAfterImpact?.action?.impactResolved).toBe(true);
     expect(
       impactEvents.some(
-        (event) => event.type === "impact" && event.entityId === "party:knight:front",
+        (event) =>
+          event.type === "impact" && event.entityId === "party:knight:front",
       ),
     ).toBe(true);
   });
@@ -1671,15 +1594,20 @@ describe("full combat rules", () => {
     engine.advanceBy(1);
     engine.setFormation(["priest", "knight", "wizard"]);
 
-    for (let ms = 0; ms < 120_000; ms += 1) {
-      const events = engine.advanceBy(1);
+    let elapsed = 0;
+    while (elapsed < 120_000) {
+      elapsed += 1;
+      const events = driveBy(engine, 1);
       if (!events.some((event) => event.type === "config-applied")) {
         continue;
       }
 
       const snap = engine.snapshot();
       expect(snap.progression.party).toEqual(["priest", "knight", "wizard"]);
-      const party = snap.attempt?.combatants.filter((combatant) => combatant.side === "party") ?? [];
+      const party =
+        snap.attempt?.combatants.filter(
+          (combatant) => combatant.side === "party",
+        ) ?? [];
       expect(party.map((combatant) => combatant.entityId)).toEqual([
         "party:priest:front",
         "party:knight:middle",
@@ -1691,82 +1619,60 @@ describe("full combat rules", () => {
   });
 
   it("emits status-expired when a Status Effect duration elapses", () => {
-    const saved: Snapshot = {
-      schemaVersion: 1,
-      savedAtMs: 0,
-      simNowMs: 0,
-      lootRngState: LOOT_SEED,
-      nextEventSeq: 1,
-      nextAttemptId: 1,
-      nextDropId: 1,
-      progression: progressionState({
-        unlockedStage: 1,
-        party: ["knight", "wizard", "priest"],
-        reserve: "knight",
-        characterXp: { knight: 0, wizard: 0, priest: 0, hunter: 0 },
-        loadouts: {
-          knight: ["k-pommel", "k-sweep", "k-rally"],
-          wizard: ["w-frost", "w-cinder", "w-prism"],
-          priest: ["p-smite", "p-moonwell", "p-resurgence"],
-          hunter: ["k-shield-brace", "k-rally", "k-sweep"],
-        },
-      }),
-      attempt: {
-        id: 1,
-        stage: 1,
-        encounter: 1,
-        phase: "fighting",
-        phaseEndsAtMs: null,
-        equipmentLoadouts: { knight: {}, wizard: {}, priest: {}, hunter: {} },
-        combatants: [
-          {
-            entityId: "party:knight:front",
-            side: "party",
-            defId: "knight",
-            health: 180,
-            maxHealth: 180,
-            knockedOut: false,
-            action: null,
-            cooldownReadyAtMs: {},
-            statuses: [{ statusId: "braced", expiresAtMs: 1000 }],
-          },
-          {
-            entityId: "party:wizard:middle",
-            side: "party",
-            defId: "wizard",
-            health: 100,
-            maxHealth: 100,
-            knockedOut: false,
-            action: null,
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-          {
-            entityId: "party:priest:back",
-            side: "party",
-            defId: "priest",
-            health: 110,
-            maxHealth: 110,
-            knockedOut: false,
-            action: null,
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-          {
-            entityId: "opp:1:0",
-            side: "opponent",
-            defId: "fixture-grunt",
-            health: 40,
-            maxHealth: 40,
-            knockedOut: false,
-            action: null,
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-        ],
-      },
-      pendingEdits: [],
+    const saved = scenario().build();
+    saved.lootRngState = LOOT_SEED;
+    saved.progression.loadouts = {
+      knight: ["k-pommel", "k-sweep", "k-rally"],
+      wizard: ["w-frost", "w-cinder", "w-prism"],
+      priest: ["p-smite", "p-moonwell", "p-resurgence"],
+      hunter: ["k-shield-brace", "k-rally", "k-sweep"],
     };
+    saved.attempt!.combatants = [
+      {
+        entityId: "party:knight:front",
+        side: "party",
+        defId: "knight",
+        health: 180,
+        maxHealth: 180,
+        knockedOut: false,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [{ statusId: "braced", expiresAtMs: 1000 }],
+      },
+      {
+        entityId: "party:wizard:middle",
+        side: "party",
+        defId: "wizard",
+        health: 100,
+        maxHealth: 100,
+        knockedOut: false,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "party:priest:back",
+        side: "party",
+        defId: "priest",
+        health: 110,
+        maxHealth: 110,
+        knockedOut: false,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "opp:1:0",
+        side: "opponent",
+        defId: "fixture-grunt",
+        health: 40,
+        maxHealth: 40,
+        knockedOut: false,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+    ];
 
     const engine = createEngine(fixtureContent, saved, LOOT_SEED);
     const events = engine.advanceBy(1000);
@@ -1778,94 +1684,76 @@ describe("full combat rules", () => {
           event.statusId === "braced",
       ),
     ).toBe(true);
-    const knight = engine.snapshot().attempt?.combatants.find((c) => c.defId === "knight");
+    const knight = engine
+      .snapshot()
+      .attempt?.combatants.find((c) => c.defId === "knight");
     expect(knight?.statuses).toHaveLength(0);
   });
 
   it("includes kind heal in impact results for Healing and revival Abilities", () => {
-    const saved: Snapshot = {
-      schemaVersion: 1,
-      savedAtMs: 0,
-      simNowMs: 0,
-      lootRngState: LOOT_SEED,
-      nextEventSeq: 1,
-      nextAttemptId: 1,
-      nextDropId: 1,
-      progression: progressionState({
-        unlockedStage: 1,
-        party: ["priest", "knight", "wizard"],
-        reserve: "knight",
-        characterXp: { knight: 0, wizard: 0, priest: 0, hunter: 0 },
-        loadouts: {
-          knight: ["k-shield-brace", "k-sweep", "k-rally"],
-          wizard: ["w-frost", "w-cinder", "w-prism"],
-          priest: ["p-moonwell", "p-resurgence", "p-smite"],
-          hunter: ["k-shield-brace", "k-rally", "k-sweep"],
-        },
-      }),
-      attempt: {
-        id: 1,
-        stage: 1,
-        encounter: 1,
-        phase: "fighting",
-        phaseEndsAtMs: null,
-        equipmentLoadouts: { knight: {}, wizard: {}, priest: {}, hunter: {} },
-        combatants: [
-          {
-            entityId: "party:priest:front",
-            side: "party",
-            defId: "priest",
-            health: 110,
-            maxHealth: 110,
-            knockedOut: false,
-            action: {
-              abilityId: "p-moonwell",
-              startedAtMs: 0,
-              impactAtMs: 300,
-              endsAtMs: 800,
-              targetIds: ["party:knight:middle"],
-              impactResolved: false,
-            },
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-          {
-            entityId: "party:knight:middle",
-            side: "party",
-            defId: "knight",
-            health: 120,
-            maxHealth: 180,
-            knockedOut: false,
-            action: null,
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-          {
-            entityId: "party:wizard:back",
-            side: "party",
-            defId: "wizard",
-            health: 100,
-            maxHealth: 100,
-            knockedOut: false,
-            action: null,
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-          {
-            entityId: "opp:1:0",
-            side: "opponent",
-            defId: "fixture-grunt",
-            health: 40,
-            maxHealth: 40,
-            knockedOut: false,
-            action: null,
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-        ],
-      },
-      pendingEdits: [],
+    const saved = scenario()
+      .withParty(["priest", "knight", "wizard"], "knight")
+      .build();
+    saved.lootRngState = LOOT_SEED;
+    saved.progression.loadouts = {
+      knight: ["k-shield-brace", "k-sweep", "k-rally"],
+      wizard: ["w-frost", "w-cinder", "w-prism"],
+      priest: ["p-moonwell", "p-resurgence", "p-smite"],
+      hunter: ["k-shield-brace", "k-rally", "k-sweep"],
     };
+    saved.attempt!.combatants = [
+      {
+        entityId: "party:priest:front",
+        side: "party",
+        defId: "priest",
+        health: 110,
+        maxHealth: 110,
+        knockedOut: false,
+        action: {
+          abilityId: "p-moonwell",
+          startedAtMs: 0,
+          impactAtMs: 300,
+          endsAtMs: 800,
+          targetIds: ["party:knight:middle"],
+          impactResolved: false,
+        },
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "party:knight:middle",
+        side: "party",
+        defId: "knight",
+        health: 120,
+        maxHealth: 180,
+        knockedOut: false,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "party:wizard:back",
+        side: "party",
+        defId: "wizard",
+        health: 100,
+        maxHealth: 100,
+        knockedOut: false,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "opp:1:0",
+        side: "opponent",
+        defId: "fixture-grunt",
+        health: 40,
+        maxHealth: 40,
+        knockedOut: false,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+    ];
 
     const healEngine = createEngine(fixtureContent, saved, LOOT_SEED);
     const healEvents = healEngine.advanceBy(300);
@@ -1873,9 +1761,11 @@ describe("full combat rules", () => {
       (event): event is Extract<typeof event, { type: "impact" }> =>
         event.type === "impact" && event.abilityId === "p-moonwell",
     );
-    expect(healImpact?.results.some((result) => result.kind === "heal")).toBe(true);
+    expect(healImpact?.results.some((result) => result.kind === "heal")).toBe(
+      true,
+    );
 
-    const reviveSaved: Snapshot = {
+    const reviveSaved = {
       ...saved,
       attempt: {
         ...saved.attempt!,
@@ -1908,139 +1798,134 @@ describe("full combat rules", () => {
       (event): event is Extract<typeof event, { type: "impact" }> =>
         event.type === "impact" && event.abilityId === "p-resurgence",
     );
-    expect(reviveImpact?.results.some((result) => result.kind === "heal")).toBe(true);
+    expect(reviveImpact?.results.some((result) => result.kind === "heal")).toBe(
+      true,
+    );
   });
 
   it("throws when setLoadout receives duplicate Ability ids", () => {
     const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
     engine.advanceBy(1);
-    expect(() => engine.setLoadout("knight", ["k-sweep", "k-sweep", "k-rally"])).toThrow(
-      /duplicate Abilities/i,
-    );
+    expect(() =>
+      engine.setLoadout("knight", ["k-sweep", "k-sweep", "k-rally"]),
+    ).toThrow(/duplicate Abilities/i);
   });
 
   it("completes Recovery and advances cooldowns while a Character remains stunned", () => {
-    const saved: Snapshot = {
-      schemaVersion: 1,
-      savedAtMs: 0,
-      simNowMs: 0,
-      lootRngState: LOOT_SEED,
-      nextEventSeq: 1,
-      nextAttemptId: 1,
-      nextDropId: 1,
-      progression: progressionState({
-        unlockedStage: 1,
-        party: ["knight", "wizard", "priest"],
-        reserve: "knight",
-        characterXp: { knight: 0, wizard: 0, priest: 0, hunter: 0 },
-        loadouts: {
-          knight: ["k-pommel", "k-sweep", "k-rally"],
-          wizard: ["w-frost", "w-cinder", "w-prism"],
-          priest: ["p-smite", "p-moonwell", "p-resurgence"],
-          hunter: ["k-shield-brace", "k-rally", "k-sweep"],
-        },
-      }),
-      attempt: {
-        id: 1,
-        stage: 1,
-        encounter: 1,
-        phase: "fighting",
-        phaseEndsAtMs: null,
-        equipmentLoadouts: { knight: {}, wizard: {}, priest: {}, hunter: {} },
-        combatants: [
-          {
-            entityId: "party:knight:front",
-            side: "party",
-            defId: "knight",
-            health: 180,
-            maxHealth: 180,
-            knockedOut: false,
-            action: {
-              abilityId: "k-pommel",
-              startedAtMs: 0,
-              impactAtMs: 250,
-              endsAtMs: 900,
-              targetIds: ["opp:1:0"],
-              impactResolved: true,
-            },
-            cooldownReadyAtMs: { "k-pommel": 800 },
-            statuses: [{ statusId: "stun", expiresAtMs: 5000 }],
-          },
-          {
-            entityId: "party:wizard:middle",
-            side: "party",
-            defId: "wizard",
-            health: 100,
-            maxHealth: 100,
-            knockedOut: false,
-            action: {
-              abilityId: "w-frost",
-              startedAtMs: 0,
-              impactAtMs: 800,
-              endsAtMs: 50_000,
-              targetIds: ["opp:1:0"],
-              impactResolved: true,
-            },
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-          {
-            entityId: "party:priest:back",
-            side: "party",
-            defId: "priest",
-            health: 110,
-            maxHealth: 110,
-            knockedOut: false,
-            action: {
-              abilityId: "p-smite",
-              startedAtMs: 0,
-              impactAtMs: 450,
-              endsAtMs: 50_000,
-              targetIds: ["opp:1:0"],
-              impactResolved: true,
-            },
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-          {
-            entityId: "opp:1:0",
-            side: "opponent",
-            defId: "fixture-grunt",
-            health: 40,
-            maxHealth: 40,
-            knockedOut: false,
-            action: null,
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-        ],
-      },
-      pendingEdits: [],
+    const saved = scenario().build();
+    saved.lootRngState = LOOT_SEED;
+    saved.progression.loadouts = {
+      knight: ["k-pommel", "k-sweep", "k-rally"],
+      wizard: ["w-frost", "w-cinder", "w-prism"],
+      priest: ["p-smite", "p-moonwell", "p-resurgence"],
+      hunter: ["k-shield-brace", "k-rally", "k-sweep"],
     };
+    saved.attempt!.combatants = [
+      {
+        entityId: "party:knight:front",
+        side: "party",
+        defId: "knight",
+        health: 180,
+        maxHealth: 180,
+        knockedOut: false,
+        action: {
+          abilityId: "k-pommel",
+          startedAtMs: 0,
+          impactAtMs: 250,
+          endsAtMs: 900,
+          targetIds: ["opp:1:0"],
+          impactResolved: true,
+        },
+        cooldownReadyAtMs: { "k-pommel": 800 },
+        statuses: [{ statusId: "stun", expiresAtMs: 5000 }],
+      },
+      {
+        entityId: "party:wizard:middle",
+        side: "party",
+        defId: "wizard",
+        health: 100,
+        maxHealth: 100,
+        knockedOut: false,
+        action: {
+          abilityId: "w-frost",
+          startedAtMs: 0,
+          impactAtMs: 800,
+          endsAtMs: 50_000,
+          targetIds: ["opp:1:0"],
+          impactResolved: true,
+        },
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "party:priest:back",
+        side: "party",
+        defId: "priest",
+        health: 110,
+        maxHealth: 110,
+        knockedOut: false,
+        action: {
+          abilityId: "p-smite",
+          startedAtMs: 0,
+          impactAtMs: 450,
+          endsAtMs: 50_000,
+          targetIds: ["opp:1:0"],
+          impactResolved: true,
+        },
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "opp:1:0",
+        side: "opponent",
+        defId: "fixture-grunt",
+        health: 40,
+        maxHealth: 40,
+        knockedOut: false,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+    ];
 
     const engine = createEngine(fixtureContent, saved, LOOT_SEED);
     engine.advanceBy(900);
-    let knight = engine.snapshot().attempt?.combatants.find((c) => c.defId === "knight");
+    let knight = engine
+      .snapshot()
+      .attempt?.combatants.find((c) => c.defId === "knight");
     expect(knight?.action).toBeNull();
-    expect(knight?.statuses.some((status) => status.statusId === "stun")).toBe(true);
-    expect((knight?.cooldownReadyAtMs["k-pommel"] ?? Infinity)).toBeLessThanOrEqual(
-      engine.snapshot().simNowMs,
+    expect(knight?.statuses.some((status) => status.statusId === "stun")).toBe(
+      true,
     );
     expect(
-      engine.snapshot().attempt?.combatants.find((c) => c.defId === "knight")?.action,
+      knight?.cooldownReadyAtMs["k-pommel"] ?? Infinity,
+    ).toBeLessThanOrEqual(engine.snapshot().simNowMs);
+    expect(
+      engine.snapshot().attempt?.combatants.find((c) => c.defId === "knight")
+        ?.action,
     ).toBeNull();
 
     engine.advanceBy(100);
-    knight = engine.snapshot().attempt?.combatants.find((c) => c.defId === "knight");
+    knight = engine
+      .snapshot()
+      .attempt?.combatants.find((c) => c.defId === "knight");
     expect(knight?.action).toBeNull();
-    expect(knight?.statuses.some((status) => status.statusId === "stun")).toBe(true);
+    expect(knight?.statuses.some((status) => status.statusId === "stun")).toBe(
+      true,
+    );
 
     engine.advanceBy(4000);
-    knight = engine.snapshot().attempt?.combatants.find((c) => c.defId === "knight");
-    expect(knight?.statuses.some((status) => status.statusId === "stun")).toBe(false);
+    knight = engine
+      .snapshot()
+      .attempt?.combatants.find((c) => c.defId === "knight");
+    expect(knight?.statuses.some((status) => status.statusId === "stun")).toBe(
+      false,
+    );
 
     engine.advanceBy(1);
-    knight = engine.snapshot().attempt?.combatants.find((c) => c.defId === "knight");
+    knight = engine
+      .snapshot()
+      .attempt?.combatants.find((c) => c.defId === "knight");
     expect(knight?.action).not.toBeNull();
     expect(knight?.action?.impactResolved).toBe(false);
   });
@@ -2048,7 +1933,10 @@ describe("full combat rules", () => {
   it("does not touch lootRngState during combat resolution", async () => {
     const { readFile } = await import("node:fs/promises");
     const { join } = await import("node:path");
-    const combatPath = join(new URL(".", import.meta.url).pathname, "combat.ts");
+    const combatPath = join(
+      new URL(".", import.meta.url).pathname,
+      "combat.ts",
+    );
     const source = await readFile(combatPath, "utf8");
     expect(source).not.toMatch(/lootRngState/);
   });
@@ -2056,92 +1944,62 @@ describe("full combat rules", () => {
 
 describe("progression", () => {
   it("awards full Character XP to Party Members and floor(50%) to the Reserve on opponent defeat", () => {
-    const saved: Snapshot = {
-      schemaVersion: 1,
-      savedAtMs: 0,
-      simNowMs: 0,
-      lootRngState: LOOT_SEED,
-      nextEventSeq: 1,
-      nextAttemptId: 1,
-      nextDropId: 1,
-      progression: progressionState({
-        unlockedStage: 1,
-        party: ["knight", "wizard", "priest"],
-        reserve: "hunter",
-        characterXp: { knight: 0, wizard: 0, priest: 0, hunter: 0 },
-        talents: {
-          knight: { statRanks: { "k-fortitude": 0, "k-swordcraft": 0 }, abilityTalentId: null },
-          wizard: {
-            statRanks: { "w-elemental-practice": 0, "w-warding-lore": 0 },
-            abilityTalentId: null,
-          },
-          priest: { statRanks: { "p-devotion": 0, "p-blessing": 0 }, abilityTalentId: null },
-          hunter: { statRanks: { "h-fleetness": 0, "h-keen-eye": 0 }, abilityTalentId: null },
-        },
-        loadouts: {
-          knight: ["k-shield-brace", "k-rally", "k-sweep"],
-          wizard: ["w-prism", "w-frost", "w-cinder"],
-          priest: ["p-moonwell", "p-resurgence", "p-smite"],
-          hunter: ["k-shield-brace", "k-rally", "k-sweep"],
-        },
-        pendingParty: null,
-      }),
-      attempt: {
-        id: 1,
-        stage: 1,
-        encounter: 1,
-        phase: "fighting",
-        phaseEndsAtMs: null,
-        equipmentLoadouts: { knight: {}, wizard: {}, priest: {}, hunter: {} },
-        combatants: [
-          {
-            entityId: "party:knight:front",
-            side: "party",
-            defId: "knight",
-            health: 180,
-            maxHealth: 180,
-            knockedOut: false,
-            action: null,
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-          {
-            entityId: "party:wizard:middle",
-            side: "party",
-            defId: "wizard",
-            health: 100,
-            maxHealth: 100,
-            knockedOut: false,
-            action: null,
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-          {
-            entityId: "party:priest:back",
-            side: "party",
-            defId: "priest",
-            health: 110,
-            maxHealth: 110,
-            knockedOut: false,
-            action: null,
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-          {
-            entityId: "opp:1:0",
-            side: "opponent",
-            defId: "fixture-grunt",
-            health: 1,
-            maxHealth: 40,
-            knockedOut: false,
-            action: null,
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-        ],
-      },
-      pendingEdits: [],
+    const saved = scenario()
+      .withParty(["knight", "wizard", "priest"], "hunter")
+      .build();
+    saved.lootRngState = LOOT_SEED;
+    saved.progression.loadouts = {
+      knight: ["k-shield-brace", "k-rally", "k-sweep"],
+      wizard: ["w-prism", "w-frost", "w-cinder"],
+      priest: ["p-moonwell", "p-resurgence", "p-smite"],
+      hunter: ["k-shield-brace", "k-rally", "k-sweep"],
     };
+    saved.attempt!.combatants = [
+      {
+        entityId: "party:knight:front",
+        side: "party",
+        defId: "knight",
+        health: 180,
+        maxHealth: 180,
+        knockedOut: false,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "party:wizard:middle",
+        side: "party",
+        defId: "wizard",
+        health: 100,
+        maxHealth: 100,
+        knockedOut: false,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "party:priest:back",
+        side: "party",
+        defId: "priest",
+        health: 110,
+        maxHealth: 110,
+        knockedOut: false,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "opp:1:0",
+        side: "opponent",
+        defId: "fixture-grunt",
+        health: 1,
+        maxHealth: 40,
+        knockedOut: false,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+    ];
 
     const engine = createEngine(progressionContent, saved, LOOT_SEED);
     const events = engine.advanceBy(5_000);
@@ -2159,9 +2017,15 @@ describe("progression", () => {
   it("keeps partial Character XP when abandoning a Wave mid-Attempt", () => {
     const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
     engine.advanceBy(1);
-    for (let ms = 0; ms < 120_000; ms += 1) {
-      const events = engine.advanceBy(1);
-      if (events.some((event) => event.type === "knockout" && event.entityId === "opp:1:0")) {
+    let elapsed = 0;
+    while (elapsed < 120_000) {
+      elapsed += 1;
+      const events = driveBy(engine, 1);
+      if (
+        events.some(
+          (event) => event.type === "knockout" && event.entityId === "opp:1:0",
+        )
+      ) {
         break;
       }
     }
@@ -2175,17 +2039,25 @@ describe("progression", () => {
     const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
     engine.advanceBy(1);
     const events: EngineEvent[] = [];
-    for (let ms = 0; ms < 300_000; ms += 1) {
-      events.push(...engine.advanceBy(1));
-      if (events.some((event) => event.type === "stage-cleared" && event.stage === 1)) {
+    let elapsed = 0;
+    while (elapsed < 300_000) {
+      elapsed += 1;
+      events.push(...driveBy(engine, 1));
+      if (
+        events.some(
+          (event) => event.type === "stage-cleared" && event.stage === 1,
+        )
+      ) {
         break;
       }
     }
     const snap = engine.snapshot();
     expect(snap.progression.characterXp.knight).toBeGreaterThanOrEqual(100);
-    expect(events.some((event) => event.type === "level-up" && event.classId === "knight")).toBe(
-      true,
-    );
+    expect(
+      events.some(
+        (event) => event.type === "level-up" && event.classId === "knight",
+      ),
+    ).toBe(true);
   });
 
   it("queues Talent edits until the Wave boundary and applies Activation Delay to newly slotted Abilities", () => {
@@ -2195,22 +2067,39 @@ describe("progression", () => {
     saved.progression.characterXp.knight = 850;
     const engine = createEngine(fixtureContent, saved, LOOT_SEED);
     for (let rank = 0; rank < 5; rank += 1) {
-      engine.allocateTalent("knight", rank % 2 === 0 ? "k-fortitude" : "k-swordcraft");
+      engine.allocateTalent(
+        "knight",
+        rank % 2 === 0 ? "k-fortitude" : "k-swordcraft",
+      );
     }
     engine.allocateTalent("knight", "k-hold-line");
     engine.setLoadout("knight", ["k-hold-line", "k-sweep", "k-rally"]);
 
     let transitionAt: number | null = null;
-    for (let ms = 0; ms < 300_000; ms += 1) {
-      const events = engine.advanceBy(1);
-      if (events.some((event) => event.type === "wave-cleared" && event.encounter === 1)) {
+    let elapsed = 0;
+    while (elapsed < 300_000) {
+      elapsed += 1;
+      const events = driveBy(engine, 1);
+      if (
+        events.some(
+          (event) => event.type === "wave-cleared" && event.encounter === 1,
+        )
+      ) {
         transitionAt = engine.snapshot().simNowMs;
       }
       if (events.some((event) => event.type === "config-applied")) {
         const snap = engine.snapshot();
-        expect(snap.progression.talents.knight?.abilityTalentId).toBe("k-hold-line");
-        expect(snap.progression.loadouts.knight).toEqual(["k-hold-line", "k-sweep", "k-rally"]);
-        const knight = snap.attempt?.combatants.find((combatant) => combatant.defId === "knight");
+        expect(snap.progression.talents.knight?.abilityTalentId).toBe(
+          "k-hold-line",
+        );
+        expect(snap.progression.loadouts.knight).toEqual([
+          "k-hold-line",
+          "k-sweep",
+          "k-rally",
+        ]);
+        const knight = snap.attempt?.combatants.find(
+          (combatant) => combatant.defId === "knight",
+        );
         expect(knight?.cooldownReadyAtMs["k-hold-line"]).toBe(
           (transitionAt ?? 0) + 2_000 + 15_000,
         );
@@ -2224,9 +2113,17 @@ describe("progression", () => {
     const engine = createEngine(progressionContent, undefined, LOOT_SEED);
     engine.advanceBy(1);
     engine.setParty(["priest", "wizard", "hunter"], "knight");
-    expect(engine.snapshot().progression.party).toEqual(["knight", "wizard", "priest"]);
+    expect(engine.snapshot().progression.party).toEqual([
+      "knight",
+      "wizard",
+      "priest",
+    ]);
     engine.selectStage(1);
-    expect(engine.snapshot().progression.party).toEqual(["priest", "wizard", "hunter"]);
+    expect(engine.snapshot().progression.party).toEqual([
+      "priest",
+      "wizard",
+      "hunter",
+    ]);
     expect(engine.snapshot().progression.reserve).toBe("knight");
   });
 });
@@ -2237,7 +2134,9 @@ describe("Equipment and Drops", () => {
     engine.advanceBy(1);
 
     const encounterOneEvents = eventsWhileClearingEncounter(engine, 1);
-    expect(encounterOneEvents.filter((event) => event.type === "drop-awarded")).toEqual([]);
+    expect(
+      encounterOneEvents.filter((event) => event.type === "drop-awarded"),
+    ).toEqual([]);
     expect(engine.snapshot().nextDropId).toBe(1);
 
     const encounterTwoDrops = dropIdsWhileClearingEncounter(engine, 2);
@@ -2248,7 +2147,9 @@ describe("Equipment and Drops", () => {
     expect(encounterThreeDrops).toEqual([2]);
     expect(engine.snapshot().nextDropId).toBe(3);
     expect(engine.snapshot().progression.armory).toHaveLength(2);
-    expect(engine.snapshot().progression.armory.map((drop) => drop.dropId)).toEqual([1, 2]);
+    expect(
+      engine.snapshot().progression.armory.map((drop) => drop.dropId),
+    ).toEqual([1, 2]);
   });
 
   it("rolls encounter 2 without uncommonFloor while encounter 3 enforces it", () => {
@@ -2264,7 +2165,9 @@ describe("Equipment and Drops", () => {
       }
       dropIdsWhileClearingEncounter(engine, 3);
       const encounterThreeDrop =
-        engine.snapshot().progression.armory[engine.snapshot().progression.armory.length - 1];
+        engine.snapshot().progression.armory[
+          engine.snapshot().progression.armory.length - 1
+        ];
       expect(encounterThreeDrop?.rarity).not.toBe("common");
     }
     expect(sawCommonOnEncounter2).toBe(true);
@@ -2321,8 +2224,10 @@ describe("Equipment and Drops", () => {
     engine.advanceBy(1);
 
     let firstDropId: number | null = null;
-    for (let ms = 0; ms < 300_000; ms += 1) {
-      const events = engine.advanceBy(1);
+    let elapsed = 0;
+    while (elapsed < 300_000) {
+      elapsed += 1;
+      const events = driveBy(engine, 1);
       const awarded = events.find((event) => event.type === "drop-awarded");
       if (awarded) {
         firstDropId = awarded.dropId;
@@ -2345,8 +2250,10 @@ describe("Equipment and Drops", () => {
     saved.attempt = attempt;
 
     const defeated = createEngine(fixtureContent, saved, LOOT_SEED);
-    for (let ms = 0; ms < 10_000; ms += 1) {
-      const events = defeated.advanceBy(1);
+    let defeatElapsed = 0;
+    while (defeatElapsed < 10_000) {
+      defeatElapsed += 1;
+      const events = driveBy(defeated, 1);
       if (events.some((event) => event.type === "party-defeat")) {
         break;
       }
@@ -2361,13 +2268,18 @@ describe("Equipment and Drops", () => {
     engine.advanceBy(1);
 
     let awardedDrop: DropInstance | null = null;
-    for (let ms = 0; ms < 300_000; ms += 1) {
-      const events = engine.advanceBy(1);
+    let elapsed = 0;
+    while (elapsed < 300_000) {
+      elapsed += 1;
+      const events = driveBy(engine, 1);
       const awarded = events.find((event) => event.type === "drop-awarded");
       if (awarded) {
         awardedDrop = structuredClone(
-          engine.snapshot().progression.armory.find((drop) => drop.dropId === awarded.dropId) ??
-            null,
+          engine
+            .snapshot()
+            .progression.armory.find(
+              (drop) => drop.dropId === awarded.dropId,
+            ) ?? null,
         );
         break;
       }
@@ -2383,111 +2295,86 @@ describe("Equipment and Drops", () => {
   });
 
   it("applies Equipment stats only from the next Stage Attempt", () => {
-    const saved: Snapshot = {
-      schemaVersion: 1,
-      savedAtMs: 0,
-      simNowMs: 0,
-      lootRngState: LOOT_SEED,
-      nextEventSeq: 1,
-      nextAttemptId: 1,
-      nextDropId: 2,
-      progression: progressionState({
-        party: ["knight", "wizard", "priest"],
-        reserve: "hunter",
-        armory: [
-          {
-            dropId: 1,
-            baseId: "fixture-blade",
-            itemLevel: 1,
-            rarity: "common",
-            affixes: [],
-            awardedAtMs: 1,
-            seen: false,
-            locked: false,
-            assignedTo: null,
-          },
-        ],
-      }),
-      attempt: {
-        id: 1,
-        stage: 1,
-        encounter: 1,
-        phase: "fighting",
-        phaseEndsAtMs: null,
-        equipmentLoadouts: { knight: {}, wizard: {}, priest: {}, hunter: {} },
-        combatants: [
-          {
-            entityId: "party:knight:front",
-            side: "party",
-            defId: "knight",
-            health: 180,
-            maxHealth: 180,
-            knockedOut: false,
-            action: {
-              abilityId: "knight-basic",
-              startedAtMs: 0,
-              impactAtMs: 1,
-              endsAtMs: 1001,
-              targetIds: ["opp:1:0"],
-              impactResolved: false,
-            },
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-          {
-            entityId: "party:wizard:middle",
-            side: "party",
-            defId: "wizard",
-            health: 100,
-            maxHealth: 100,
-            knockedOut: false,
-            action: null,
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-          {
-            entityId: "party:priest:back",
-            side: "party",
-            defId: "priest",
-            health: 110,
-            maxHealth: 110,
-            knockedOut: false,
-            action: null,
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-          {
-            entityId: "opp:1:0",
-            side: "opponent",
-            defId: "fixture-grunt",
-            health: 40,
-            maxHealth: 40,
-            knockedOut: false,
-            action: null,
-            cooldownReadyAtMs: {},
-            statuses: [],
-          },
-        ],
+    const saved = scenario()
+      .withParty(["knight", "wizard", "priest"], "hunter")
+      .withDrops(1)
+      .build();
+    saved.lootRngState = LOOT_SEED;
+    saved.nextDropId = 2;
+    saved.attempt!.combatants = [
+      {
+        entityId: "party:knight:front",
+        side: "party",
+        defId: "knight",
+        health: 180,
+        maxHealth: 180,
+        knockedOut: false,
+        action: {
+          abilityId: "knight-basic",
+          startedAtMs: 0,
+          impactAtMs: 1,
+          endsAtMs: 1001,
+          targetIds: ["opp:1:0"],
+          impactResolved: false,
+        },
+        cooldownReadyAtMs: {},
+        statuses: [],
       },
-      pendingEdits: [],
-    };
+      {
+        entityId: "party:wizard:middle",
+        side: "party",
+        defId: "wizard",
+        health: 100,
+        maxHealth: 100,
+        knockedOut: false,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "party:priest:back",
+        side: "party",
+        defId: "priest",
+        health: 110,
+        maxHealth: 110,
+        knockedOut: false,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "opp:1:0",
+        side: "opponent",
+        defId: "fixture-grunt",
+        health: 40,
+        maxHealth: 40,
+        knockedOut: false,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+    ];
 
     const engine = createEngine(fixtureContent, saved, LOOT_SEED);
     const beforeEquip = engine.advanceBy(1);
-    const beforeDamage = beforeEquip.find((event) => event.type === "impact")?.results[0]?.amount;
+    const beforeDamage = beforeEquip.find((event) => event.type === "impact")
+      ?.results[0]?.amount;
     expect(beforeDamage).toBe(13);
 
     engine.equip(1, "knight", "weapon");
     const duringAttempt = engine.advanceBy(5_000);
-    const duringDamage = duringAttempt.find((event) => event.type === "impact")?.results[0]?.amount;
+    const duringDamage = duringAttempt.find((event) => event.type === "impact")
+      ?.results[0]?.amount;
     expect(duringDamage ?? beforeDamage).toBe(13);
 
     engine.selectStage(1);
     const snap = engine.snapshot();
     expect(snap.attempt?.equipmentLoadouts.knight?.weapon).toBe(1);
 
-    for (let ms = 0; ms < 5_000; ms += 1) {
-      const events = engine.advanceBy(1);
+    let elapsed = 0;
+    while (elapsed < 5_000) {
+      elapsed += 1;
+      const events = driveBy(engine, 1);
       const impact = events.find(
         (event): event is Extract<EngineEvent, { type: "impact" }> =>
           event.type === "impact" &&
@@ -2506,8 +2393,10 @@ describe("Equipment and Drops", () => {
     const continuous = createEngine(fixtureContent, undefined, LOOT_SEED);
     continuous.advanceBy(1);
     let continuousDrop: number | null = null;
-    for (let ms = 0; ms < 300_000; ms += 7) {
-      const events = continuous.advanceBy(7);
+    let elapsed = 0;
+    while (elapsed < 300_000) {
+      elapsed += 7;
+      const events = driveBy(continuous, 7);
       const awarded = events.find((event) => event.type === "drop-awarded");
       if (awarded) {
         continuousDrop = awarded.dropId;
@@ -2564,26 +2453,38 @@ describe("Engine legality predicates", () => {
     const saved = boot.snapshot();
     saved.progression.characterXp.knight = 850;
 
-    const fresh = () => createEngine(fixtureContent, structuredClone(saved), LOOT_SEED);
+    const fresh = () =>
+      createEngine(fixtureContent, structuredClone(saved), LOOT_SEED);
 
     const allocateEngine = fresh();
     expect(allocateEngine.canAllocateTalent("knight", "k-fortitude")).toBe(
-      commandSucceeds(() => allocateEngine.allocateTalent("knight", "k-fortitude")),
+      commandSucceeds(() =>
+        allocateEngine.allocateTalent("knight", "k-fortitude"),
+      ),
     );
 
     const unknownTalent = fresh();
     expect(unknownTalent.canAllocateTalent("knight", "not-a-talent")).toBe(
-      commandSucceeds(() => unknownTalent.allocateTalent("knight", "not-a-talent")),
+      commandSucceeds(() =>
+        unknownTalent.allocateTalent("knight", "not-a-talent"),
+      ),
     );
 
     const unknownClass = fresh();
-    expect(unknownClass.canAllocateTalent("not-a-class" as ClassId, "k-fortitude")).toBe(
-      commandSucceeds(() => unknownClass.allocateTalent("not-a-class" as ClassId, "k-fortitude")),
+    expect(
+      unknownClass.canAllocateTalent("not-a-class" as ClassId, "k-fortitude"),
+    ).toBe(
+      commandSucceeds(() =>
+        unknownClass.allocateTalent("not-a-class" as ClassId, "k-fortitude"),
+      ),
     );
 
     const capped = fresh();
     for (let rank = 0; rank < 5; rank += 1) {
-      capped.allocateTalent("knight", rank % 2 === 0 ? "k-fortitude" : "k-swordcraft");
+      capped.allocateTalent(
+        "knight",
+        rank % 2 === 0 ? "k-fortitude" : "k-swordcraft",
+      );
     }
     expect(capped.canAllocateTalent("knight", "k-fortitude")).toBe(
       commandSucceeds(() => capped.allocateTalent("knight", "k-fortitude")),
@@ -2600,21 +2501,30 @@ describe("Engine legality predicates", () => {
 
     const abilityLocked = fresh();
     for (let rank = 0; rank < 5; rank += 1) {
-      abilityLocked.allocateTalent("knight", rank % 2 === 0 ? "k-fortitude" : "k-swordcraft");
+      abilityLocked.allocateTalent(
+        "knight",
+        rank % 2 === 0 ? "k-fortitude" : "k-swordcraft",
+      );
     }
     abilityLocked.allocateTalent("knight", "k-hold-line");
     expect(abilityLocked.canDeallocateTalent("knight", "k-fortitude")).toBe(
-      commandSucceeds(() => abilityLocked.deallocateTalent("knight", "k-fortitude")),
+      commandSucceeds(() =>
+        abilityLocked.deallocateTalent("knight", "k-fortitude"),
+      ),
     );
     expect(abilityLocked.canDeallocateTalent("knight", "k-hold-line")).toBe(
-      commandSucceeds(() => abilityLocked.deallocateTalent("knight", "k-hold-line")),
+      commandSucceeds(() =>
+        abilityLocked.deallocateTalent("knight", "k-hold-line"),
+      ),
     );
 
     const armoryEngine = createEngine(fixtureContent, undefined, LOOT_SEED);
     armoryEngine.advanceBy(1);
     let dropId: number | null = null;
-    for (let ms = 0; ms < 300_000; ms += 1) {
-      const events = armoryEngine.advanceBy(1);
+    let elapsed = 0;
+    while (elapsed < 300_000) {
+      elapsed += 1;
+      const events = driveBy(armoryEngine, 1);
       const awarded = events.find((event) => event.type === "drop-awarded");
       if (awarded) {
         dropId = awarded.dropId;
@@ -2623,7 +2533,9 @@ describe("Engine legality predicates", () => {
     }
     expect(dropId).not.toBeNull();
     const snap = armoryEngine.snapshot();
-    const drop = snap.progression.armory.find((entry) => entry.dropId === dropId);
+    const drop = snap.progression.armory.find(
+      (entry) => entry.dropId === dropId,
+    );
     expect(drop).toBeDefined();
 
     expect(armoryEngine.canEquip(dropId!, "knight", "weapon")).toBe(
@@ -2649,17 +2561,25 @@ describe("Engine legality predicates", () => {
 
     expect(engine.canAllocateTalent("knight", "k-fortitude")).toBe(true);
     engine.allocateTalent("knight", "k-fortitude");
-    expect(engine.snapshot().pendingEdits.some((edit) => edit.kind === "talent")).toBe(true);
+    expect(
+      engine.snapshot().pendingEdits.some((edit) => edit.kind === "talent"),
+    ).toBe(true);
     expect(engine.canAllocateTalent("knight", "k-fortitude")).toBe(
       commandSucceeds(() => engine.allocateTalent("knight", "k-fortitude")),
     );
-    expect(engine.snapshot().progression.talents.knight?.statRanks["k-fortitude"]).toBe(0);
+    expect(
+      engine.snapshot().progression.talents.knight?.statRanks["k-fortitude"],
+    ).toBe(0);
   });
 
   it("never throws from legality queries", () => {
     const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
-    expect(() => engine.canAllocateTalent("knight", "k-fortitude")).not.toThrow();
-    expect(() => engine.canAllocateTalent("bogus" as ClassId, "k-fortitude")).not.toThrow();
+    expect(() =>
+      engine.canAllocateTalent("knight", "k-fortitude"),
+    ).not.toThrow();
+    expect(() =>
+      engine.canAllocateTalent("bogus" as ClassId, "k-fortitude"),
+    ).not.toThrow();
     expect(() => engine.canDeallocateTalent("knight", "missing")).not.toThrow();
     expect(() => engine.canEquip(0, "knight", "weapon")).not.toThrow();
   });
@@ -2669,8 +2589,14 @@ describe("Presentation Event vocabulary", () => {
   it("defines events with only domain facts (no sprite, audio, or DOM fields)", async () => {
     const { readFile } = await import("node:fs/promises");
     const { join } = await import("node:path");
-    const eventsPath = join(new URL(".", import.meta.url).pathname, "events.ts");
-    const enginePath = join(new URL(".", import.meta.url).pathname, "engine.ts");
+    const eventsPath = join(
+      new URL(".", import.meta.url).pathname,
+      "events.ts",
+    );
+    const enginePath = join(
+      new URL(".", import.meta.url).pathname,
+      "engine.ts",
+    );
     const forbidden = /sprite|audio|DOM|backdropKey|iconKey/i;
 
     for (const path of [eventsPath, enginePath]) {
