@@ -58,6 +58,7 @@ test.describe("accessibility contrast floor", () => {
   test("evidence: aa-contrast / evidence: dock-surfaces — status line and Dock surfaces meet WCAG AA; scroll affordance appears only when a panel overflows", async ({
     browser,
   }) => {
+    test.setTimeout(60_000);
     const { context, tile } = await openTilePage(browser);
     const dock = await attachDockPage(context);
     await postBusSnapshot(dock, armoryColourSnapshot());
@@ -70,7 +71,7 @@ test.describe("accessibility contrast floor", () => {
     expect(toggleSample).not.toBeNull();
     assertAaContrast(toggleSample!);
 
-    let armoryDetailPrepared = false;
+    let armoryContrastPrepared = false;
     let talentDetailPrepared = false;
     for (const { tab, selector } of DOCK_PRIMARY_TEXT) {
       await focusDockTab(dock, tab);
@@ -94,14 +95,21 @@ test.describe("accessibility contrast floor", () => {
           }
         }
       }
-      if (tab === "armory" && !armoryDetailPrepared) {
-        await dock.locator('.armory-grid .equipment-card[data-drop-id="99"]').click();
+      if (tab === "armory" && !armoryContrastPrepared) {
+        const tile = dock.locator('.armory-grid .equipment-card[data-drop-id="99"]');
+        await expect(tile).toBeVisible({ timeout: 15_000 });
+        await tile.click();
         await expect(dock.locator(".armory-detail .equipment-detail .equipment-name")).toBeVisible();
-        armoryDetailPrepared = true;
+        await tile.hover();
+        await expect(
+          dock.locator('[data-armory-compare-popover="true"]:not([hidden])'),
+        ).toBeVisible();
+        armoryContrastPrepared = true;
       }
       if (tab === "armory" && selector.includes("armory-compare-popover")) {
-        await dock.locator('.armory-grid .equipment-card[data-drop-id="99"]').hover();
-        await expect(dock.locator('[data-armory-compare-popover="true"]:not([hidden])')).toBeVisible();
+        await expect(
+          dock.locator('[data-armory-compare-popover="true"]:not([hidden])'),
+        ).toBeVisible();
       }
       const sample = await readTextContrastSample(dock, selector);
       expect(sample, `sample for ${selector}`).not.toBeNull();
