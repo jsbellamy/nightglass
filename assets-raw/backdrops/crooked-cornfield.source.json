@@ -1,0 +1,48 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "prompt": "Ultra-wide panoramic toxic-rural-dusk fantasy battlefield backdrop strip in a chunky, softly painted pixel-art style. Very low contrast and overall dark enough for bright combat sprites, 2-pixel health bars, damage numbers, and luminous effects to remain the strongest signals.\n\nSCENE: the Crooked Cornfield, an invaded farm lane between towering, unnaturally bent corn rows. Heavy corn heads and ragged leaves lean inward without forming faces. Broken irrigation pipes cross shallow ditches of sickly green runoff; a leaning wire fence, distant water tower, and one dim red warning lamp punctuate the horizon. Mustard storm light and bruised orange dusk fade into deep field greens, husk yellow-browns, oily teal drainage shadows, and restrained rust.\n\nCOMPOSITION: designed for a short 480\u00d786 crop. Pack crooked corn silhouettes, broken pipework, fence, and distant water tower into the middle horizontal band. Keep a nearly flat dark farm-track ground band across the bottom fifth. Keep the sky thin. Leave broad low-detail combat space on both halves. Corn highlights and runoff must be muted, never glowing brighter than combat feedback.\n\nEnvironmental evidence of invasion may include snapped stalks, oversized webbed tracks, and a dragged irrigation hose, but show no creature or body. No ducks, characters, animals, monsters, scarecrow with a face, readable text, logos, watermark, UI, borders, vignette frame, focal weapon, fire, gore, or hot-magenta field.\n",
+  "raw_sha256": "05f25661505e5730e565ba80eb13a8daa50d2440bc0f0f17fa971128e2bc932e",
+  "asset_class": "backdrop",
+  "runtime_destination": "src/assets/backdrops/crooked-cornfield.png",
+  "direct_inputs": [
+    {
+      "path": "src/assets/backdrops/backdrop-1.png",
+      "role": "style cohort",
+      "sha256": "1052210eb5df222aa606abc582204cb912e3fe6131ed84567bfd7e71c10bf230"
+    },
+    {
+      "path": "src/assets/backdrops/backdrop-2.png",
+      "role": "style cohort",
+      "sha256": "6f27754718ba1f3cf610aecd560548e04edcffe3bde4f2f8bb1fd1059d665267"
+    },
+    {
+      "path": "src/assets/backdrops/backdrop-3.png",
+      "role": "style cohort",
+      "sha256": "29548f1a9d47c5af9aae47d26b0038fc1023d26a5d2c89c394d044572e5e9e1b"
+    }
+  ],
+  "candidate": "candidate-1",
+  "visual_theme": "fowl-harvest",
+  "source_resolution": [
+    1536,
+    1024
+  ],
+  "reduction": {
+    "crop_box": [
+      0,
+      374,
+      1536,
+      649
+    ],
+    "crop_size": [
+      1536,
+      275
+    ],
+    "resample": "NEAREST",
+    "runtime_size": [
+      480,
+      86
+    ]
+  }
+}
