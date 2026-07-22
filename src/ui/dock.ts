@@ -21,6 +21,8 @@ export interface DockSurfaceMountOptions {
   onCommand(command: TileCommand): void;
   /** The Character the picker has selected. Read at render time, not mount time. */
   getSelectedClassId(): ClassId | null;
+  /** Session-local Character selection owned by the Management Dock shell. */
+  selectClassId(classId: ClassId): void;
 }
 
 export interface DockSurfaceEntry {
@@ -152,16 +154,23 @@ export function mountManagementDock(
     content: options.content,
     onCommand: (command) => options.onCommand?.(command),
     getSelectedClassId: () => selectedClassId ?? null,
+    selectClassId(classId) {
+      if (selectedClassId === classId) {
+        return;
+      }
+      selectedClassId = classId;
+      remountPickerAndSurface();
+    },
   };
 
   const characterPicker = mountCharacterPicker(body, {
     content: options.content,
     onSelect(classId) {
-      selectedClassId = classId;
-      remountPickerAndSurface();
+      mountOptions.selectClassId(classId);
     },
     onCommand: (command) => options.onCommand?.(command),
   });
+  const characterPickerEl = body.querySelector<HTMLElement>(".character-picker")!;
   body.append(surface);
 
   for (const entry of DOCK_SURFACES) {
@@ -246,9 +255,18 @@ export function mountManagementDock(
     lastRenderedLegality = heldLegality;
   }
 
+  function syncCharacterRailVisibility(): void {
+    const showRail = activeTab === "character";
+    characterPickerEl.hidden = !showRail;
+    characterPickerEl.setAttribute("aria-hidden", showRail ? "false" : "true");
+    characterPickerEl.inert = !showRail;
+    body.dataset["dockNav"] = activeTab;
+  }
+
   function setActiveTab(next: DockTabId): void {
     const tabChanged = next !== activeTab;
     activeTab = next;
+    syncCharacterRailVisibility();
     for (const { id } of DOCK_SURFACES) {
       const selected = id === activeTab;
       const button = tabButtons.get(id);

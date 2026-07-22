@@ -573,24 +573,36 @@ describe("Management Dock active-surface rendering", () => {
 });
 
 describe("Management Dock Character picker", () => {
-  it("renders the picker as a sibling of .dock-surface on every tab", () => {
+  it("mounts the picker beside .dock-surface and shows the full rail only on Character", () => {
     const root = document.createElement("main");
     const dock = mountDock(root);
     const engine = createEngine(fixtureContent, undefined, 3);
     dock.render(engine.snapshot());
 
-    const picker = root.querySelector(".character-picker");
+    const picker = root.querySelector<HTMLElement>(".character-picker");
     const surface = root.querySelector(".dock-surface");
     expect(picker).not.toBeNull();
     expect(surface).not.toBeNull();
     expect(picker?.parentElement).toBe(root.querySelector(".dock-body"));
     expect(surface?.parentElement).toBe(picker?.parentElement);
     expect(root.querySelector(".dock-panel .character-picker")).toBeNull();
+    expect(picker?.hidden).toBe(false);
+    expect(picker?.getAttribute("aria-hidden")).toBe("false");
+    expect(picker?.inert).toBe(false);
+    expect(root.querySelector(".character-picker [data-picker-position]")).not.toBeNull();
 
-    for (const tab of DOCK_TABS) {
-      root.querySelector<HTMLButtonElement>(`[data-dock-tab="${tab.id}"]`)?.click();
-      expect(root.querySelector(".character-picker")).toBe(picker);
-    }
+    root.querySelector<HTMLButtonElement>('[data-dock-tab="armory"]')?.click();
+    expect(root.querySelector(".character-picker")).toBe(picker);
+    expect(picker?.hidden).toBe(true);
+    expect(picker?.getAttribute("aria-hidden")).toBe("true");
+    expect(picker?.inert).toBe(true);
+
+    root.querySelector<HTMLButtonElement>('[data-dock-tab="stage"]')?.click();
+    expect(picker?.hidden).toBe(true);
+    expect(root.querySelector(".stage-surface .character-picker")).toBeNull();
+
+    root.querySelector<HTMLButtonElement>('[data-dock-tab="character"]')?.click();
+    expect(picker?.hidden).toBe(false);
 
     dock.destroy();
   });
@@ -653,6 +665,35 @@ describe("Management Dock Character picker", () => {
     dock.destroy();
   });
 
+  it("keeps session Character selection across top-level tab switches via dock callbacks", () => {
+    const root = document.createElement("main");
+    const dock = mountDock(root);
+    const engine = createEngine(fixtureContent, undefined, 3);
+    const snapshot = engine.snapshot();
+    const target = snapshot.progression.reserve;
+
+    dock.render(snapshot);
+    root.querySelector<HTMLButtonElement>('[data-dock-tab="armory"]')?.click();
+    root.querySelector<HTMLElement>(`.armory-character-selector [data-character-chip="${target}"]`)?.click();
+    dock.render(snapshot);
+
+    root.querySelector<HTMLButtonElement>('[data-dock-tab="character"]')?.click();
+    expect(
+      root
+        .querySelector(`.character-picker [data-character-chip="${target}"]`)
+        ?.getAttribute("aria-selected"),
+    ).toBe("true");
+
+    root.querySelector<HTMLButtonElement>('[data-dock-tab="armory"]')?.click();
+    expect(
+      root
+        .querySelector(`.armory-character-selector [data-character-chip="${target}"]`)
+        ?.getAttribute("aria-selected"),
+    ).toBe("true");
+
+    dock.destroy();
+  });
+
   it("keeps picker selection across tab switches without remounting", () => {
     const root = document.createElement("main");
     const dock = mountDock(root);
@@ -661,7 +702,7 @@ describe("Management Dock Character picker", () => {
     const target = snapshot.progression.party[1]!;
 
     dock.render(snapshot);
-    const picker = root.querySelector(".character-picker");
+    const picker = root.querySelector<HTMLElement>(".character-picker");
     root.querySelector<HTMLElement>(`[data-character-chip="${target}"]`)?.click();
 
     root.querySelector<HTMLButtonElement>('[data-dock-tab="armory"]')?.click();

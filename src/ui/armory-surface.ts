@@ -27,6 +27,8 @@ import {
   classKitFor,
   effectiveLoadout,
   effectiveTalentState,
+  levelFor,
+  rosterClassIds,
 } from "./snapshot-view";
 import { el, bindScrollOverflowAffordance, mountSurfaceShell } from "./surface-shell";
 
@@ -43,6 +45,8 @@ export interface ArmorySurfaceOptions {
   onCommand?: (command: TileCommand) => void;
   /** The Character the Dock picker has selected. Read at render time. */
   getSelectedClassId(): ClassId | null;
+  /** Updates session-local Character selection owned by the Management Dock shell. */
+  selectClassId(classId: ClassId): void;
 }
 
 type BrowseCompatibility = { classId: ClassId; slot: EquipmentSlotId };
@@ -171,6 +175,84 @@ export function mountArmorySurface(
     browseCompatibility = { classId, slot };
     selectedDropId = equippedDropId(armory, classId, slot);
     crossEquipConfirm = null;
+  }
+
+  function renderArmoryCharacterSelector(
+    snapshot: ReadonlySnapshot,
+    container: HTMLElement,
+  ): void {
+    const roster = rosterClassIds(snapshot);
+    const selected = options.getSelectedClassId();
+    const selector = el("div", {
+      class: "armory-character-selector",
+      data: { armoryCharacterSelector: "true" },
+      props: { role: "tablist" },
+      aria: { label: "Characters" },
+    });
+
+    function selectAt(index: number): void {
+      const classId = roster[index];
+      if (!classId) {
+        return;
+      }
+      options.selectClassId(classId);
+    }
+
+    function onChipKeydown(event: KeyboardEvent, classId: ClassId): void {
+      const index = roster.indexOf(classId);
+      if (index < 0 || roster.length === 0) {
+        return;
+      }
+      const last = roster.length - 1;
+      if (event.key === "ArrowRight") {
+        event.preventDefault();
+        selectAt((index + 1) % roster.length);
+        return;
+      }
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        selectAt((index - 1 + roster.length) % roster.length);
+        return;
+      }
+      if (event.key === "Home") {
+        event.preventDefault();
+        selectAt(0);
+        return;
+      }
+      if (event.key === "End") {
+        event.preventDefault();
+        selectAt(last);
+      }
+    }
+
+    for (const classId of roster) {
+      const isSelected = classId === selected;
+      const chip = el(
+        "button",
+        {
+          class: "character-picker-chip focus-ring",
+          data: { characterChip: classId },
+          props: {
+            type: "button",
+            role: "tab",
+            tabIndex: isSelected ? 0 : -1,
+          },
+        },
+        [
+          el("span", { class: "character-chip-name", text: CLASS_LABELS[classId] }),
+          el("span", {
+            class: "character-chip-level",
+            text: `Level ${levelFor(snapshot, content, classId)}`,
+          }),
+        ],
+      );
+      chip.setAttribute("aria-selected", isSelected ? "true" : "false");
+      bindPressable(chip, () => options.selectClassId(classId));
+      chip.addEventListener("keydown", (event) => onChipKeydown(event, classId));
+      selector.append(chip);
+    }
+
+    container.append(selector);
   }
 
   function renderWornStrip(snapshot: ReadonlySnapshot, container: HTMLElement): void {
@@ -813,6 +895,7 @@ export function mountArmorySurface(
     body(snapshot) {
       const body = el("div", { class: "armory-body" });
       renderToolbar(snapshot, body);
+      renderArmoryCharacterSelector(snapshot, body);
       renderWornStrip(snapshot, body);
       const panes = el("div", { class: "armory-panes" });
       renderGrid(snapshot, panes);

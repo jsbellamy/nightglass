@@ -527,14 +527,38 @@ test.describe("rendered-output evidence seam", () => {
         const visible = [...document.querySelectorAll(".dock-panel")].filter(
           (p) => !(p as HTMLElement).hidden,
         );
+        const picker = document.querySelector<HTMLElement>(".dock-body > .character-picker");
+        const armorySelector = panel?.querySelector<HTMLElement>(
+          '[data-armory-character-selector="true"]',
+        );
+        const formationControl = document.querySelector(
+          ".character-picker [data-formation-action]",
+        );
         return {
           chars: panel ? panel.textContent?.trim().length ?? 0 : 0,
           visibleCount: visible.length,
+          pickerHidden: picker?.hidden === true,
+          armorySelectorInPanel: armorySelector !== null,
+          formationOnCharacterTab: t === "character" && formationControl !== null,
+          stageHasPicker: t === "stage" && picker?.hidden === true,
         };
       }, tab);
       await dock.screenshot({ path: `${SCREENSHOTS}/04-dock-${i + 1}-${tab}.png` });
       expect(state.chars, `dock surface ${tab} content`).toBeGreaterThan(20);
       expect(state.visibleCount, `one panel for ${tab}`).toBe(1);
+      if (tab === "character") {
+        expect(state.pickerHidden, "full Character rail on Character").toBe(false);
+        expect(state.formationOnCharacterTab, "formation controls on Character").toBe(true);
+      } else {
+        expect(state.pickerHidden, `full rail hidden on ${tab}`).toBe(true);
+      }
+      if (tab === "armory") {
+        expect(state.armorySelectorInPanel, "Armory compact selector").toBe(true);
+      }
+      if (tab === "stage") {
+        expect(state.stageHasPicker, "Stage omits Character nav").toBe(true);
+        expect(state.armorySelectorInPanel, "Stage has no Armory selector").toBe(false);
+      }
     }
 
     const firstTab = tabs[0];
@@ -677,7 +701,7 @@ test.describe("rendered-output evidence seam", () => {
 
     const classIds = ["knight", "wizard", "priest", "hunter"] as const;
     for (const classId of classIds) {
-      await dock.click(`[data-character-chip="${classId}"]`);
+      await dock.click(`.armory-character-selector [data-character-chip="${classId}"]`);
       const slotFits = await dock.evaluate(() => {
         return [...document.querySelectorAll<HTMLElement>("[data-worn-slot]")].map((row) => {
           const img = row.querySelector<HTMLImageElement>(".equipment-icon-img--content");
