@@ -1,0 +1,45 @@
+{
+  "candidate": "candidate-1",
+  "raw_size": [
+    1536,
+    1024
+  ],
+  "runtime_size": [
+    480,
+    86
+  ],
+  "mode": "RGBA",
+  "source_resolution": [
+    1536,
+    1024
+  ],
+  "reduction": {
+    "crop_box": [
+      0,
+      374,
+      1536,
+      649
+    ],
+    "crop_size": [
+      1536,
+      275
+    ],
+    "resample": "NEAREST",
+    "runtime_size": [
+      480,
+      86
+    ]
+  },
+  "raw_sha256": "05f25661505e5730e565ba80eb13a8daa50d2440bc0f0f17fa971128e2bc932e",
+  "runtime_sha256": "3d8e94506f245536906d0503a1a3d584f858b988013cd5662655eb6d1f24bd5b",
+  "byte_identity_rebuild": true,
+  "magenta_near_pixels": 0,
+  "mean_luminance": {
+    "sky_top_20": 42.37410149509818,
+    "mid_25_75": 23.7306364825586,
+    "ground_bottom_20": 22.277329120370155,
+    "max_sky": 150.1652,
+    "max_mid": 158.05939999999998,
+    "max_ground": 168.46179999999998
+  }
+}
