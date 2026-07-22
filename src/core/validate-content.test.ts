@@ -166,4 +166,69 @@ describe("validateContent", () => {
   it("returns [] for shipped Content assembled from data modules", () => {
     expect(validateContent(buildContent())).toEqual([]);
   });
+
+  it("accepts shipped expansion status tick definitions", () => {
+    const scorched = buildContent().statuses.find((status) => status.id === "scorched");
+    expect(scorched?.tickEveryMs).toBe(1_000);
+    expect(validateContent(buildContent())).toEqual([]);
+  });
+
+  it("rejects a status with tickEveryMs but no tickEffect", () => {
+    const content: Content = {
+      ...fixtureContent,
+      statuses: [
+        ...fixtureContent.statuses,
+        {
+          id: "bad-tick",
+          name: "Bad Tick",
+          kind: "debuff",
+          durationMs: 1000,
+          tickEveryMs: 500,
+        },
+      ],
+    };
+    expect(validateContent(content, { fixture: true })).toContain(
+      'status "bad-tick" must declare both tickEveryMs and tickEffect, or neither',
+    );
+  });
+
+  it("rejects a non-positive tickEveryMs interval", () => {
+    const content: Content = {
+      ...fixtureContent,
+      statuses: [
+        ...fixtureContent.statuses,
+        {
+          id: "fast-tick",
+          name: "Fast Tick",
+          kind: "debuff",
+          durationMs: 1000,
+          tickEveryMs: 0,
+          tickEffect: { kind: "damage", channel: "physical", coefficient: 0.1 },
+        },
+      ],
+    };
+    expect(validateContent(content, { fixture: true })).toContain(
+      'status "fast-tick" tickEveryMs must be a positive integer',
+    );
+  });
+
+  it("rejects a tickEffect that is not damage", () => {
+    const content: Content = {
+      ...fixtureContent,
+      statuses: [
+        ...fixtureContent.statuses,
+        {
+          id: "heal-tick",
+          name: "Heal Tick",
+          kind: "buff",
+          durationMs: 1000,
+          tickEveryMs: 500,
+          tickEffect: { kind: "heal", coefficient: 0.2 },
+        },
+      ],
+    };
+    expect(validateContent(content, { fixture: true })).toContain(
+      'status "heal-tick" tickEffect must be damage',
+    );
+  });
 });
