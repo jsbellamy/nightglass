@@ -1,0 +1,61 @@
+{
+  "provider": "Cursor GenerateImage",
+  "prompt": "TRUE chunky pixel art skill icon ONLY. Drawn on an exact 32x32 logical pixel grid rendered large; every logical pixel is one clean flat square block \u2014 no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered symbolic skill glyph in three-quarter display angle: a LARGE vertical cream-gold sun spear glyph with berry flare at the tip filling the frame. Not a wearable equipment piece and not a full character \u2014 one readable glyph only. Enlarge \u2014 subject's long side spans about 26-30 logical pixels, with at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel dark-plum outline. Use only mint / berry / cream / plum Moonberry colours (8-12 flat colors max) \u2014 no brown, tan, cyan, pure white, or pure black. Structural members at least 3 logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "raw_sha256": "e7202416f54dab24a7ff29380226ce77e117eb08fd114afa38964d797de6b64f",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        304,
+        61,
+        751,
+        959
+      ],
+      "pitch_x": {
+        "pitch": 31.87222222222232,
+        "score": 0.3042264048681289
+      },
+      "pitch_y": {
+        "pitch": 31.97222222222232,
+        "score": 0.2064909579079501
+      },
+      "grid": [
+        14,
+        28
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 234,
+      "far_cells": 25,
+      "far_fraction": 0.1068,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "contour-plum-deep": 51,
+        "berry-shadow": 13,
+        "mint": 42,
+        "cream": 40,
+        "mint-light": 18,
+        "berry": 13,
+        "berry-mid": 14,
+        "berry-bright": 10,
+        "sage": 14,
+        "cream-gold": 13,
+        "twilight-slate": 6
+      }
+    }
+  },
+  "palette_subset": [
+    "contour-plum-deepest",
+    "contour-plum-deep",
+    "mint",
+    "mint-light",
+    "cream",
+    "cream-gold",
+    "berry-shadow",
+    "berry-mid",
+    "berry",
+    "berry-bright",
+    "sage",
+    "twilight-slate"
+  ],
+  "evidence_raw": "docs/research/evidence/305-talent-icons-priest/accepted-raws/sunlance.png"
+}

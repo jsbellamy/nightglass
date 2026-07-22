@@ -1,0 +1,60 @@
+{
+  "provider": "Cursor GenerateImage",
+  "prompt": "TRUE chunky pixel art skill icon ONLY. Drawn on an exact 32x32 logical pixel grid rendered large; every logical pixel is one clean flat square block \u2014 no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered symbolic skill glyph in three-quarter display angle: a cream prayer-crest glyph of folded hands / paired palms with berry accent, no body. Not a wearable equipment piece and not a full character \u2014 one readable glyph only. Subject's long side spans about 26-30 logical pixels, with at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel dark-plum outline. Use only mint / berry / cream / plum Moonberry colours (8-12 flat colors max) \u2014 no brown, tan, cyan, pure white, or pure black. Structural members at least 3 logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "raw_sha256": "fe69ccfbed9b6310a78cc5efbb4c8c39a0d085d42789a06bf6ace765a4af5977",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        187,
+        119,
+        836,
+        846
+      ],
+      "pitch_x": {
+        "pitch": 24.97222222222229,
+        "score": 0.4791945470402539
+      },
+      "pitch_y": {
+        "pitch": 24.97222222222229,
+        "score": 0.41885016584438745
+      },
+      "grid": [
+        26,
+        29
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 470,
+      "far_cells": 7,
+      "far_fraction": 0.0149,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "contour-plum-deep": 101,
+        "mint": 61,
+        "cream": 121,
+        "berry": 35,
+        "mint-pale": 55,
+        "mint-light": 17,
+        "berry-bright": 5,
+        "berry-shadow": 10,
+        "mint-shadow": 60,
+        "twilight-slate": 5
+      }
+    }
+  },
+  "palette_subset": [
+    "contour-plum-deepest",
+    "contour-plum-deep",
+    "mint-shadow",
+    "mint",
+    "mint-light",
+    "mint-pale",
+    "cream",
+    "berry-shadow",
+    "berry-mid",
+    "berry",
+    "berry-bright",
+    "twilight-slate"
+  ],
+  "evidence_raw": "docs/research/evidence/305-talent-icons-priest/accepted-raws/devotion.png"
+}
