@@ -1,0 +1,61 @@
+{
+  "provider": "Cursor GenerateImage",
+  "prompt": "TRUE chunky pixel art Talent icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block with no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered symbolic Management Dock skill glyph for Battle Liturgy: a compact prayer-book shield, reading Armor. Keep the silhouette SMALLER than before \u2014 long side about 24\u201328 logical pixels (not 31), clearly inset. At least THREE full magenta cells of clearance on every edge, especially top and bottom. Not a wearable Equipment item, not a scene, not a full Character, and not a UI frame. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel dark-plum outline. Use only mint, berry, cream, and plum Moonberry colors, 8\u201312 flat colors maximum; no brown, tan, cyan, pure white, or pure black. Structural members are at least three logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "issue_prompt": "TRUE chunky pixel art Talent icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block with no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered symbolic Management Dock skill glyph for Battle Liturgy: a compact prayer-book shield, reading Armor. Not a wearable Equipment item, not a scene, not a full Character, and not a UI frame. The subject long side spans about 26\u201330 logical pixels, with at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel dark-plum outline. Use only mint, berry, cream, and plum Moonberry colors, 8\u201312 flat colors maximum; no brown, tan, cyan, pure white, or pure black. Structural members are at least three logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "raw_sha256": "f1765e8097edbcc8cb585de379caa6227a88b256a139e47c4cfbe8eaca7eba48",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        323,
+        257,
+        705,
+        794
+      ],
+      "pitch_x": {
+        "pitch": 17.344444444444477,
+        "score": 0.39027295855480093
+      },
+      "pitch_y": {
+        "pitch": 17.844444444444484,
+        "score": 0.41920288370628406
+      },
+      "grid": [
+        22,
+        30
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 565,
+      "far_cells": 5,
+      "far_fraction": 0.0088,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "contour-plum-deep": 96,
+        "contour-plum-deepest": 1,
+        "mint-shadow": 35,
+        "cream": 169,
+        "mint": 91,
+        "cream-gold": 9,
+        "berry-shadow": 5,
+        "berry": 77,
+        "berry-mid": 14,
+        "mint-light": 65,
+        "berry-bright": 3
+      }
+    }
+  },
+  "palette_subset": [
+    "contour-plum-deepest",
+    "contour-plum-deep",
+    "mint-shadow",
+    "mint",
+    "mint-light",
+    "cream",
+    "cream-gold",
+    "berry-shadow",
+    "berry-mid",
+    "berry",
+    "berry-bright"
+  ],
+  "evidence_raw": "docs/research/evidence/fowl-harvest/talent-icons/priest/accepted-raws/battle-liturgy.png"
+}
