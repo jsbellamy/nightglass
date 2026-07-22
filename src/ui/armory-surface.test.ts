@@ -232,12 +232,15 @@ describe("Armory surface", () => {
       [...root.querySelectorAll<HTMLElement>(".armory-grid .equipment-card")].map(
         (card) => card.dataset["dropId"],
       ),
-    ).toEqual(["1"]);
+    ).toEqual([]);
     expect(
       root
-        .querySelector<HTMLElement>('.armory-grid .equipment-card[data-drop-id="1"]')
-        ?.getAttribute("aria-selected"),
-    ).toBe("true");
+        .querySelector<HTMLElement>('.armory-grid .equipment-card[data-drop-id="1"]'),
+    ).toBeNull();
+    expect(
+      root
+        .querySelector<HTMLElement>('.armory-grid .equipment-card[aria-selected="true"]'),
+    ).toBeNull();
     expect(root.querySelector('[data-armory-detail="true"] .equipment-name')?.textContent).toMatch(
       /Fixture Blade/,
     );
@@ -344,16 +347,26 @@ describe("Armory surface", () => {
         locked: true,
         assignedTo: { classId: "knight", slot: "weapon" },
       }),
+      drop({
+        dropId: 2,
+        baseId: "fixture-armor",
+        rarity: "rare",
+        seen: false,
+        locked: true,
+      }),
     ]);
     const surface = mountWithSelection(root, selected);
     renderArmory(surface, snapshot);
 
-    const tile = root.querySelector<HTMLElement>('.armory-grid .equipment-card[data-drop-id="1"]');
+    expect(
+      root.querySelector('.armory-grid .equipment-card[data-drop-id="1"]'),
+    ).toBeNull();
+    const tile = root.querySelector<HTMLElement>('.armory-grid .equipment-card[data-drop-id="2"]');
     expect(tile?.classList.contains("rarity-rare")).toBe(true);
     const icon = tile?.querySelector<HTMLImageElement>(".equipment-icon-img--content");
     expect(icon?.width).toBe(34);
     expect(icon?.height).toBe(34);
-    expect(tile?.getAttribute("aria-label")).toMatch(/Fixture Blade/);
+    expect(tile?.getAttribute("aria-label")).toMatch(/Fixture Armor/);
     expect(tile?.querySelector(".equipment-name")).toBeNull();
     expect(tile?.textContent).not.toMatch(/Unseen/);
     expect(tile?.querySelector('[data-unseen-marker="true"]')?.getAttribute("aria-label")).toBe(
@@ -363,6 +376,8 @@ describe("Armory surface", () => {
     expect(tile?.querySelector(".locked-marker")?.textContent).not.toMatch(/Locked/);
     expect(tile?.querySelector(".assigned-marker")).toBeNull();
     expect(tile?.textContent).not.toMatch(/Knight/);
+    expect(tile?.classList.contains("locked-tile")).toBe(true);
+    expect(tile?.querySelector('[data-tile-lock="2"]')).not.toBeNull();
     expect(root.querySelector(".armory-filter")).toBeNull();
 
     surface.destroy();
@@ -383,7 +398,7 @@ describe("Armory surface", () => {
     ]);
     const surface = mountWithSelection(root, selected);
     renderArmory(surface, snapshot);
-    root.querySelector<HTMLElement>('.equipment-card[data-drop-id="1"]')?.click();
+    root.querySelector<HTMLButtonElement>('[data-worn-slot="weapon"]')?.click();
     renderArmory(surface, snapshot);
 
     const detail = root.querySelector<HTMLElement>('[data-armory-detail="true"]');
@@ -406,7 +421,6 @@ describe("Armory surface", () => {
         awardedAtMs: 200,
         rarity: "rare",
         locked: true,
-        assignedTo: { classId: "knight", slot: "armor" },
       }),
       drop({ dropId: 3, baseId: "fixture-focus", awardedAtMs: 300, rarity: "uncommon" }),
     ]);
@@ -425,12 +439,19 @@ describe("Armory surface", () => {
     root.querySelector<HTMLButtonElement>('[data-slot-filter="all"]')?.click();
     renderArmory(surface, snapshot);
     const state = root.querySelector<HTMLSelectElement>('[data-armory-state="true"]');
-    state!.value = "assigned";
+    expect([...state!.options].map((option) => option.value)).toEqual([
+      "all",
+      "unseen",
+      "locked",
+    ]);
+    state!.value = "locked";
     state!.dispatchEvent(new Event("change"));
     renderArmory(surface, snapshot);
-    expect(root.querySelector<HTMLElement>(".armory-grid .equipment-card")?.dataset["dropId"]).toBe(
-      "2",
-    );
+    expect(
+      [...root.querySelectorAll<HTMLElement>(".armory-grid .equipment-card")].map(
+        (card) => card.dataset["dropId"],
+      ),
+    ).toEqual(["2"]);
 
     const sort = root.querySelector<HTMLSelectElement>('[data-armory-sort="true"]');
     sort!.value = "name";
@@ -602,7 +623,11 @@ describe("Armory surface", () => {
     });
 
     renderArmory(surface, engine.snapshot());
-    root.querySelector<HTMLElement>('.equipment-card[data-drop-id="1"]')?.click();
+    selected.current = "wizard";
+    renderArmory(surface, engine.snapshot());
+    root.querySelector<HTMLButtonElement>('[data-worn-slot="armor"]')?.click();
+    renderArmory(surface, engine.snapshot());
+    selected.current = "knight";
     renderArmory(surface, engine.snapshot());
 
     const equip = root.querySelector<HTMLButtonElement>('[data-equip-button="true"]');
@@ -728,7 +753,78 @@ describe("Armory surface", () => {
     dock.destroy();
   });
 
-  it("locks from the detail panel and keeps discard selection keyboard-reachable on the tile", () => {
+  it("excludes equipped Drops from the collection grid", () => {
+    const root = document.createElement("div");
+    const selected = { current: "knight" as ClassId };
+    const snapshot = armorySnapshot([
+      drop({
+        dropId: 1,
+        baseId: "fixture-blade",
+        assignedTo: { classId: "knight", slot: "weapon" },
+      }),
+      drop({ dropId: 2, baseId: "fixture-armor" }),
+    ]);
+    const surface = mountWithSelection(root, selected);
+    renderArmory(surface, snapshot);
+    expect(
+      [...root.querySelectorAll<HTMLElement>(".armory-grid .equipment-card")].map(
+        (card) => card.dataset["dropId"],
+      ),
+    ).toEqual(["2"]);
+    surface.destroy();
+  });
+
+  it("opens the same comparison popover on hover and keyboard focus without inner scroll", () => {
+    const root = document.createElement("div");
+    document.body.append(root);
+    const commands: unknown[] = [];
+    const selected = { current: "knight" as ClassId };
+    const snapshot = armorySnapshot([
+      drop({ dropId: 1, baseId: "fixture-blade-ii", itemLevel: 3, rarity: "rare", seen: false }),
+    ]);
+    const surface = mountWithSelection(root, selected, (command) => commands.push(command));
+    renderArmory(surface, snapshot);
+
+    const tile = root.querySelector<HTMLElement>('.equipment-card[data-drop-id="1"]')!;
+    tile.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
+
+    const popover = root.querySelector<HTMLElement>('[data-armory-compare-popover="true"]');
+    expect(popover?.hidden).toBe(false);
+    expect(getComputedStyle(popover!).pointerEvents).toBe("none");
+    expect(popover?.querySelector(".armory-compare-columns")).toBeNull();
+    expect(popover?.querySelector('[data-stat-deltas="true"]')).not.toBeNull();
+    expect(popover!.scrollHeight).toBeLessThanOrEqual(popover!.clientHeight + 1);
+    expect(tile.getAttribute("aria-describedby")).toMatch(/armory-compare-desc-1/);
+    expect(commands).toContainEqual({ cmd: "markSeen", args: [[1]] });
+
+    tile.dispatchEvent(new MouseEvent("mouseleave", { bubbles: true }));
+    tile.focus();
+    expect(root.querySelector<HTMLElement>('[data-armory-compare-popover="true"]')?.hidden).toBe(
+      false,
+    );
+
+    surface.destroy();
+    root.remove();
+  });
+
+  it("hides bulk discard until at least one tile is selected", () => {
+    const root = document.createElement("div");
+    const selected = { current: "knight" as ClassId };
+    const snapshot = armorySnapshot([
+      drop({ dropId: 1, baseId: "fixture-blade", rarity: "common" }),
+    ]);
+    const surface = mountWithSelection(root, selected);
+    renderArmory(surface, snapshot);
+    expect(root.querySelector('[data-bulk-discard="true"]')).toBeNull();
+    const checkbox = root.querySelector<HTMLInputElement>('[data-discard-select="1"]')!;
+    checkbox.checked = true;
+    checkbox.dispatchEvent(new Event("change"));
+    renderArmory(surface, snapshot);
+    expect(root.querySelector('[data-bulk-discard-strip="true"]')).not.toBeNull();
+    surface.destroy();
+  });
+
+  it("locks from the tile control and keeps discard selection keyboard-reachable", () => {
     const root = document.createElement("div");
     document.body.append(root);
     const commands: unknown[] = [];
@@ -747,7 +843,7 @@ describe("Armory surface", () => {
 
     tile?.click();
     renderArmory(surface, snapshot);
-    const lock = root.querySelector<HTMLButtonElement>('[data-lock-toggle="1"]');
+    const lock = root.querySelector<HTMLButtonElement>('[data-tile-lock="1"]');
     lock?.focus();
     activateFocused();
     expect(commands).toContainEqual({ cmd: "setLocked", args: [1, true] });

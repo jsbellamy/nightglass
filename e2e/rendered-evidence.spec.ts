@@ -110,6 +110,41 @@ function equipmentIconReviewSnapshot(): Snapshot {
     locked: false,
     assignedTo: null,
   });
+  armory.push(
+    {
+      dropId: 101,
+      baseId: "thornquill-blade",
+      itemLevel: 1,
+      rarity: "common",
+      affixes: [],
+      awardedAtMs: 19_000,
+      seen: true,
+      locked: false,
+      assignedTo: null,
+    },
+    {
+      dropId: 102,
+      baseId: "leafmail-vest",
+      itemLevel: 1,
+      rarity: "common",
+      affixes: [],
+      awardedAtMs: 18_000,
+      seen: true,
+      locked: false,
+      assignedTo: null,
+    },
+    {
+      dropId: 103,
+      baseId: "berrybright-charm",
+      itemLevel: 1,
+      rarity: "uncommon",
+      affixes: [],
+      awardedAtMs: 17_000,
+      seen: true,
+      locked: false,
+      assignedTo: null,
+    },
+  );
   snapshot.progression.armory = armory;
   return snapshot;
 }
@@ -596,6 +631,71 @@ test.describe("rendered-output evidence seam", () => {
     expect(pumpCountAfter, "no further pump after dock-closed").toBe(pumpCountBefore);
 
     expect(pageErrors, "page errors").toEqual([]);
+    await context.close();
+  });
+
+  test("evidence: armory-collection-unequipped / evidence: armory-comparison-popover — unequipped collection grid and transient comparison popover at dock size", async ({
+    browser,
+  }) => {
+    const { context, tile } = await openTile(browser);
+    const dock = await context.newPage();
+    await dock.setViewportSize({ width: DOCK_WIDTH, height: DOCK_HEIGHT });
+    await dock.goto("/?window=dock", { waitUntil: "networkidle" });
+    await dock.waitForSelector(".management-dock");
+
+    await postBusSnapshot(dock, equipmentIconReviewSnapshot());
+    await dock.click('[data-dock-tab="armory"]');
+    await dock.waitForSelector('.armory-grid .equipment-card[data-drop-id="100"]');
+
+    const collection = await dock.evaluate(() => {
+      const tiles = [...document.querySelectorAll<HTMLElement>(".armory-grid .equipment-card")];
+      return {
+        tileIds: tiles.map((tile) => tile.dataset["dropId"]),
+        tileCount: tiles.length,
+        stateOptions: [...document.querySelectorAll<HTMLOptionElement>(".armory-state-select option")].map(
+          (option) => option.value,
+        ),
+      };
+    });
+    expect(collection.tileCount).toBe(4);
+    expect(collection.tileIds).toEqual(["100", "101", "102", "103"]);
+    expect(collection.stateOptions).toEqual(["all", "unseen", "locked"]);
+    expect(collection.tileIds.every((id) => Number(id) >= 100)).toBe(true);
+
+    const epicTile = dock.locator('.armory-grid .equipment-card[data-drop-id="100"]');
+    await epicTile.hover();
+    await expect(dock.locator('[data-armory-compare-popover="true"]:not([hidden])')).toBeVisible();
+
+    const popover = await dock.evaluate(() => {
+      const host = document.querySelector<HTMLElement>(".armory-body--compare-host");
+      const pop = document.querySelector<HTMLElement>('[data-armory-compare-popover="true"]');
+      const tile = document.querySelector<HTMLElement>('.armory-grid .equipment-card[data-drop-id="100"]');
+      if (!host || !pop || !tile) {
+        return null;
+      }
+      const hostBox = host.getBoundingClientRect();
+      const popBox = pop.getBoundingClientRect();
+      return {
+        pointerEvents: getComputedStyle(pop).pointerEvents,
+        fitsHost:
+          popBox.left >= hostBox.left - 1 &&
+          popBox.right <= hostBox.right + 1 &&
+          popBox.top >= hostBox.top - 1 &&
+          popBox.bottom <= hostBox.bottom + 1,
+        noInnerScroll: pop.scrollHeight <= pop.clientHeight + 1,
+        hasStatTable: pop.querySelector('[data-stat-deltas="true"]') !== null,
+        describedBy: tile.getAttribute("aria-describedby"),
+        noDuplicateColumns: pop.querySelector(".armory-compare-columns") === null,
+      };
+    });
+    expect(popover).not.toBeNull();
+    expect(popover!.pointerEvents).toBe("none");
+    expect(popover!.fitsHost).toBe(true);
+    expect(popover!.noInnerScroll).toBe(true);
+    expect(popover!.hasStatTable).toBe(true);
+    expect(popover!.describedBy).toMatch(/armory-compare-desc-100/);
+    expect(popover!.noDuplicateColumns).toBe(true);
+
     await context.close();
   });
 

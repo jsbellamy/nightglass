@@ -308,7 +308,7 @@ export function compareEquipmentStatDeltas(
     const beforeValue = before.get(label) ?? 0;
     const afterValue = after.get(label) ?? 0;
     const delta = afterValue - beforeValue;
-    if (delta === 0 && beforeValue === 0 && afterValue === 0) {
+    if (delta === 0) {
       continue;
     }
     lines.push({
