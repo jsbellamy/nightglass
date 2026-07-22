@@ -15,8 +15,6 @@ export const UI_CORE_VALUE_IMPORT_ALLOWLIST: Record<string, string> = {
   "ability-format.ts": "Core combat math imports narrowed by stat-derivation slice (#159)",
   "loadout-surface.ts":
     "equipmentModifiersForLoadout / characterStats removed by loadout stat-derivation slice (#159)",
-  "armory-surface.ts":
-    "dropStatModifiers / snapshotEquipmentLoadouts removed by armory stat-derivation slice (#159)",
   "offline-summary.ts": "levelFromXp moves behind snapshot-view in offline-summary slice (#163)",
   "boot.ts": "Composition root owns Engine wiring until shell/bootstrap slice (#163)",
   "tile-root.ts":

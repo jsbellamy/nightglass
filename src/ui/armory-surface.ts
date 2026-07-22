@@ -1,12 +1,9 @@
-import { snapshotEquipmentLoadouts } from "../core/equipment";
 import type { DropInstance, ReadonlySnapshot } from "../core/snapshot";
 import type { ClassId, Content, EquipmentSlotId } from "../core/types";
 import type { TileCommand } from "./bus";
 import {
   type ArmoryFilters,
   type ArmorySortId,
-  compareAbilityRawChanges,
-  compareEquipmentStatDeltas,
   discardableDrop,
   equipmentBaseForDrop,
   filterArmoryDrops,
@@ -15,18 +12,14 @@ import {
   rareOrEpicDropNames,
   SLOT_LABELS,
   sortArmoryDrops,
-  statModifiersForSlotSwap,
-  statsForEquipmentLoadout,
 } from "./equipment-format";
 import { bindPressable } from "./keyboard";
 import { EMPTY_ENGINE_LEGALITY, type EngineLegalityView } from "./engine-legality";
 import { createEquipmentIconElement } from "./icons";
 import {
   CLASS_LABELS,
-  classKitFor,
-  effectiveLoadout,
-  effectiveTalentState,
   levelFor,
+  previewEquip,
   rosterClassIds,
 } from "./snapshot-view";
 import { el, bindScrollOverflowAffordance, mountSurfaceShell } from "./surface-shell";
@@ -420,48 +413,12 @@ export function mountArmorySurface(
     ]);
     comparePopover.append(meta);
 
-    const roster = rosterClassIds(snapshot);
-    const { current: currentMods, candidate: candidateMods } = statModifiersForSlotSwap(
-      snapshot.progression.armory,
-      roster,
+    const { statDeltas, abilityChanges } = previewEquip(
+      snapshot,
+      content,
+      drop.dropId,
       classId,
       slot,
-      drop,
-      content,
-    );
-    const statDeltas = compareEquipmentStatDeltas(currentMods, candidateMods);
-
-    const classKit = classKitFor(content, classId);
-    const talentState = effectiveTalentState(snapshot, classId);
-    const loadout = effectiveLoadout(snapshot, classId);
-    const abilitiesById = new Map(content.abilities.map((ability) => [ability.id, ability]));
-    const basicAbility = abilitiesById.get(classKit.basicAbilityId);
-    if (!basicAbility) {
-      throw new Error(`Missing basic Ability for ${classId}`);
-    }
-    const loadouts = snapshotEquipmentLoadouts(snapshot.progression.armory, roster);
-    const currentLoadout = { ...loadouts[classId] };
-    const candidateLoadout = { ...currentLoadout, [slot]: drop.dropId };
-    const currentStats = statsForEquipmentLoadout(
-      classKit,
-      talentState,
-      currentLoadout,
-      snapshot.progression.armory,
-      content,
-    );
-    const candidateStats = statsForEquipmentLoadout(
-      classKit,
-      talentState,
-      candidateLoadout,
-      snapshot.progression.armory,
-      content,
-    );
-    const abilityChanges = compareAbilityRawChanges(
-      loadout,
-      basicAbility,
-      currentStats,
-      candidateStats,
-      abilitiesById,
     );
 
     if (statDeltas.length > 0) {

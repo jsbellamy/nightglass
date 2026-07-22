@@ -12,6 +12,13 @@ export {
   unlockableAbilityIds,
 } from "../core/pending-edits";
 
+export {
+  previewEquip,
+  type AbilityRawChange,
+  type EquipPreview,
+  type StatDeltaLine,
+} from "../core/equipment-preview";
+
 export const CLASS_LABELS: Record<ClassId, string> = {
   knight: "Knight",
   wizard: "Wizard",
