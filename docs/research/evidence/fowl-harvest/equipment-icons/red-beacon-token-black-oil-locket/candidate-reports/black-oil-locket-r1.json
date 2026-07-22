@@ -1,0 +1,45 @@
+{
+  "path": "docs/research/evidence/fowl-harvest/equipment-icons/red-beacon-token-black-oil-locket/scratch/black-oil-locket-r1.png",
+  "candidate": "black-oil-locket-r1.png",
+  "status": "pass",
+  "recovered": {
+    "bbox": [
+      216,
+      62,
+      868,
+      930
+    ],
+    "pitch_x": {
+      "pitch": 44.938888888888265,
+      "score": 0.2506660395171801
+    },
+    "pitch_y": {
+      "pitch": 45.638888888888225,
+      "score": 0.23166322922811564
+    },
+    "grid": [
+      14,
+      20
+    ]
+  },
+  "ramp": {
+    "opaque_cells": 165,
+    "far_cells": 8,
+    "far_fraction": 0.0485,
+    "off_ramp_reject": false,
+    "quantize_histogram": {
+      "oil-ink": 46,
+      "duck-shadow": 5,
+      "patty-brown": 4,
+      "diner-cream": 2,
+      "grease-brown-deep": 28,
+      "storm-slate": 7,
+      "crow-black": 67,
+      "rust-orange-deep": 2,
+      "toast-brown": 2,
+      "bruise-plum": 1,
+      "condiment-red": 1
+    }
+  },
+  "primary": "advance"
+}

@@ -1,0 +1,7 @@
+{
+  "path": "docs/research/evidence/fowl-harvest/equipment-icons/red-beacon-token-black-oil-locket/scratch/black-oil-locket-r3.png",
+  "candidate": "black-oil-locket-r3.png",
+  "status": "fail",
+  "error": "black-oil-locket-r3.png: overshoot recovered 26\u00d733 (max body 30\u00d730 before outline ring)",
+  "primary": "overshoot"
+}

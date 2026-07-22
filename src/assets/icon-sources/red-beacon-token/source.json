@@ -1,0 +1,64 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "prompt": "TRUE chunky pixel art inventory icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block with no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered Fowl Harvest Equipment item in three-quarter display angle for Red Beacon Token: a chunky circular road-warning token with one red beacon lens and a chipped diner-teal rim. Keep the same silhouette as the attached style reference but enlarge it slightly so the subject long side is about 24\u201328 logical pixels (NOT larger than 30). At least two full magenta cells of clearance on every edge \u2014 do not touch the canvas edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel oil-ink outline. Use only these exact hex flat colors: #111018 oil-ink, #1e1c29 crow-black, #55586a storm-slate, #146451 pond-teal-deep, #1f9277 diner-teal, #4fb99b teal-light, #c83d3d condiment-red, #f3d897 diner-cream. 8 flat colors maximum. Structural members at least three logical pixels thick. No Character, duck body, scene, shadow, glow, sparks, particles, text, watermark, UI frame, or transparency. No anti-aliasing, no gradients, no dithering.",
+  "issue_contract_prompt": "TRUE chunky pixel art inventory icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block with no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered Fowl Harvest Equipment item in three-quarter display angle for Red Beacon Token: a chunky circular road-warning token with one red beacon lens and a chipped diner-teal rim. The subject long side spans about 26\u201330 logical pixels, with at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel oil-ink outline. Use only named fowl-harvest-24 colors, 8\u201312 flat colors maximum. Structural members are at least three logical pixels thick. No Character, duck body, scene, shadow, glow, sparks, particles, text, watermark, UI frame, or transparency.",
+  "raw_sha256": "019933a62fe22f9e05730db6002e3232142d66586c6f3a542dd5b8060b15351e",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        198,
+        150,
+        825,
+        857
+      ],
+      "pitch_x": {
+        "pitch": 25.116666666666745,
+        "score": 0.2901754658645108
+      },
+      "pitch_y": {
+        "pitch": 25.316666666666748,
+        "score": 0.2846608529588224
+      },
+      "grid": [
+        25,
+        28
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 552,
+      "far_cells": 63,
+      "far_fraction": 0.1141,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "oil-ink": 63,
+        "teal-light": 131,
+        "diner-cream": 14,
+        "pond-teal-deep": 74,
+        "crow-black": 9,
+        "patty-brown": 56,
+        "condiment-red": 200,
+        "rust-orange-deep": 4,
+        "beak-orange": 1
+      }
+    }
+  },
+  "palette": "fowl-harvest-24",
+  "palette_subset": [
+    "oil-ink",
+    "crow-black",
+    "storm-slate",
+    "pond-teal-deep",
+    "diner-teal",
+    "teal-light",
+    "condiment-red",
+    "rust-orange-deep",
+    "beak-orange",
+    "grease-brown-deep",
+    "patty-brown",
+    "diner-cream"
+  ],
+  "evidence_raw": "docs/research/evidence/fowl-harvest/equipment-icons/red-beacon-token-black-oil-locket/accepted-raws/red-beacon-token.png",
+  "note": "#399 Charm Equipment Tier III unregistered source family; activation deferred to later integration slice",
+  "candidate": "red-beacon-token-r4"
+}

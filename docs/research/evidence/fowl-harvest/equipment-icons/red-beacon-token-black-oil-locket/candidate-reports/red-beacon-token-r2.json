@@ -1,0 +1,7 @@
+{
+  "path": "docs/research/evidence/fowl-harvest/equipment-icons/red-beacon-token-black-oil-locket/scratch/red-beacon-token-r2.png",
+  "candidate": "red-beacon-token-r2.png",
+  "status": "fail",
+  "error": "red-beacon-token-r2.png: underfill recovered long axis 19 (need \u226520)",
+  "primary": "underfill"
+}
