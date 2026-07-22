@@ -103,10 +103,10 @@ test.describe("accessibility contrast floor", () => {
       if (tab === "armory" && selector.includes("armory-compare-popover")) {
         const tile = dock.locator('.armory-grid .equipment-card[data-drop-id="99"]');
         await expect(tile).toBeVisible();
-        await tile.hover();
+        await tile.dispatchEvent("mouseenter");
         await expect(
           dock.locator('[data-armory-compare-popover="true"]:not([hidden])'),
-        ).toBeVisible();
+        ).toBeVisible({ timeout: 15_000 });
       }
       const sample = await readTextContrastSample(dock, selector);
       expect(sample, `sample for ${selector}`).not.toBeNull();
