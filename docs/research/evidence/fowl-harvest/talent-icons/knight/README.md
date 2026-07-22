@@ -69,8 +69,7 @@ accepted raws from `#305` when reinforcing clearance / pitch).
 | sundering-charge-r3 | overshoot | 30×33 |
 
 Rejected provider raws were pruned from `scratch/`; durable record is the table
-above plus measure JSON beside it. Provider raws are evidence only — **nothing
-added to `assets-raw/`**.
+above. Provider raws are evidence only — **nothing added to `assets-raw/`**.
 
 ## Step-6 visual review
 
