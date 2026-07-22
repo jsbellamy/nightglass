@@ -215,6 +215,53 @@ describe("opponent ability candidate priority", () => {
     expect(chosen?.id).toBe("boss-1-basic");
   });
 
+  it("falls through to the Basic Attack when every special is invalid or lacks a target", () => {
+    const bracedOpponent: OpponentDef = {
+      id: "fixture-braced-opponent",
+      name: "Braced Probe",
+      family: "fixture",
+      boss: false,
+      base: fixtureContent.opponents[0]!.base,
+      abilityIds: ["grunt-attack", "k-shield-brace"],
+      xpAward: 1,
+      spriteKey: "fixture-grunt",
+    };
+    const combatants = [
+      partyCombatant("knight", "front"),
+      opponentCombatant("fixture-grunt", {
+        statuses: [{ statusId: "braced", expiresAtMs: 10_000 }],
+      }),
+    ];
+    const actor = combatants[1]!;
+    const bracedCandidates = opponentAbilityCandidates(
+      fixtureContent,
+      bracedOpponent,
+      abilitiesById,
+    );
+    expect(chooseFirstValidAbility(bracedCandidates, actor, combatants, 0)?.id).toBe(
+      "grunt-attack",
+    );
+
+    const healerOpponent: OpponentDef = {
+      id: "fixture-healer-opponent",
+      name: "Healer Probe",
+      family: "fixture",
+      boss: false,
+      base: fixtureContent.opponents[0]!.base,
+      abilityIds: ["grunt-attack", "p-moonwell"],
+      xpAward: 1,
+      spriteKey: "fixture-grunt",
+    };
+    const healCandidates = opponentAbilityCandidates(
+      fixtureContent,
+      healerOpponent,
+      abilitiesById,
+    );
+    expect(chooseFirstValidAbility(healCandidates, actor, combatants, 0)?.id).toBe(
+      "grunt-attack",
+    );
+  });
+
   it("lists the Basic Attack exactly once when it is authored in abilityIds", () => {
     const boss = productionContent.opponents.find((entry) => entry.id === "boss-1")!;
     const candidates = opponentAbilityCandidates(
