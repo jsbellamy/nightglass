@@ -298,5 +298,15 @@
     "outline": "contour-plum-deepest",
     "source_family": "verify-canary",
     "sha256": "146810038e1b8e371e9f86c7316a4a0070b9ccc614ecae2372942245d42e87b9"
+  },
+  "verify-fowl-canary": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "fowl-harvest-24",
+    "outline": "oil-ink",
+    "source_family": "verify-fowl-canary",
+    "sha256": "fdd8910ed6d6a7fb55b2a105568afcd7ad7b0aef4fbcd52ed7f7257e32bc14c9"
   }
 }

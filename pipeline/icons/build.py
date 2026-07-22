@@ -13,6 +13,7 @@ if __name__ == "__main__" and __package__ is None:
     __package__ = "icons"
 
 from .constants import CANVAS
+from .palette import outline_swatch_name
 from .paint import paint_source_icon, runtime_png_bytes, scale_nearest, sha256_bytes
 from .registry import ALL_BUILD_FAMILIES, FAMILIES, validate_registry
 from .text_source import cells_from_source, parse_text
@@ -63,9 +64,21 @@ def build_all() -> dict[str, str]:
         source = parse_text(path)
         if source.source_key != family.source_key:
             raise ValueError(f"{path}: source_key mismatch")
+        if source.palette_id != family.palette_id:
+            raise ValueError(
+                f"{path}: palette {source.palette_id!r} does not match family "
+                f"{family.palette_id!r}"
+            )
         cells = cells_from_source(source)
+        subset = frozenset(family.palette_subset)
+        outline_name = outline_swatch_name(family.palette_id)
         for variant in family.variants:
-            icon = paint_source_icon(cells, recolor=variant.recolor)
+            icon = paint_source_icon(
+                cells,
+                palette_id=family.palette_id,
+                palette_subset=subset,
+                recolor=variant.recolor,
+            )
             raw = runtime_png_bytes(icon)
             key = variant.icon_key
             (OUT_DIR / f"{key}.png").write_bytes(raw)
@@ -73,8 +86,8 @@ def build_all() -> dict[str, str]:
             hashes[f"runtime:{key}"] = sha256_bytes(raw)
             manifest[key] = {
                 "canvas": [CANVAS, CANVAS],
-                "palette": "moonberry-16",
-                "outline": "contour-plum-deepest",
+                "palette": family.palette_id,
+                "outline": outline_name,
                 "source_family": family.source_key,
                 "sha256": hashes[f"runtime:{key}"],
             }

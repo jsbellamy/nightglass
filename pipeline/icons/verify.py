@@ -26,11 +26,16 @@ from icons.ingest import (  # noqa: E402
     recover_icon_grid,
 )
 from icons.paint import validate_recolor_map  # noqa: E402
-from icons.registry import VERIFY_CANARY_FAMILY  # noqa: E402
+from icons.registry import (  # noqa: E402
+    ALL_BUILD_FAMILIES,
+    VERIFY_CANARY_FAMILY,
+    VERIFY_FOWL_CANARY_FAMILY,
+)
 from icons.palette import (  # noqa: E402
     DEFAULT_SOURCE_PALETTE_ID,
     PALETTE_PATHS,
     load_runtime_palette,
+    outline_swatch_name,
 )
 from icons.text_source import parse_text  # noqa: E402
 
@@ -195,10 +200,26 @@ except ValueError as exc:
     check("cross-palette subset name rejected", "mint" in str(exc))
 fowl_bad.unlink()
 
+print("\nregistry palette ids")
+for family in ALL_BUILD_FAMILIES:
+    check(
+        f"family {family.source_key} declares known palette id",
+        family.palette_id in PALETTE_PATHS,
+        family.palette_id,
+    )
+check(
+    "moonberry outline is contour-plum-deepest",
+    outline_swatch_name("moonberry-16") == "contour-plum-deepest",
+)
+check(
+    "fowl outline is oil-ink",
+    outline_swatch_name("fowl-harvest-24") == "oil-ink",
+)
+
 print("\nrecolor flatten guard")
 bow_subset = frozenset(VERIFY_CANARY_FAMILY.palette_subset)
 try:
-    validate_recolor_map({"mint": "berry-mid"}, bow_subset)
+    validate_recolor_map({"mint": "berry-mid"}, bow_subset, moonberry)
     check("recolor target already in palette_subset rejected", False)
 except ValueError:
     check("recolor target already in palette_subset rejected", True)
@@ -213,10 +234,18 @@ bow_family_subset = frozenset(
     }
 )
 try:
-    validate_recolor_map({"mint": "berry-mid"}, bow_family_subset)
+    validate_recolor_map({"mint": "berry-mid"}, bow_family_subset, moonberry)
     check("BOW_TO_LONGBOW-style flatten rejected", False)
 except ValueError:
     check("BOW_TO_LONGBOW-style flatten rejected", True)
+
+fowl_subset = frozenset(VERIFY_FOWL_CANARY_FAMILY.palette_subset)
+fowl_palette = load_runtime_palette("fowl-harvest-24")
+try:
+    validate_recolor_map({"beak-orange": "mint"}, fowl_subset, fowl_palette)
+    check("cross-palette recolor target rejected", False)
+except ValueError as exc:
+    check("cross-palette recolor target rejected", "mint" in str(exc))
 
 print("\ningest fixture gates")
 FIXTURES = HERE / "fixtures" / "raws"
@@ -306,6 +335,22 @@ if manifest_path.exists():
             f"offline rebuild matches committed {key}",
             hashlib.sha256(rebuilt).hexdigest() == entry["sha256"],
         )
+        family_palette = entry.get("palette")
+        family_outline = entry.get("outline")
+        if family_palette == "fowl-harvest-24":
+            check(
+                f"manifest {key} records fowl-harvest-24",
+                family_palette == "fowl-harvest-24",
+            )
+            check(
+                f"manifest {key} records oil-ink outline",
+                family_outline == "oil-ink",
+            )
+        elif family_palette == "moonberry-16":
+            check(
+                f"manifest {key} records moonberry outline",
+                family_outline == "contour-plum-deepest",
+            )
     sheet = OUT_DIR / "family-sheet@8x.png"
     check("family contact sheet @8x exists", sheet.exists())
     previews = list((OUT_DIR / "preview").glob("*@8x.png"))

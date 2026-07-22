@@ -7,26 +7,22 @@ from PIL import Image
 import acquire
 
 from .constants import CANVAS, DRAWABLE, MAX_BODY
-from .palette import PALETTE, Swatch
-
-OUTLINE_NAME = "contour-plum-deepest"
-INK_NAMES = frozenset(
-    {
-        "contour-plum-deepest",
-        "contour-plum-deep",
-        "contour-plum",
-    }
+from .palette import (
+    RuntimePalette,
+    Swatch,
+    ink_swatch_names,
+    load_runtime_palette,
+    outline_swatch_name,
 )
 
 
 def nearest(
     rgb: tuple[int, int, int],
-    allowed: dict[str, Swatch] | None = None,
+    allowed: dict[str, Swatch],
 ) -> Swatch:
-    pool = allowed or PALETTE
-    best = next(iter(pool.values()))
+    best = next(iter(allowed.values()))
     best_d = 10**18
-    for swatch in pool.values():
+    for swatch in allowed.values():
         d = sum((a - b) ** 2 for a, b in zip(rgb, swatch.rgb))
         if d < best_d:
             best_d = d
@@ -34,7 +30,10 @@ def nearest(
     return best
 
 
-def strip_exterior_ink(cells: list[list[Swatch | None]]) -> list[list[Swatch | None]]:
+def strip_exterior_ink(
+    cells: list[list[Swatch | None]],
+    ink_names: frozenset[str],
+) -> list[list[Swatch | None]]:
     h = len(cells)
     w = len(cells[0]) if h else 0
 
@@ -45,7 +44,7 @@ def strip_exterior_ink(cells: list[list[Swatch | None]]) -> list[list[Swatch | N
     for y, row in enumerate(cells):
         out_row: list[Swatch | None] = []
         for x, cell in enumerate(row):
-            if cell is None or cell.name not in INK_NAMES:
+            if cell is None or cell.name not in ink_names:
                 out_row.append(cell)
                 continue
             exterior = (
@@ -62,6 +61,7 @@ def strip_exterior_ink(cells: list[list[Swatch | None]]) -> list[list[Swatch | N
 def validate_recolor_map(
     recolor: dict[str, str],
     palette_subset: frozenset[str],
+    palette: RuntimePalette,
 ) -> None:
     for source_name, target_name in recolor.items():
         if target_name in palette_subset:
@@ -73,11 +73,22 @@ def validate_recolor_map(
             raise ValueError(
                 f"recolor source {source_name!r} not in palette_subset"
             )
+        if source_name not in palette.names:
+            raise ValueError(
+                f"recolor source {source_name!r} not in palette "
+                f"{palette.palette_id!r}"
+            )
+        if target_name not in palette.names:
+            raise ValueError(
+                f"recolor target {target_name!r} not in palette "
+                f"{palette.palette_id!r}"
+            )
 
 
 def apply_recolor(
     cells: list[list[Swatch | None]],
     recolor: dict[str, str],
+    swatches: dict[str, Swatch],
 ) -> list[list[Swatch | None]]:
     if not recolor:
         return cells
@@ -85,7 +96,7 @@ def apply_recolor(
         [
             None
             if cell is None
-            else PALETTE[recolor[cell.name]]
+            else swatches[recolor[cell.name]]
             if cell.name in recolor
             else cell
             for cell in row
@@ -158,14 +169,21 @@ def derive_outline_and_paint(
 def paint_source_icon(
     cells: list[list[Swatch | None]],
     *,
+    palette_id: str,
+    palette_subset: frozenset[str],
     recolor: dict[str, str] | None = None,
 ) -> Image.Image:
+    runtime = load_runtime_palette(palette_id)
+    allowed = {name: runtime.swatches[name] for name in palette_subset}
+    validate_recolor_map(recolor or {}, palette_subset, runtime)
     quantized = [
-        [None if cell is None else nearest(cell.rgb) for cell in row] for row in cells
+        [None if cell is None else nearest(cell.rgb, allowed) for cell in row]
+        for row in cells
     ]
-    peeled = strip_exterior_ink(quantized)
-    recolored = apply_recolor(peeled, recolor or {})
-    return derive_outline_and_paint(recolored, PALETTE[OUTLINE_NAME])
+    peeled = strip_exterior_ink(quantized, ink_swatch_names(palette_id))
+    recolored = apply_recolor(peeled, recolor or {}, runtime.swatches)
+    outline = runtime.swatches[outline_swatch_name(palette_id)]
+    return derive_outline_and_paint(recolored, outline)
 
 
 def scale_nearest(im: Image.Image, factor: int) -> Image.Image:
