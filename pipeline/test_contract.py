@@ -84,6 +84,18 @@ check("The Combine profile is Boss 160x72 facing left",
       and combine_profile.max_opaque_w == 160
       and combine_profile.max_opaque_h == 72
       and combine_profile.facing == "left")
+fryer_profile = A.body_profile_for_tag("the-fryer")
+check("The Fryer profile is Boss 160x72 facing left",
+      fryer_profile.role == "boss"
+      and fryer_profile.max_opaque_w == 160
+      and fryer_profile.max_opaque_h == 72
+      and fryer_profile.facing == "left")
+scarequack_profile = A.body_profile_for_tag("scarequack")
+check("Scarequack profile is Boss 160x72 facing left",
+      scarequack_profile.role == "boss"
+      and scarequack_profile.max_opaque_w == 160
+      and scarequack_profile.max_opaque_h == 72
+      and scarequack_profile.facing == "left")
 _moonberry = A.load_runtime_palette("moonberry-16")
 _fowl = A.load_runtime_palette("fowl-harvest-24")
 for out_name, expected_id in [
@@ -98,6 +110,8 @@ for out_name, expected_id in [
     ("burger-drake", "fowl-harvest-24"),
     ("cornquacker", "fowl-harvest-24"),
     ("the-combine", "fowl-harvest-24"),
+    ("the-fryer", "fowl-harvest-24"),
+    ("scarequack", "fowl-harvest-24"),
 ]:
     identity = A.ASSET_IDENTITIES[out_name]
     check(f"{out_name} selects palette {expected_id}",
@@ -111,6 +125,26 @@ except ValueError as error:
     unknown_palette_error = str(error)
 check("unknown palette ids fail without fallback",
       "unknown palette id" in unknown_palette_error, unknown_palette_error)
+try:
+    A.body_profile_for_identity(
+        {"role": "not-a-role", "facing": "left"},
+        identity_name="fixture",
+    )
+    unknown_role_error = ""
+except ValueError as error:
+    unknown_role_error = str(error)
+check("unknown role values fail without fallback",
+      "unknown role" in unknown_role_error, unknown_role_error)
+try:
+    A.body_profile_for_identity(
+        {"role": "boss", "facing": "north"},
+        identity_name="fixture",
+    )
+    unknown_facing_error = ""
+except ValueError as error:
+    unknown_facing_error = str(error)
+check("unknown facing values fail without fallback",
+      "unknown facing" in unknown_facing_error, unknown_facing_error)
 layout = A.load_layout()
 check("layout.json matches shared battlefield and anchor contract",
       layout["battlefield"]["floor_y"] == 80
@@ -717,6 +751,46 @@ check("Cornquacker complete body bundle is discovered",
       "cornquacker" in _discovered_body)
 check("The Combine complete body bundle is discovered",
       "the-combine" in _discovered_body)
+check("Fryer and Scarequack are labeled missing-bundle interim identities",
+      A.MISSING_BODY_BUNDLE_INTERIM_RAW_TAGS == frozenset({
+          "the-fryer", "scarequack"}))
+check("missing Fryer and Scarequack bundles omit rebuild until archived",
+      "the-fryer" not in _discovered_body
+      and "scarequack" not in _discovered_body
+      and "the-fryer" not in A.default_build_raw_tags()
+      and "scarequack" not in A.default_build_raw_tags())
+check("missing-bundle interim leaves production body tags unchanged",
+      A.default_build_raw_tags() == (
+          "boss", "boss-2", "boss-3", "burger-drake", "cornquacker", "hunter",
+          "knight", "pipcap", "priest", "the-combine", "wizard"),
+      str(A.default_build_raw_tags()))
+with tempfile.TemporaryDirectory() as _fryer_orphan_temp:
+    _fryer_orphan_raw = pathlib.Path(_fryer_orphan_temp)
+    Image.new("RGBA", (8, 8), (0, 0, 0, 255)).save(
+        _fryer_orphan_raw / "the-fryer.png")
+    with mock.patch.object(A, "RAW_DIR", _fryer_orphan_raw):
+        _fryer_png_only = A.discover_body_orphan_failures()
+with tempfile.TemporaryDirectory() as _fryer_sidecar_temp:
+    _fryer_sidecar_raw = pathlib.Path(_fryer_sidecar_temp)
+    (_fryer_sidecar_raw / "the-fryer.source.json").write_text("{}")
+    with mock.patch.object(A, "RAW_DIR", _fryer_sidecar_raw):
+        _fryer_sidecar_only = A.discover_body_orphan_failures()
+with tempfile.TemporaryDirectory() as _scare_orphan_temp:
+    _scare_orphan_raw = pathlib.Path(_scare_orphan_temp)
+    Image.new("RGBA", (8, 8), (0, 0, 0, 255)).save(
+        _scare_orphan_raw / "scarequack.png")
+    with mock.patch.object(A, "RAW_DIR", _scare_orphan_raw):
+        _scare_png_only = A.discover_body_orphan_failures()
+check("half Fryer or Scarequack body bundles fail orphan discovery",
+      len(_fryer_png_only) == 1
+      and "the-fryer" in _fryer_png_only[0]
+      and "archived PNG without provenance" in _fryer_png_only[0]
+      and len(_fryer_sidecar_only) == 1
+      and "the-fryer" in _fryer_sidecar_only[0]
+      and "sidecar without matching" in _fryer_sidecar_only[0]
+      and len(_scare_png_only) == 1
+      and "scarequack" in _scare_png_only[0],
+      str((_fryer_png_only, _fryer_sidecar_only, _scare_png_only)))
 with tempfile.TemporaryDirectory() as _body_orphan_temp:
     _body_orphan_raw = pathlib.Path(_body_orphan_temp)
     Image.new("RGBA", (8, 8), (0, 0, 0, 255)).save(_body_orphan_raw / "png-only.png")
