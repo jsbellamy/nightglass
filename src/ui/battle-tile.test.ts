@@ -6,6 +6,10 @@ import { opponentEntityId } from "../core/entity-id";
 import type { Snapshot } from "../core/snapshot";
 import { fixtureContent } from "../core/testing/fixture-content";
 import type { Content, StageDef, StageId } from "../core/types";
+import backdrop1Url from "../assets/backdrops/backdrop-1.png";
+import crookedCornfieldUrl from "../assets/backdrops/crooked-cornfield.png";
+import harvestYardUrl from "../assets/backdrops/harvest-yard.png";
+import lastStopDinerUrl from "../assets/backdrops/last-stop-diner.png";
 import { buildContent } from "../data";
 import * as presentationModule from "./presentation";
 import * as sfxModule from "./sfx";
@@ -32,6 +36,18 @@ function contentWithAuthoredStages(maxStage: StageId): Content {
     });
   }
   return { ...fixtureContent, stages };
+}
+
+function contentWithStageBackdropKey(backdropKey: string): Content {
+  return {
+    ...fixtureContent,
+    stages: [
+      {
+        ...fixtureStageTemplate,
+        backdropKey,
+      },
+    ],
+  };
 }
 
 async function capturePresentationRenderNowMs(
@@ -429,6 +445,63 @@ describe("Battle Tile renderer", () => {
       expect(text).toContain(`Expanded Stage ${stageId}`);
       expect(text).toContain("Wave 2");
     }
+  });
+
+  it("resolves each Fowl Harvest backdrop key to its own runtime asset URL", () => {
+    const cases = [
+      ["last-stop-diner", lastStopDinerUrl],
+      ["crooked-cornfield", crookedCornfieldUrl],
+      ["harvest-yard", harvestYardUrl],
+    ] as const;
+
+    expect(new Set(cases.map(([, url]) => url)).size).toBe(cases.length);
+
+    for (const [backdropKey, expectedUrl] of cases) {
+      const root = document.createElement("main");
+      const content = contentWithStageBackdropKey(backdropKey);
+      const tile = mountBattleTile(root, content);
+      const engine = createEngine(content, undefined, LOOT_SEED);
+      tile.render(engine.snapshot());
+
+      const battlefield = root.querySelector<HTMLElement>(".battlefield");
+      const backdrop = root.querySelector<HTMLElement>(".battlefield-backdrop");
+      expect(battlefield?.dataset["backdropKey"]).toBe(backdropKey);
+      expect(backdrop?.style.backgroundImage).toContain(expectedUrl);
+      expect(expectedUrl).not.toBe(backdrop1Url);
+    }
+  });
+
+  it("falls back to backdrop-1 for an unknown backdropKey", () => {
+    const root = document.createElement("main");
+    const content = contentWithStageBackdropKey("unknown-backdrop-key");
+    const tile = mountBattleTile(root, content);
+    const engine = createEngine(content, undefined, LOOT_SEED);
+    tile.render(engine.snapshot());
+
+    const battlefield = root.querySelector<HTMLElement>(".battlefield");
+    const backdrop = root.querySelector<HTMLElement>(".battlefield-backdrop");
+    expect(battlefield?.dataset["backdropKey"]).toBe("unknown-backdrop-key");
+    expect(backdrop?.style.backgroundImage).toMatch(/backdrop-1/);
+    expect(backdrop?.style.backgroundImage).not.toMatch(/last-stop-diner/);
+  });
+
+  it("writes each Fowl backdrop image once across repeated renders on the same stage", () => {
+    const root = document.createElement("main");
+    const content = contentWithStageBackdropKey("harvest-yard");
+    const tile = mountBattleTile(root, content);
+    const engine = createEngine(content, undefined, LOOT_SEED);
+    const snapshot = engine.snapshot();
+    const backdrop = root.querySelector<HTMLElement>(".battlefield-backdrop");
+    if (!backdrop) {
+      throw new Error("missing backdrop");
+    }
+    const backgroundImageWrites = trackBackgroundImageWrites(backdrop);
+
+    tile.render(snapshot);
+    tile.render(structuredClone(snapshot));
+    tile.render(structuredClone(snapshot));
+
+    expect(backgroundImageWrites()).toBe(1);
   });
 
   it("writes backdrop image once across repeated renders on the same stage", () => {

@@ -1,6 +1,9 @@
 import backdrop1Url from "../assets/backdrops/backdrop-1.png";
 import backdrop2Url from "../assets/backdrops/backdrop-2.png";
 import backdrop3Url from "../assets/backdrops/backdrop-3.png";
+import crookedCornfieldUrl from "../assets/backdrops/crooked-cornfield.png";
+import harvestYardUrl from "../assets/backdrops/harvest-yard.png";
+import lastStopDinerUrl from "../assets/backdrops/last-stop-diner.png";
 import type { EngineEvent } from "../core/events";
 import type { CombatantState, ReadonlySnapshot } from "../core/snapshot";
 import type { Content, StageDef, StageId } from "../core/types";
@@ -65,6 +68,9 @@ const BACKDROP_URLS: Record<string, string> = {
   "backdrop-2": backdrop2Url,
   "backdrop-3": backdrop3Url,
   "fixture-meadow": backdrop1Url,
+  "last-stop-diner": lastStopDinerUrl,
+  "crooked-cornfield": crookedCornfieldUrl,
+  "harvest-yard": harvestYardUrl,
 };
 
 function backdropUrl(backdropKey: string): string {
