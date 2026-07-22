@@ -6,16 +6,23 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { createEngine } from "../core/engine";
 import { cloneSnapshot, type DropInstance, type Snapshot } from "../core/snapshot";
-import type { ClassId } from "../core/types";
+import type { ClassId, Content } from "../core/types";
 import { fixtureContent } from "../core/testing/fixture-content";
+import { buildContent } from "../data";
 import { mountArmorySurface } from "./armory-surface";
 import { mountManagementDock } from "./dock";
-import { legalityViewFromEngine } from "./engine-legality";
+import {
+  legalityViewFromEngine,
+  legalityViewFromSerialized,
+  serializeEngineLegality,
+} from "./engine-legality";
 import {
   filterArmoryDrops,
   type ArmoryFilters,
 } from "./equipment-format";
 import { rosterClassIds } from "./snapshot-view";
+
+const fullContent = buildContent();
 
 const LOOT_SEED = 42;
 
@@ -91,9 +98,24 @@ function drop(overrides: Partial<DropInstance> & Pick<DropInstance, "dropId" | "
 }
 
 function armorySnapshot(armory: DropInstance[]): Snapshot {
-  const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
+  return armorySnapshotFor(fixtureContent, armory);
+}
+
+function armorySnapshotFor(content: Content, armory: DropInstance[]): Snapshot {
+  const engine = createEngine(content, undefined, LOOT_SEED);
   const snapshot = cloneSnapshot(engine.snapshot());
   snapshot.progression.armory = armory;
+  return snapshot;
+}
+
+/** Hunter pending-in / Knight pending-out over the default full Roster. */
+function pendingHunterInSnapshot(armory: DropInstance[]): Snapshot {
+  const snapshot = armorySnapshotFor(fullContent, armory);
+  const { party, reserve } = snapshot.progression;
+  snapshot.progression.pendingParty = {
+    members: [reserve, party[1]!, party[2]!],
+    reserve: party[0]!,
+  };
   return snapshot;
 }
 
@@ -861,6 +883,92 @@ describe("Armory surface", () => {
     root.remove();
   });
 
+  it("computes compare popover Equipment stat deltas for a pending-in Character", () => {
+    const root = document.createElement("div");
+    document.body.append(root);
+    const selected = { current: "hunter" as ClassId };
+    const snapshot = pendingHunterInSnapshot([
+      drop({
+        dropId: 1,
+        baseId: "bramblesong-bow",
+        assignedTo: { classId: "hunter", slot: "weapon" },
+      }),
+      drop({
+        dropId: 2,
+        baseId: "nightvine-longbow",
+        itemLevel: 3,
+        rarity: "rare",
+      }),
+    ]);
+    expect(snapshot.progression.pendingParty?.members[0]).toBe("hunter");
+    expect(snapshot.progression.pendingParty?.reserve).toBe("knight");
+    expect(rosterClassIds(snapshot)[0]).toBe("hunter");
+
+    const surface = mountArmorySurface(root, {
+      content: fullContent,
+      getSelectedClassId: () => selected.current,
+      selectClassId: (classId) => {
+        selected.current = classId;
+      },
+    });
+    const engine = createEngine(fullContent, snapshot, LOOT_SEED);
+    surface.render(snapshot, legalityViewFromEngine(engine));
+
+    const tile = root.querySelector<HTMLElement>('.equipment-card[data-drop-id="2"]')!;
+    tile.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
+
+    const popover = root.querySelector<HTMLElement>('[data-armory-compare-popover="true"]');
+    expect(popover?.hidden).toBe(false);
+    const rows = [...(popover?.querySelectorAll("tbody tr") ?? [])].map((row) =>
+      [...row.querySelectorAll("td")].map((cell) => cell.textContent),
+    );
+    expect(rows).toContainEqual(["Physical", "2", "5", "+3"]);
+
+    surface.destroy();
+    root.remove();
+  });
+
+  it("keeps the pending-in Character's equip legality key in serializeEngineLegality for the compare popover", () => {
+    const root = document.createElement("div");
+    document.body.append(root);
+    const selected = { current: "hunter" as ClassId };
+    const snapshot = pendingHunterInSnapshot([
+      drop({
+        dropId: 1,
+        baseId: "nightvine-longbow",
+        itemLevel: 3,
+        rarity: "rare",
+      }),
+    ]);
+    const engine = createEngine(fullContent, snapshot, LOOT_SEED);
+    const serialized = serializeEngineLegality(engine, snapshot, fullContent);
+    const equipKey = "1:hunter:weapon";
+    expect(Object.prototype.hasOwnProperty.call(serialized.equip, equipKey)).toBe(true);
+    expect(serialized.equip[equipKey]).toBe(engine.canEquip(1, "hunter", "weapon"));
+    expect(serialized.equip[equipKey]).toBe(true);
+
+    const surface = mountArmorySurface(root, {
+      content: fullContent,
+      getSelectedClassId: () => selected.current,
+      selectClassId: (classId) => {
+        selected.current = classId;
+      },
+    });
+    surface.render(snapshot, legalityViewFromSerialized(serialized));
+
+    const tile = root.querySelector<HTMLElement>('.equipment-card[data-drop-id="1"]')!;
+    const dataTransfer = new DataTransfer();
+    tile.dispatchEvent(
+      new DragEvent("dragstart", { bubbles: true, cancelable: true, dataTransfer }),
+    );
+    expect(
+      root.querySelector('[data-worn-slot="weapon"]')?.classList.contains("armory-drop-target--valid"),
+    ).toBe(true);
+
+    surface.destroy();
+    root.remove();
+  });
+
   it("hides bulk discard until at least one tile is selected", () => {
     const root = document.createElement("div");
     const selected = { current: "knight" as ClassId };
@@ -920,5 +1028,15 @@ describe("Armory surface source boundary", () => {
       "utf8",
     );
     expect(source).not.toMatch(/armory-detail|equipButton|crossEquipConfirm|unequipSlot/);
+  });
+
+  it("derives the compare popover Roster through rosterClassIds", () => {
+    const source = readFileSync(
+      join(dirname(fileURLToPath(import.meta.url)), "armory-surface.ts"),
+      "utf8",
+    );
+    expect(source).not.toMatch(
+      /\[\.\.\.snapshot\.progression\.party,\s*snapshot\.progression\.reserve\]/,
+    );
   });
 });
