@@ -42,8 +42,10 @@ import {
   allocateTalentPoint,
   canAllocateTalentPoint,
   canDeallocateTalentPoint,
+  cloneClassTalentState,
   deallocateTalentPoint,
   emptyTalentState,
+  normalizeClassTalentState,
   stripAbilityFromLoadout,
   type ClassTalentState,
 } from "./talents";
@@ -172,11 +174,16 @@ function setTalentDraft(state: EngineState, classId: ClassId, draft: ClassTalent
   state.pendingEdits = state.pendingEdits.filter(
     (edit) => !(edit.kind === "talent" && edit.classId === classId),
   );
+  const normalized = cloneClassTalentState(draft);
   state.pendingEdits.push({
     kind: "talent",
     classId,
-    statRanks: { ...draft.statRanks },
-    abilityTalentId: draft.abilityTalentId,
+    statRanks: { ...normalized.statRanks },
+    abilityTalentId: normalized.abilityTalentId,
+    tierStates: normalized.tierStates.map((tier) => ({
+      statRanks: { ...tier.statRanks },
+      abilityTalentId: tier.abilityTalentId,
+    })),
   });
 }
 
@@ -959,10 +966,25 @@ function applyPendingEdits(
         throw new Error(`Missing Class Kit ${edit.classId}`);
       }
       const previousAbility = state.progression.talents[edit.classId]?.abilityTalentId ?? null;
-      state.progression.talents[edit.classId] = {
+      const previous = state.progression.talents[edit.classId] ?? emptyTalentState(classKit);
+      state.progression.talents[edit.classId] = normalizeClassTalentState(classKit, {
+        ...previous,
         statRanks: { ...edit.statRanks },
         abilityTalentId: edit.abilityTalentId,
-      };
+        tierStates: edit.tierStates
+          ? edit.tierStates.map((tier) => ({
+              statRanks: { ...tier.statRanks },
+              abilityTalentId: tier.abilityTalentId,
+            }))
+          : previous.tierStates.map((tier, tierIndex) =>
+              tierIndex === 0
+                ? {
+                    statRanks: { ...edit.statRanks },
+                    abilityTalentId: edit.abilityTalentId,
+                  }
+                : { statRanks: { ...tier.statRanks }, abilityTalentId: tier.abilityTalentId },
+            ),
+      });
       if (previousAbility && previousAbility !== edit.abilityTalentId) {
         state.progression.loadouts[edit.classId] = stripAbilityFromLoadout(
           state.progression.loadouts[edit.classId],

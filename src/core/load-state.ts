@@ -1,6 +1,12 @@
 import type { DropInstance, ProgressionState, Snapshot, AttemptState } from "./snapshot";
-import { defaultTalentsForClasses } from "./talents";
-import type { ClassId, Content, EquipmentSlotId, ItemLevel, StageId } from "./types";
+import {
+  defaultTalentsForClasses,
+  emptyTalentState,
+  normalizeClassTalentState,
+  talentTierDefs,
+  type TierTalentState,
+} from "./talents";
+import type { ClassId, ClassKitDef, Content, EquipmentSlotId, ItemLevel, StageId, TalentTierDef } from "./types";
 
 /** Matches `SCHEMA_VERSION` in engine.ts — single integer save schema for the slice. */
 export const SAVE_SCHEMA_VERSION = 1;
@@ -116,18 +122,14 @@ function loadLoadouts(
   return merged;
 }
 
-function loadTalents(raw: unknown, defaults: ProgressionState["talents"]): ProgressionState["talents"] {
-  const merged = structuredClone(defaults);
-  if (!isRecord(raw)) {
-    return merged;
-  }
-  for (const classId of CLASS_IDS) {
-    const entry = field(raw, classId);
-    if (!isRecord(entry)) {
-      continue;
-    }
-    const statRanks: Record<string, number> = { ...merged[classId]!.statRanks };
-    const statRanksRaw = field(entry, "statRanks");
+function parseTierFromRaw(
+  raw: Record<string, unknown> | undefined,
+  tierDef: TalentTierDef,
+  emptyTier: TierTalentState,
+): TierTalentState {
+  const statRanks: Record<string, number> = { ...emptyTier.statRanks };
+  if (raw) {
+    const statRanksRaw = field(raw, "statRanks");
     if (isRecord(statRanksRaw)) {
       for (const [talentId, rank] of Object.entries(statRanksRaw)) {
         if (isFiniteNumber(rank) && rank >= 0) {
@@ -135,13 +137,68 @@ function loadTalents(raw: unknown, defaults: ProgressionState["talents"]): Progr
         }
       }
     }
-    const abilityRaw = field(entry, "abilityTalentId");
-    const abilityTalentId =
-      abilityRaw === null || typeof abilityRaw === "string"
-        ? abilityRaw
-        : merged[classId]!.abilityTalentId;
-    merged[classId] = { statRanks, abilityTalentId };
   }
+
+  let abilityTalentId = emptyTier.abilityTalentId;
+  if (raw) {
+    const abilityRaw = field(raw, "abilityTalentId");
+    if (abilityRaw === null) {
+      abilityTalentId = null;
+    } else if (typeof abilityRaw === "string" && tierDef.abilityRow.includes(abilityRaw)) {
+      abilityTalentId = abilityRaw;
+    }
+  }
+
+  return { statRanks, abilityTalentId };
+}
+
+function loadTalents(
+  raw: unknown,
+  defaults: ProgressionState["talents"],
+  classes: ClassKitDef[],
+): ProgressionState["talents"] {
+  const merged = structuredClone(defaults);
+
+  for (const classKit of classes) {
+    const classId = classKit.id;
+    const tierDefs = talentTierDefs(classKit);
+    const empty = emptyTalentState(classKit);
+    const entry = isRecord(raw) ? field(raw, classId) : undefined;
+
+    if (!isRecord(entry)) {
+      merged[classId] = normalizeClassTalentState(classKit, merged[classId]!);
+      continue;
+    }
+
+    const tierStates: TierTalentState[] = [];
+    const tierStatesRaw = field(entry, "tierStates");
+
+    if (Array.isArray(tierStatesRaw)) {
+      for (let tierIndex = 0; tierIndex < tierDefs.length; tierIndex += 1) {
+        const tierDef = tierDefs[tierIndex]!;
+        const emptyTier = empty.tierStates[tierIndex]!;
+        const tierRaw = tierStatesRaw[tierIndex];
+        tierStates.push(
+          parseTierFromRaw(isRecord(tierRaw) ? tierRaw : undefined, tierDef, emptyTier),
+        );
+      }
+    } else {
+      tierStates.push(parseTierFromRaw(entry, tierDefs[0]!, empty.tierStates[0]!));
+      for (let tierIndex = 1; tierIndex < tierDefs.length; tierIndex += 1) {
+        tierStates.push({
+          statRanks: { ...empty.tierStates[tierIndex]!.statRanks },
+          abilityTalentId: empty.tierStates[tierIndex]!.abilityTalentId,
+        });
+      }
+    }
+
+    merged[classId] = normalizeClassTalentState(classKit, {
+      statRanks: tierStates[0]!.statRanks,
+      abilityTalentId: tierStates[0]!.abilityTalentId,
+      tierStates,
+    });
+  }
+
   return merged;
 }
 
@@ -272,7 +329,7 @@ export function recoverDurableProgression(
     party,
     reserve,
     characterXp: loadCharacterXp(field(raw, "characterXp"), defaults.characterXp),
-    talents: loadTalents(field(raw, "talents"), defaults.talents),
+    talents: loadTalents(field(raw, "talents"), defaults.talents, content.classes),
     loadouts: loadLoadouts(field(raw, "loadouts"), defaults.loadouts),
     armory: loadArmory(field(raw, "armory")),
     pendingParty: loadPendingParty(field(raw, "pendingParty"), party, reserve),

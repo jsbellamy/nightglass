@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { createEngine } from "../core/engine";
 import { cloneSnapshot } from "../core/snapshot";
 import { fixtureContent } from "../core/testing/fixture-content";
+import { emptyTalentState } from "../core/talents";
 import type { Content } from "../core/types";
 import { buildContent } from "../data";
 import {
@@ -53,10 +54,10 @@ describe("Snapshot view Talent state", () => {
       abilityTalentId: "k-hold-line",
     });
 
-    expect(effectiveTalentState(snapshot, "knight")).toEqual({
-      statRanks: { "k-swordcraft": 2 },
-      abilityTalentId: "k-hold-line",
-    });
+    const effective = effectiveTalentState(snapshot, "knight");
+    expect(effective.statRanks["k-swordcraft"]).toBe(2);
+    expect(effective.abilityTalentId).toBe("k-hold-line");
+    expect(effective.tierStates[0]!.statRanks["k-swordcraft"]).toBe(2);
   });
 });
 
@@ -215,10 +216,7 @@ describe("Snapshot view Class Kit and unlockable Abilities", () => {
 
   it("lists basic, Core, and unlocked Ability Talent ids for the Loadout picker", () => {
     const kit = classKitFor(fixtureContent, "knight");
-    const withoutTalent = unlockableAbilityIds(kit, {
-      statRanks: {},
-      abilityTalentId: null,
-    });
+    const withoutTalent = unlockableAbilityIds(kit, emptyTalentState(kit));
     expect(withoutTalent).toEqual([
       "knight-basic",
       "k-shield-brace",
@@ -227,12 +225,12 @@ describe("Snapshot view Class Kit and unlockable Abilities", () => {
       "k-pommel",
     ]);
 
-    const withTalent = unlockableAbilityIds(kit, {
-      statRanks: {},
-      abilityTalentId: "k-hold-line",
-    });
-    expect(withTalent).toContain("k-hold-line");
-    expect(withTalent).toHaveLength(withoutTalent.length + 1);
+    const withTalent = emptyTalentState(kit);
+    withTalent.abilityTalentId = "k-hold-line";
+    withTalent.tierStates[0]!.abilityTalentId = "k-hold-line";
+    const withTalentIds = unlockableAbilityIds(kit, withTalent);
+    expect(withTalentIds).toContain("k-hold-line");
+    expect(withTalentIds).toHaveLength(withoutTalent.length + 1);
   });
 });
 

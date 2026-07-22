@@ -7,8 +7,115 @@ import {
 } from "./load-state";
 import { content as testContent } from "../data";
 import type { Snapshot } from "./snapshot";
+import type { Content, ClassKitDef } from "./types";
 
 const LOOT_SEED = 42;
+
+describe("tolerant talent save migration", () => {
+  it("preserves legacy Tier 1 ranks and Ability Talent on tolerant load", () => {
+    const progression = createDefaultProgression(testContent);
+    const raw = {
+      schemaVersion: SAVE_SCHEMA_VERSION,
+      savedAtMs: 0,
+      simNowMs: 0,
+      lootRngState: 0,
+      nextEventSeq: 1,
+      nextAttemptId: 1,
+      nextDropId: 1,
+      progression: {
+        ...progression,
+        talents: {
+          knight: {
+            statRanks: { fortitude: 4, swordcraft: 1 },
+            abilityTalentId: "hold-the-line",
+          },
+        },
+      },
+      attempt: null,
+      pendingEdits: [],
+    };
+
+    const parsed = parseStoredSave(JSON.stringify(raw), testContent);
+    expect(parsed.kind).toBe("exact");
+    if (parsed.kind !== "exact") {
+      return;
+    }
+    const knight = parsed.snapshot.progression.talents.knight!;
+    expect(knight.statRanks).toEqual({ fortitude: 4, swordcraft: 1 });
+    expect(knight.abilityTalentId).toBe("hold-the-line");
+    expect(knight.tierStates[0]).toEqual({
+      statRanks: { fortitude: 4, swordcraft: 1 },
+      abilityTalentId: "hold-the-line",
+    });
+  });
+
+  it("appends empty later Tier states when authored talentTiers are absent from save", () => {
+    const progression = createDefaultProgression(testContent);
+    const twoTierContent = {
+      ...testContent,
+      classes: testContent.classes.map((classKit) =>
+        classKit.id === "knight"
+          ? ({
+              ...classKit,
+              talentTiers: [
+                {
+                  statRow: [
+                    {
+                      id: "fortitude-2",
+                      name: "Fortitude II",
+                      perRank: { percent: { maxHealth: 0.04 } },
+                      maxRanks: 5 as const,
+                      iconKey: "fortitude-2",
+                    },
+                    {
+                      id: "swordcraft-2",
+                      name: "Swordcraft II",
+                      perRank: { percent: { physicalPower: 0.04 } },
+                      maxRanks: 5 as const,
+                      iconKey: "swordcraft-2",
+                    },
+                  ],
+                  abilityRow: ["hold-the-line-2", "falling-star-2"] as [string, string],
+                },
+              ],
+            } satisfies ClassKitDef)
+          : classKit,
+      ),
+    } satisfies Content;
+    const raw = {
+      schemaVersion: SAVE_SCHEMA_VERSION,
+      savedAtMs: 0,
+      simNowMs: 0,
+      lootRngState: 0,
+      nextEventSeq: 1,
+      nextAttemptId: 1,
+      nextDropId: 1,
+      progression: {
+        ...progression,
+        talents: {
+          knight: {
+            statRanks: { fortitude: 5, swordcraft: 0 },
+            abilityTalentId: null,
+          },
+        },
+      },
+      attempt: null,
+      pendingEdits: [],
+    };
+
+    const parsed = parseStoredSave(JSON.stringify(raw), twoTierContent);
+    expect(parsed.kind).toBe("exact");
+    if (parsed.kind !== "exact") {
+      return;
+    }
+    const knight = parsed.snapshot.progression.talents.knight!;
+    expect(knight.tierStates).toHaveLength(2);
+    expect(knight.tierStates[1]).toEqual({
+      statRanks: { "fortitude-2": 0, "swordcraft-2": 0 },
+      abilityTalentId: null,
+    });
+  });
+});
 
 describe("parseStoredSave", () => {
   it("corrupt JSON logs once and starts a fresh game", () => {

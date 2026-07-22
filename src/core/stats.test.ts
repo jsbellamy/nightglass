@@ -6,7 +6,7 @@
  */
 import { describe, expect, it } from "vitest";
 import { REVIEWED_CLASS_BASES } from "../data/fixtures/class-kit-number-contract";
-import { emptyTalentState, type ClassTalentState } from "./talents";
+import { emptyTalentState } from "./talents";
 import { characterStats } from "./stats";
 import { fixtureContent } from "./testing/fixture-content";
 
@@ -22,10 +22,9 @@ describe("Character BaseStats from Class Kit and Talents", () => {
   });
 
   it("derives Knight maxHealth after five Fortitude ranks (spec §6 % on reviewed 180 base)", () => {
-    const talentState: ClassTalentState = {
-      ...emptyTalentState(knightKit),
-      statRanks: { "k-fortitude": 5, "k-swordcraft": 0 },
-    };
+    const talentState = emptyTalentState(knightKit);
+    talentState.statRanks = { "k-fortitude": 5, "k-swordcraft": 0 };
+    talentState.tierStates[0]!.statRanks = { "k-fortitude": 5, "k-swordcraft": 0 };
     const stats = characterStats(knightKit, talentState);
     // floor(180 × (1 + 5 × 0.06)) per vertical-slice-spec.md §6 Power formula
     expect(stats.maxHealth).toBe(234);
@@ -45,10 +44,9 @@ describe("Character BaseStats from Class Kit and Talents", () => {
 
 describe("Character BaseStats with Equipment modifiers", () => {
   it("derives Wizard Power stats from reviewed Level 1 base with mixed Talent ranks", () => {
-    const talentState: ClassTalentState = {
-      ...emptyTalentState(wizardKit),
-      statRanks: { "w-elemental-practice": 3, "w-warding-lore": 2 },
-    };
+    const talentState = emptyTalentState(wizardKit);
+    talentState.statRanks = { "w-elemental-practice": 3, "w-warding-lore": 2 };
+    talentState.tierStates[0]!.statRanks = { "w-elemental-practice": 3, "w-warding-lore": 2 };
     const stats = characterStats(wizardKit, talentState);
     // floor(16 × (1 + 3 × 0.05)) elemental; 24 + 2 × 4 ER flat — wizard base from contract
     expect(stats.elemental).toBe(18);
