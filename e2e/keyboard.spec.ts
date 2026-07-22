@@ -1,7 +1,9 @@
 import { expect, test } from "@playwright/test";
 import {
   assertFocusRingVisible,
+  armoryCharacterChipLocator,
   attachDockPage,
+  characterPickerChipLocator,
   focusCharacterSubTab,
   focusDockTab,
   openDockFromTileKeyboard,
@@ -32,7 +34,7 @@ test.describe("accessibility keyboard floor", () => {
     const dock = await attachDockPage(context);
 
     await focusDockTab(dock, "character");
-    await dock.locator('[data-character-chip="knight"]').focus();
+    await characterPickerChipLocator(dock, "knight").focus();
     await dock.keyboard.press("Enter");
     await assertFocusRingVisible(dock, '.character-picker-chip[aria-selected="true"]');
     await assertFocusRingVisible(dock, '[data-formation-action="move-down"][data-slot="0"]');
@@ -40,7 +42,7 @@ test.describe("accessibility keyboard floor", () => {
     await dock.keyboard.press("Enter");
     await expect(dock.locator('[data-pending-kind="formation"]')).toContainText(/next Wave/i);
 
-    await dock.locator('[data-character-chip="knight"]').focus();
+    await characterPickerChipLocator(dock, "knight").focus();
     await dock.keyboard.press("Enter");
     await assertFocusRingVisible(dock, '[data-party-swap="knight"]');
     await dock.locator('[data-party-swap="knight"]').focus();
@@ -48,14 +50,14 @@ test.describe("accessibility keyboard floor", () => {
     await expect(dock.locator('[data-pending-kind="party"]')).toContainText(/next Attempt/i);
 
     // After the swap, Knight is Reserve — exercise → slot actions on the rail.
-    await dock.locator('[data-character-chip="knight"]').focus();
+    await characterPickerChipLocator(dock, "knight").focus();
     await dock.keyboard.press("Enter");
     await assertFocusRingVisible(dock, '[data-party-swap-slot="1"]');
     await dock.locator('[data-party-swap-slot="1"]').focus();
     await dock.keyboard.press("Enter");
     await expect(dock.locator('[data-pending-kind="party"]')).toContainText(/next Attempt/i);
 
-    await dock.locator('[data-character-chip="knight"]').focus();
+    await characterPickerChipLocator(dock, "knight").focus();
     await dock.keyboard.press("Enter");
     await focusCharacterSubTab(dock, "loadout");
     const loadoutSelect = dock.locator('[data-class-id="knight"] [data-loadout-assign="0"]');
@@ -74,7 +76,7 @@ test.describe("accessibility keyboard floor", () => {
       /next Wave/i,
     );
 
-    await dock.locator('[data-character-chip="knight"]').focus();
+    await characterPickerChipLocator(dock, "knight").focus();
     await dock.keyboard.press("Enter");
     await focusCharacterSubTab(dock, "talents");
     const fortitudeCell = dock.locator(
@@ -101,13 +103,13 @@ test.describe("accessibility keyboard floor", () => {
       ),
     ).toBeVisible();
 
-    await dock.locator('[data-character-chip="knight"]').focus();
+    await characterPickerChipLocator(dock, "knight").focus();
     await dock.keyboard.press("Enter");
     await focusCharacterSubTab(dock, "loadout");
     await assertFocusRingVisible(dock, '[data-class-id="knight"] [data-loadout-assign="0"]');
 
     await focusDockTab(dock, "armory");
-    await dock.locator('[data-character-chip="knight"]').focus();
+    await armoryCharacterChipLocator(dock, "knight").focus();
     await dock.keyboard.press("Enter");
     await assertFocusRingVisible(dock, '[data-worn-slot="charm"]');
     await dock.locator('[data-worn-slot="charm"]').focus();

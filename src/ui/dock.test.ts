@@ -587,11 +587,15 @@ describe("Management Dock Character picker", () => {
     expect(surface?.parentElement).toBe(picker?.parentElement);
     expect(root.querySelector(".dock-panel .character-picker")).toBeNull();
     expect(picker?.hidden).toBe(false);
+    expect(picker?.getAttribute("aria-hidden")).toBe("false");
+    expect(picker?.inert).toBe(false);
     expect(root.querySelector(".character-picker [data-picker-position]")).not.toBeNull();
 
     root.querySelector<HTMLButtonElement>('[data-dock-tab="armory"]')?.click();
     expect(root.querySelector(".character-picker")).toBe(picker);
     expect(picker?.hidden).toBe(true);
+    expect(picker?.getAttribute("aria-hidden")).toBe("true");
+    expect(picker?.inert).toBe(true);
 
     root.querySelector<HTMLButtonElement>('[data-dock-tab="stage"]')?.click();
     expect(picker?.hidden).toBe(true);

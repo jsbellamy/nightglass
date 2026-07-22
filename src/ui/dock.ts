@@ -258,6 +258,8 @@ export function mountManagementDock(
   function syncCharacterRailVisibility(): void {
     const showRail = activeTab === "character";
     characterPickerEl.hidden = !showRail;
+    characterPickerEl.setAttribute("aria-hidden", showRail ? "false" : "true");
+    characterPickerEl.inert = !showRail;
     body.dataset["dockNav"] = activeTab;
   }
 

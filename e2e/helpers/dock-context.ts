@@ -102,3 +102,11 @@ export async function assertFocusRingVisible(page: Page, selector: string): Prom
   expect(ring!.width, `outline width on ${selector}`).toBeGreaterThan(0);
   expect(ring!.style, `outline style on ${selector}`).not.toBe("none");
 }
+
+export function characterPickerChipLocator(page: Page, classId: string) {
+  return page.locator(`.character-picker [data-character-chip="${classId}"]`);
+}
+
+export function armoryCharacterChipLocator(page: Page, classId: string) {
+  return page.locator(`.armory-character-selector [data-character-chip="${classId}"]`);
+}
