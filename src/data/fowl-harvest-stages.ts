@@ -1,6 +1,6 @@
 import type { StageDef } from "../core/types";
 
-/** Inactive Fowl Harvest Stages 4–6 (issue #416). Not wired into shipped Content yet. */
+/** Fowl Harvest Stages 4–6 (issue #416). */
 export const fowlHarvestStages: StageDef[] = [
   {
     id: 4,

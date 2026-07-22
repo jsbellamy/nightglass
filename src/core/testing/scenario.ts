@@ -10,7 +10,7 @@ import type {
   ProgressionState,
   Snapshot,
 } from "../snapshot";
-import type { ClassId, StageId } from "../types";
+import type { ClassId, Content, StageId } from "../types";
 import { fixtureContent } from "./fixture-content";
 
 export interface ScenarioBuilder {
@@ -20,6 +20,7 @@ export interface ScenarioBuilder {
   withParty(members: [ClassId, ClassId, ClassId], reserve: ClassId): ScenarioBuilder;
   withDrops(count: number): ScenarioBuilder;
   knockedOut(classId: ClassId): ScenarioBuilder;
+  withOpponentsAtOneHealth(): ScenarioBuilder;
   /** A valid Snapshot at the current SCHEMA_VERSION. */
   build(): Snapshot;
 }
@@ -32,24 +33,38 @@ interface ScenarioState {
   xp: Partial<Record<ClassId, number>>;
   dropCount: number;
   knockedOut: ClassId[];
+  opponentsAtOneHealth: boolean;
 }
 
-function opponentIdsForEncounter(encounter: 1 | 2 | 3): string[] {
-  const stageDef = fixtureContent.stages[0];
+function stageDefFor(content: Content, stage: StageId) {
+  const stageDef = content.stages.find((entry) => entry.id === stage);
   if (!stageDef) {
-    throw new Error("fixtureContent must define at least one Stage");
+    throw new Error(`Content missing Stage ${stage}`);
   }
+  return stageDef;
+}
+
+function opponentIdsForEncounter(
+  content: Content,
+  stage: StageId,
+  encounter: 1 | 2 | 3,
+): string[] {
+  const stageDef = stageDefFor(content, stage);
   if (encounter === 3) {
     return stageDef.boss.opponents;
   }
   return stageDef.waves[encounter - 1]?.opponents ?? [];
 }
 
-function makeOpponentCombatants(encounter: 1 | 2 | 3): CombatantState[] {
-  return opponentIdsForEncounter(encounter).map((opponentId, index) => {
-    const opponent = fixtureContent.opponents.find((entry) => entry.id === opponentId);
+function makeOpponentCombatants(
+  content: Content,
+  stage: StageId,
+  encounter: 1 | 2 | 3,
+): CombatantState[] {
+  return opponentIdsForEncounter(content, stage, encounter).map((opponentId, index) => {
+    const opponent = content.opponents.find((entry) => entry.id === opponentId);
     if (!opponent) {
-      throw new Error(`Missing opponent ${opponentId} in fixtureContent`);
+      throw new Error(`Missing opponent ${opponentId} in Content`);
     }
     return {
       entityId: opponentEntityId(String(encounter), index),
@@ -85,10 +100,10 @@ function applyKnockouts(attempt: AttemptState, classIds: ClassId[]): void {
   }
 }
 
-function makeDrops(count: number): DropInstance[] {
-  const base = fixtureContent.equipmentBases[0];
+function makeDrops(content: Content, count: number): DropInstance[] {
+  const base = content.equipmentBases[0];
   if (!base) {
-    throw new Error("fixtureContent must define at least one Equipment Base");
+    throw new Error("Content must define at least one Equipment Base");
   }
   const drops: DropInstance[] = [];
   for (let i = 0; i < count; i += 1) {
@@ -107,6 +122,14 @@ function makeDrops(count: number): DropInstance[] {
   return drops;
 }
 
+function applyOpponentHealthFloor(attempt: AttemptState, health: number): void {
+  for (const combatant of attempt.combatants) {
+    if (combatant.side === "opponent") {
+      combatant.health = health;
+    }
+  }
+}
+
 class Builder implements ScenarioBuilder {
   private readonly state: ScenarioState = {
     stage: 1,
@@ -116,7 +139,10 @@ class Builder implements ScenarioBuilder {
     xp: {},
     dropCount: 0,
     knockedOut: [],
+    opponentsAtOneHealth: false,
   };
+
+  constructor(private readonly content: Content) {}
 
   atStage(stage: StageId): ScenarioBuilder {
     this.state.stage = stage;
@@ -149,8 +175,13 @@ class Builder implements ScenarioBuilder {
     return this;
   }
 
+  withOpponentsAtOneHealth(): ScenarioBuilder {
+    this.state.opponentsAtOneHealth = true;
+    return this;
+  }
+
   build(): Snapshot {
-    const progression = createDefaultProgression(fixtureContent);
+    const progression = createDefaultProgression(this.content);
     if (this.state.party && this.state.reserve) {
       progression.party = [...this.state.party];
       progression.reserve = this.state.reserve;
@@ -166,7 +197,7 @@ class Builder implements ScenarioBuilder {
       progression.unlockedStage,
       this.state.stage,
     ) as StageId;
-    progression.armory = makeDrops(this.state.dropCount);
+    progression.armory = makeDrops(this.content, this.state.dropCount);
 
     const seed: Snapshot = {
       schemaVersion: SCHEMA_VERSION,
@@ -182,7 +213,7 @@ class Builder implements ScenarioBuilder {
     };
 
     // Boot through the Engine so Attempt combatants match createAttempt.
-    const engine = createEngine(fixtureContent, seed);
+    const engine = createEngine(this.content, seed);
     const snapshot = engine.snapshot();
     const attempt = snapshot.attempt;
     if (!attempt) {
@@ -190,10 +221,17 @@ class Builder implements ScenarioBuilder {
     }
 
     attempt.stage = this.state.stage;
-    if (this.state.encounter !== attempt.encounter) {
+    if (this.state.encounter !== attempt.encounter || this.state.stage !== attempt.stage) {
       const party = attempt.combatants.filter((combatant) => combatant.side === "party");
       attempt.encounter = this.state.encounter;
-      attempt.combatants = [...party, ...makeOpponentCombatants(this.state.encounter)];
+      attempt.combatants = [
+        ...party,
+        ...makeOpponentCombatants(this.content, this.state.stage, this.state.encounter),
+      ];
+    }
+
+    if (this.state.opponentsAtOneHealth) {
+      applyOpponentHealthFloor(attempt, 1);
     }
 
     applyKnockouts(attempt, this.state.knockedOut);
@@ -201,8 +239,8 @@ class Builder implements ScenarioBuilder {
   }
 }
 
-export function scenario(): ScenarioBuilder {
-  return new Builder();
+export function scenario(content: Content = fixtureContent): ScenarioBuilder {
+  return new Builder(content);
 }
 
 /**

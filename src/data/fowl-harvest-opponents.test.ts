@@ -57,7 +57,7 @@ function xpFromOpponentId(id: string): number {
   return Number(match[1]);
 }
 
-describe("inactive Fowl Harvest Opponents", () => {
+describe("Fowl Harvest Opponents", () => {
   it("exports every Stage roster id with xpAward matching its suffix", async () => {
     const { fowlHarvestOpponents } = await import("./fowl-harvest-opponents");
 

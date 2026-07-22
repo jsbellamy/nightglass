@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { buildContent } from "./index";
 import { fowlHarvestStages } from "./fowl-harvest-stages";
 
-describe("inactive Fowl Harvest Stages 4–6", () => {
+describe("Fowl Harvest Stages 4–6", () => {
   it("exports three Stages with approved names, backdrop keys, and rarity odds", async () => {
     const { fowlHarvestStages } = await import("./fowl-harvest-stages");
 

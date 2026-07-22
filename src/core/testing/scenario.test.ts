@@ -5,11 +5,12 @@ import { createEngine, SCHEMA_VERSION } from "../engine";
 import { createDefaultProgression } from "../load-state";
 import { cloneSnapshot, type Snapshot } from "../snapshot";
 import type { ClassId } from "../types";
-import { fixtureContent } from "./fixture-content";
+import { fixtureContent, fixtureContentWithAuthoredStages } from "./fixture-content";
 import { driveBy, scenario } from "./scenario";
 
 const FIXTURE_NOW_MS = 1_000;
 const fixtureNow = () => FIXTURE_NOW_MS;
+const sixStageFixture = fixtureContentWithAuthoredStages(6);
 const ENGINE_TEST_PATH = fileURLToPath(new URL("../engine.test.ts", import.meta.url));
 
 const RAW_SNAPSHOT_LITERAL = /const\s+\w+\s*:\s*Snapshot\s*=\s*\{/;
@@ -84,7 +85,7 @@ describe("scenario builder", () => {
         line: 555,
         label: "Stage 3 Boss encounter",
         build: () =>
-          scenario()
+          scenario(sixStageFixture)
             .atStage(3)
             .atEncounter(3)
             .withParty(["knight", "wizard", "knight"], "wizard")
@@ -303,18 +304,18 @@ describe("scenario builder", () => {
         expect(knocked, `line ${entry.line} knockouts`).toEqual(entry.expect.knockedOut);
       }
 
-      const engine = createEngine(fixtureContent, saved);
+      const engine = createEngine(sixStageFixture, saved);
       expect(engine.snapshot().attempt, `line ${entry.line} loadable`).not.toBeNull();
     }
   });
 
   it("reaches Stage 4 through Stage 6 Arrange dimensions through the builder", () => {
     for (const stage of [4, 5, 6] as const) {
-      const saved = scenario().atStage(stage).atEncounter(2).build();
+      const saved = scenario(sixStageFixture).atStage(stage).atEncounter(2).build();
       expect(saved.attempt?.stage).toBe(stage);
       expect(saved.attempt?.encounter).toBe(2);
       expect(saved.progression.unlockedStage).toBeGreaterThanOrEqual(stage);
-      const engine = createEngine(fixtureContent, saved);
+      const engine = createEngine(sixStageFixture, saved);
       expect(engine.snapshot().attempt?.stage).toBe(stage);
     }
   });

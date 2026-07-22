@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { createEngine } from "../core/engine";
 import type { EngineEvent } from "../core/events";
-import { opponentEntityId } from "../core/entity-id";
 import { rollDrop, tierForItemLevel } from "../core/equipment";
 import { initialLootRngState } from "../core/rng";
 import type { Snapshot } from "../core/snapshot";
+import { driveBy, scenario } from "../core/testing/scenario";
 import { validateContent, ENCOUNTER_BUDGETS } from "../core/validate-content";
 import { levelFromXp } from "../core/xp";
 import type { AbilityDef, OpponentDef, StageDef, StageId } from "../core/types";
@@ -104,40 +104,12 @@ function advanceUntil(
 }
 
 function savedAtBossEncounter(stage: StageId): Snapshot {
-  const boot = createEngine(content, undefined, LOOT_SEED);
-  boot.advanceBy(1);
-  const saved = boot.snapshot();
-  saved.progression.unlockedStage = stage;
-
-  const stageDef = stageById(stage);
-  const bossId = stageDef.boss.opponents[0]!;
-  const bossDef = opponentById(bossId);
-  const attempt = saved.attempt;
-  if (!attempt) {
-    throw new Error("expected boot Attempt");
-  }
-  const party = attempt.combatants.filter((combatant) => combatant.side === "party");
-
-  saved.attempt = {
-    ...attempt,
-    stage,
-    encounter: 3,
-    phase: "fighting",
-    combatants: [
-      ...party,
-      {
-        entityId: opponentEntityId("3", 0),
-        side: "opponent",
-        defId: bossId,
-        health: 1,
-        maxHealth: bossDef.base.maxHealth,
-        knockedOut: false,
-        action: null,
-        cooldownReadyAtMs: {},
-        statuses: [],
-      },
-    ],
-  };
+  const saved = scenario(content)
+    .atStage(stage)
+    .atEncounter(3)
+    .withOpponentsAtOneHealth()
+    .build();
+  saved.lootRngState = LOOT_SEED;
   return saved;
 }
 
@@ -145,11 +117,16 @@ function driveUntilStageCleared(
   engine: ReturnType<typeof createEngine>,
   stage: StageId,
 ): EngineEvent[] {
-  return advanceUntil(
-    engine,
-    (batch) => batch.some((event) => event.type === "stage-cleared" && event.stage === stage),
-    SMOKE_MAX_MS,
-  );
+  const events: EngineEvent[] = [];
+  let elapsed = 0;
+  while (elapsed < SMOKE_MAX_MS) {
+    events.push(...driveBy(engine, 1, 1));
+    if (events.some((event) => event.type === "stage-cleared" && event.stage === stage)) {
+      return events;
+    }
+    elapsed += 1;
+  }
+  throw new Error(`Stage ${stage} never cleared within ${SMOKE_MAX_MS}ms`);
 }
 
 describe("assembled Stage content", () => {

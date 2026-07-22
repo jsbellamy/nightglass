@@ -1,4 +1,4 @@
-import type { Content } from "../types";
+import type { Content, StageId } from "../types";
 
 /**
  * Minimal valid Content for Simulation Engine tests: two Classes, one Stage with
@@ -632,6 +632,23 @@ function fixtureTierBases(tier: 3 | 4): Content["equipmentBases"] {
       iconKey: `fixture-charm-${roman}`,
     },
   ];
+}
+
+/** Duplicate the fixture Stage template into a contiguous 1..maxStage roster. */
+export function fixtureContentWithAuthoredStages(maxStage: StageId): Content {
+  const template = fixtureContent.stages[0];
+  if (!template) {
+    throw new Error("fixtureContent must define at least one Stage");
+  }
+  const stages = [];
+  for (let id = 1; id <= maxStage; id += 1) {
+    stages.push({
+      ...template,
+      id: id as StageId,
+      name: `Fixture Stage ${id}`,
+    });
+  }
+  return { ...fixtureContent, stages };
 }
 
 /** Four-Tier Equipment catalog for Tier III/IV roll and validation tests (not shipped). */
