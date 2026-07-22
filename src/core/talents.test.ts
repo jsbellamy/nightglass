@@ -13,7 +13,7 @@ import {
 
 const knightKit = fixtureContent.classes.find((entry) => entry.id === "knight")!;
 
-const twoTierKnight: ClassKitDef = {
+const twoTierKnight = {
   ...knightKit,
   talentTiers: [
     {
@@ -22,21 +22,21 @@ const twoTierKnight: ClassKitDef = {
           id: "k2-fortitude",
           name: "Fortitude II",
           perRank: { percent: { maxHealth: 0.04 } },
-          maxRanks: 5,
+          maxRanks: 5 as const,
           iconKey: "k2-fortitude",
         },
         {
           id: "k2-swordcraft",
           name: "Swordcraft II",
           perRank: { percent: { physicalPower: 0.04 } },
-          maxRanks: 5,
+          maxRanks: 5 as const,
           iconKey: "k2-swordcraft",
         },
       ],
-      abilityRow: ["k2-hold-line", "k2-falling-star"],
+      abilityRow: ["k2-hold-line", "k2-falling-star"] as [string, string],
     },
   ],
-};
+} satisfies ClassKitDef;
 
 function fillTierOne(state: ReturnType<typeof emptyTalentState>, classKit: ClassKitDef, level: number) {
   for (let rank = 0; rank < 5; rank += 1) {

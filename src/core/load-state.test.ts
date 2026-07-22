@@ -7,10 +7,11 @@ import {
 } from "./load-state";
 import { content as testContent } from "../data";
 import type { Snapshot } from "./snapshot";
+import type { Content, ClassKitDef } from "./types";
 
 const LOOT_SEED = 42;
 
-describe("loadTalents migration", () => {
+describe("tolerant talent save migration", () => {
   it("preserves legacy Tier 1 ranks and Ability Talent on tolerant load", () => {
     const progression = createDefaultProgression(testContent);
     const raw = {
@@ -54,7 +55,7 @@ describe("loadTalents migration", () => {
       ...testContent,
       classes: testContent.classes.map((classKit) =>
         classKit.id === "knight"
-          ? {
+          ? ({
               ...classKit,
               talentTiers: [
                 {
@@ -77,10 +78,10 @@ describe("loadTalents migration", () => {
                   abilityRow: ["hold-the-line-2", "falling-star-2"] as [string, string],
                 },
               ],
-            }
+            } satisfies ClassKitDef)
           : classKit,
       ),
-    };
+    } satisfies Content;
     const raw = {
       schemaVersion: SAVE_SCHEMA_VERSION,
       savedAtMs: 0,

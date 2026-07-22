@@ -1,4 +1,4 @@
-import type { AffixId, ClassId, Content, EquipmentBaseDef, OpponentDef } from "./types";
+import type { AffixId, ClassId, Content, EquipmentBaseDef, OpponentDef, TalentTierDef } from "./types";
 
 /** Per-Stage Character XP encounter budgets from issue #5 / vertical-slice-spec §7. */
 export const ENCOUNTER_BUDGETS = {
@@ -19,6 +19,36 @@ const ALL_AFFIX_IDS: AffixId[] = [
 ];
 
 const CLASS_IDS: ClassId[] = ["knight", "wizard", "priest", "hunter"];
+
+function validateTalentTier(
+  classKit: Content["classes"][number],
+  tierDef: TalentTierDef,
+  tierLabel: string,
+  abilityById: Map<string, Content["abilities"][number]>,
+  violations: string[],
+): void {
+  if (tierDef.statRow.length !== 2) {
+    violations.push(`class "${classKit.id}" ${tierLabel} must declare exactly two Stat Talents`);
+  }
+  for (const statTalent of tierDef.statRow) {
+    if (statTalent.maxRanks !== 5) {
+      violations.push(
+        `class "${classKit.id}" ${tierLabel} stat talent "${statTalent.id}" must have maxRanks 5`,
+      );
+    }
+  }
+  if (tierDef.abilityRow.length !== 2) {
+    violations.push(`class "${classKit.id}" ${tierLabel} must declare exactly two Ability Talents`);
+  }
+  for (const talentId of tierDef.abilityRow) {
+    const talent = abilityById.get(talentId);
+    if (!talent) {
+      violations.push(`class "${classKit.id}" ${tierLabel} abilityId "${talentId}" not found`);
+    } else if (talent.slot !== "talent" || talent.classId !== classKit.id) {
+      violations.push(`class "${classKit.id}" ${tierLabel} abilityId "${talentId}" is invalid`);
+    }
+  }
+}
 
 export interface ValidateContentOptions {
   /**
@@ -101,18 +131,23 @@ export function validateContent(
       }
     }
 
-    const talentAbilityIds = classKit.talents.abilityRow;
-    if (talentAbilityIds.length !== 2) {
-      violations.push(`class "${classKit.id}" must declare exactly two Ability Talents`);
+    validateTalentTier(classKit, classKit.talents, "talents", abilityById, violations);
+    if (classKit.talentTiers) {
+      classKit.talentTiers.forEach((tierDef, tierIndex) => {
+        validateTalentTier(
+          classKit,
+          tierDef,
+          `talentTiers[${tierIndex}]`,
+          abilityById,
+          violations,
+        );
+      });
     }
-    for (const talentId of talentAbilityIds) {
-      const talent = abilityById.get(talentId);
-      if (!talent) {
-        violations.push(`class "${classKit.id}" talent abilityId "${talentId}" not found`);
-      } else if (talent.slot !== "talent" || talent.classId !== classKit.id) {
-        violations.push(`class "${classKit.id}" talent abilityId "${talentId}" is invalid`);
-      }
-    }
+
+    const talentAbilityIds = [
+      ...classKit.talents.abilityRow,
+      ...(classKit.talentTiers?.flatMap((tier) => tier.abilityRow) ?? []),
+    ];
 
     const unlockable = new Set([...classKit.coreAbilityIds, ...talentAbilityIds]);
     const loadoutIds = new Set(classKit.defaultLoadout);

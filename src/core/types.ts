@@ -86,7 +86,7 @@ export interface ClassKitDef {
   coreAbilityIds: [string, string, string, string];
   defaultLoadout: [string, string, string];
   talents: TalentTierDef;
-  talentTiers?: readonly [TalentTierDef, TalentTierDef, ...TalentTierDef[]];
+  talentTiers?: readonly [TalentTierDef, ...TalentTierDef[]];
 }
 
 export interface OpponentDef {

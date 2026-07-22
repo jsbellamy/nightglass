@@ -29,11 +29,11 @@ function syncLegacyTierOneFields(state: ClassTalentState): void {
   if (!tierOne) {
     return;
   }
-  state.statRanks = tierOne.statRanks;
+  state.statRanks = { ...tierOne.statRanks };
   state.abilityTalentId = tierOne.abilityTalentId;
 }
 
-export function cloneTierTalentState(state: TierTalentState): TierTalentState {
+function cloneTierTalentState(state: TierTalentState): TierTalentState {
   return {
     statRanks: { ...state.statRanks },
     abilityTalentId: state.abilityTalentId,
@@ -109,7 +109,7 @@ export function totalStatPoints(statRanks: Record<string, number>): number {
   return Object.values(statRanks).reduce((sum, rank) => sum + rank, 0);
 }
 
-export function spentTierPoints(tierState: TierTalentState): number {
+function spentTierPoints(tierState: TierTalentState): number {
   return totalStatPoints(tierState.statRanks) + (tierState.abilityTalentId ? 1 : 0);
 }
 
