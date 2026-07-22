@@ -970,10 +970,7 @@ describe("Armory surface", () => {
     ]);
     const engine = createEngine(fullContent, snapshot, LOOT_SEED);
     const serialized = serializeEngineLegality(engine, snapshot, fullContent);
-    const equipKey = "1:hunter:weapon";
-    expect(Object.prototype.hasOwnProperty.call(serialized.equip, equipKey)).toBe(true);
-    expect(serialized.equip[equipKey]).toBe(engine.canEquip(1, "hunter", "weapon"));
-    expect(serialized.equip[equipKey]).toBe(true);
+    expect(engine.canEquip(1, "hunter", "weapon")).toBe(true);
 
     const surface = mountArmorySurface(root, {
       content: fullContent,
@@ -982,7 +979,7 @@ describe("Armory surface", () => {
         selected.current = classId;
       },
     });
-    surface.render(snapshot, legalityViewFromSerialized(serialized));
+    surface.render(snapshot, legalityViewFromSerialized(serialized, snapshot, fullContent));
 
     const tile = root.querySelector<HTMLElement>('.equipment-card[data-drop-id="1"]')!;
     tile.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));

@@ -1,9 +1,11 @@
 import type { EngineEvent } from "../core/events";
 import type { Snapshot } from "../core/snapshot";
 import type { ClassId, Content, EquipmentSlotId } from "../core/types";
-import { rosterClassIds, type Engine } from "./snapshot-view";
-
-const SLOTS: EquipmentSlotId[] = ["weapon", "armor", "charm"];
+import {
+  canEquipToSlot,
+  rosterClassIds,
+  type Engine,
+} from "./snapshot-view";
 
 export interface EngineLegalityView {
   canAllocateTalent(classId: ClassId, talentId: string): boolean;
@@ -14,15 +16,10 @@ export interface EngineLegalityView {
 export interface SerializedEngineLegality {
   talentAllocate: Record<string, boolean>;
   talentDeallocate: Record<string, boolean>;
-  equip: Record<string, boolean>;
 }
 
 function talentKey(classId: ClassId, talentId: string): string {
   return `${classId}:${talentId}`;
-}
-
-function equipKey(dropId: number, classId: ClassId, slot: EquipmentSlotId): string {
-  return `${dropId}:${classId}:${slot}`;
 }
 
 /**
@@ -74,7 +71,6 @@ export function serializeEngineLegality(
 ): SerializedEngineLegality {
   const talentAllocate: Record<string, boolean> = {};
   const talentDeallocate: Record<string, boolean> = {};
-  const equip: Record<string, boolean> = {};
 
   for (const classId of rosterClassIds(snapshot)) {
     const classKit = content.classes.find((entry) => entry.id === classId);
@@ -93,23 +89,26 @@ export function serializeEngineLegality(
     }
   }
 
-  for (const drop of snapshot.progression.armory) {
-    for (const classId of rosterClassIds(snapshot)) {
-      for (const slot of SLOTS) {
-        equip[equipKey(drop.dropId, classId, slot)] = engine.canEquip(drop.dropId, classId, slot);
-      }
-    }
-  }
-
-  return { talentAllocate, talentDeallocate, equip };
+  return { talentAllocate, talentDeallocate };
 }
 
 /** Memoized so Management Dock can gate remounts on legality identity across pumps. */
 let memoizedLegalityData: SerializedEngineLegality | undefined;
+let memoizedSnapshot: Snapshot | undefined;
+let memoizedContent: Content | undefined;
 let memoizedLegalityView: EngineLegalityView | undefined;
 
-export function legalityViewFromSerialized(data: SerializedEngineLegality): EngineLegalityView {
-  if (memoizedLegalityData === data && memoizedLegalityView) {
+export function legalityViewFromSerialized(
+  data: SerializedEngineLegality,
+  snapshot: Snapshot,
+  content: Content,
+): EngineLegalityView {
+  if (
+    memoizedLegalityData === data &&
+    memoizedSnapshot === snapshot &&
+    memoizedContent === content &&
+    memoizedLegalityView
+  ) {
     return memoizedLegalityView;
   }
   const view: EngineLegalityView = {
@@ -117,9 +116,17 @@ export function legalityViewFromSerialized(data: SerializedEngineLegality): Engi
       data.talentAllocate[talentKey(classId, talentId)] ?? false,
     canDeallocateTalent: (classId, talentId) =>
       data.talentDeallocate[talentKey(classId, talentId)] ?? false,
-    canEquip: (dropId, classId, slot) => data.equip[equipKey(dropId, classId, slot)] ?? false,
+    canEquip: (dropId, classId, slot) => {
+      const drop = snapshot.progression.armory.find((entry) => entry.dropId === dropId);
+      if (!drop) {
+        return false;
+      }
+      return canEquipToSlot(drop, content, classId, slot);
+    },
   };
   memoizedLegalityData = data;
+  memoizedSnapshot = snapshot;
+  memoizedContent = content;
   memoizedLegalityView = view;
   return view;
 }

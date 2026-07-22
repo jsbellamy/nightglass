@@ -11,6 +11,8 @@ import { DOCK_SURFACES, DOCK_TABS, mountManagementDock } from "./dock";
 import {
   EMPTY_ENGINE_LEGALITY,
   legalityViewFromEngine,
+  legalityViewFromSerialized,
+  serializeEngineLegality,
   type EngineLegalityView,
 } from "./engine-legality";
 
@@ -218,7 +220,11 @@ describe("Management Dock shell", () => {
     ];
     const engine = createEngine(fixtureContent, saved, 42);
     const snapshot = engine.snapshot();
-    const legality = legalityViewFromEngine(engine);
+    const legality = legalityViewFromSerialized(
+      serializeEngineLegality(engine, snapshot, fixtureContent),
+      snapshot,
+      fixtureContent,
+    );
 
     dock.render(snapshot, legality);
     root
@@ -239,8 +245,25 @@ describe("Management Dock shell", () => {
     root.querySelector<HTMLButtonElement>('[data-dock-tab="armory"]')?.click();
     root.querySelector<HTMLButtonElement>('[data-worn-slot="weapon"]')?.click();
     const cards = [...root.querySelectorAll<HTMLElement>(".armory-grid .equipment-card")];
+    expect(legality.canEquip(1, "knight", "weapon")).toBe(engine.canEquip(1, "knight", "weapon"));
     expect(legality.canEquip(1, "knight", "weapon")).toBe(true);
     expect(cards.map((card) => card.dataset["dropId"])).toEqual(["1"]);
+
+    engine.equip(1, "knight", "weapon");
+    const equippedSnapshot = engine.snapshot();
+    const equippedLegality = legalityViewFromSerialized(
+      serializeEngineLegality(engine, equippedSnapshot, fixtureContent),
+      equippedSnapshot,
+      fixtureContent,
+    );
+    dock.render(equippedSnapshot, equippedLegality);
+    root.querySelector<HTMLButtonElement>('[data-dock-tab="armory"]')?.click();
+    const wornWeapon = root.querySelector<HTMLElement>('[data-worn-slot="weapon"]');
+    expect(wornWeapon?.dataset["slotFilled"]).toBe("true");
+    expect(wornWeapon?.draggable).toBe(true);
+    expect(
+      root.querySelectorAll<HTMLElement>(".armory-grid .equipment-card"),
+    ).toHaveLength(0);
 
     dock.destroy();
   });

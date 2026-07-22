@@ -1452,7 +1452,8 @@ describe("serialized legality cache", () => {
     pump.advancePumpMs(PUMP_INTERVAL_MS);
     const cached = published.find((m) => m.type === "pump")?.legality;
     expect(cached).toBeDefined();
-    const equipBefore = { ...cached!.equip };
+    const talentAllocateBefore = { ...cached!.talentAllocate };
+    const talentDeallocateBefore = { ...cached!.talentDeallocate };
 
     vi.mocked(engine.advanceBy).mockReturnValue([
       { seq: 2, atMs: 500, type: "drop-awarded", dropId: 42 },
@@ -1462,7 +1463,8 @@ describe("serialized legality cache", () => {
     const refreshed = pumpMessages[pumpMessages.length - 1]?.legality;
 
     expect(refreshed).not.toBe(cached);
-    expect(cached!.equip).toEqual(equipBefore);
+    expect(cached!.talentAllocate).toEqual(talentAllocateBefore);
+    expect(cached!.talentDeallocate).toEqual(talentDeallocateBefore);
     shell.stop();
   });
 });

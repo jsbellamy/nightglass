@@ -41,6 +41,11 @@ export {
   type StatLine,
 } from "../core/equipment-preview";
 
+export {
+  canEquipToSlot,
+  equipViolation,
+} from "../core/equipment";
+
 export const CLASS_LABELS: Record<ClassId, string> = {
   knight: "Knight",
   wizard: "Wizard",
