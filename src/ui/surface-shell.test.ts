@@ -10,8 +10,6 @@ import {
   mountSurfaceShell,
   pendingMarker,
   bindScrollOverflowAffordance,
-  captureScrollPositions,
-  restoreScrollPositions,
 } from "./surface-shell";
 
 const LOOT_SEED = 42;
@@ -65,23 +63,182 @@ describe("Management surface shell pending Wave marker", () => {
   });
 });
 
-describe("Scroll position capture and restore", () => {
-  it("restores scrollTop onto the post-rebuild node for the same selector", () => {
+describe("Management surface shell identity-preserving render", () => {
+  it("preserves scroll offset on a scrollable region across a render with a changed Snapshot", () => {
     const root = document.createElement("div");
-    const first = document.createElement("div");
-    first.className = "armory-grid";
-    first.scrollTop = 64;
-    root.append(first);
+    document.body.append(root);
+    const engine = createEngine(content, undefined, LOOT_SEED);
+    const first = engine.snapshot();
+    const surface = mountSurfaceShell(root, "armory-surface", {
+      title: "Armory",
+      showTitle: false,
+      body() {
+        return [el("div", { class: "armory-grid" }, [el("p", { text: "grid" })])];
+      },
+    });
 
-    const positions = captureScrollPositions(root, [".armory-grid"]);
-    expect(positions[".armory-grid"]).toEqual({ top: 64, left: 0 });
+    surface.render(first);
+    const grid = root.querySelector<HTMLElement>(".armory-grid");
+    expect(grid).not.toBeNull();
+    grid!.scrollTop = 64;
+    expect(grid!.scrollTop).toBe(64);
 
-    first.remove();
-    const second = document.createElement("div");
-    second.className = "armory-grid";
-    root.append(second);
-    restoreScrollPositions(root, positions);
-    expect(second.scrollTop).toBe(64);
+    const changed = structuredClone(first);
+    changed.progression.unlockedStage = 2;
+    surface.render(changed);
+
+    const gridAfter = root.querySelector<HTMLElement>(".armory-grid");
+    expect(gridAfter).not.toBe(grid);
+    expect(gridAfter!.scrollTop).toBe(64);
+
+    surface.destroy();
+    root.remove();
+  });
+
+  it("preserves keyboard focus on a keyed control across a render", () => {
+    const root = document.createElement("div");
+    document.body.append(root);
+    const engine = createEngine(content, undefined, LOOT_SEED);
+    const first = engine.snapshot();
+    const surface = mountSurfaceShell(root, "stage-surface", {
+      title: "Stage",
+      showTitle: false,
+      body() {
+        return [
+          el("button", {
+            class: "stage-row focus-ring",
+            data: { stageId: "1" },
+            props: { type: "button" },
+            text: "Stage 1",
+          }),
+        ];
+      },
+    });
+
+    surface.render(first);
+    const before = root.querySelector<HTMLButtonElement>('[data-stage-id="1"]');
+    before?.focus();
+    expect(document.activeElement).toBe(before);
+
+    const changed = structuredClone(first);
+    changed.progression.unlockedStage = 2;
+    surface.render(changed);
+
+    const after = root.querySelector<HTMLButtonElement>('[data-stage-id="1"]');
+    expect(after).not.toBe(before);
+    expect(document.activeElement).toBe(after);
+
+    surface.destroy();
+    root.remove();
+  });
+
+  it("does not throw or steal focus when the focused control disappears after a render", () => {
+    const root = document.createElement("div");
+    document.body.append(root);
+    const outside = document.createElement("button");
+    outside.type = "button";
+    outside.textContent = "outside";
+    document.body.append(outside);
+    const engine = createEngine(content, undefined, LOOT_SEED);
+    const first = engine.snapshot();
+    let showProbe = true;
+    const surface = mountSurfaceShell(root, "stage-surface", {
+      title: "Stage",
+      showTitle: false,
+      body() {
+        return showProbe
+          ? [
+              el("button", {
+                class: "probe focus-ring",
+                data: { probeId: "gone" },
+                props: { type: "button" },
+                text: "probe",
+              }),
+            ]
+          : [el("p", { class: "attempt-position", text: "empty" })];
+      },
+    });
+
+    surface.render(first);
+    root.querySelector<HTMLButtonElement>('[data-probe-id="gone"]')?.focus();
+    expect(document.activeElement?.getAttribute("data-probe-id")).toBe("gone");
+
+    showProbe = false;
+    outside.focus();
+    expect(document.activeElement).toBe(outside);
+    expect(() => surface.render(first)).not.toThrow();
+    expect(document.activeElement).toBe(outside);
+
+    surface.destroy();
+    root.remove();
+    outside.remove();
+  });
+
+  it("keeps a selection key set before a render still selected after it", () => {
+    const root = document.createElement("div");
+    const engine = createEngine(content, undefined, LOOT_SEED);
+    const first = engine.snapshot();
+    let shell!: ReturnType<typeof mountSurfaceShell>;
+    shell = mountSurfaceShell(root, "talents-surface", {
+      title: "Talents",
+      selection: true,
+      body() {
+        const selected = shell.getSelection();
+        return [
+          el("button", {
+            class: selected === "k-fortitude" ? "talent-cell selected" : "talent-cell",
+            data: { talentId: "k-fortitude" },
+            props: { type: "button" },
+            text: "Fortitude",
+          }),
+        ];
+      },
+    });
+
+    shell.render(first);
+    shell.setSelection("k-fortitude");
+    expect(root.querySelector(".talent-cell.selected")).not.toBeNull();
+
+    const changed = structuredClone(first);
+    changed.progression.unlockedStage = 2;
+    shell.render(changed);
+
+    expect(shell.getSelection()).toBe("k-fortitude");
+    expect(root.querySelector(".talent-cell.selected")).not.toBeNull();
+
+    shell.destroy();
+  });
+
+  it("re-appends a retained node across a render instead of tearing it down", () => {
+    const root = document.createElement("div");
+    const engine = createEngine(content, undefined, LOOT_SEED);
+    const first = engine.snapshot();
+    const retained = el("div", {
+      class: "stage-confirm",
+      data: { surfaceRetain: "true", pendingStage: "1" },
+      text: "confirm",
+    });
+    const surface = mountSurfaceShell(root, "stage-surface", {
+      title: "Stage",
+      showTitle: false,
+      body() {
+        return [el("p", { class: "attempt-position", text: "body" })];
+      },
+    });
+
+    surface.render(first);
+    root.append(retained);
+    expect(root.contains(retained)).toBe(true);
+
+    const changed = structuredClone(first);
+    changed.progression.unlockedStage = 2;
+    surface.render(changed);
+
+    expect(root.contains(retained)).toBe(true);
+    expect(root.querySelector(".stage-confirm")).toBe(retained);
+    expect(root.querySelector(".attempt-position")?.textContent).toBe("body");
+
+    surface.destroy();
   });
 });
 

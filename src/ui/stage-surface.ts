@@ -26,22 +26,15 @@ export function mountStageSurface(
   root: HTMLElement,
   options: StageSurfaceOptions,
 ): StageSurface {
-  let pendingStage: 1 | 2 | 3 | null = null;
   let mountedConfirm: HTMLElement | null = null;
 
-  function removeConfirmElement(): void {
-    mountedConfirm?.remove();
-  }
-
   function clearConfirm(): void {
-    pendingStage = null;
     mountedConfirm?.remove();
     mountedConfirm = null;
   }
 
   function renderConfirm(stageId: 1 | 2 | 3): void {
-    removeConfirmElement();
-    pendingStage = stageId;
+    mountedConfirm?.remove();
     const yes = el("button", {
       class: "stage-confirm-yes focus-ring",
       data: { stageConfirm: "yes" },
@@ -67,7 +60,7 @@ export function mountStageSurface(
       "div",
       {
         class: "stage-confirm",
-        data: { pendingStage: String(stageId) },
+        data: { surfaceRetain: "true", pendingStage: String(stageId) },
         props: { role: "region" },
         aria: { label: "Confirm Stage selection" },
       },
@@ -129,8 +122,7 @@ export function mountStageSurface(
 
         if (unlocked) {
           bindPressable(row, () => {
-            pendingStage = stageId;
-            render(snapshot);
+            renderConfirm(stageId);
           });
         }
 
@@ -153,43 +145,8 @@ export function mountStageSurface(
     },
   });
 
-  function render(
-    snapshot: ReadonlySnapshot | null,
-    legality?: EngineLegalityView,
-  ): void {
-    const confirmStage = pendingStage;
-    const confirmEl = mountedConfirm;
-    const focusedInConfirm =
-      confirmEl &&
-      document.activeElement instanceof Node &&
-      confirmEl.contains(document.activeElement)
-        ? document.activeElement
-        : null;
-
-    shell.render(snapshot, legality);
-    pendingStage = confirmStage;
-    if (!snapshot) {
-      clearConfirm();
-      return;
-    }
-    if (pendingStage === null) {
-      return;
-    }
-    if (
-      mountedConfirm &&
-      mountedConfirm.dataset["pendingStage"] === String(pendingStage)
-    ) {
-      root.append(mountedConfirm);
-      if (focusedInConfirm instanceof HTMLElement) {
-        focusedInConfirm.focus();
-      }
-      return;
-    }
-    renderConfirm(pendingStage);
-  }
-
   return {
-    render,
+    render: (snapshot, legality) => shell.render(snapshot, legality),
     destroy() {
       clearConfirm();
       shell.destroy();

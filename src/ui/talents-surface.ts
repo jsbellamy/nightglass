@@ -51,21 +51,7 @@ export function mountTalentsSurface(
   options: TalentsSurfaceOptions,
 ): TalentsSurface {
   const { content } = options;
-  let lastLegality: EngineLegalityView = EMPTY_ENGINE_LEGALITY;
-  let lastSnapshot: ReadonlySnapshot | null = null;
-  let selectedTalentId: string | null = null;
-  let lastClassId: ClassId | null = null;
-
-  function rerender(): void {
-    if (lastSnapshot) {
-      shell.render(lastSnapshot, lastLegality);
-    }
-  }
-
-  function selectTalent(talentId: string): void {
-    selectedTalentId = talentId;
-    rerender();
-  }
+  let shell!: ReturnType<typeof mountSurfaceShell>;
 
   function appendTalentCellIcon(cell: HTMLElement, iconKey: string, name: string): void {
     const face = el("span", { class: "talent-cell-face" });
@@ -79,7 +65,7 @@ export function mountTalentsSurface(
   }
 
   function renderStatCell(statTalent: StatTalentDef, rank: number): HTMLElement {
-    const selected = selectedTalentId === statTalent.id;
+    const selected = shell.getSelection() === statTalent.id;
     const cell = el("button", {
       class: selected ? "talent-cell focus-ring selected" : "talent-cell focus-ring",
       data: { talentId: statTalent.id },
@@ -95,13 +81,13 @@ export function mountTalentsSurface(
     ]);
     appendTalentCellIcon(cell, statTalent.iconKey, statTalent.name);
     bindPressable(cell, () => {
-      selectTalent(statTalent.id);
+      shell.setSelection(statTalent.id);
     });
     cell.addEventListener("focus", () => {
-      if (selectedTalentId === statTalent.id) {
+      if (shell.getSelection() === statTalent.id) {
         return;
       }
-      selectTalent(statTalent.id);
+      shell.setSelection(statTalent.id);
       root
         .querySelector<HTMLElement>(`.talent-cell[data-talent-id="${statTalent.id}"]`)
         ?.focus();
@@ -115,7 +101,7 @@ export function mountTalentsSurface(
     iconKey: string,
     chosen: boolean,
   ): HTMLElement {
-    const selected = selectedTalentId === abilityId;
+    const selected = shell.getSelection() === abilityId;
     const classes = ["talent-cell", "ability-talent-cell", "focus-ring"];
     if (selected) {
       classes.push("selected");
@@ -137,13 +123,13 @@ export function mountTalentsSurface(
     ]);
     appendTalentCellIcon(cell, iconKey, abilityName);
     bindPressable(cell, () => {
-      selectTalent(abilityId);
+      shell.setSelection(abilityId);
     });
     cell.addEventListener("focus", () => {
-      if (selectedTalentId === abilityId) {
+      if (shell.getSelection() === abilityId) {
         return;
       }
-      selectTalent(abilityId);
+      shell.setSelection(abilityId);
       root
         .querySelector<HTMLElement>(`.talent-cell[data-talent-id="${abilityId}"]`)
         ?.focus();
@@ -273,14 +259,11 @@ export function mountTalentsSurface(
     return children;
   }
 
-  const shell = mountSurfaceShell(root, "talents-surface", {
+  shell = mountSurfaceShell(root, "talents-surface", {
     title: "Talents",
+    selection: true,
     body(snapshot, legality) {
       const classId = options.getSelectedClassId()!;
-      if (lastClassId !== null && lastClassId !== classId) {
-        selectedTalentId = null;
-      }
-      lastClassId = classId;
 
       const classKit = classKitFor(content, classId);
       const talentState = effectiveTalentState(snapshot, classId);
@@ -294,9 +277,11 @@ export function mountTalentsSurface(
         ...classKit.talents.statRow.map((talent) => talent.id),
         ...classKit.talents.abilityRow,
       ]);
+      const selectedTalentId = shell.getSelection();
       if (selectedTalentId !== null && !knownIds.has(selectedTalentId)) {
-        selectedTalentId = null;
+        shell.setSelection(null);
       }
+      const activeSelection = shell.getSelection();
 
       const statCells = classKit.talents.statRow.map((statTalent) => {
         const rank = talentState.statRanks[statTalent.id] ?? 0;
@@ -334,7 +319,7 @@ export function mountTalentsSurface(
         aria: { label: "Talent detail" },
       });
 
-      if (selectedTalentId === null) {
+      if (activeSelection === null) {
         detail.append(
           el("p", {
             class: "surface-empty",
@@ -343,7 +328,7 @@ export function mountTalentsSurface(
         );
       } else {
         const statTalent = classKit.talents.statRow.find(
-          (talent) => talent.id === selectedTalentId,
+          (talent) => talent.id === activeSelection,
         );
         if (statTalent) {
           const rank = talentState.statRanks[statTalent.id] ?? 0;
@@ -351,7 +336,7 @@ export function mountTalentsSurface(
             detail.append(child);
           }
         } else {
-          const abilityId = selectedTalentId;
+          const abilityId = activeSelection;
           const ability = content.abilities.find((entry) => entry.id === abilityId);
           const chosen = talentState.abilityTalentId === abilityId;
           for (const child of renderAbilityDetail(
@@ -397,8 +382,6 @@ export function mountTalentsSurface(
 
   return {
     render(snapshot, legality = EMPTY_ENGINE_LEGALITY) {
-      lastLegality = legality;
-      lastSnapshot = snapshot;
       shell.render(snapshot, legality);
     },
     destroy: () => shell.destroy(),

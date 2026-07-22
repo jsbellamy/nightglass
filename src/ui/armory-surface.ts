@@ -111,13 +111,10 @@ export function mountArmorySurface(
   let optimisticallySeenDropIds = new Set<number>();
   let lastLegality: EngineLegalityView = EMPTY_ENGINE_LEGALITY;
   let unbindGridOverflow: (() => void) | null = null;
-  let comparePopoverHost: HTMLElement | null = null;
-  let comparePopoverAnchor: HTMLElement | null = null;
-  let comparePopoverDropId: number | null = null;
 
   const comparePopover = el("div", {
     class: "armory-compare-popover",
-    data: { armoryComparePopover: "true" },
+    data: { armoryComparePopover: "true", surfaceRetain: "true" },
     props: { hidden: true },
   });
   comparePopover.style.pointerEvents = "none";
@@ -150,9 +147,16 @@ export function mountArmorySurface(
   function hideComparePopover(): void {
     comparePopover.hidden = true;
     comparePopover.replaceChildren();
-    comparePopoverAnchor = null;
-    comparePopoverDropId = null;
-    comparePopoverHost = null;
+    delete comparePopover.dataset["compareDropId"];
+  }
+
+  function openCompareDropId(): number | null {
+    const raw = comparePopover.dataset["compareDropId"];
+    if (raw === undefined) {
+      return null;
+    }
+    const dropId = Number(raw);
+    return Number.isFinite(dropId) ? dropId : null;
   }
 
   function clearDragHighlights(host: HTMLElement): void {
@@ -491,9 +495,7 @@ export function mountArmorySurface(
       return;
     }
     markDropSeen(drop.dropId);
-    comparePopoverHost = host;
-    comparePopoverAnchor = anchor;
-    comparePopoverDropId = drop.dropId;
+    comparePopover.dataset["compareDropId"] = String(drop.dropId);
     const descId = fillComparePopover(snapshot, drop, classId);
     anchor.setAttribute("aria-describedby", descId);
     positionComparePopover(anchor, host);
@@ -512,7 +514,7 @@ export function mountArmorySurface(
       if (tile.matches(":hover") || tile.contains(document.activeElement)) {
         return;
       }
-      if (comparePopoverAnchor === tile) {
+      if (openCompareDropId() === drop.dropId) {
         tile.removeAttribute("aria-describedby");
         hideComparePopover();
       }
@@ -994,18 +996,18 @@ export function mountArmorySurface(
     }
     lastSnapshot = snapshot;
     shell.render(snapshot, legality);
-    comparePopoverHost = root.querySelector<HTMLElement>(".armory-body--compare-host");
-    if (comparePopoverDropId !== null && comparePopoverHost && snapshot) {
-      const drop = dropById(snapshot.progression.armory, comparePopoverDropId);
+    const compareDropId = openCompareDropId();
+    const compareHost = root.querySelector<HTMLElement>(".armory-body--compare-host");
+    if (compareDropId !== null && compareHost && snapshot) {
+      const drop = dropById(snapshot.progression.armory, compareDropId);
       const classId = options.getSelectedClassId();
       const anchor = root.querySelector<HTMLElement>(
-        `.armory-grid .equipment-card[data-drop-id="${comparePopoverDropId}"]`,
+        `.armory-grid .equipment-card[data-drop-id="${compareDropId}"]`,
       );
       if (drop && classId && anchor) {
-        comparePopoverAnchor = anchor;
         const descId = fillComparePopover(snapshot, drop, classId);
         anchor.setAttribute("aria-describedby", descId);
-        positionComparePopover(anchor, comparePopoverHost);
+        positionComparePopover(anchor, compareHost);
       } else if (!anchor) {
         hideComparePopover();
       }

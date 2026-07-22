@@ -9,8 +9,6 @@ import { EMPTY_ENGINE_LEGALITY, type EngineLegalityView } from "./engine-legalit
 import { rosterClassIds } from "./snapshot-view";
 import {
   bindScrollOverflowAffordance,
-  captureScrollPositions,
-  restoreScrollPositions,
   type MountedSurface,
 } from "./surface-shell";
 import { mountTabStrip } from "./tab-strip";
@@ -29,7 +27,10 @@ export interface DockSurfaceMountOptions {
 export interface DockSurfaceEntry {
   id: DockTabId;
   label: string;
-  mount(root: HTMLElement, options: DockSurfaceMountOptions): MountedSurface;
+  mount(
+    root: HTMLElement,
+    options: DockSurfaceMountOptions,
+  ): Pick<MountedSurface, "render" | "destroy">;
 }
 
 export const DOCK_SURFACES: DockSurfaceEntry[] = [
@@ -127,7 +128,10 @@ export function mountManagementDock(
   ];
 
   const panels = new Map<DockTabId, HTMLElement>();
-  const mountedSurfaces = new Map<DockTabId, MountedSurface>();
+  const mountedSurfaces = new Map<
+    DockTabId,
+    Pick<MountedSurface, "render" | "destroy">
+  >();
 
   if (!options.content) {
     throw new Error("Management Dock requires content for Loadout and Talents surfaces");
@@ -199,7 +203,6 @@ export function mountManagementDock(
   }
 
   function remountPickerAndSurface(): void {
-    const scrolls = captureScrollPositions(root);
     const selected = selectedClassId;
     if (!heldSnapshot || selected === undefined) {
       characterPicker.render(null, selected ?? "knight");
@@ -209,7 +212,6 @@ export function mountManagementDock(
     if (hasHeldState) {
       renderSurface(activeTab);
     }
-    restoreScrollPositions(root, scrolls);
     lastManagementKey = managementRelevantKey(heldSnapshot);
     lastRenderedLegality = heldLegality;
   }
