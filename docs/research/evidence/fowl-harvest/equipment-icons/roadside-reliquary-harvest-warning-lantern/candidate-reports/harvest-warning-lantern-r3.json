@@ -1,0 +1,58 @@
+{
+  "candidate": "harvest-warning-lantern-r3",
+  "source_key": "harvest-warning-lantern",
+  "palette_id": "fowl-harvest-24",
+  "palette_subset": [
+    "oil-ink",
+    "crow-black",
+    "bruise-plum",
+    "grease-brown-deep",
+    "patty-brown",
+    "toast-brown",
+    "rust-orange-deep",
+    "beak-orange",
+    "diner-cream",
+    "storm-slate",
+    "condiment-red",
+    "yolk-gold",
+    "corn-yellow"
+  ],
+  "recovered": {
+    "bbox": [
+      258,
+      22,
+      823,
+      1006
+    ],
+    "pitch_x": {
+      "pitch": 37.41111111111087,
+      "score": 0.12924716127437244
+    },
+    "pitch_y": {
+      "pitch": 38.6111111111108,
+      "score": 0.23267670888633435
+    },
+    "grid": [
+      16,
+      25
+    ]
+  },
+  "ramp": {
+    "opaque_cells": 284,
+    "far_cells": 9,
+    "far_fraction": 0.0317,
+    "off_ramp_reject": false,
+    "quantize_histogram": {
+      "oil-ink": 119,
+      "rust-orange-deep": 16,
+      "storm-slate": 47,
+      "crow-black": 74,
+      "grease-brown-deep": 3,
+      "condiment-red": 20,
+      "corn-yellow": 4,
+      "bruise-plum": 1
+    }
+  },
+  "raw_gates": "pass",
+  "primary_result": "advance"
+}

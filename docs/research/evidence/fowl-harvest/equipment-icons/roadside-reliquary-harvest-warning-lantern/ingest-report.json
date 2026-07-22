@@ -1,0 +1,86 @@
+{
+  "roadside-reliquary": {
+    "candidate": "roadside-reliquary-r2",
+    "raw_sha256": "a42f47d65918ef79e110fa40078d24dee00e673c270dcfbc8e8643717f35b5d7",
+    "recovered": {
+      "bbox": [
+        240,
+        68,
+        799,
+        958
+      ],
+      "pitch_x": {
+        "pitch": 31.600000000000097,
+        "score": 0.0717379179612001
+      },
+      "pitch_y": {
+        "pitch": 39.34999999999968,
+        "score": 0.05806156475833409
+      },
+      "grid": [
+        18,
+        22
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 324,
+      "far_cells": 29,
+      "far_fraction": 0.0895,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "oil-ink": 42,
+        "toast-brown": 51,
+        "patty-brown": 67,
+        "bruise-plum": 8,
+        "grease-brown-deep": 41,
+        "teal-light": 23,
+        "storm-slate": 2,
+        "pond-teal-deep": 20,
+        "diner-teal": 6,
+        "condiment-red": 21,
+        "diner-cream": 42,
+        "crow-black": 1
+      }
+    }
+  },
+  "harvest-warning-lantern": {
+    "candidate": "harvest-warning-lantern-r3",
+    "raw_sha256": "acea19388165b8c013e4bd0481fec2bf770753f4e70871ab5d979f3abb97364a",
+    "recovered": {
+      "bbox": [
+        258,
+        22,
+        823,
+        1006
+      ],
+      "pitch_x": {
+        "pitch": 37.41111111111087,
+        "score": 0.12924716127437244
+      },
+      "pitch_y": {
+        "pitch": 38.6111111111108,
+        "score": 0.23267670888633435
+      },
+      "grid": [
+        16,
+        25
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 284,
+      "far_cells": 9,
+      "far_fraction": 0.0317,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "oil-ink": 119,
+        "rust-orange-deep": 16,
+        "storm-slate": 47,
+        "crow-black": 74,
+        "grease-brown-deep": 3,
+        "condiment-red": 20,
+        "corn-yellow": 4,
+        "bruise-plum": 1
+      }
+    }
+  }
+}
