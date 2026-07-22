@@ -100,27 +100,208 @@ OUTPUT_NAMES = {
     # Stage 2/3 Boss stills (#57): raw tags match runtime names (unlike boss→boss-1).
     "boss-2": "boss-2",
     "boss-3": "boss-3",
+    "burger-drake": "burger-drake",
+    "cornquacker": "cornquacker",
+    "the-combine": "the-combine",
 }
-DEFAULT_TAGS = (
-    "knight", "wizard", "priest", "hunter", "pipcap", "boss", "boss-2", "boss-3",
-)
 
 CANONICAL_RAW_TAGS = {"boss-1": "boss"}
 
 ASSET_IDENTITIES = {
-    "knight": {"asset_class": "Character", "role": "party-character", "facing": "right"},
-    "wizard": {"asset_class": "Character", "role": "party-character", "facing": "right"},
-    "priest": {"asset_class": "Character", "role": "party-character", "facing": "right"},
-    "hunter": {"asset_class": "Character", "role": "party-character", "facing": "right"},
-    "pipcap": {"asset_class": "opponent", "role": "ordinary-opponent", "facing": "left"},
-    "boss-1": {"asset_class": "opponent", "role": "boss", "facing": "left"},
-    "boss-2": {"asset_class": "opponent", "role": "boss", "facing": "left"},
-    "boss-3": {"asset_class": "opponent", "role": "boss", "facing": "left"},
+    "knight": {
+        "asset_class": "Character", "role": "party-character", "facing": "right",
+        "palette": "moonberry-16",
+    },
+    "wizard": {
+        "asset_class": "Character", "role": "party-character", "facing": "right",
+        "palette": "moonberry-16",
+    },
+    "priest": {
+        "asset_class": "Character", "role": "party-character", "facing": "right",
+        "palette": "moonberry-16",
+    },
+    "hunter": {
+        "asset_class": "Character", "role": "party-character", "facing": "right",
+        "palette": "moonberry-16",
+    },
+    "pipcap": {
+        "asset_class": "opponent", "role": "ordinary-opponent", "facing": "left",
+        "palette": "moonberry-16",
+    },
+    "boss-1": {
+        "asset_class": "opponent", "role": "boss", "facing": "left",
+        "palette": "moonberry-16",
+    },
+    "boss-2": {
+        "asset_class": "opponent", "role": "boss", "facing": "left",
+        "palette": "moonberry-16",
+    },
+    "boss-3": {
+        "asset_class": "opponent", "role": "boss", "facing": "left",
+        "palette": "moonberry-16",
+    },
+    "burger-drake": {
+        "asset_class": "opponent", "role": "ordinary-opponent", "facing": "left",
+        "palette": "fowl-harvest-24",
+    },
+    "cornquacker": {
+        "asset_class": "opponent", "role": "ordinary-opponent", "facing": "left",
+        "palette": "fowl-harvest-24",
+    },
+    "the-combine": {
+        "asset_class": "opponent", "role": "boss", "facing": "left",
+        "palette": "fowl-harvest-24",
+    },
 }
 
-PALETTE = [tuple(c["rgb"]) for c in
-           json.loads((HERE / "palette.json").read_text())["colors"]]
-PALETTE_SET = set(PALETTE)
+LEGACY_MOONBERRY_IDENTITIES = frozenset({
+    "knight", "wizard", "priest", "hunter", "pipcap",
+    "boss-1", "boss-2", "boss-3",
+})
+
+PALETTE_PATHS = {
+    "moonberry-16": HERE / "palette.json",
+    "fowl-harvest-24": HERE / "palettes" / "fowl-harvest-24.json",
+}
+
+SIDECAR_SUFFIX = ".source.json"
+
+_RUNTIME_PALETTES: dict[str, RuntimePalette] = {}
+
+
+@dataclass(frozen=True)
+class RuntimePalette:
+    palette_id: str
+    version: int
+    colors: tuple[tuple[int, int, int], ...]
+    color_set: frozenset[tuple[int, int, int]]
+
+
+def load_runtime_palette(palette_id: str) -> RuntimePalette:
+    if palette_id not in PALETTE_PATHS:
+        raise ValueError(f"unknown palette id {palette_id!r}")
+    cached = _RUNTIME_PALETTES.get(palette_id)
+    if cached is not None:
+        return cached
+    data = json.loads(PALETTE_PATHS[palette_id].read_text())
+    colors = tuple(tuple(c["rgb"]) for c in data["colors"])
+    loaded = RuntimePalette(
+        palette_id=palette_id,
+        version=int(data["version"]),
+        colors=colors,
+        color_set=frozenset(colors),
+    )
+    _RUNTIME_PALETTES[palette_id] = loaded
+    return loaded
+
+
+def palette_for_identity(
+    identity: dict,
+    *,
+    identity_name: str | None = None,
+) -> RuntimePalette:
+    palette_id = identity.get("palette")
+    label = identity_name or "identity"
+    if not palette_id:
+        raise ValueError(f"{label}: asset identity missing required palette id")
+    if palette_id not in PALETTE_PATHS:
+        raise ValueError(f"{label}: unknown palette id {palette_id!r}")
+    return load_runtime_palette(palette_id)
+
+
+def palette_provenance(palette: RuntimePalette) -> str:
+    return f"{palette.palette_id}@{palette.version}"
+
+
+def resolve_archived_palette(sidecar: dict, *, out_name: str) -> RuntimePalette:
+    """Sidecar palette field when present; legacy Moonberry for archived identities."""
+    recorded = sidecar.get("palette")
+    if recorded is None:
+        if out_name not in LEGACY_MOONBERRY_IDENTITIES:
+            raise ValueError(
+                f"{out_name}: provenance sidecar missing palette field"
+            )
+        return load_runtime_palette("moonberry-16")
+    if not isinstance(recorded, str) or "@" not in recorded:
+        raise ValueError(f"{out_name}: invalid palette provenance {recorded!r}")
+    palette_id, version_text = recorded.split("@", 1)
+    try:
+        version = int(version_text)
+    except ValueError as error:
+        raise ValueError(
+            f"{out_name}: invalid palette provenance {recorded!r}"
+        ) from error
+    palette = load_runtime_palette(palette_id)
+    if palette.version != version:
+        raise ValueError(
+            f"{out_name}: sidecar palette {recorded!r} does not match "
+            f"catalog {palette_provenance(palette)}"
+        )
+    return palette
+
+
+def body_raw_tag_from_sidecar(sidecar_path: pathlib.Path) -> str:
+    name = sidecar_path.name
+    if not name.endswith(SIDECAR_SUFFIX):
+        raise ValueError(f"not a body provenance sidecar: {sidecar_path}")
+    return name[: -len(SIDECAR_SUFFIX)]
+
+
+def discover_complete_body_raw_tags() -> tuple[str, ...]:
+    """Lexicographically sorted raw tags with both archived PNG and sidecar."""
+    tags: list[str] = []
+    for sidecar_path in RAW_DIR.glob(f"*{SIDECAR_SUFFIX}"):
+        raw_tag = body_raw_tag_from_sidecar(sidecar_path)
+        if (RAW_DIR / f"{raw_tag}.png").is_file():
+            tags.append(raw_tag)
+    return tuple(sorted(tags))
+
+
+def discover_body_orphan_failures() -> list[str]:
+    """Return human-readable failures for half-finished archived body bundles."""
+    failures: list[str] = []
+    sidecar_keys = {
+        body_raw_tag_from_sidecar(p) for p in RAW_DIR.glob(f"*{SIDECAR_SUFFIX}")
+    }
+    png_keys = {p.stem for p in RAW_DIR.glob("*.png")}
+    for key in sorted(sidecar_keys - png_keys):
+        failures.append(f"{key}: sidecar without matching archived PNG")
+    for key in sorted(png_keys - sidecar_keys):
+        failures.append(f"{key}: archived PNG without provenance sidecar")
+    return failures
+
+
+def discover_body_build_raw_tags() -> tuple[str, ...]:
+    """Raw tags to rebuild, ordered by runtime output key (lexicographic)."""
+    orphans = discover_body_orphan_failures()
+    if orphans:
+        raise ValueError("; ".join(orphans))
+    plan: list[tuple[str, str]] = []
+    out_to_raw: dict[str, str] = {}
+    for raw_tag in discover_complete_body_raw_tags():
+        out_name = OUTPUT_NAMES.get(raw_tag, raw_tag)
+        identity = ASSET_IDENTITIES.get(out_name)
+        if identity is None:
+            raise ValueError(f"{raw_tag}: no known Nightglass asset identity")
+        if out_name in out_to_raw:
+            raise ValueError(
+                f"{raw_tag}: output key {out_name!r} collides with "
+                f"raw tag {out_to_raw[out_name]!r}"
+            )
+        out_to_raw[out_name] = raw_tag
+        plan.append((out_name, raw_tag))
+    plan.sort(key=lambda row: row[0])
+    return tuple(raw for _, raw in plan)
+
+
+def default_build_raw_tags() -> tuple[str, ...]:
+    return discover_body_build_raw_tags()
+
+
+# Legacy module-level Moonberry aliases for contract tests and tier fixtures.
+_MOONBERRY = load_runtime_palette("moonberry-16")
+PALETTE = list(_MOONBERRY.colors)
+PALETTE_SET = set(_MOONBERRY.color_set)
 
 
 def load_layout() -> dict:
@@ -209,8 +390,14 @@ def save_runtime_png(frame: Image.Image, path: pathlib.Path) -> None:
 
 # --------------------------------------------------------------- normalizer
 
-def _nearest(rgb: tuple[int, int, int]) -> tuple[int, int, int]:
-    return min(PALETTE, key=lambda p: sum((rgb[i] - p[i]) ** 2 for i in range(3)))
+def _nearest(
+    rgb: tuple[int, int, int],
+    palette: RuntimePalette,
+) -> tuple[int, int, int]:
+    return min(
+        palette.colors,
+        key=lambda p: sum((rgb[i] - p[i]) ** 2 for i in range(3)),
+    )
 
 
 def _within_magenta(pixel: tuple[int, int, int, int]) -> bool:
@@ -650,7 +837,10 @@ def _resize_to_fit(img: Image.Image, max_w: int, max_h: int) -> Image.Image:
     return img.resize((new_w, new_h), Image.Resampling.NEAREST)
 
 
-def _quantize_and_binarize(img: Image.Image) -> Image.Image:
+def _quantize_and_binarize(
+    img: Image.Image,
+    palette: RuntimePalette,
+) -> Image.Image:
     out = Image.new("RGBA", img.size, (0, 0, 0, 0))
     ipx, opx = img.load(), out.load()
     for y in range(img.height):
@@ -658,7 +848,7 @@ def _quantize_and_binarize(img: Image.Image) -> Image.Image:
             r, g, b, a = ipx[x, y]
             if a < ALPHA_CUT or _within_magenta((r, g, b, a)):
                 continue
-            opx[x, y] = (*_nearest((r, g, b)), 255)
+            opx[x, y] = (*_nearest((r, g, b), palette), 255)
     return out
 
 
@@ -673,12 +863,13 @@ def _bottom_center_canvas(subject: Image.Image) -> Image.Image:
 def normalize_flexible(
     raw_path: pathlib.Path,
     profile: BodyProfile,
+    palette: RuntimePalette,
 ) -> tuple[Image.Image, dict, bool]:
     """Flexible contract path: crop, proportional fit, quantize, bottom-centre."""
     src, fg, bbox, stamp_removed = _key_for_measurement(raw_path)
     cropped = _crop_foreground_rgba(src, fg, bbox)
     fitted = _resize_to_fit(cropped, profile.max_opaque_w, profile.max_opaque_h)
-    runtime = _bottom_center_canvas(_quantize_and_binarize(fitted))
+    runtime = _bottom_center_canvas(_quantize_and_binarize(fitted, palette))
     geometry = geometry_from_image(runtime)
     ow, oh = opaque_extent(geometry["visual_bounds"])
     if ow > profile.max_opaque_w or oh > profile.max_opaque_h:
@@ -689,8 +880,15 @@ def normalize_flexible(
     return runtime, geometry, stamp_removed
 
 
-def normalize_legacy_grid_v1(raw_path: pathlib.Path, frame: Frame = MEDIUM) -> Image.Image:
+def normalize_legacy_grid_v1(
+    raw_path: pathlib.Path,
+    frame: Frame = MEDIUM,
+    *,
+    palette: RuntimePalette | None = None,
+) -> Image.Image:
     """Archived raw PNG -> deterministic tier runtime frame, with no resize."""
+    if palette is None:
+        palette = load_runtime_palette("moonberry-16")
     cells, _ = recover_grid(raw_path, frame=frame)
     grid_h, grid_w = len(cells), len(cells[0])
 
@@ -701,7 +899,7 @@ def normalize_legacy_grid_v1(raw_path: pathlib.Path, frame: Frame = MEDIUM) -> I
     for y, row in enumerate(cells):
         for x, rgb in enumerate(row):
             if rgb is not None:
-                px[offset_x + x, offset_y + y] = (*_nearest(rgb), 255)
+                px[offset_x + x, offset_y + y] = (*_nearest(rgb, palette), 255)
     return canvas
 
 
@@ -715,19 +913,23 @@ def normalize_archived(
     sidecar: dict,
     *,
     out_name: str,
-) -> tuple[Image.Image, dict, str, bool]:
+) -> tuple[Image.Image, dict, str, bool, RuntimePalette]:
     """Dispatch flexible vs legacy-grid-v1 from provenance."""
+    identity = ASSET_IDENTITIES[out_name]
+    palette = palette_for_identity(identity, identity_name=out_name)
+    resolve_archived_palette(sidecar, out_name=out_name)
     if sidecar.get("acquisition") == "flexible":
         profile = body_profile_for_identity(sidecar["identity_profile"])
-        runtime, geometry, stamp_removed = normalize_flexible(raw_path, profile)
-        return runtime, geometry, "flexible", stamp_removed
+        runtime, geometry, stamp_removed = normalize_flexible(
+            raw_path, profile, palette)
+        return runtime, geometry, "flexible", stamp_removed, palette
     tier = sidecar.get("tier", "medium")
     if tier not in FRAMES:
         raise ValueError(f"{raw_path.name}: unknown acquisition tier {tier!r}")
     frame_spec = FRAMES[tier]
-    runtime = normalize_legacy_grid_v1(raw_path, frame=frame_spec)
+    runtime = normalize_legacy_grid_v1(raw_path, frame=frame_spec, palette=palette)
     geometry = geometry_from_image(runtime)
-    return runtime, geometry, LEGACY_ADAPTER, False
+    return runtime, geometry, LEGACY_ADAPTER, False, palette
 
 
 def legacy_geometry_for(raw_path: pathlib.Path, frame: Frame) -> dict:
@@ -749,9 +951,12 @@ def baseline(image: Image.Image, frame: Frame = MEDIUM) -> int | None:
 def validate(image: Image.Image, name: str = "frame",
              frame: Frame | None = None,
              geometry: dict | None = None,
-             profile: BodyProfile | None = None) -> list[str]:
+             profile: BodyProfile | None = None,
+             palette: RuntimePalette | None = None) -> list[str]:
     """Per-frame rejection rules. Empty list == accepted."""
     errs: list[str] = []
+    if palette is None:
+        palette = load_runtime_palette("moonberry-16")
     if geometry is not None:
         expected_size = tuple(geometry["frame_size"])
     elif frame is not None:
@@ -808,7 +1013,7 @@ def validate(image: Image.Image, name: str = "frame",
     # embedded effects -- an Ability effect baked into a Character frame.
     # Effects are authored as separate assets, so a Character frame may only
     # contain approved palette colours; a glow/spark lands off-palette.
-    off = {px[x, y][:3] for x, y in opaque} - PALETTE_SET
+    off = {px[x, y][:3] for x, y in opaque} - palette.color_set
     if off:
         errs.append(f"{name}: embedded effects or unapproved colour "
                     f"{sorted(off)[:4]} ({len(off)} off-palette)")
@@ -870,7 +1075,8 @@ def manifest(action: str, frames: list[tuple[str, Image.Image]],
              durations_ms: list[int], cues_ms: dict[str, int] | None = None,
              source: dict | None = None,
              frame: Frame | None = None,
-             geometry: dict | None = None) -> dict:
+             geometry: dict | None = None,
+             palette_id: str = "moonberry-16") -> dict:
     """Build the runtime animation manifest. All timings are integer ms."""
     if len(durations_ms) != len(frames):
         raise ValueError(f"{action}: {len(durations_ms)} durations for "
@@ -901,7 +1107,7 @@ def manifest(action: str, frames: list[tuple[str, Image.Image]],
         "frame_size": geometry["frame_size"],
         "visual_bounds": geometry["visual_bounds"],
         "foot_anchor": geometry["foot_anchor"],
-        "palette": "moonberry-16",
+        "palette": palette_id,
         "baseline_row": base,
         "total_ms": total,
         "frames": [
@@ -958,6 +1164,8 @@ def promote_candidate(
     if not provider.strip() or not acquisition_tool.strip() or not prompt.strip():
         raise ValueError("promotion requires provider, acquisition tool, and exact prompt")
     raw_tag, identity = _asset_identity(tag)
+    out_name = OUTPUT_NAMES.get(raw_tag, raw_tag)
+    palette = palette_for_identity(identity, identity_name=out_name)
     profile = body_profile_for_identity(identity)
     expected_facing = identity["facing"]
     prompt_facings = _prompt_facings(prompt)
@@ -974,7 +1182,6 @@ def promote_candidate(
             f"{report['primary_failure']} ({report['next_action']})"
         )
 
-    out_name = OUTPUT_NAMES.get(raw_tag, raw_tag)
     runtime_destination = f"src/assets/sprites/{out_name}.png"
     raw_sha256 = hashlib.sha256(raw_path.read_bytes()).hexdigest()
     style_references = []
@@ -1003,6 +1210,7 @@ def promote_candidate(
         "candidate": raw_path.name,
         "facing": identity["facing"],
         "role": identity["role"],
+        "palette": palette_provenance(palette),
         "style_references": style_references,
         "prompt": prompt,
     }
@@ -1013,10 +1221,12 @@ def promote_candidate(
         staged_raw.with_suffix(".source.json").write_text(
             json.dumps(sidecar, indent=2) + "\n"
         )
-        runtime, geometry, _stamp_removed = normalize_flexible(staged_raw, profile)
+        runtime, geometry, _stamp_removed = normalize_flexible(
+            staged_raw, profile, palette)
         errors = (
             raw_clipping(staged_raw)
-            + validate(runtime, out_name, geometry=geometry, profile=profile)
+            + validate(
+                runtime, out_name, geometry=geometry, profile=profile, palette=palette)
         )
         if errors:
             raise ValueError("; ".join(errors))
@@ -1039,6 +1249,7 @@ def promote_candidate(
         [1],
         source={"provider": provider, "raw_sha256": raw_sha256},
         geometry=geometry,
+        palette_id=palette.palette_id,
     )
     geom_errs = validate_manifest_geometry(runtime, entry, out_name)
     if geom_errs:
@@ -1074,10 +1285,12 @@ def build_archived_bundle(
         raw = raw_dir / f"{tag}.png"
         sidecar = json.loads(raw.with_suffix(".source.json").read_text())
         out_name = OUTPUT_NAMES.get(tag, tag)
-        runtime, geometry, adapter, _stamp = normalize_archived(
+        runtime, geometry, adapter, _stamp, palette = normalize_archived(
             raw, sidecar, out_name=out_name)
         save_runtime_png(runtime, out_dir / f"{out_name}.png")
-        built.append((tag, out_name, runtime, geometry, adapter, raw_clipping(raw)))
+        built.append((
+            tag, out_name, runtime, geometry, adapter, raw_clipping(raw), palette,
+        ))
         manifests[out_name] = manifest(
             "still",
             [(out_name, runtime)],
@@ -1087,6 +1300,7 @@ def build_archived_bundle(
                 "raw_sha256": sidecar.get("raw_sha256"),
             },
             geometry=geometry,
+            palette_id=palette.palette_id,
         )
     (out_dir / "manifest.json").write_text(
         json.dumps(manifests, indent=2) + "\n")
@@ -1141,11 +1355,14 @@ def main(argv: list[str] | None = None) -> int:
         print("\nWith no subcommand, rebuilds the default archived sprite bundle.")
         return 0
     if not argv or argv[0] not in {"measure", "promote"}:
-        built, out = build_archived_bundle(argv or list(DEFAULT_TAGS))
+        built, out = build_archived_bundle(argv or list(default_build_raw_tags()))
         ok = True
         report_rows = []
-        for tag, out_name, runtime, geometry, adapter, raw_errs in built:
-            errs = raw_errs + validate(runtime, out_name, geometry=geometry)
+        for tag, out_name, runtime, geometry, adapter, raw_errs, palette in built:
+            _, identity = _asset_identity(tag)
+            profile = body_profile_for_identity(identity)
+            errs = raw_errs + validate(
+                runtime, out_name, geometry=geometry, profile=profile, palette=palette)
             digest = hashlib.sha256(runtime.tobytes()).hexdigest()[:16]
             row = {
                 "tag": tag,
