@@ -13,6 +13,11 @@ centralized in `src/ui/battle-tile-layout.ts` (`TILE_WIDTH` 480, `TILE_HEIGHT` 1
 (`DOCK_WIDTH` 480, `DOCK_HEIGHT` 336, `dockRect` parking above or below from the
 monitor midpoint).
 
+> **Note:** Dock dimensions and equal-width coupling in this Context (and the
+> Decision below) record the geometry as decided here. ADR-0005 supersedes those
+> parts; live dock size and centering are in ADR-0005 and current
+> `dock-geometry.ts`. Battle Tile constants in `battle-tile-layout.ts` remain.
+
 Backdrop art follows a 480×86 band (`docs/backdrop-contract.md`), which can look
 like a conflict with the tile's 480×112 outer size until the layout split is
 understood.
