@@ -1,0 +1,14 @@
+{
+  "neonstorm-coil": {
+    "issue_exact_prompt": "TRUE chunky pixel art inventory icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block with no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered Fowl Harvest Equipment item in three-quarter display angle for Neonstorm Coil: a compact chrome induction coil with restrained diner-teal winding and one tiny warning-red indicator. The subject long side spans about 26\u201330 logical pixels, with at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel oil-ink outline. Use only named fowl-harvest-24 colors, 8\u201312 flat colors maximum. Structural members are at least three logical pixels thick. No Character, duck body, scene, shadow, glow, sparks, particles, text, watermark, UI frame, or transparency.",
+    "issue_exact_prompt_sha256": "9ae44bbb0b5a4093ee4923aacc7d2e11b80c821f41fd7f2b7e9590ff24563fe8",
+    "accepted_candidate": "neonstorm-coil-r5",
+    "accepted_prompt_note": "gate-retry after overshoot (r1) then off-ramp (r2-r3) then clip (r4); r5 flat-color lock accepted"
+  },
+  "mustard-sky-dynamo": {
+    "issue_exact_prompt": "TRUE chunky pixel art inventory icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block with no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered Fowl Harvest Equipment item in three-quarter display angle for Mustard-Sky Dynamo: a squat storm-slate generator with a mustard-yellow rotor and teal current-capture prongs. The subject long side spans about 26\u201330 logical pixels, with at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel oil-ink outline. Use only named fowl-harvest-24 colors, 8\u201312 flat colors maximum. Structural members are at least three logical pixels thick. No Character, duck body, scene, shadow, glow, sparks, particles, text, watermark, UI frame, or transparency.",
+    "issue_exact_prompt_sha256": "475a95657ccd44ab7a1ae08b11a929d5865156be134116ea84f654010382d460",
+    "accepted_candidate": "mustard-sky-dynamo-r6",
+    "accepted_prompt_note": "gate-retry after off-ramp (r1-r2), clip (r3-r4), underfill (r5); r6 enlarge + flat-color lock accepted"
+  }
+}

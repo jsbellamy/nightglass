@@ -1,0 +1,84 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "90291e8e9f80a814a25fe93924a3c55e29d00e8d112dddb807f9db53fc2605e3",
+  "asset_class": "interface",
+  "kind": "equipment-base-icon",
+  "runtime_destination": null,
+  "source_key": "neonstorm-coil",
+  "candidate": "neonstorm-coil-r5",
+  "palette": "fowl-harvest-24",
+  "palette_subset": [
+    "oil-ink",
+    "crow-black",
+    "bruise-plum",
+    "storm-slate",
+    "diner-cream",
+    "diner-teal",
+    "teal-light",
+    "pond-teal-deep",
+    "condiment-red"
+  ],
+  "style_references": [
+    {
+      "path": "docs/research/evidence/126-equipment-icons/accepted-raws/dewlight-focus.png",
+      "role": "style_cohort",
+      "sha256": "4cb24ecd0cc34e878bf47936abb072f3774e4a0fc5fb5b81ec07041d651c26e7"
+    },
+    {
+      "path": "docs/research/evidence/126-equipment-icons/accepted-raws/moonpetal-relic.png",
+      "role": "style_cohort",
+      "sha256": "848f3d82db55a61eadc337acbb6ada7ef261c3513d34471439acce0339078ad2"
+    },
+    {
+      "path": "src/assets/icons/verify-fowl-canary.png",
+      "role": "fowl_palette_canary",
+      "sha256": "fdd8910ed6d6a7fb55b2a105568afcd7ad7b0aef4fbcd52ed7f7257e32bc14c9"
+    }
+  ],
+  "issue_exact_prompt": "TRUE chunky pixel art inventory icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block with no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered Fowl Harvest Equipment item in three-quarter display angle for Neonstorm Coil: a compact chrome induction coil with restrained diner-teal winding and one tiny warning-red indicator. The subject long side spans about 26\u201330 logical pixels, with at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel oil-ink outline. Use only named fowl-harvest-24 colors, 8\u201312 flat colors maximum. Structural members are at least three logical pixels thick. No Character, duck body, scene, shadow, glow, sparks, particles, text, watermark, UI frame, or transparency.",
+  "issue_exact_prompt_sha256": "9ae44bbb0b5a4093ee4923aacc7d2e11b80c821f41fd7f2b7e9590ff24563fe8",
+  "issue_exact_prompt_submitted_as": "neonstorm-coil-r1",
+  "prompt": "TRUE chunky pixel art inventory icon ONLY. Exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one HARD flat square \u2014 zero anti-aliasing, zero soft blends, zero sub-pixel detail.\n\nTiny centered Neonstorm Coil inventory item in a SEA of empty magenta. The coil must be SMALL in frame: about 24\u201326 logical pixels tall, with at least FOUR full magenta #ff00ff cells of empty clearance on every edge. Subject must NOT touch or approach the canvas border.\n\nThree-quarter display: compact induction coil. FLAT poster colors only, no gradients:\n1) storm-slate #55586a metal body (warm purple-grey, never blue steel)\n2) crow-black #1e1c29 inner recesses\n3) diner-teal #1f9277 winding bands\n4) teal-light #4fb99b alternate winding (muted green-teal, never mint/cyan)\n5) diner-cream #f3d897 one highlight stripe\n6) one condiment-red #c83d3d indicator dot\n7) oil-ink #111018 1px outline\n\nStructural members \u22653 logical pixels thick. No Character, duck, scene, shadow, glow, sparks, particles, text, watermark, UI frame, silver, cyan, or transparency. Magenta background only.",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        405,
+        335,
+        619,
+        689
+      ],
+      "pitch_x": {
+        "pitch": 16.311111111111202,
+        "score": 0.4777528789944123
+      },
+      "pitch_y": {
+        "pitch": 16.711111111111208,
+        "score": 0.6251589042223542
+      },
+      "grid": [
+        13,
+        21
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 227,
+      "far_cells": 40,
+      "far_fraction": 0.1762,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "oil-ink": 85,
+        "storm-slate": 74,
+        "bruise-plum": 2,
+        "diner-teal": 19,
+        "teal-light": 17,
+        "pond-teal-deep": 18,
+        "diner-cream": 5,
+        "crow-black": 6,
+        "condiment-red": 1
+      }
+    }
+  },
+  "note": "#395 Wizard Fowl Equipment Tier III unregistered source family; activation deferred",
+  "evidence_raw": "docs/research/evidence/fowl-harvest/equipment-icons/neonstorm-coil-mustard-sky-dynamo/accepted-raws/neonstorm-coil.png"
+}

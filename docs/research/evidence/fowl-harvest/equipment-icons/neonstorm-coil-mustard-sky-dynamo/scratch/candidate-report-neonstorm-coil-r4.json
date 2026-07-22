@@ -1,0 +1,7 @@
+{
+  "candidate": "neonstorm-coil-r4.png",
+  "raw_sha256": "98d29d3af087fd9431418a1cd18f85e9b297a2f4c4ae6dee76224189aa723b60",
+  "result": "fail",
+  "error": "neonstorm-coil-r4.png: subject clipped by generator at bottom/left of the 1024x1024 raw canvas",
+  "primary": "clip-fail"
+}

@@ -1,0 +1,43 @@
+{
+  "candidate": "neonstorm-coil-r2.png",
+  "raw_sha256": "bb3e07c4229bc48c5a3050733d66a0eed2bd65a2006b2d7844d62dbba888f3b5",
+  "recovered": {
+    "bbox": [
+      316,
+      268,
+      721,
+      740
+    ],
+    "pitch_x": {
+      "pitch": 16.73888888888894,
+      "score": 0.5970429619704752
+    },
+    "pitch_y": {
+      "pitch": 17.38888888888895,
+      "score": 0.5615739960859818
+    },
+    "grid": [
+      24,
+      27
+    ]
+  },
+  "ramp": {
+    "opaque_cells": 480,
+    "far_cells": 193,
+    "far_fraction": 0.4021,
+    "off_ramp_reject": true,
+    "quantize_histogram": {
+      "oil-ink": 108,
+      "teal-light": 101,
+      "storm-slate": 102,
+      "condiment-red": 1,
+      "bruise-plum": 4,
+      "crow-black": 50,
+      "diner-cream": 71,
+      "pond-teal-deep": 28,
+      "diner-teal": 15
+    }
+  },
+  "result": "off-ramp",
+  "primary": "off-ramp"
+}
