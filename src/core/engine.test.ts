@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { createEngine } from "./engine";
 import type { EngineEvent } from "./events";
-import type { DropInstance } from "./snapshot";
+import { partyEntityId } from "./entity-id";
+import type { DropInstance, Snapshot } from "./snapshot";
 import { fixtureContent, fourTierFixtureContent } from "./testing/fixture-content";
 import { driveBy, scenario } from "./testing/scenario";
 import type { ClassId, Content, StageDef, StageId } from "./types";
@@ -2703,6 +2704,247 @@ describe("Engine legality predicates", () => {
     ).not.toThrow();
     expect(() => engine.canDeallocateTalent("knight", "missing")).not.toThrow();
     expect(() => engine.canEquip(0, "knight", "weapon")).not.toThrow();
+  });
+});
+
+const scorchedTickContent: Content = {
+  ...fixtureContent,
+  statuses: [
+    ...fixtureContent.statuses,
+    {
+      id: "scorched",
+      name: "Scorched",
+      kind: "debuff",
+      durationMs: 5_000,
+      tickEveryMs: 1_000,
+      tickEffect: {
+        kind: "damage",
+        channel: "elemental",
+        element: "fire",
+        coefficient: 0.2,
+      },
+    },
+  ],
+};
+
+function stunCombatants(snap: Snapshot, simNowMs: number, exceptEntityIds: string[] = []) {
+  const attempt = snap.attempt;
+  if (!attempt) {
+    throw new Error("missing attempt");
+  }
+  const except = new Set(exceptEntityIds);
+  for (const combatant of attempt.combatants) {
+    combatant.action = null;
+    if (except.has(combatant.entityId)) {
+      continue;
+    }
+    if (!combatant.statuses.some((status) => status.statusId === "stun")) {
+      combatant.statuses.push({ statusId: "stun", expiresAtMs: simNowMs + 100_000 });
+    }
+  }
+}
+
+function snapshotWithScorchedOpponent(simNowMs: number) {
+  const snap = scenario().build();
+  snap.simNowMs = simNowMs;
+  const wizardId = partyEntityId("wizard", 1);
+  const opponent = snap.attempt!.combatants.find((entry) => entry.side === "opponent");
+  if (!opponent) {
+    throw new Error("missing opponent");
+  }
+  opponent.health = 100;
+  opponent.maxHealth = 100;
+  stunCombatants(snap, simNowMs);
+  opponent.statuses = [
+    {
+      statusId: "scorched",
+      expiresAtMs: simNowMs + 5_000,
+      nextTickAtMs: simNowMs + 1_000,
+      sourceEntityId: wizardId,
+      sourcePower: { physical: 4, elemental: 16 },
+    },
+  ];
+  return snap;
+}
+
+describe("ticking Status Effects", () => {
+  it("ticks Scorched at 1s through 4s after application and not at 5s expiry", () => {
+    const startMs = 10_000;
+    const snap = snapshotWithScorchedOpponent(startMs);
+    const engine = createEngine(scorchedTickContent, snap, LOOT_SEED, fixtureNow);
+    const tickTimes = [1_000, 2_000, 3_000, 4_000].map((offset) => startMs + offset);
+
+    const events = driveBy(engine, 5_000);
+    const tickImpacts = events.filter(
+      (event): event is Extract<EngineEvent, { type: "impact" }> =>
+        event.type === "impact" && event.abilityId === "status:scorched",
+    );
+    expect(tickImpacts.map((event) => event.atMs)).toEqual(tickTimes);
+    expect(events.some((event) => event.type === "impact" && event.atMs === startMs + 5_000)).toBe(
+      false,
+    );
+    expect(events.some((event) => event.type === "status-expired" && event.atMs === startMs + 5_000))
+      .toBe(true);
+  });
+
+  it("uses snapshotted Elemental Power, Fire channel metadata, and current target mitigation", () => {
+    const startMs = 2_000;
+    const snap = snapshotWithScorchedOpponent(startMs);
+    const engine = createEngine(scorchedTickContent, snap, LOOT_SEED, fixtureNow);
+    const events = driveBy(engine, 1_000);
+    const tick = events.find(
+      (event): event is Extract<EngineEvent, { type: "impact" }> =>
+        event.type === "impact" && event.abilityId === "status:scorched",
+    );
+    expect(tick?.entityId).toBe(partyEntityId("wizard", 1));
+    const damage = tick?.results[0];
+    expect(damage).toMatchObject({
+      kind: "damage",
+      channel: "elemental",
+      element: "fire",
+      amount: 2,
+    });
+  });
+
+  it("reschedules ticks and source power when refreshed before a due tick", () => {
+    const startMs = 0;
+    const snap = scenario().build();
+    snap.simNowMs = startMs;
+    const opponent = snap.attempt!.combatants.find((entry) => entry.side === "opponent");
+    const knightFront = partyEntityId("knight", 0);
+    const wizardMiddle = partyEntityId("wizard", 1);
+    if (!opponent) {
+      throw new Error("missing opponent");
+    }
+    stunCombatants(snap, startMs, [wizardMiddle]);
+    opponent.statuses = [
+      {
+        statusId: "scorched",
+        expiresAtMs: startMs + 5_000,
+        nextTickAtMs: startMs + 1_000,
+        sourceEntityId: knightFront,
+        sourcePower: { physical: 10, elemental: 10 },
+      },
+    ];
+
+    const refreshContent: Content = {
+      ...scorchedTickContent,
+      abilities: [
+        ...scorchedTickContent.abilities,
+        {
+          id: "test-refresh-scorched",
+          name: "Test Refresh",
+          classId: "wizard",
+          slot: "core",
+          targeting: { kind: "closest-opponent" },
+          effects: [{ kind: "apply-status", statusId: "scorched" }],
+          windUpMs: 0,
+          recoveryMs: 0,
+          cooldownMs: 0,
+        },
+      ],
+    };
+    snap.progression.loadouts.wizard = [
+      "test-refresh-scorched",
+      "w-frost",
+      "w-cinder",
+    ];
+
+    const wizard = snap.attempt!.combatants.find((entry) => entry.entityId === wizardMiddle);
+    wizard!.action = {
+      abilityId: "test-refresh-scorched",
+      startedAtMs: startMs,
+      impactAtMs: startMs,
+      endsAtMs: startMs + 100_000,
+      targetIds: [opponent.entityId],
+      impactResolved: false,
+    };
+
+    const engine = createEngine(refreshContent, snap, LOOT_SEED, fixtureNow);
+    engine.advanceBy(1);
+    expect(
+      engine.snapshot().attempt!.combatants
+        .find((c) => c.side === "opponent")
+        ?.statuses.find((status) => status.statusId === "scorched"),
+    ).toMatchObject({
+      expiresAtMs: 5_000,
+      nextTickAtMs: 1_000,
+      sourceEntityId: wizardMiddle,
+      sourcePower: { physical: 4, elemental: 16 },
+    });
+
+    const afterRefresh = driveBy(engine, 999);
+    const tickImpacts = afterRefresh.filter(
+      (event): event is Extract<EngineEvent, { type: "impact" }> =>
+        event.type === "impact" && event.abilityId === "status:scorched",
+    );
+    expect(tickImpacts.map((event) => event.atMs)).toEqual([1_000]);
+    expect(tickImpacts[0]?.results[0]).toMatchObject({ kind: "damage", amount: 2 });
+  });
+
+  it("commits tick knockouts in the same batch without a due ability impact", () => {
+    const startMs = 5_000;
+    const snap = snapshotWithScorchedOpponent(startMs);
+    const opponent = snap.attempt!.combatants.find((entry) => entry.side === "opponent");
+    if (!opponent) {
+      throw new Error("missing opponent");
+    }
+    opponent.health = 2;
+    opponent.maxHealth = 100;
+
+    const engine = createEngine(scorchedTickContent, snap, LOOT_SEED, fixtureNow);
+    const events = engine.advanceBy(1_000);
+    expect(
+      events.some(
+        (event) =>
+          event.type === "impact" &&
+          event.abilityId === "status:scorched" &&
+          event.atMs === startMs + 1_000,
+      ),
+    ).toBe(true);
+    expect(
+      events.some(
+        (event) => event.type === "knockout" && event.entityId === opponent.entityId,
+      ),
+    ).toBe(true);
+    const downed = engine
+      .snapshot()
+      .attempt!.combatants.find((entry) => entry.entityId === opponent.entityId);
+    expect(downed?.knockedOut).toBe(true);
+  });
+
+  it("is chunk-neutral for ticking statuses", () => {
+    const startMs = 10_000;
+    const snap = snapshotWithScorchedOpponent(startMs);
+    const single = createEngine(scorchedTickContent, structuredClone(snap), LOOT_SEED, fixtureNow);
+    const chunked = createEngine(scorchedTickContent, structuredClone(snap), LOOT_SEED, fixtureNow);
+
+    const singleEvents = single.advanceBy(5_000);
+    const chunkedEvents = driveBy(chunked, 5_000, 7);
+
+    expect(chunkedEvents).toEqual(singleEvents);
+    expect(chunked.snapshot()).toEqual(single.snapshot());
+  });
+
+  it("loads legacy ActiveStatus rows without optional tick fields unchanged", () => {
+    const snap = scenario().build();
+    snap.simNowMs = 1_000;
+    const opponent = snap.attempt!.combatants.find((entry) => entry.side === "opponent");
+    if (!opponent) {
+      throw new Error("missing opponent");
+    }
+    stunCombatants(snap, snap.simNowMs);
+    opponent.statuses = [{ statusId: "braced", expiresAtMs: 6_000 }];
+
+    const engine = createEngine(fixtureContent, snap, LOOT_SEED, fixtureNow);
+    const events = driveBy(engine, 5_000);
+    expect(events.filter((event) => event.type === "impact" && event.abilityId.startsWith("status:")))
+      .toHaveLength(0);
+    expect(
+      events.some(
+        (event) => event.type === "status-expired" && event.statusId === "braced" && event.atMs === 6_000,
+      ),
+    ).toBe(true);
   });
 });
 

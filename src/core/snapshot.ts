@@ -1,5 +1,13 @@
 import type { ClassTalentState, TierTalentState } from "./talents";
-import type { AffixId, ClassId, EquipmentSlotId, ItemLevel, Rarity, StageId } from "./types";
+import type {
+  AffixId,
+  BaseStats,
+  ClassId,
+  EquipmentSlotId,
+  ItemLevel,
+  Rarity,
+  StageId,
+} from "./types";
 
 export interface DropInstance {
   dropId: number;
@@ -18,6 +26,9 @@ export type EquipmentLoadout = Partial<Record<EquipmentSlotId, number>>;
 export interface ActiveStatus {
   statusId: string;
   expiresAtMs: number;
+  nextTickAtMs?: number;
+  sourceEntityId?: string;
+  sourcePower?: Pick<BaseStats, "physical" | "elemental">;
 }
 
 export interface CombatActionState {
