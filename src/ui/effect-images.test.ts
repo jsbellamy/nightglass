@@ -35,8 +35,8 @@ describe("effect image registry", () => {
     }
   });
 
-  it("resolves all eight Status Effect glyph paths to a non-empty bundled URL", () => {
-    expect(STATUS_EFFECT_GLYPH_IDS).toHaveLength(8);
+  it("resolves all twelve Status Effect glyph paths to a non-empty bundled URL", () => {
+    expect(STATUS_EFFECT_GLYPH_IDS).toHaveLength(12);
     for (const statusId of STATUS_EFFECT_GLYPH_IDS) {
       const url = statusEffectGlyphUrl(statusId);
       expect(url, statusId).toBeTruthy();
