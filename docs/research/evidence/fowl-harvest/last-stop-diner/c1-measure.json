@@ -1,0 +1,21 @@
+{
+  "candidate": "c1",
+  "raw_size": [
+    1536,
+    1024
+  ],
+  "runtime_size": [
+    480,
+    86
+  ],
+  "magenta_hot_pixels": 0,
+  "bottom_fifth_mean_luma": 25.1,
+  "bottom_fifth_p90_luma": 35.63,
+  "midband_tealish": 801,
+  "midband_mustardish": 11,
+  "midband_greenish": 3671,
+  "midband_brownish": 1057,
+  "whole_plumish": 979,
+  "whole_mintish": 11,
+  "opaque_fraction": 1.0
+}

@@ -1,0 +1,39 @@
+{
+  "candidate": "c2",
+  "raw_size": [
+    1536,
+    1024
+  ],
+  "sha256": "3ae0d7935eb47f510782a8a3d5e049e30b1b5f691064d186085720df4d9a2a9e",
+  "measured": {
+    "source_resolution": [
+      1536,
+      1024
+    ],
+    "reduction": {
+      "crop_box": [
+        0,
+        374,
+        1536,
+        649
+      ],
+      "crop_size": [
+        1536,
+        275
+      ],
+      "resample": "NEAREST",
+      "runtime_size": [
+        480,
+        86
+      ]
+    }
+  },
+  "magenta_hot_pixels": 0,
+  "bottom_fifth_mean_luma": 25.49,
+  "whole_mean_luma": 27.31,
+  "top_fifth_mean_luma": 48.09,
+  "top_fifth_p90_luma": 112.18,
+  "c1_whole_mean_luma": 31.48,
+  "c1_top_fifth_mean_luma": 58.47,
+  "c1_top_fifth_p90_luma": 102.62
+}

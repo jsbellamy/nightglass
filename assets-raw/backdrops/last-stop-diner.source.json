@@ -1,0 +1,49 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "prompt": "Ultra-wide panoramic toxic-rural-dusk fantasy battlefield backdrop strip in a chunky, softly painted pixel-art style. Very low contrast and overall dark enough for bright combat sprites, 2-pixel health bars, damage numbers, and luminous effects to remain the strongest signals.\n\nSCENE: the Last Stop Diner, an abandoned roadside hamburger stand at the edge of invaded farmland. A squat chrome-and-teal diner with a bent blank rooftop sign, dark service windows, greasy red vinyl booths barely visible inside, empty picnic tables, a silent vending machine, scattered paper wrappers, and shallow oily puddles. Mustard storm light and a bruised orange horizon sit behind deep green roadside weeds and oily teal shadows. Use restrained diner teal, warning red, toast brown, and dirty cream as dim environmental accents; no bright white neon.\n\nCOMPOSITION: designed for a short 480\u00d786 crop. Pack the diner facade, bent sign, picnic tables, and horizon into the middle horizontal band. Keep a nearly flat, dark parking-lot ground band across the bottom fifth so native-scale sprites stand cleanly. Keep the sky thin. Preserve open low-detail space across both combat halves. Nothing sharp, luminous, or high-contrast behind health bars.\n\nEnvironmental evidence of an invasion may include scratches, a toppled condiment caddy, webbed muddy tracks, and chewed wrappers, but show no creature or body. No ducks, characters, animals, monsters, food-shaped creatures, text, readable lettering, logos, watermark, UI, borders, vignette frame, focal weapon, fire, gore, or hot-magenta field.\n",
+  "raw_sha256": "c1a4e1cce30e2badeba53f4ed380f51f60fc5fead3fe95263d5661488e2a10ec",
+  "asset_class": "backdrop",
+  "runtime_destination": "src/assets/backdrops/last-stop-diner.png",
+  "candidate": "c1",
+  "canonical_identity": "last-stop-diner",
+  "theme": "fowl-harvest",
+  "direct_inputs": [
+    {
+      "path": "src/assets/backdrops/backdrop-1.png",
+      "role": "style_cohort",
+      "sha256": "1052210eb5df222aa606abc582204cb912e3fe6131ed84567bfd7e71c10bf230"
+    },
+    {
+      "path": "src/assets/backdrops/backdrop-2.png",
+      "role": "style_cohort",
+      "sha256": "6f27754718ba1f3cf610aecd560548e04edcffe3bde4f2f8bb1fd1059d665267"
+    },
+    {
+      "path": "src/assets/backdrops/backdrop-3.png",
+      "role": "style_cohort",
+      "sha256": "29548f1a9d47c5af9aae47d26b0038fc1023d26a5d2c89c394d044572e5e9e1b"
+    }
+  ],
+  "source_resolution": [
+    1536,
+    1024
+  ],
+  "reduction": {
+    "crop_box": [
+      0,
+      374,
+      1536,
+      649
+    ],
+    "crop_size": [
+      1536,
+      275
+    ],
+    "resample": "NEAREST",
+    "runtime_size": [
+      480,
+      86
+    ]
+  }
+}
