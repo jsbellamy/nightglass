@@ -5,10 +5,11 @@ import {
   discardDrops,
   rollDrop,
   snapshotEquipmentLoadouts,
+  tierForItemLevel,
 } from "./equipment";
 import type { DropInstance } from "./snapshot";
-import { fixtureContent } from "./testing/fixture-content";
-import type { AffixId, ClassId } from "./types";
+import { fixtureContent, fourTierFixtureContent } from "./testing/fixture-content";
+import type { AffixId, ClassId, ItemLevel } from "./types";
 
 const LOOT_SEED = 0x5090;
 const STAGE = fixtureContent.stages[0]!;
@@ -142,6 +143,112 @@ describe("Equipment Drop rolling", () => {
     expect(withFloor.drop.itemLevel).toBe(withoutFloor.drop.itemLevel);
     expect(withFloor.drop.rarity).toBe("uncommon");
     expect(withFloor.drop.affixes).toHaveLength(1);
+  });
+});
+
+describe("tierForItemLevel", () => {
+  it("maps Item Levels 1–2/I, 3/II, 4–5/III, and 6/IV", () => {
+    expect(tierForItemLevel(1)).toBe(1);
+    expect(tierForItemLevel(2)).toBe(1);
+    expect(tierForItemLevel(3)).toBe(2);
+    expect(tierForItemLevel(4)).toBe(3);
+    expect(tierForItemLevel(5)).toBe(3);
+    expect(tierForItemLevel(6)).toBe(4);
+  });
+});
+
+describe("Equipment Tier III/IV rolling", () => {
+  const STAGE_IV = fourTierFixtureContent.stages[0]!;
+
+  it("locks a Tier III roll to Tier III bases and Affix bands", () => {
+    const rolled = rollDrop({
+      content: fourTierFixtureContent,
+      stage: STAGE_IV,
+      itemLevel: 4,
+      lootRng: { state: initialLootRngState(0xbeef) },
+      dropId: 7,
+      awardedAtMs: 700,
+    });
+    expect(rolled.drop.itemLevel).toBe(4);
+    expect(rolled.drop.baseId).toBe("fixture-armor-iii");
+    expect(rolled.drop.rarity).toBe("common");
+    expect(rolled.drop.affixes).toEqual([]);
+  });
+
+  it("locks a Tier IV roll to Tier IV bases and Affix bands", () => {
+    const rolled = rollDrop({
+      content: fourTierFixtureContent,
+      stage: STAGE_IV,
+      itemLevel: 6,
+      lootRng: { state: initialLootRngState(0xbeef) },
+      dropId: 8,
+      awardedAtMs: 800,
+    });
+    expect(rolled.drop.itemLevel).toBe(6);
+    expect(rolled.drop.baseId).toBe("fixture-armor-iv");
+    expect(rolled.drop.rarity).toBe("common");
+    expect(rolled.drop.affixes).toEqual([]);
+  });
+
+  it("preserves Item Level 1–3 seeded rolls and next RNG state", () => {
+    const cases: Array<{ itemLevel: ItemLevel; baseId: string; affixValue: number }> = [
+      { itemLevel: 1, baseId: "fixture-armor", affixValue: 0.04 },
+      { itemLevel: 2, baseId: "fixture-armor", affixValue: 0.04 },
+      { itemLevel: 3, baseId: "fixture-armor-ii", affixValue: 0.06 },
+    ];
+
+    for (const { itemLevel, baseId, affixValue } of cases) {
+      const rolled = rollDrop({
+        content: fixtureContent,
+        stage: STAGE,
+        itemLevel,
+        lootRng: { state: initialLootRngState(LOOT_SEED) },
+        dropId: 1,
+        awardedAtMs: 100,
+      });
+      expect(rolled.drop).toEqual({
+        dropId: 1,
+        baseId,
+        itemLevel,
+        rarity: "uncommon",
+        affixes: [{ id: "percent-max-health", value: affixValue }],
+        awardedAtMs: 100,
+        seen: false,
+        locked: false,
+        assignedTo: null,
+      });
+    }
+  });
+
+  it("fails Tier III rolls without Tier III catalog data instead of falling back to Tier II", () => {
+    expect(() =>
+      rollDrop({
+        content: fixtureContent,
+        stage: STAGE,
+        itemLevel: 4,
+        lootRng: { state: initialLootRngState(LOOT_SEED) },
+        dropId: 1,
+        awardedAtMs: 100,
+      }),
+    ).toThrow(/tier=3/i);
+  });
+
+  it("fails Tier IV rolls when Tier IV Affix bands are missing", () => {
+    const missingTier4Bands = {
+      ...fourTierFixtureContent,
+      affixBands: fourTierFixtureContent.affixBands.map(({ tier4: _tier4, ...band }) => band),
+    };
+
+    expect(() =>
+      rollDrop({
+        content: missingTier4Bands,
+        stage: STAGE_IV,
+        itemLevel: 6,
+        lootRng: { state: initialLootRngState(LOOT_SEED) },
+        dropId: 1,
+        awardedAtMs: 100,
+      }),
+    ).toThrow(/Equipment Tier 4/i);
   });
 });
 

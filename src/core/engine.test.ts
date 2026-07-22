@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { createEngine } from "./engine";
 import type { EngineEvent } from "./events";
 import type { DropInstance } from "./snapshot";
-import { fixtureContent } from "./testing/fixture-content";
+import { fixtureContent, fourTierFixtureContent } from "./testing/fixture-content";
 import { driveBy, scenario } from "./testing/scenario";
 import type { ClassId, Content, StageDef, StageId } from "./types";
 
@@ -74,7 +74,16 @@ function contentWithAuthoredStages(maxStage: StageId): Content {
       name: `Fixture Stage ${id}`,
     });
   }
-  return { ...engineContent, stages };
+  return {
+    ...engineContent,
+    stages,
+    ...(maxStage >= 4
+      ? {
+          equipmentBases: fourTierFixtureContent.equipmentBases,
+          affixBands: fourTierFixtureContent.affixBands,
+        }
+      : {}),
+  };
 }
 
 function savedAtStageBossEncounter(stage: StageId) {
