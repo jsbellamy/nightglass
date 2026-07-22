@@ -914,9 +914,6 @@ describe("Armory surface", () => {
     expect(rosterClassIds(snapshot)).toEqual(["hunter", "wizard", "priest", "knight"]);
 
     const expected = previewEquip(snapshot, fullContent, 2, "hunter", "weapon");
-    expect(expected.statDeltas.map((line) => [line.label, line.before, line.after, line.delta])).toContainEqual(
-      ["Physical", "2", "5", "+3"],
-    );
 
     const surface = mountArmorySurface(root, {
       content: fullContent,
@@ -940,6 +937,8 @@ describe("Armory surface", () => {
     const rows = [...(popover?.querySelectorAll("tbody tr") ?? [])].map((row) =>
       [...row.querySelectorAll("td")].map((cell) => cell.textContent),
     );
+    // Pre-slice golden: Hunter Bramblesong Bow (2) → Nightvine Longbow (5); not Knight's worn blade.
+    expect(rows).toContainEqual(["Physical", "2", "5", "+3"]);
     expect(rows).toEqual(
       expected.statDeltas.map((line) => [line.label, line.before, line.after, line.delta]),
     );
