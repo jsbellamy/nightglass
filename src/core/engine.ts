@@ -916,10 +916,9 @@ function clearStage(state: EngineState, index: ContentIndex, events: EngineEvent
   }
 
   if (nextStage !== clearedStage) {
-    state.progression.unlockedStage = Math.max(
-      state.progression.unlockedStage,
-      nextStage,
-    );
+    const unlocked = state.progression.unlockedStage;
+    state.progression.unlockedStage =
+      nextStage > unlocked ? nextStage : unlocked;
   }
 
   state.attempt = null;

@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { createEngine, SCHEMA_VERSION } from "../engine";
 import { createDefaultProgression } from "../load-state";
 import { cloneSnapshot, type Snapshot } from "../snapshot";
-import type { ClassId, StageId } from "../types";
+import type { ClassId } from "../types";
 import { fixtureContent } from "./fixture-content";
 import { driveBy, scenario } from "./scenario";
 

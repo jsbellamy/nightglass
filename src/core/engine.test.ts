@@ -671,7 +671,7 @@ describe("selectStage", () => {
   });
 
   it("throws when selecting a locked Stage", () => {
-    const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
+    const engine = createEngine(fixtureContent, undefined, LOOT_SEED, fixtureNow);
     engine.advanceBy(1);
     const before = engine.snapshot();
     expect(() => engine.selectStage(2)).toThrow(/locked/i);
