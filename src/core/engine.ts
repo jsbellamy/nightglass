@@ -29,6 +29,7 @@ import type { EngineEvent, EngineEventInput } from "./events";
 import { initialLootRngState } from "./rng";
 import {
   cloneSnapshot,
+  type ActiveStatus,
   type AttemptState,
   type CombatantState,
   type DropInstance,
@@ -52,6 +53,7 @@ import {
 import { characterStats } from "./stats";
 import type {
   AbilityDef,
+  BaseStats,
   ClassId,
   ClassKitDef,
   Content,
@@ -125,8 +127,26 @@ interface PendingImpactChange {
   knockedOut: boolean;
   revived: boolean;
   revivedHealth?: number;
-  statusesToApply: Array<{ statusId: string; expiresAtMs: number }>;
-  statusesToRefresh: Array<{ statusId: string; expiresAtMs: number }>;
+  statusesToApply: Array<{
+    statusId: string;
+    expiresAtMs: number;
+    sourceEntityId: string;
+    sourcePhysical: number;
+    sourceElemental: number;
+  }>;
+  statusesToRefresh: Array<{
+    statusId: string;
+    expiresAtMs: number;
+    sourceEntityId: string;
+    sourcePhysical: number;
+    sourceElemental: number;
+  }>;
+}
+
+interface StatusSourceSnapshot {
+  entityId: string;
+  physical: number;
+  elemental: number;
 }
 
 function indexContent(content: Content): ContentIndex {
@@ -513,14 +533,45 @@ function applyStatus(
   combatant: CombatantState,
   statusId: string,
   expiresAtMs: number,
+  appliedAtMs: number,
+  index: ContentIndex,
+  source?: StatusSourceSnapshot,
 ): "applied" | "refreshed" {
+  const statusDef = index.statusesById.get(statusId);
   const existing = combatant.statuses.find((status) => status.statusId === statusId);
   if (existing) {
     existing.expiresAtMs = expiresAtMs;
+    writeTickSchedule(existing, statusDef, appliedAtMs, source);
     return "refreshed";
   }
-  combatant.statuses.push({ statusId, expiresAtMs });
+  const created: ActiveStatus = { statusId, expiresAtMs };
+  writeTickSchedule(created, statusDef, appliedAtMs, source);
+  combatant.statuses.push(created);
   return "applied";
+}
+
+function writeTickSchedule(
+  status: ActiveStatus,
+  statusDef: StatusEffectDef | undefined,
+  appliedAtMs: number,
+  source?: StatusSourceSnapshot,
+): void {
+  if (!statusDef?.tickEveryMs || !statusDef.tickEffect || !source) {
+    delete status.nextTickAtMs;
+    delete status.sourceEntityId;
+    delete status.sourcePower;
+    return;
+  }
+  status.nextTickAtMs = appliedAtMs + statusDef.tickEveryMs;
+  status.sourceEntityId = source.entityId;
+  status.sourcePower = { physical: source.physical, elemental: source.elemental };
+}
+
+function sourceSnapshotFromStats(
+  entityId: string,
+  stats: BaseStats,
+): StatusSourceSnapshot {
+  return { entityId, physical: stats.physical, elemental: stats.elemental };
 }
 
 type ImpactResults = Extract<EngineEvent, { type: "impact" }>["results"];
@@ -574,6 +625,7 @@ function queueStatusFromOutcome(
   outcome: EffectOutcome,
   simNowMs: number,
   index: ContentIndex,
+  source: StatusSourceSnapshot,
   ensurePending: (targetId: string) => PendingImpactChange,
 ): void {
   const statusId = outcome.statusToApply?.statusId ?? outcome.statusToRefresh?.statusId;
@@ -593,10 +645,17 @@ function queueStatusFromOutcome(
   }
   const expiresAtMs = simNowMs + durationMs;
   const pending = ensurePending(target.entityId);
+  const queued = {
+    statusId,
+    expiresAtMs,
+    sourceEntityId: source.entityId,
+    sourcePhysical: source.physical,
+    sourceElemental: source.elemental,
+  };
   if (outcome.statusToRefresh) {
-    pending.statusesToRefresh.push({ statusId, expiresAtMs });
+    pending.statusesToRefresh.push(queued);
   } else if (outcome.statusToApply) {
-    pending.statusesToApply.push({ statusId, expiresAtMs });
+    pending.statusesToApply.push(queued);
   }
 }
 
@@ -604,7 +663,6 @@ function resolveImpacts(
   state: EngineState,
   index: ContentIndex,
   events: EngineEvent[],
-  awardDrops: boolean,
 ): void {
   const attempt = state.attempt;
   if (!attempt) {
@@ -699,7 +757,14 @@ function resolveImpacts(
           results,
           ensurePending,
         );
-        queueStatusFromOutcome(target, outcome, state.simNowMs, index, ensurePending);
+        queueStatusFromOutcome(
+          target,
+          outcome,
+          state.simNowMs,
+          index,
+          sourceSnapshotFromStats(actor.entityId, actorStats),
+          ensurePending,
+        );
       }
     }
 
@@ -738,7 +803,18 @@ function resolveImpacts(
     }
 
     for (const status of pending.statusesToApply) {
-      applyStatus(target, status.statusId, status.expiresAtMs);
+      applyStatus(
+        target,
+        status.statusId,
+        status.expiresAtMs,
+        state.simNowMs,
+        index,
+        {
+          entityId: status.sourceEntityId,
+          physical: status.sourcePhysical,
+          elemental: status.sourceElemental,
+        },
+      );
       emit(state, events, {
         type: "status-applied",
         entityId: target.entityId,
@@ -747,7 +823,18 @@ function resolveImpacts(
       });
     }
     for (const status of pending.statusesToRefresh) {
-      applyStatus(target, status.statusId, status.expiresAtMs);
+      applyStatus(
+        target,
+        status.statusId,
+        status.expiresAtMs,
+        state.simNowMs,
+        index,
+        {
+          entityId: status.sourceEntityId,
+          physical: status.sourcePhysical,
+          elemental: status.sourceElemental,
+        },
+      );
       emit(state, events, {
         type: "status-applied",
         entityId: target.entityId,
@@ -758,8 +845,93 @@ function resolveImpacts(
   }
 
   cancelStunnedWindUps(state, index);
-  resolveKnockouts(state, index, events);
-  evaluateEncounterOutcome(state, index, events, awardDrops);
+}
+
+function resolveStatusTicks(
+  state: EngineState,
+  index: ContentIndex,
+  events: EngineEvent[],
+): void {
+  const attempt = state.attempt;
+  if (!attempt) {
+    return;
+  }
+
+  for (const target of attempt.combatants) {
+    if (target.knockedOut) {
+      continue;
+    }
+
+    for (const status of target.statuses) {
+      if (status.nextTickAtMs !== state.simNowMs) {
+        continue;
+      }
+      if (status.nextTickAtMs >= status.expiresAtMs) {
+        continue;
+      }
+
+      const statusDef = index.statusesById.get(status.statusId);
+      if (!statusDef?.tickEffect || !status.sourceEntityId || !status.sourcePower) {
+        continue;
+      }
+
+      const actorStats: BaseStats = {
+        maxHealth: 0,
+        physical: status.sourcePower.physical,
+        elemental: status.sourcePower.elemental,
+        armor: 0,
+        elementalResistance: 0,
+      };
+      const targetStats = statsForCombatant(index, target, state.progression, attempt);
+      const outcome = resolveEffect(
+        statusDef.tickEffect,
+        actorStats,
+        {
+          stats: targetStats,
+          health: target.health,
+          maxHealth: target.maxHealth,
+          knockedOut: target.knockedOut,
+          statuses: target.statuses,
+        },
+        index.statusesById,
+      );
+
+      const results: Extract<EngineEvent, { type: "impact" }>["results"] = [];
+      if (outcome.damageDetail) {
+        const { amount, channel, element } = outcome.damageDetail;
+        const healthAfter = Math.max(0, target.health - amount);
+        results.push({
+          targetId: target.entityId,
+          kind: "damage",
+          channel,
+          ...(element ? { element } : {}),
+          amount,
+          healthAfter,
+        });
+        target.health = healthAfter;
+      }
+
+      if (results.length > 0) {
+        emit(state, events, {
+          type: "impact",
+          entityId: status.sourceEntityId,
+          abilityId: `status:${status.statusId}`,
+          results,
+        });
+      }
+
+      const tickEveryMs = statusDef.tickEveryMs;
+      if (tickEveryMs === undefined) {
+        continue;
+      }
+      const nextTickAtMs = state.simNowMs + tickEveryMs;
+      if (nextTickAtMs < status.expiresAtMs) {
+        status.nextTickAtMs = nextTickAtMs;
+      } else {
+        delete status.nextTickAtMs;
+      }
+    }
+  }
 }
 
 function cancelStunnedWindUps(state: EngineState, index: ContentIndex): void {
@@ -1126,6 +1298,12 @@ function nextBoundaryMs(state: EngineState): number | null {
   for (const combatant of attempt.combatants) {
     for (const status of combatant.statuses) {
       boundaries.push(status.expiresAtMs);
+      if (
+        status.nextTickAtMs !== undefined &&
+        status.nextTickAtMs < status.expiresAtMs
+      ) {
+        boundaries.push(status.nextTickAtMs);
+      }
     }
     const action = combatant.action;
     if (!action) {
@@ -1147,7 +1325,10 @@ function resolveBatch(
   awardDrops: boolean,
 ): void {
   resolveStatusExpiries(state, events);
-  resolveImpacts(state, index, events, awardDrops);
+  resolveStatusTicks(state, index, events);
+  resolveImpacts(state, index, events);
+  resolveKnockouts(state, index, events);
+  evaluateEncounterOutcome(state, index, events, awardDrops);
   completeRecoveries(state);
   finishWaveTransition(state, index, events);
   finishDefeatHold(state, index, events);

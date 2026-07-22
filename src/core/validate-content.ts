@@ -1,4 +1,14 @@
-import type { AffixId, ClassId, Content, EquipmentBaseDef, EquipmentTier, OpponentDef, TalentTierDef } from "./types";
+import type {
+  AbilityEffect,
+  AffixId,
+  ClassId,
+  Content,
+  EquipmentBaseDef,
+  EquipmentTier,
+  OpponentDef,
+  StatusEffectDef,
+  TalentTierDef,
+} from "./types";
 
 /** Per-Stage Character XP encounter budgets from issue #5 / vertical-slice-spec §7. */
 export const ENCOUNTER_BUDGETS = {
@@ -80,6 +90,9 @@ export function validateContent(
   violations.push(...duplicateIds(content.opponents, "opponents"));
   violations.push(...duplicateIds(content.stages, "stages"));
   violations.push(...duplicateIds(content.statuses, "statuses"));
+  for (const status of content.statuses) {
+    violations.push(...validateStatusTickSchedule(status));
+  }
   violations.push(...duplicateIds(content.equipmentBases, "equipmentBases"));
   violations.push(...duplicateIds(content.affixBands, "affixBands"));
 
@@ -372,6 +385,45 @@ function equipmentBaseCardinalityViolations(bases: EquipmentBaseDef[]): string[]
     }
   }
 
+  return violations;
+}
+
+function validateStatusTickSchedule(status: StatusEffectDef): string[] {
+  const violations: string[] = [];
+  const hasTickEvery = status.tickEveryMs !== undefined;
+  const hasTickEffect = status.tickEffect !== undefined;
+
+  if (hasTickEvery !== hasTickEffect) {
+    violations.push(
+      `status "${status.id}" must declare both tickEveryMs and tickEffect, or neither`,
+    );
+    return violations;
+  }
+
+  if (!hasTickEvery || status.tickEveryMs === undefined || !status.tickEffect) {
+    return violations;
+  }
+
+  if (!Number.isInteger(status.tickEveryMs) || status.tickEveryMs <= 0) {
+    violations.push(`status "${status.id}" tickEveryMs must be a positive integer`);
+  }
+
+  violations.push(...validateStatusTickEffect(status.id, status.tickEffect));
+  return violations;
+}
+
+function validateStatusTickEffect(statusId: string, effect: AbilityEffect): string[] {
+  const violations: string[] = [];
+  if (effect.kind !== "damage") {
+    violations.push(`status "${statusId}" tickEffect must be damage`);
+    return violations;
+  }
+  if (effect.channel !== "physical" && effect.channel !== "elemental") {
+    violations.push(`status "${statusId}" tickEffect damage must declare a channel`);
+  }
+  if (effect.coefficient === undefined || effect.coefficient < 0) {
+    violations.push(`status "${statusId}" tickEffect damage must declare coefficient >= 0`);
+  }
   return violations;
 }
 

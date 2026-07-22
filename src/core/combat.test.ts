@@ -17,6 +17,7 @@ import {
 } from "./combat";
 import type { CombatantState } from "./snapshot";
 import { buildContent } from "../data";
+import { statuses as shippedStatuses } from "../data/statuses";
 import { fixtureContent } from "./testing/fixture-content";
 import { opponentEntityId, partyEntityId } from "./entity-id";
 import type { AbilityDef, BaseStats, ClassId, OpponentDef } from "./types";
@@ -426,6 +427,35 @@ describe("Stun immunity", () => {
     expect(shouldApplyStun(grunt, new Map(fixtureContent.opponents.map((o) => [o.id, o])))).toBe(
       true,
     );
+  });
+});
+
+describe("Wildfire expansion status modifiers", () => {
+  const wildfireStatusDefs = new Map(shippedStatuses.map((status) => [status.id, status]));
+  const knightBase = knightKit.base;
+
+  it("applies Scalded, Shaken, and Overdrive modifiers from the shipped contract", () => {
+    const scalded = effectiveStats(
+      knightBase,
+      [{ statusId: "scalded", expiresAtMs: 1 }],
+      wildfireStatusDefs,
+    );
+    expect(scalded.elementalResistance).toBe(0);
+
+    const shaken = effectiveStats(
+      knightBase,
+      [{ statusId: "shaken", expiresAtMs: 1 }],
+      wildfireStatusDefs,
+    );
+    expect(shaken.physical).toBe(11);
+    expect(shaken.elemental).toBe(3);
+
+    const overdrive = effectiveStats(
+      knightBase,
+      [{ statusId: "overdrive", expiresAtMs: 1 }],
+      wildfireStatusDefs,
+    );
+    expect(overdrive.physical).toBe(17);
   });
 });
 

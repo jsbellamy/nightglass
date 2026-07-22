@@ -86,12 +86,23 @@ describe("assembled Class Kit content", () => {
     const debuffs = content.statuses.filter((status) => status.kind === "debuff");
     const stuns = content.statuses.filter((status) => status.kind === "stun");
     expect(buffs.map((status) => status.id)).toEqual(
-      expect.arrayContaining(["braced", "guarded", "warded", "inspired", "sheltered"]),
+      expect.arrayContaining([
+        "braced",
+        "guarded",
+        "warded",
+        "inspired",
+        "sheltered",
+        "overdrive",
+      ]),
     );
     expect(buffs.filter((status) =>
-      ["braced", "guarded", "warded", "inspired", "sheltered"].includes(status.id),
-    )).toHaveLength(5);
-    expect(debuffs.map((status) => status.id).sort()).toEqual(["exposed", "riven"]);
+      ["braced", "guarded", "warded", "inspired", "sheltered", "overdrive"].includes(
+        status.id,
+      ),
+    )).toHaveLength(6);
+    expect(debuffs.map((status) => status.id).sort()).toEqual(
+      ["exposed", "riven", "scalded", "scorched", "shaken"],
+    );
     expect(stuns).toHaveLength(1);
     expect(stuns[0]?.id).toBe("stun");
     expect(content.abilities.some((ability) =>
@@ -107,7 +118,7 @@ describe("Class Kit number contract", () => {
   });
 
   it("Status Effect durations and modifiers match the reviewed contract", () => {
-    expect(REVIEWED_STATUSES).toHaveLength(9);
+    expect(REVIEWED_STATUSES).toHaveLength(13);
     for (const expected of REVIEWED_STATUSES) {
       expect(statusById(expected.id, classKit.statuses)).toEqual(expected);
     }
