@@ -229,6 +229,21 @@ function makeOpponentCombatant(
   };
 }
 
+function nextStageId(
+  stagesById: ReadonlyMap<StageId, StageDef>,
+  current: StageId,
+): StageId | null {
+  const ordered = [...stagesById.keys()].sort((left, right) => left - right);
+  const currentIndex = ordered.indexOf(current);
+  if (currentIndex === -1) {
+    return null;
+  }
+  if (currentIndex < ordered.length - 1) {
+    return ordered[currentIndex + 1]!;
+  }
+  return current;
+}
+
 function resolveStage(index: ContentIndex, stage: StageId): StageId {
   if (index.stagesById.has(stage)) {
     return stage;
@@ -902,19 +917,19 @@ function clearStage(state: EngineState, index: ContentIndex, events: EngineEvent
   const clearedStage = attempt.stage;
   emit(state, events, { type: "stage-cleared", stage: clearedStage });
 
-  if (clearedStage < 3) {
-    const nextStage = (clearedStage + 1) as StageId;
-    state.progression.unlockedStage = Math.max(
-      state.progression.unlockedStage,
-      index.stagesById.has(nextStage) ? nextStage : clearedStage,
-    ) as StageId;
-    state.attempt = null;
-    startFreshAttempt(state, index, resolveStage(index, nextStage), events);
-    return;
+  const nextStage = nextStageId(index.stagesById, clearedStage);
+  if (nextStage === null) {
+    throw new Error(`Cleared Stage ${clearedStage} is not present in Content`);
+  }
+
+  if (nextStage !== clearedStage) {
+    const unlocked = state.progression.unlockedStage;
+    state.progression.unlockedStage =
+      nextStage > unlocked ? nextStage : unlocked;
   }
 
   state.attempt = null;
-  startFreshAttempt(state, index, resolveStage(index, 3), events);
+  startFreshAttempt(state, index, nextStage, events);
 }
 
 function completeRecoveries(state: EngineState): void {

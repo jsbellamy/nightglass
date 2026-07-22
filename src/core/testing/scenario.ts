@@ -10,11 +10,11 @@ import type {
   ProgressionState,
   Snapshot,
 } from "../snapshot";
-import type { ClassId } from "../types";
+import type { ClassId, StageId } from "../types";
 import { fixtureContent } from "./fixture-content";
 
 export interface ScenarioBuilder {
-  atStage(stage: 1 | 2 | 3): ScenarioBuilder;
+  atStage(stage: StageId): ScenarioBuilder;
   atEncounter(encounter: 1 | 2 | 3): ScenarioBuilder;
   withXp(classId: ClassId, xp: number): ScenarioBuilder;
   withParty(members: [ClassId, ClassId, ClassId], reserve: ClassId): ScenarioBuilder;
@@ -25,7 +25,7 @@ export interface ScenarioBuilder {
 }
 
 interface ScenarioState {
-  stage: 1 | 2 | 3;
+  stage: StageId;
   encounter: 1 | 2 | 3;
   party: [ClassId, ClassId, ClassId] | null;
   reserve: ClassId | null;
@@ -118,7 +118,7 @@ class Builder implements ScenarioBuilder {
     knockedOut: [],
   };
 
-  atStage(stage: 1 | 2 | 3): ScenarioBuilder {
+  atStage(stage: StageId): ScenarioBuilder {
     this.state.stage = stage;
     return this;
   }
@@ -162,10 +162,10 @@ class Builder implements ScenarioBuilder {
       ensureClassXp(progression, classId);
       progression.characterXp[classId] = xp;
     }
-    progression.unlockedStage = Math.max(progression.unlockedStage, this.state.stage) as
-      | 1
-      | 2
-      | 3;
+    progression.unlockedStage = Math.max(
+      progression.unlockedStage,
+      this.state.stage,
+    ) as StageId;
     progression.armory = makeDrops(this.state.dropCount);
 
     const seed: Snapshot = {

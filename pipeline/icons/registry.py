@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from .paint import validate_recolor_map
+from .palette import DEFAULT_SOURCE_PALETTE_ID, PALETTE_PATHS, load_runtime_palette
 
 # Tier II maps — targets must NOT appear in the family's palette_subset
 # (flatten guard; see #125 mint→berry-mid merge).
@@ -75,11 +76,21 @@ class IconFamily:
     palette_subset: tuple[str, ...]
     variants: tuple[IconVariant, ...]
     source_rel: str
+    palette_id: str = DEFAULT_SOURCE_PALETTE_ID
 
     def validate(self) -> None:
+        if self.palette_id not in PALETTE_PATHS:
+            raise ValueError(f"unknown palette id {self.palette_id!r}")
+        runtime = load_runtime_palette(self.palette_id)
         subset = frozenset(self.palette_subset)
+        unknown_subset = sorted(subset - runtime.names)
+        if unknown_subset:
+            raise ValueError(
+                f"family {self.source_key!r} palette_subset names outside "
+                f"{self.palette_id!r}: {unknown_subset}"
+            )
         for variant in self.variants:
-            validate_recolor_map(variant.recolor, subset)
+            validate_recolor_map(variant.recolor, subset, runtime)
 
 
 def _subset(*names: str) -> tuple[str, ...]:
@@ -545,7 +556,19 @@ VERIFY_CANARY_FAMILY = IconFamily(
     "verify-canary/source.grid",
 )
 
-ALL_BUILD_FAMILIES: tuple[IconFamily, ...] = (*FAMILIES, VERIFY_CANARY_FAMILY)
+VERIFY_FOWL_CANARY_FAMILY = IconFamily(
+    "verify-fowl-canary",
+    _subset("oil-ink", "beak-orange", "field-green", "corn-yellow"),
+    (IconVariant("verify-fowl-canary", {}),),
+    "verify-fowl-canary/source.grid",
+    palette_id="fowl-harvest-24",
+)
+
+ALL_BUILD_FAMILIES: tuple[IconFamily, ...] = (
+    *FAMILIES,
+    VERIFY_CANARY_FAMILY,
+    VERIFY_FOWL_CANARY_FAMILY,
+)
 
 
 def validate_registry() -> None:
