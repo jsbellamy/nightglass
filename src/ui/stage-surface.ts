@@ -146,12 +146,7 @@ export function mountStageSurface(
   });
 
   return {
-    render(snapshot, legality) {
-      if (!snapshot) {
-        clearConfirm();
-      }
-      shell.render(snapshot, legality);
-    },
+    render: (snapshot, legality) => shell.render(snapshot, legality),
     destroy() {
       clearConfirm();
       shell.destroy();
