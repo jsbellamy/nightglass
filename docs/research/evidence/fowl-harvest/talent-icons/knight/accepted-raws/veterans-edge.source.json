@@ -1,0 +1,59 @@
+{
+  "provider": "Cursor GenerateImage",
+  "prompt": "TRUE chunky pixel art Talent icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block with no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered symbolic Management Dock skill glyph for Veteran\u2019s Edge: one disciplined sword edge with two short rank notches, reading trained Physical Power. Not a wearable Equipment item, not a scene, not a full Character, and not a UI frame. The subject long side spans about 26\u201330 logical pixels, with at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel dark-plum outline. Use only mint, berry, cream, and plum Moonberry colors, 8\u201312 flat colors maximum; no brown, tan, cyan, pure white, or pure black. Structural members are at least three logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "raw_sha256": "183d090cf710ac53c2f44eca8dfd9d6f06d51d9cab9169cce4cb863521c48044",
+  "asset_class": "interface",
+  "accepted_candidate": "veterans-edge-r2",
+  "source_key": "veterans-edge",
+  "palette_subset": [
+    "contour-plum-deepest",
+    "contour-plum-deep",
+    "mint-light",
+    "cream",
+    "cream-gold",
+    "berry-mid",
+    "berry-bright"
+  ],
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        179,
+        161,
+        855,
+        845
+      ],
+      "pitch_x": {
+        "pitch": 25.927777777777877,
+        "score": 0.4347488435289481
+      },
+      "pitch_y": {
+        "pitch": 26.327777777777882,
+        "score": 0.5043021004733634
+      },
+      "grid": [
+        26,
+        26
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 225,
+      "far_cells": 0,
+      "far_fraction": 0.0,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "contour-plum-deep": 83,
+        "cream": 37,
+        "mint-light": 60,
+        "berry-bright": 22,
+        "berry-mid": 19,
+        "cream-gold": 4
+      }
+    }
+  },
+  "style_cohort": [
+    "src/assets/icon-sources/fortitude/source.grid",
+    "src/assets/icon-sources/hold-the-line/source.grid",
+    "src/assets/icon-sources/swordcraft/source.grid",
+    "src/assets/icon-sources/thornquill-blade/source.grid"
+  ]
+}
