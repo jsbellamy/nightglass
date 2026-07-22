@@ -1,0 +1,81 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "e4047eebf584e7e51dd7e645f7689c18b6b6d84c39812b44815e0dcf49d8a70a",
+  "asset_class": "interface",
+  "kind": "equipment-base-icon",
+  "runtime_destination": "src/assets/icons/feed-sack-brigandine.png",
+  "note": "Unregistered interim Fowl Equipment source family for #398; no registry/runtime/Armory activation in this slice. Accepted after off-ramp r1 and stamp-only clip-fail on r2; Cursor stamp at (0,h-1) keyed to #ff00ff before ingest.",
+  "candidate": "feed-sack-brigandine-r2-stampclean",
+  "palette": "fowl-harvest-24",
+  "palette_subset": [
+    "oil-ink",
+    "crow-black",
+    "grease-brown-deep",
+    "patty-brown",
+    "diner-cream",
+    "corn-light",
+    "yolk-gold",
+    "husk-light",
+    "husk-green",
+    "field-green",
+    "field-green-deep",
+    "storm-slate"
+  ],
+  "cursor_stamp_removed": true,
+  "style_references": [
+    {
+      "path": "docs/research/evidence/126-equipment-icons/accepted-raws/leafmail-vest.png",
+      "sha256": "45a628b1e070238c84d6d93ff094a2467df19f91e9e2e96753df1b965eff4cc6",
+      "role": "style_cohort"
+    },
+    {
+      "path": "docs/research/evidence/126-equipment-icons/family-sheet@8x.png",
+      "sha256": "178e0e50de6c62f22f7ae8c4fe34e88fcbc9312f9f4c07231db7cbde4f035414",
+      "role": "style_cohort"
+    }
+  ],
+  "issue_exact_prompt": "TRUE chunky pixel art inventory icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block with no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered Fowl Harvest Equipment item in three-quarter display angle for Feed-Sack Brigandine: layered diner-cream feed-sack panels tied with husk-green straps and reinforced by three dull chrome plates. The subject long side spans about 26\u201330 logical pixels, with at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel oil-ink outline. Use only named fowl-harvest-24 colors, 8\u201312 flat colors maximum. Structural members are at least three logical pixels thick. No Character, duck body, scene, shadow, glow, sparks, particles, text, watermark, UI frame, or transparency.",
+  "prompt": "TRUE chunky pixel art inventory icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block with no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered Fowl Harvest Equipment item in three-quarter display angle for Feed-Sack Brigandine: layered diner-cream feed-sack cloth panels (#f3d897) tied with husk-green straps (#6aa233) and reinforced by three dull storm-slate metal plates (#55586a) with crow-black (#1e1c29) rivets. Use ONLY these named fowl-harvest-24 flat colors: diner-cream, husk-green, field-green, storm-slate, crow-black, oil-ink, grease-brown-deep, husk-light \u2014 8 flat colors maximum. No teal, cyan, blue, silver shine, chrome reflections, or metallic gradients. The subject long side spans about 26\u201328 logical pixels, with at least three full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel oil-ink (#111018) outline. Structural members are at least three logical pixels thick. No Character, duck body, scene, shadow, glow, sparks, particles, text, watermark, UI frame, or transparency.",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        157,
+        89,
+        887,
+        915
+      ],
+      "pitch_x": {
+        "pitch": 32.37222222222233,
+        "score": 0.21841831472687107
+      },
+      "pitch_y": {
+        "pitch": 32.97222222222229,
+        "score": 0.2697779434272879
+      },
+      "grid": [
+        23,
+        25
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 458,
+      "far_cells": 57,
+      "far_fraction": 0.1245,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "oil-ink": 45,
+        "storm-slate": 44,
+        "diner-cream": 158,
+        "field-green": 42,
+        "field-green-deep": 48,
+        "husk-green": 87,
+        "husk-light": 19,
+        "crow-black": 4,
+        "grease-brown-deep": 11
+      }
+    }
+  },
+  "evidence_raw": "docs/research/evidence/fowl-harvest/equipment-icons/feed-sack-brigandine-combineplate-harness/accepted-raws/feed-sack-brigandine.png",
+  "evidence_dir": "docs/research/evidence/fowl-harvest/equipment-icons/feed-sack-brigandine-combineplate-harness"
+}

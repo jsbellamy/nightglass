@@ -1,0 +1,63 @@
+{
+  "candidate": "feed-sack-brigandine-r2-stampclean",
+  "raw": "docs/research/evidence/fowl-harvest/equipment-icons/feed-sack-brigandine-combineplate-harness/scratch/feed-sack-brigandine-r2-stampclean.png",
+  "cursor_stamp_removed": true,
+  "stamp_pixel_before": [
+    235,
+    33,
+    207,
+    255
+  ],
+  "palette_subset": [
+    "oil-ink",
+    "crow-black",
+    "grease-brown-deep",
+    "patty-brown",
+    "diner-cream",
+    "corn-light",
+    "yolk-gold",
+    "husk-light",
+    "husk-green",
+    "field-green",
+    "field-green-deep",
+    "storm-slate"
+  ],
+  "recovered": {
+    "bbox": [
+      157,
+      89,
+      887,
+      915
+    ],
+    "pitch_x": {
+      "pitch": 32.37222222222233,
+      "score": 0.21841831472687107
+    },
+    "pitch_y": {
+      "pitch": 32.97222222222229,
+      "score": 0.2697779434272879
+    },
+    "grid": [
+      23,
+      25
+    ]
+  },
+  "ramp": {
+    "opaque_cells": 458,
+    "far_cells": 57,
+    "far_fraction": 0.1245,
+    "off_ramp_reject": false,
+    "quantize_histogram": {
+      "oil-ink": 45,
+      "storm-slate": 44,
+      "diner-cream": 158,
+      "field-green": 42,
+      "field-green-deep": 48,
+      "husk-green": 87,
+      "husk-light": 19,
+      "crow-black": 4,
+      "grease-brown-deep": 11
+    }
+  },
+  "primary": "advance"
+}

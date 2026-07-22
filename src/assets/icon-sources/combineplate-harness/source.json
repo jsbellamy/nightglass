@@ -1,0 +1,86 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "348cf46b3c6d26ca87cc508998e2c12e536543782d5cc3f2f1f8eb6948076541",
+  "asset_class": "interface",
+  "kind": "equipment-base-icon",
+  "runtime_destination": "src/assets/icons/combineplate-harness.png",
+  "note": "Unregistered interim Fowl Equipment source family for #398; no registry/runtime/Armory activation in this slice. Accepted after overshoot on r1; r2 gate-pass at preference underfill (20\u00d723).",
+  "candidate": "combineplate-harness-r2",
+  "palette": "fowl-harvest-24",
+  "palette_subset": [
+    "oil-ink",
+    "crow-black",
+    "grease-brown-deep",
+    "patty-brown",
+    "toast-brown",
+    "rust-orange-deep",
+    "beak-orange",
+    "duck-shadow",
+    "husk-green",
+    "field-green",
+    "field-green-deep",
+    "storm-slate",
+    "diner-cream",
+    "bruise-plum"
+  ],
+  "cursor_stamp_removed": false,
+  "style_references": [
+    {
+      "path": "docs/research/evidence/126-equipment-icons/accepted-raws/leafmail-vest.png",
+      "sha256": "45a628b1e070238c84d6d93ff094a2467df19f91e9e2e96753df1b965eff4cc6",
+      "role": "style_cohort"
+    },
+    {
+      "path": "docs/research/evidence/126-equipment-icons/family-sheet@8x.png",
+      "sha256": "178e0e50de6c62f22f7ae8c4fe34e88fcbc9312f9f4c07231db7cbde4f035414",
+      "role": "style_cohort"
+    }
+  ],
+  "issue_exact_prompt": "TRUE chunky pixel art inventory icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block with no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered Fowl Harvest Equipment item in three-quarter display angle for Combineplate Harness: broad storm-slate and rust-orange harvesting-machine chest plates with visible bolts and husk-green harness straps. The subject long side spans about 26\u201330 logical pixels, with at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel oil-ink outline. Use only named fowl-harvest-24 colors, 8\u201312 flat colors maximum. Structural members are at least three logical pixels thick. No Character, duck body, scene, shadow, glow, sparks, particles, text, watermark, UI frame, or transparency.",
+  "prompt": "TRUE chunky pixel art inventory icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block with no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered Fowl Harvest Equipment item in three-quarter display angle for Combineplate Harness: compact broad storm-slate (#55586a) and rust-orange-deep (#bf532f) harvesting-machine chest plates with visible crow-black bolts and husk-green (#6aa233) harness straps. Shrink the silhouette so the subject long side spans about 24\u201328 logical pixels only, with at least four full magenta cells of clearance on every edge \u2014 do not touch any canvas edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel oil-ink (#111018) outline. Use only named fowl-harvest-24 colors: storm-slate, rust-orange-deep, beak-orange, husk-green, field-green, oil-ink, crow-black, grease-brown-deep, toast-brown \u2014 8\u201310 flat colors maximum. Structural members are at least three logical pixels thick. No Character, duck body, scene, shadow, glow, sparks, particles, text, watermark, UI frame, or transparency.",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        181,
+        118,
+        849,
+        889
+      ],
+      "pitch_x": {
+        "pitch": 33.49444444444451,
+        "score": 0.12148927000896315
+      },
+      "pitch_y": {
+        "pitch": 33.39444444444452,
+        "score": 0.2644650734106601
+      },
+      "grid": [
+        20,
+        23
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 369,
+      "far_cells": 61,
+      "far_fraction": 0.1653,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "oil-ink": 80,
+        "husk-green": 26,
+        "field-green": 34,
+        "bruise-plum": 18,
+        "field-green-deep": 25,
+        "crow-black": 35,
+        "storm-slate": 82,
+        "grease-brown-deep": 9,
+        "rust-orange-deep": 29,
+        "toast-brown": 18,
+        "patty-brown": 9,
+        "beak-orange": 4
+      }
+    }
+  },
+  "evidence_raw": "docs/research/evidence/fowl-harvest/equipment-icons/feed-sack-brigandine-combineplate-harness/accepted-raws/combineplate-harness.png",
+  "evidence_dir": "docs/research/evidence/fowl-harvest/equipment-icons/feed-sack-brigandine-combineplate-harness"
+}

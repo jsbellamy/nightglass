@@ -1,0 +1,83 @@
+{
+  "feed-sack-brigandine": {
+    "recovered": {
+      "bbox": [
+        157,
+        89,
+        887,
+        915
+      ],
+      "pitch_x": {
+        "pitch": 32.37222222222233,
+        "score": 0.21841831472687107
+      },
+      "pitch_y": {
+        "pitch": 32.97222222222229,
+        "score": 0.2697779434272879
+      },
+      "grid": [
+        23,
+        25
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 458,
+      "far_cells": 57,
+      "far_fraction": 0.1245,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "oil-ink": 45,
+        "storm-slate": 44,
+        "diner-cream": 158,
+        "field-green": 42,
+        "field-green-deep": 48,
+        "husk-green": 87,
+        "husk-light": 19,
+        "crow-black": 4,
+        "grease-brown-deep": 11
+      }
+    }
+  },
+  "combineplate-harness": {
+    "recovered": {
+      "bbox": [
+        181,
+        118,
+        849,
+        889
+      ],
+      "pitch_x": {
+        "pitch": 33.49444444444451,
+        "score": 0.12148927000896315
+      },
+      "pitch_y": {
+        "pitch": 33.39444444444452,
+        "score": 0.2644650734106601
+      },
+      "grid": [
+        20,
+        23
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 369,
+      "far_cells": 61,
+      "far_fraction": 0.1653,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "oil-ink": 80,
+        "husk-green": 26,
+        "field-green": 34,
+        "bruise-plum": 18,
+        "field-green-deep": 25,
+        "crow-black": 35,
+        "storm-slate": 82,
+        "grease-brown-deep": 9,
+        "rust-orange-deep": 29,
+        "toast-brown": 18,
+        "patty-brown": 9,
+        "beak-orange": 4
+      }
+    }
+  }
+}
