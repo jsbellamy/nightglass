@@ -1,7 +1,5 @@
-import { buildContent } from "./data";
-import { bootTile } from "./ui/boot";
 import { mountDockShell } from "./ui/dock-root";
-import { mountTileShell } from "./ui/tile-root";
+import { startTileRoot } from "./ui/tile-root";
 
 function isDockWindow(): boolean {
   return new URLSearchParams(window.location.search).get("window") === "dock";
@@ -24,8 +22,5 @@ window.addEventListener("DOMContentLoaded", () => {
 
   dockRoot.hidden = true;
   tileRoot.hidden = false;
-  bootTile(tileRoot, {
-    content: buildContent(),
-    mountTile: mountTileShell,
-  });
+  startTileRoot(tileRoot);
 });

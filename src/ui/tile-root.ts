@@ -3,7 +3,7 @@ import { buildContent } from "../data";
 import type { Content } from "../core/types";
 import type { EngineEvent } from "../core/events";
 import type { Snapshot } from "../core/snapshot";
-import { DEFAULT_LOOT_SEED } from "./boot";
+import { bootTile, DEFAULT_LOOT_SEED, type BootResult } from "./boot";
 import { applyTileCommand, createBusEndpoint, type BusEndpoint } from "./bus";
 import { mountBattleTile } from "./battle-tile";
 import { createProductionDockWindowPort, type DockWindowPort } from "./dock-window";
@@ -45,6 +45,14 @@ export interface TileShellOptions {
 }
 
 export type { TileShell } from "./tile-shell-types";
+
+/** Production Battle Tile entry: save/offline boot, then `mountTileShell`. */
+export function startTileRoot(root: HTMLElement): BootResult {
+  return bootTile(root, {
+    content: buildContent(),
+    mountTile: mountTileShell,
+  });
+}
 
 export function mountTileShell(root: HTMLElement, options: TileShellOptions = {}): TileShell {
   const content = options.content ?? buildContent();
