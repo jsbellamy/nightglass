@@ -1,3 +1,5 @@
-# Claude Code–specific config; shared agent guidance lives in AGENTS.md
+# Claude Code-specific config. Cursor intentionally supports parts of this
+# directory for Claude compatibility, so a Cursor-native agent override and a
+# subagentStart policy live under .cursor/ as additional enforcement.
 .claude/
 CLAUDE.md

@@ -14,13 +14,12 @@ file.
 
 ## Subagents
 
-- Spawn implementation subagents as the **`issue-implementer`** agent type
-  (`.claude/agents/issue-implementer.md`), pinned to **Sonnet at high effort**.
-  Never override the model upward and never run it above high effort. It
-  implements one GitHub issue end-to-end in an isolated worktree and opens a
-  PR.
-- The process lives in `.agents/issue-implementer.md`; the `.claude` variant
-  contributes only the frontmatter pins and Claude-runtime notes.
+- For issue implementation, spawn a general-purpose subagent pinned to
+  **Sonnet at high effort** and tell it to read and follow
+  `.agents/issue-implementer.md`. Never override the model upward and never run
+  it above high effort. The provider-neutral file is the single source of truth
+  for the workflow; the model pin exists only in this Claude-only instruction
+  layer so other runtimes cannot discover a Sonnet-pinned agent definition.
 
 ## Toolchain notes
 
