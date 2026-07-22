@@ -95,7 +95,7 @@ describe("Talents surface", () => {
     surface.destroy();
   });
 
-  it("renders content-tier icon faces on Stat and Ability cells with overlays", () => {
+  it("evidence: talent-icon-content-tier — renders content-tier icon faces on Stat and Ability cells with overlays", () => {
     const root = document.createElement("div");
     const engine = leveledKnightEngine();
     for (let rank = 0; rank < 5; rank += 1) {

@@ -57,7 +57,7 @@ python3 pipeline/acquire.py promote \
   --acquisition-tool GenerateImage \
   --prompt-file path/to/boss-1-c.prompt.txt \
   --reference identity=assets-raw/grid_raw/boss.png \
-  --report docs/research/evidence/212-boss-stills-large/promotion-report.json
+  --report path/to/promotion-report.json
 ```
 
 `promote` remeasures the candidate, returns JSON on success or failure, refuses

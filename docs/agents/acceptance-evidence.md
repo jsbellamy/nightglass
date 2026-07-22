@@ -35,7 +35,7 @@ named-scenario blind spot from the acceptance-evidence seams audit.)
 
 | Prefix | Seam | Runner |
 | --- | --- | --- |
-| `evidence: <slug>` | Playwright scenarios under `e2e/` | `npm run test:evidence` |
+| `evidence: <slug>` | The rendered-evidence seam — Playwright under `e2e/`, or a pure test that can see the same fact | `npm run test:evidence` (Playwright) or `npm test` (pure) |
 | `manual-check: <slug>` | Port-injected `DockWindowPort` / shell tests | `npm test` |
 
 A title may list several slugs when one scenario body proves several named

@@ -14,7 +14,7 @@ Manual measurements for budgets the automated suite does not fully enforce. Tick
 
 - [ ] **Keyboard floor (macOS)** — **Measure:** `npm run tauri dev` on macOS; repeat the flows in `e2e/keyboard.spec.ts` with keyboard only. **Expected:** every Dock surface operable; visible focus rings.
 - [ ] **Keyboard floor (Windows)** — **Measure:** same on Windows. **Expected:** parity with macOS keyboard flows.
-- [ ] **Contrast / reduced motion / colour independence** — **Measure:** `npm run e2e` green on CI or locally; orchestrator reviews `e2e-screenshots/` per `docs/agents/acceptance-evidence.md`. **Expected:** Playwright specs in `e2e/` pass on Chromium.
+- [ ] **Contrast / reduced motion / colour independence** — **Measure:** `npm run test:evidence` green on CI or locally; orchestrator reviews `e2e-screenshots/` per `docs/agents/acceptance-evidence.md`. **Expected:** Playwright specs in `e2e/` pass on Chromium.
 
 ## Assets and simulation
 
@@ -24,4 +24,4 @@ Manual measurements for budgets the automated suite does not fully enforce. Tick
 ## Notes
 
 - Native dock lifecycle (OS close, positioning) remains in `docs/agents/native-observation.md` when `src-tauri/**` changes.
-- Rendered evidence automation: `npm run test:evidence` (same Playwright suite as `npm run e2e`).
+- Rendered evidence automation: `npm run test:evidence`.
