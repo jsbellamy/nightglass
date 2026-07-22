@@ -1,17 +1,23 @@
 # ADR-0002: Battle Tile and Management Dock as two windows over a bus
 
-**Status:** Superseded by ADR-0005 (`docs/adr/0005-dock-workspace-geometry.md`).  
+**Status:** Partially superseded by ADR-0005 (`docs/adr/0005-dock-workspace-geometry.md`) for dock dimensions and width coupling only. The two-window model, the fixed non-resizable dock, and the `BroadcastChannel` bus round-trip remain in force.  
 **Date:** 2026-07-19
 
 ## Context
 
 The vertical slice exposes combat on an always-on-top **Battle Tile** and party
-management on a separate **Management Dock** (`CONTEXT.md`: Battle Tile at 480×112,
-Management Dock at 480×336, docked flush above or below the tile). Geometry is
-centralized in `src/ui/tile-geometry.ts` (`TILE_WIDTH` 480, `TILE_HEIGHT` 112,
-`STATUS_LINE_HEIGHT` 24, `BATTLEFIELD_HEIGHT` 86) and `src/ui/dock-geometry.ts`
-(`DOCK_WIDTH` 480, `DOCK_HEIGHT` 336, `dockRect` parking above or below from the
-monitor midpoint).
+management on a separate **Management Dock** (Battle Tile at 480×112,
+Management Dock at 480×336, docked flush above or below the tile). Battle Tile
+geometry was centralized in `src/ui/battle-tile-layout.ts` (`TILE_WIDTH` 480,
+`TILE_HEIGHT` 112, `STATUS_LINE_HEIGHT` 24, `BATTLEFIELD_HEIGHT` 86). Dock
+geometry, as decided here, used equal width and 480×336 via
+`src/ui/dock-geometry.ts` (`dockRect` parking above or below from the monitor
+midpoint).
+
+> **Note:** Dock dimensions and equal-width coupling in this Context (and the
+> Decision below) record the geometry as decided here. ADR-0005 supersedes those
+> parts; live dock size and centering are in ADR-0005 and current
+> `dock-geometry.ts`. Battle Tile constants in `battle-tile-layout.ts` remain.
 
 Backdrop art follows a 480×86 band (`docs/backdrop-contract.md`), which can look
 like a conflict with the tile's 480×112 outer size until the layout split is
@@ -46,7 +52,9 @@ tile chrome; 480×86 describes only the battlefield asset — they do not contra
 - New dock surfaces must publish commands and consume Snapshots and Presentation
   Events on the bus;
   they must not assume shared memory with the tile's Engine instance.
-- Layout or evidence tests should import dimensions from `tile-geometry.ts` and
-  `dock-geometry.ts`, not duplicate magic numbers.
+- Layout or evidence tests should import dimensions from `battle-tile-layout.ts` and
+  `dock-geometry.ts`, not duplicate magic numbers. Dock dimensions and the
+  equal-width coupling stated in Context/Decision above are superseded by
+  ADR-0005; current dock size and centering live there and in `dock-geometry.ts`.
 - Features that require resizing the combat view while management is open are out
   of scope for this window model unless a future ADR supersedes this one.

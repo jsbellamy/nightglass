@@ -360,11 +360,13 @@ Decisions: [SideScape foundation](https://github.com/jsbellamy/nightglass/issues
 
 ### Simulation Engine boundary
 
-- A headless, **caller-pumped** Simulation Engine with one advancement
-  operation for live and accelerated time: the caller supplies elapsed
-  duration; the Engine advances between exact scheduled boundaries. **Chunk
-  size is not game state** — many small calls and one large call must resolve
-  identical timestamp batches in identical order.
+- A headless, **caller-pumped** Simulation Engine with two advancement
+  operations: `advanceBy` for live and accelerated time (awards Drops) and
+  `advanceOffline` for Offline Progress catch-up (same combat and XP schedule,
+  awards no Drops). The caller supplies elapsed duration; the Engine advances
+  between exact scheduled boundaries. **Chunk size is not game state** — many
+  small calls and one large call must resolve identical timestamp batches in
+  identical order.
 - The boundary is: **commands** (advancement, player configuration) → a
   **versioned serializable Snapshot** → ordered timestamped **Presentation
   Events**.
