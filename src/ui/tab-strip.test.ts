@@ -14,7 +14,7 @@ const DEMO_TABS: readonly TabDef<DemoId>[] = [
 function mountDemo(
   extras: {
     onActivate?: ReturnType<typeof vi.fn<(id: DemoId) => void>>;
-    onReactivate?: (id: DemoId) => void;
+    onReactivate?: ReturnType<typeof vi.fn<(id: DemoId) => void>>;
     initial?: DemoId;
   } = {},
 ) {
@@ -31,7 +31,7 @@ function mountDemo(
     ...(extras.onReactivate ? { onReactivate: extras.onReactivate } : {}),
   });
   host.append(strip.element);
-  return { host, strip, onActivate };
+  return { host, strip, onActivate, onReactivate: extras.onReactivate };
 }
 
 function tabButton(host: HTMLElement, id: DemoId): HTMLButtonElement {
@@ -49,7 +49,7 @@ function rovingState(host: HTMLElement): { selected: DemoId; tabIndex0: DemoId[]
   };
 }
 
-describe("Tab strip", () => {
+describe("Tab strip keyboard and selection", () => {
   it("ArrowRight and ArrowDown advance and wrap; ArrowLeft and ArrowUp retreat and wrap; Home selects the first tab; End selects the last; each moves focus as well as selection", () => {
     const { host, strip, onActivate } = mountDemo();
     const alpha = tabButton(host, "alpha");
@@ -113,17 +113,30 @@ describe("Tab strip", () => {
     strip.setActive("gamma");
     expect(rovingState(host)).toEqual({ selected: "gamma", tabIndex0: ["gamma"] });
 
+    tabButton(host, "gamma").dispatchEvent(
+      new KeyboardEvent("keydown", { key: "ArrowLeft", bubbles: true }),
+    );
+    expect(rovingState(host)).toEqual({ selected: "beta", tabIndex0: ["beta"] });
+
     strip.destroy();
     host.remove();
   });
 
-  it("calls onReactivate when the already-active tab is activated and skips onActivate when onReactivate is omitted", () => {
-    const onReactivate = vi.fn();
+  it("calls onReactivate when the already-active tab is pressed and skips onActivate when onReactivate is omitted", () => {
+    const onReactivate = vi.fn<(id: DemoId) => void>();
     const withReactivate = mountDemo({ onReactivate });
     tabButton(withReactivate.host, "alpha").click();
     expect(onReactivate).toHaveBeenCalledTimes(1);
     expect(onReactivate).toHaveBeenCalledWith("alpha");
     expect(withReactivate.onActivate).not.toHaveBeenCalled();
+
+    // Home on the already-first tab must not reactivate (Dock must not close).
+    onReactivate.mockClear();
+    tabButton(withReactivate.host, "alpha").dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Home", bubbles: true }),
+    );
+    expect(onReactivate).not.toHaveBeenCalled();
+
     withReactivate.strip.destroy();
     withReactivate.host.remove();
 

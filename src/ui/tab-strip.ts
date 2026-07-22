@@ -8,7 +8,10 @@ export interface TabDef<Id extends string> {
 export interface TabStripOptions<Id extends string> {
   tabs: readonly TabDef<Id>[];
   initial: Id;
-  /** Applied to the tablist (pluralised) and each tab for the surface's own styling. */
+  /**
+   * Styling stem shared by the strip: the tablist receives `${className}s` and
+   * each tab receives `${className} focus-ring` (e.g. `"dock-tab"`).
+   */
   className: string;
   ariaLabel: string;
   /** Panel element id per tab, for aria-controls / aria-labelledby wiring. */
@@ -57,9 +60,18 @@ export function mountTabStrip<Id extends string>(
     }
   }
 
-  function activate(id: Id, moveFocus: boolean): void {
+  /**
+   * @param fromPress — true for click / Enter / Space activation. Only presses
+   * of the already-active tab invoke `onReactivate` (Dock close). Keyboard
+   * Home/End on the current ends must not.
+   */
+  function select(id: Id, moveFocus: boolean, fromPress: boolean): void {
     if (id === active) {
-      options.onReactivate?.(id);
+      if (fromPress) {
+        options.onReactivate?.(id);
+      } else if (moveFocus) {
+        buttons.get(id)?.focus();
+      }
       return;
     }
     active = id;
@@ -73,22 +85,22 @@ export function mountTabStrip<Id extends string>(
   function onTabKeydown(event: KeyboardEvent, tab: Id): void {
     if (event.key === "ArrowRight" || event.key === "ArrowDown") {
       event.preventDefault();
-      activate(cycleTab(options.tabs, tab, 1), true);
+      select(cycleTab(options.tabs, tab, 1), true, false);
       return;
     }
     if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
       event.preventDefault();
-      activate(cycleTab(options.tabs, tab, -1), true);
+      select(cycleTab(options.tabs, tab, -1), true, false);
       return;
     }
     if (event.key === "Home") {
       event.preventDefault();
-      activate(options.tabs[0]!.id, true);
+      select(options.tabs[0]!.id, true, false);
       return;
     }
     if (event.key === "End") {
       event.preventDefault();
-      activate(options.tabs[options.tabs.length - 1]!.id, true);
+      select(options.tabs[options.tabs.length - 1]!.id, true, false);
     }
   }
 
@@ -99,10 +111,9 @@ export function mountTabStrip<Id extends string>(
     tabButton.setAttribute("role", "tab");
     tabButton.setAttribute("aria-controls", options.panelId(id));
     tabButton.id = `${options.className}-${id}`;
-    tabButton.dataset["tabId"] = id;
     tabButton.textContent = label;
 
-    bindPressable(tabButton, () => activate(id, false));
+    bindPressable(tabButton, () => select(id, false, true));
     tabButton.addEventListener("keydown", (event) => onTabKeydown(event, id));
 
     tabList.append(tabButton);
