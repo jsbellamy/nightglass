@@ -1,13 +1,25 @@
 {
-  "candidate": "harvest-yard-candidate-b",
-  "prior_candidate": "harvest-yard-candidate-a",
-  "prior_primary_failure": "identity underfill \u2014 trailer/floodlights/beacon not distinct at native scale",
+  "candidate": "harvest-yard-candidate-d",
+  "prior_candidates": [
+    {
+      "name": "a",
+      "primary_failure": "trailer/floodlights/beacon not distinct"
+    },
+    {
+      "name": "b",
+      "primary_failure": "chains/sacks weak at native"
+    },
+    {
+      "name": "c",
+      "primary_failure": "floodlight peaks near-white (lum~249) competing with combat UI"
+    }
+  ],
   "runtime_size": [
     480,
     86
   ],
-  "runtime_bytes": 85945,
-  "raw_sha256": "8db8dee26d2bba675cd73980ebdc7a0ad10fb7b10fc8f6c1a9f962eb54338450",
+  "runtime_bytes": 90660,
+  "raw_sha256": "31cd27adab8bb4c854d702aba791ae2a34390dfebcc8a9be8d597de99bc0e867",
   "reduction": {
     "crop_box": [
       0,
@@ -29,8 +41,10 @@
     1536,
     1024
   ],
+  "max_luminance": 130.66,
   "gates": {
     "reduce_480x86": "pass",
-    "byte_identity_verify": "pass"
+    "byte_identity_verify": "pass",
+    "max_lum_under_health_bar_green": true
   }
 }

@@ -16,7 +16,7 @@ Production-ready but not-yet-playable Fowl Harvest battlefield backdrop
 | Native tile review | [`tile-review-harvest-yard.png`](./tile-review-harvest-yard.png) |
 | 4× review sheet | [`tile-review-harvest-yard@4x.png`](./tile-review-harvest-yard@4x.png) |
 | Visual verdict | [`visual-review.md`](./visual-review.md) |
-| Prior candidate A (direct input for B) | [`scratch/harvest-yard-candidate-a.png`](./scratch/harvest-yard-candidate-a.png) |
+| Prior candidate C (direct input for D) | [`scratch/harvest-yard-candidate-c.png`](./scratch/harvest-yard-candidate-c.png) |
 
 ## Validator
 

@@ -11,5 +11,5 @@ Review context: native 480×86 Battle Tile with current Party, five-opponent str
 Validator: python3 pipeline/backdrops.py build + verify; CI npm run assets:verify
 ```
 
-Accepted candidate: `harvest-yard-candidate-b` (provider raw archived at
+Accepted candidate: `harvest-yard-candidate-d` (provider raw archived at
 `assets-raw/backdrops/harvest-yard.png`).

@@ -9,24 +9,23 @@ Composite reviewed (Step 6, subagent only):
 
 | Candidate | Asset class | Raw gates | Measurement | Primary result | Next action |
 | --- | --- | --- | --- | --- | --- |
-| harvest-yard-candidate-a | backdrop | pass (reduce 480×86, no magenta) | 1536×1024 → crop → 480×86 | identity underfill — trailer / twin floodlights / red beacon not distinct at native | retry prop legibility |
-| harvest-yard-candidate-b | backdrop | pass | 1536×1024 → crop → 480×86 | pass | advance → visual review → accept |
+| harvest-yard-candidate-a | backdrop | pass | 1536×1024 → 480×86 | identity underfill — trailer / floodlights / beacon not distinct at native | retry |
+| harvest-yard-candidate-b | backdrop | pass | 1536×1024 → 480×86 | Spec unmet — chains / feed sacks weak at native | retry |
+| harvest-yard-candidate-c | backdrop | pass | 1536×1024 → 480×86 | contrast — floodlight peaks near-white (max lum ~249) | retry |
+| harvest-yard-candidate-d | backdrop | pass | 1536×1024 → 480×86; max lum ~131 | pass | accept |
 
-Rejected candidate A is durable as the table row above; its PNG remains only as
-a provenance direct input for B under `scratch/` (hashed in the sidecar).
+Rejected A–C are durable as table rows. Scratch retains candidate C only as the
+hashed identity direct input for D (`scratch/harvest-yard-candidate-c.png`).
 
-## Step-6 verdict (candidate B)
+## Step-6 verdict (candidate D)
 
 **accept**
 
-Subagent answers (verbatim summary retained for the gate):
-
-1. Harvest Yard identity under toxic rural dusk — yes (silos, shed, conveyor;
-   chains/sacks weak at 1×).
-2. Trailer, floodlights, beacon distinct at native — yes (fixes A).
-3. Fowl Harvest materials, not Moonberry plum/mint dominance — pass.
-4. Combat signals strongest — yes.
-5. Nearly flat ground band — yes.
-6. Opponent half quiet enough for ~160×72 Boss — yes.
-7. No forbidden backdrop content — none observed.
-8. Soft chunky atmospheric strip style — yes.
+1. Floodlights/cream pools dim; combat bars/numbers remain strongest (runtime
+   max lum ~131 vs HP-bar green ~232 in composite).
+2. Chains + feed sacks distinct enough at native 1×.
+3. Silos, shed, conveyors, trailer, floodlight poles, beacon still read.
+4. Fowl Harvest toxic dusk materials — not Moonberry plum/mint.
+5. Flat ground; opponent half quiet for wide Boss.
+6. No forbidden backdrop content (no hot-magenta field).
+7. Soft atmospheric strip style.
