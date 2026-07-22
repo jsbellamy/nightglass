@@ -43,7 +43,51 @@ describe("effectiveTalentState", () => {
     expect(effectiveTalentState(snapshot, "knight")).toEqual({
       statRanks: { "k-fortitude": 3, "k-swordcraft": 2 },
       abilityTalentId: "k-hold-line",
+      tierStates: [
+        {
+          statRanks: { "k-fortitude": 3, "k-swordcraft": 2 },
+          abilityTalentId: "k-hold-line",
+        },
+      ],
     });
+  });
+
+  it("merges Tier 2 pending edits without aliasing applied or pending tier state", () => {
+    const applied = createDefaultProgression(fixtureContent).talents.knight!;
+    const snapshot = baseSnapshot({
+      progression: {
+        ...createDefaultProgression(fixtureContent),
+        talents: {
+          ...createDefaultProgression(fixtureContent).talents,
+          knight: {
+            ...applied,
+            tierStates: [
+              applied.tierStates[0]!,
+              { statRanks: { "k2-fortitude": 0, "k2-swordcraft": 0 }, abilityTalentId: null },
+            ],
+          },
+        },
+      },
+      pendingEdits: [
+        {
+          kind: "talent",
+          classId: "knight",
+          statRanks: applied.statRanks,
+          abilityTalentId: applied.abilityTalentId,
+          tierStates: [
+            applied.tierStates[0]!,
+            { statRanks: { "k2-fortitude": 2, "k2-swordcraft": 0 }, abilityTalentId: null },
+          ],
+        },
+      ],
+    });
+
+    const result = effectiveTalentState(snapshot, "knight");
+    expect(result.tierStates[1]!.statRanks["k2-fortitude"]).toBe(2);
+    result.tierStates[1]!.statRanks["k2-fortitude"] = 99;
+    const pending = snapshot.pendingEdits[0];
+    expect(pending?.kind === "talent" && pending.tierStates?.[1]?.statRanks["k2-fortitude"]).toBe(2);
+    expect(result.tierStates[1]!.statRanks["k2-fortitude"]).toBe(99);
   });
 
   it("returns a structural clone of the applied Talent state when no talent Pending Edit exists", () => {
@@ -117,6 +161,7 @@ describe("unlockableAbilityIds", () => {
   it("includes the unlocked Ability Talent when one is allocated", () => {
     const talentState = emptyTalentState(knightKit);
     talentState.abilityTalentId = "k-hold-line";
+    talentState.tierStates[0]!.abilityTalentId = "k-hold-line";
 
     expect(unlockableAbilityIds(knightKit, talentState)).toEqual([
       "knight-basic",

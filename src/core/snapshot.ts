@@ -1,4 +1,4 @@
-import type { ClassTalentState } from "./talents";
+import type { ClassTalentState, TierTalentState } from "./talents";
 import type { AffixId, ClassId, EquipmentSlotId, ItemLevel, Rarity, StageId } from "./types";
 
 export interface DropInstance {
@@ -59,6 +59,7 @@ export type PendingEdit =
       classId: ClassId;
       statRanks: Record<string, number>;
       abilityTalentId: string | null;
+      tierStates?: TierTalentState[];
     }
   | { kind: "equipment" };
 

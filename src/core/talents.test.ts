@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { fixtureContent } from "./testing/fixture-content";
+import type { ClassKitDef } from "./types";
 import {
   allocateTalentPoint,
   deallocateTalentPoint,
@@ -11,6 +12,38 @@ import {
 } from "./talents";
 
 const knightKit = fixtureContent.classes.find((entry) => entry.id === "knight")!;
+
+const twoTierKnight: ClassKitDef = {
+  ...knightKit,
+  talentTiers: [
+    {
+      statRow: [
+        {
+          id: "k2-fortitude",
+          name: "Fortitude II",
+          perRank: { percent: { maxHealth: 0.04 } },
+          maxRanks: 5,
+          iconKey: "k2-fortitude",
+        },
+        {
+          id: "k2-swordcraft",
+          name: "Swordcraft II",
+          perRank: { percent: { physicalPower: 0.04 } },
+          maxRanks: 5,
+          iconKey: "k2-swordcraft",
+        },
+      ],
+      abilityRow: ["k2-hold-line", "k2-falling-star"],
+    },
+  ],
+};
+
+function fillTierOne(state: ReturnType<typeof emptyTalentState>, classKit: ClassKitDef, level: number) {
+  for (let rank = 0; rank < 5; rank += 1) {
+    allocateTalentPoint(state, classKit, rank % 2 === 0 ? "k-fortitude" : "k-swordcraft", level);
+  }
+  allocateTalentPoint(state, classKit, "k-hold-line", level);
+}
 
 describe("Talent Point budget", () => {
   it("equals the Character Level including Level 1", () => {
@@ -101,5 +134,75 @@ describe("talentStatModifiers", () => {
     const modifiers = talentStatModifiers(state, knightKit);
     expect(modifiers).toHaveLength(2);
     expect(modifiers[0]).toEqual({ percent: { maxHealth: 0.06 } });
+  });
+});
+
+describe("two Talent Tiers", () => {
+  it("locks Tier 2 until all six Tier 1 points are spent", () => {
+    const state = emptyTalentState(twoTierKnight);
+    for (let rank = 0; rank < 5; rank += 1) {
+      allocateTalentPoint(state, twoTierKnight, "k-fortitude", 12);
+    }
+    expect(() => allocateTalentPoint(state, twoTierKnight, "k2-fortitude", 12)).toThrow(/locked/i);
+    allocateTalentPoint(state, twoTierKnight, "k-hold-line", 12);
+    expect(() => allocateTalentPoint(state, twoTierKnight, "k2-fortitude", 12)).not.toThrow();
+  });
+
+  it("applies five-plus-one cadence and exclusivity independently in Tier 2", () => {
+    const state = emptyTalentState(twoTierKnight);
+    fillTierOne(state, twoTierKnight, 12);
+    for (let rank = 0; rank < 5; rank += 1) {
+      allocateTalentPoint(
+        state,
+        twoTierKnight,
+        rank % 2 === 0 ? "k2-fortitude" : "k2-swordcraft",
+        12,
+      );
+    }
+    allocateTalentPoint(state, twoTierKnight, "k2-hold-line", 12);
+    expect(state.tierStates[1]!.abilityTalentId).toBe("k2-hold-line");
+    expect(() => allocateTalentPoint(state, twoTierKnight, "k2-falling-star", 12)).toThrow(
+      /mutually exclusive/i,
+    );
+  });
+
+  it("blocks Tier 1 reductions while Tier 2 holds points and enforces Tier 2 Stat floor with Ability", () => {
+    const state = emptyTalentState(twoTierKnight);
+    fillTierOne(state, twoTierKnight, 12);
+    allocateTalentPoint(state, twoTierKnight, "k2-fortitude", 12);
+    expect(() => deallocateTalentPoint(state, twoTierKnight, "k-fortitude", 12)).toThrow(/clear/i);
+    for (let rank = 0; rank < 4; rank += 1) {
+      allocateTalentPoint(state, twoTierKnight, "k2-fortitude", 12);
+    }
+    allocateTalentPoint(state, twoTierKnight, "k2-hold-line", 12);
+    expect(() => deallocateTalentPoint(state, twoTierKnight, "k2-fortitude", 12)).toThrow(/ability/i);
+  });
+
+  it("caps total spend at Character Level across both Tiers", () => {
+    const state = emptyTalentState(twoTierKnight);
+    fillTierOne(state, twoTierKnight, 12);
+    for (let rank = 0; rank < 5; rank += 1) {
+      allocateTalentPoint(
+        state,
+        twoTierKnight,
+        rank % 2 === 0 ? "k2-fortitude" : "k2-swordcraft",
+        12,
+      );
+    }
+    allocateTalentPoint(state, twoTierKnight, "k2-hold-line", 12);
+    expect(spentTalentPoints(state)).toBe(12);
+    expect(() => allocateTalentPoint(state, twoTierKnight, "k2-fortitude", 12)).toThrow(
+      /Talent Points remaining/i,
+    );
+  });
+
+  it("keeps Level 6 behavior unchanged with only Tier 1 available at budget", () => {
+    const state = emptyTalentState(twoTierKnight);
+    for (let rank = 0; rank < 5; rank += 1) {
+      allocateTalentPoint(state, twoTierKnight, "k-fortitude", 6);
+    }
+    expect(() => allocateTalentPoint(state, twoTierKnight, "k2-fortitude", 6)).toThrow(/locked/i);
+    allocateTalentPoint(state, twoTierKnight, "k-hold-line", 6);
+    expect(spentTalentPoints(state)).toBe(6);
   });
 });
