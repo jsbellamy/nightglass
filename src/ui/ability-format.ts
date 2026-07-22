@@ -1,58 +1,19 @@
-import { previewEffectRaw } from "../core/combat";
 import type { CombatActionState } from "../core/snapshot";
 import type {
   AbilityDef,
   AbilityEffect,
-  BaseStats,
   StatModifiers,
 } from "../core/types";
+import { statLines } from "../core/equipment-preview";
 
-export interface AbilityRawDisplay {
-  kind: "damage" | "heal";
-  value: number;
-  channel?: "physical" | "elemental";
-}
-
-export function abilityRawDisplay(
-  ability: AbilityDef,
-  stats: BaseStats,
-): AbilityRawDisplay | null {
-  for (const effect of ability.effects) {
-    if (effect.kind === "damage") {
-      const channel = effect.channel ?? "physical";
-      const value = previewEffectRaw(effect, stats);
-      if (value === null) {
-        continue;
-      }
-      return {
-        kind: "damage",
-        value,
-        channel,
-      };
-    }
-    if (effect.kind === "heal") {
-      const value = previewEffectRaw(effect, stats);
-      if (value === null) {
-        continue;
-      }
-      return {
-        kind: "heal",
-        value,
-      };
-    }
-  }
-  return null;
-}
-
-export function formatAbilityRawLine(display: AbilityRawDisplay | null): string | null {
-  if (!display) {
-    return null;
-  }
-  if (display.kind === "damage") {
-    return `${display.value} damage`;
-  }
-  return `${display.value} heal`;
-}
+export {
+  abilityRawDisplay,
+  formatAbilityRawLine,
+  formatStatModifierPerRank,
+  statLines,
+  type AbilityRawDisplay,
+  type StatLine,
+} from "../core/equipment-preview";
 
 export function formatAbilityTimings(ability: AbilityDef): string {
   const cooldown =
@@ -86,80 +47,6 @@ export function actionCyclePhase(
     return "Recovery";
   }
   return null;
-}
-
-export interface StatLine {
-  label: string;
-  value: string;
-}
-
-function formatSignedStatAmount(amount: number, asPercent: boolean): string {
-  const rounded = asPercent ? Math.round(amount) : amount;
-  if (rounded === 0) {
-    return asPercent ? "+0%" : "+0";
-  }
-  const prefix = rounded > 0 ? `+${rounded}` : String(rounded);
-  return asPercent ? `${prefix}%` : prefix;
-}
-
-/** One walk over StatModifiers. `ranks` multiplies both flat and percent entries. */
-export function statLines(modifier: StatModifiers, ranks = 1): StatLine[] {
-  const lines: StatLine[] = [];
-  if (modifier.percent?.maxHealth) {
-    lines.push({
-      label: "Max Health",
-      value: formatSignedStatAmount(modifier.percent.maxHealth * ranks * 100, true),
-    });
-  }
-  if (modifier.percent?.physicalPower) {
-    lines.push({
-      label: "Physical",
-      value: formatSignedStatAmount(modifier.percent.physicalPower * ranks * 100, true),
-    });
-  }
-  if (modifier.percent?.elementalPower) {
-    lines.push({
-      label: "Elemental",
-      value: formatSignedStatAmount(modifier.percent.elementalPower * ranks * 100, true),
-    });
-  }
-  if (modifier.flat?.maxHealth) {
-    lines.push({
-      label: "Max Health",
-      value: formatSignedStatAmount(modifier.flat.maxHealth * ranks, false),
-    });
-  }
-  if (modifier.flat?.physical) {
-    lines.push({
-      label: "Physical",
-      value: formatSignedStatAmount(modifier.flat.physical * ranks, false),
-    });
-  }
-  if (modifier.flat?.elemental) {
-    lines.push({
-      label: "Elemental",
-      value: formatSignedStatAmount(modifier.flat.elemental * ranks, false),
-    });
-  }
-  if (modifier.flat?.armor) {
-    lines.push({
-      label: "Armor",
-      value: formatSignedStatAmount(modifier.flat.armor * ranks, false),
-    });
-  }
-  if (modifier.flat?.elementalResistance) {
-    lines.push({
-      label: "Elemental Resistance",
-      value: formatSignedStatAmount(modifier.flat.elementalResistance * ranks, false),
-    });
-  }
-  return lines;
-}
-
-export function formatStatModifierPerRank(modifier: StatModifiers): string {
-  return statLines(modifier)
-    .map((line) => `${line.value} ${line.label}`)
-    .join(", ");
 }
 
 export function formatStatTalentDelta(

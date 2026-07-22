@@ -1,28 +1,23 @@
-import {
-  equipmentModifiersForLoadout,
-  snapshotEquipmentLoadouts,
-} from "../core/equipment";
-import { characterStats } from "../core/stats";
-import type { DropInstance, EquipmentLoadout } from "../core/snapshot";
-import type { ClassTalentState } from "../core/talents";
+import type { DropInstance } from "../core/snapshot";
 import type {
-  AbilityDef,
-  BaseStats,
   ClassId,
-  ClassKitDef,
   Content,
   EquipmentBaseDef,
   EquipmentSlotId,
   Rarity,
-  StatModifiers,
 } from "../core/types";
-import {
-  abilityRawDisplay,
-  formatAbilityRawLine,
-  formatStatModifierPerRank,
-  statLines,
-} from "./ability-format";
+import { formatStatModifierPerRank } from "../core/equipment-preview";
 import { CLASS_LABELS } from "./snapshot-view";
+
+export {
+  compareAbilityRawChanges,
+  compareEquipmentStatDeltas,
+  equipmentLoadoutWithSwap,
+  statsForEquipmentLoadout,
+  statModifiersForSlotSwap,
+  type AbilityRawChange,
+  type StatDeltaLine,
+} from "../core/equipment-preview";
 
 export const RARITY_LABELS: Record<Rarity, string> = {
   common: "Common",
@@ -252,151 +247,6 @@ export function isCompatibleWithSlot(
   canEquip: (dropId: number, classId: ClassId, slot: EquipmentSlotId) => boolean,
 ): boolean {
   return canEquip(drop.dropId, classId, slot);
-}
-
-export interface StatDeltaLine {
-  label: string;
-  before: string;
-  after: string;
-  delta: string;
-}
-
-function numericStatValue(value: string): number {
-  return Number(value.replace("%", ""));
-}
-
-function aggregationLabel(line: { label: string; value: string }): string {
-  return line.value.includes("%") ? `${line.label} %` : line.label;
-}
-
-function statTotalsFromModifiers(modifiers: StatModifiers[]): Map<string, number> {
-  const totals = new Map<string, number>();
-  for (const modifier of modifiers) {
-    for (const line of statLines(modifier)) {
-      const key = aggregationLabel(line);
-      totals.set(key, (totals.get(key) ?? 0) + numericStatValue(line.value));
-    }
-  }
-  return totals;
-}
-
-function formatStatValue(label: string, value: number): string {
-  if (label.endsWith("%")) {
-    return `${Math.round(value)}%`;
-  }
-  return String(value);
-}
-
-function formatDelta(delta: number, label: string): string {
-  const rounded = label.endsWith("%") ? Math.round(delta) : delta;
-  if (rounded === 0) {
-    return "0";
-  }
-  return rounded > 0 ? `+${rounded}` : String(rounded);
-}
-
-export function compareEquipmentStatDeltas(
-  currentMods: StatModifiers[],
-  candidateMods: StatModifiers[],
-): StatDeltaLine[] {
-  const before = statTotalsFromModifiers(currentMods);
-  const after = statTotalsFromModifiers(candidateMods);
-  const labels = new Set([...before.keys(), ...after.keys()]);
-  const lines: StatDeltaLine[] = [];
-
-  for (const label of [...labels].sort()) {
-    const beforeValue = before.get(label) ?? 0;
-    const afterValue = after.get(label) ?? 0;
-    const delta = afterValue - beforeValue;
-    if (delta === 0) {
-      continue;
-    }
-    lines.push({
-      label,
-      before: formatStatValue(label, beforeValue),
-      after: formatStatValue(label, afterValue),
-      delta: formatDelta(delta, label),
-    });
-  }
-  return lines;
-}
-
-export interface AbilityRawChange {
-  abilityId: string;
-  abilityName: string;
-  before: string | null;
-  after: string | null;
-}
-
-export function compareAbilityRawChanges(
-  loadoutAbilityIds: string[],
-  basicAbility: AbilityDef,
-  currentStats: BaseStats,
-  candidateStats: BaseStats,
-  abilitiesById: Map<string, AbilityDef>,
-): AbilityRawChange[] {
-  const changes: AbilityRawChange[] = [];
-  const abilityIds = [basicAbility.id, ...loadoutAbilityIds];
-
-  for (const abilityId of abilityIds) {
-    const ability = abilitiesById.get(abilityId);
-    if (!ability) {
-      continue;
-    }
-    const before = formatAbilityRawLine(abilityRawDisplay(ability, currentStats));
-    const after = formatAbilityRawLine(abilityRawDisplay(ability, candidateStats));
-    if (before === after) {
-      continue;
-    }
-    changes.push({
-      abilityId,
-      abilityName: ability.name,
-      before,
-      after,
-    });
-  }
-  return changes;
-}
-
-export function equipmentLoadoutWithSwap(
-  armory: DropInstance[],
-  roster: ClassId[],
-  classId: ClassId,
-  slot: EquipmentSlotId,
-  candidateDropId: number,
-): EquipmentLoadout {
-  const loadouts = snapshotEquipmentLoadouts(armory, roster);
-  const next = { ...loadouts[classId] };
-  next[slot] = candidateDropId;
-  return next;
-}
-
-export function statsForEquipmentLoadout(
-  classKit: ClassKitDef,
-  talentState: ClassTalentState,
-  loadout: EquipmentLoadout,
-  armory: DropInstance[],
-  content: Content,
-): BaseStats {
-  const equipmentMods = equipmentModifiersForLoadout(loadout, armory, content);
-  return characterStats(classKit, talentState, equipmentMods);
-}
-
-export function statModifiersForSlotSwap(
-  armory: DropInstance[],
-  roster: ClassId[],
-  classId: ClassId,
-  slot: EquipmentSlotId,
-  candidateDrop: DropInstance,
-  content: Content,
-): { current: StatModifiers[]; candidate: StatModifiers[] } {
-  const loadouts = snapshotEquipmentLoadouts(armory, roster);
-  const currentLoadout = loadouts[classId] ?? {};
-  const candidateLoadout = { ...currentLoadout, [slot]: candidateDrop.dropId };
-  return {
-    current: equipmentModifiersForLoadout(currentLoadout, armory, content),
-    candidate: equipmentModifiersForLoadout(candidateLoadout, armory, content),
-  };
 }
 
 export function discardableDrop(drop: DropInstance): boolean {
