@@ -1,0 +1,36 @@
+{
+  "candidate": "harvest-yard-candidate-b",
+  "prior_candidate": "harvest-yard-candidate-a",
+  "prior_primary_failure": "identity underfill \u2014 trailer/floodlights/beacon not distinct at native scale",
+  "runtime_size": [
+    480,
+    86
+  ],
+  "runtime_bytes": 85945,
+  "raw_sha256": "8db8dee26d2bba675cd73980ebdc7a0ad10fb7b10fc8f6c1a9f962eb54338450",
+  "reduction": {
+    "crop_box": [
+      0,
+      374,
+      1536,
+      649
+    ],
+    "crop_size": [
+      1536,
+      275
+    ],
+    "resample": "NEAREST",
+    "runtime_size": [
+      480,
+      86
+    ]
+  },
+  "source_resolution": [
+    1536,
+    1024
+  ],
+  "gates": {
+    "reduce_480x86": "pass",
+    "byte_identity_verify": "pass"
+  }
+}
