@@ -254,5 +254,37 @@
       "provider": "Cursor GenerateImage",
       "raw_sha256": "30e3b6d081726c00761455c3b65e0e0649d57bcbadea8f22a96c302f96896b3d"
     }
+  },
+  "burger-drake": {
+    "action": "still",
+    "frame_size": [
+      30,
+      35
+    ],
+    "visual_bounds": [
+      0,
+      0,
+      30,
+      35
+    ],
+    "foot_anchor": [
+      15,
+      35
+    ],
+    "palette": "fowl-harvest-24",
+    "baseline_row": 34,
+    "total_ms": 1,
+    "frames": [
+      {
+        "name": "burger-drake",
+        "duration_ms": 1,
+        "sha256": "d58aa8162a89f922b082cfe630b45e886315859facb09515aade7fcb5893f10a"
+      }
+    ],
+    "cues_ms": {},
+    "source": {
+      "provider": "Cursor GenerateImage",
+      "raw_sha256": "38b00e461bf57a73bd4a09cdabe7aabaef1b149e31c48f019ef338a2c693cba1"
+    }
   }
 }

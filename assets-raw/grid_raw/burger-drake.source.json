@@ -1,0 +1,37 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "38b00e461bf57a73bd4a09cdabe7aabaef1b149e31c48f019ef338a2c693cba1",
+  "acquisition": "flexible",
+  "identity_profile": {
+    "asset_class": "opponent",
+    "role": "ordinary-opponent",
+    "facing": "left"
+  },
+  "cursor_stamp_removed": false,
+  "identity": "burger-drake",
+  "asset_class": "opponent",
+  "runtime_destination": "src/assets/sprites/burger-drake.png",
+  "candidate": "burger-drake-c1.png",
+  "facing": "left",
+  "role": "ordinary-opponent",
+  "palette": "fowl-harvest-24@1",
+  "style_references": [
+    {
+      "path": "src/assets/sprites/pipcap.png",
+      "sha256": "9fc03d2c05604818e2b45fb30d50186a9c53062777c9008fa677a65ce4da54d2",
+      "role": "style"
+    },
+    {
+      "path": "src/assets/sprites/hunter.png",
+      "sha256": "8aca82d0a1bdff48145cafe3b597de572e651df05a0b13b21f7c9e4acdfaced0",
+      "role": "style"
+    },
+    {
+      "path": "src/assets/sprites/knight.png",
+      "sha256": "6ae9b30bf9157e0cb5054c72a79b3cccc115f2a9aad8b4ab417bf288c3d9d4b6",
+      "role": "style"
+    }
+  ],
+  "prompt": "Single full-body Burger Drake ordinary opponent game sprite, strict side profile facing LEFT. A squat mutated golden-yellow duck anatomically fused through a greasy roadside cheeseburger. Its broad torso is the burger: toasted bun forms the rounded shoulders and lower body, a dark patty forms the middle band, pale melted cheese corners protrude clearly, and a thin diner-teal pickle or relish rim separates the layers. The mutation is one living creature, not a duck carrying, sitting in, or wearing a sandwich.\n\nPreserve its dapper absurd identity: oversized orange duck bill, one angry visible eye behind a cracked round monocle, an oily near-black tall top hat with a restrained condiment-red band, one small yellow wing resting across the burger body, and two complete orange webbed feet. Compact broad silhouette, low center of gravity, slight forward aggression. The bill, top hat, burger layers, wing, and both feet must remain distinct at native game scale.\n\nChunky simplified flat-colour Fowl Harvest rural-mutation pixel art with large readable shapes, selective oil-black / bruise-plum contour, and only named fowl-harvest-24 colors: duck and yolk golds, beak orange, toast and patty browns, diner cream, restrained diner teal, condiment red, and oily near-black. Tone is 70% absurd and 30% unsettling. No gore, wounds, exposed organs, realism, gradients, anti-aliasing, blur, or dithering.\n\nShow exactly one complete subject with generous empty clearance on every edge of an opaque flat solid magenta #ff00ff background. No shadow, floor, glow, grease droplets, stink lines, sparkles, particles, Ability effect, text, watermark, scenery, UI, transparency, other food, or other subject.\n"
+}
