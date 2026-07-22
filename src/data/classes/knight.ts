@@ -1,4 +1,4 @@
-import type { AbilityDef, ClassKitDef } from "../../core/types";
+import type { AbilityDef, ClassKitDef, TalentTierDef } from "../../core/types";
 
 export const knightAbilities: AbilityDef[] = [
   {
@@ -90,6 +90,59 @@ export const knightAbilities: AbilityDef[] = [
     cooldownMs: 12000,
   },
 ];
+
+export const knightTier2Abilities: AbilityDef[] = [
+  {
+    id: "vanguard",
+    name: "Vanguard",
+    classId: "knight",
+    slot: "talent",
+    iconKey: "vanguard",
+    targeting: { kind: "party" },
+    effects: [
+      { kind: "apply-status", statusId: "guarded" },
+      { kind: "apply-status", statusId: "inspired" },
+    ],
+    windUpMs: 400,
+    recoveryMs: 600,
+    cooldownMs: 16_000,
+  },
+  {
+    id: "sundering-charge",
+    name: "Sundering Charge",
+    classId: "knight",
+    slot: "talent",
+    iconKey: "sundering-charge",
+    targeting: { kind: "closest-opponent" },
+    effects: [
+      { kind: "damage", channel: "physical", coefficient: 1.8 },
+      { kind: "apply-status", statusId: "exposed" },
+    ],
+    windUpMs: 700,
+    recoveryMs: 700,
+    cooldownMs: 13_000,
+  },
+];
+
+export const knightTier2: TalentTierDef = {
+  statRow: [
+    {
+      id: "iron-discipline",
+      name: "Iron Discipline",
+      perRank: { flat: { armor: 4 } },
+      maxRanks: 5,
+      iconKey: "iron-discipline",
+    },
+    {
+      id: "veterans-edge",
+      name: "Veteran’s Edge",
+      perRank: { percent: { physicalPower: 0.05 } },
+      maxRanks: 5,
+      iconKey: "veterans-edge",
+    },
+  ],
+  abilityRow: ["vanguard", "sundering-charge"],
+};
 
 export const knightClass: ClassKitDef = {
   id: "knight",
