@@ -30,3 +30,15 @@ python3 pipeline/backdrops.py verify
 ```
 
 CI `assets` job is the authoritative full-catalog byte-identity proof after push.
+
+## Review discipline
+
+Judge at native 1× first (`tile-review-last-stop-diner.png`); use
+`tile-review-last-stop-diner@4x.png` and `runtime@4x.png` only to inspect
+ground-band flatness and feedback pop. `runtime@4x.png` is an extra
+nearest-neighbour band inspect sheet (out-of-manifest vs the issue's single
+4× tile sheet) kept for ground-band evidence only.
+
+Fowl Harvest toxic-dusk materials are intentional divergence from the Moonberry
+`backdrop-1`…`backdrop-3` night-garden cohort; cohort refs guided strip
+composition and soft pixel-paint treatment, not plum/mint palette match.
