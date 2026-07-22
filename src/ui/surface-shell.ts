@@ -71,63 +71,19 @@ export interface SurfaceShellOptions {
   showTitle?: boolean;
   /** Body builder. Not called when the Snapshot is null. */
   body(snapshot: ReadonlySnapshot, legality: EngineLegalityView): Child[];
+  /**
+   * When true, the shell holds an opaque selection key across rebuilds.
+   * Read/write via getSelection / setSelection; setSelection re-renders when
+   * a Snapshot is held.
+   */
+  selection?: boolean;
 }
 
 export interface MountedSurface {
   render(snapshot: ReadonlySnapshot | null, legality?: EngineLegalityView): void;
   destroy(): void;
-}
-
-/**
- * The shared management-surface shell: clears the root, renders the empty
- * state when there is no Snapshot yet, renders the title, then the body.
- */
-export function mountSurfaceShell(
-  root: HTMLElement,
-  className: string,
-  options: SurfaceShellOptions,
-): MountedSurface {
-  root.classList.add(className);
-
-  function render(
-    snapshot: ReadonlySnapshot | null,
-    legality: EngineLegalityView = EMPTY_ENGINE_LEGALITY,
-  ): void {
-    root.replaceChildren();
-    if (!snapshot) {
-      const empty = document.createElement("p");
-      empty.className = "surface-empty";
-      empty.textContent = "No Snapshot yet.";
-      root.append(empty);
-      return;
-    }
-
-    if (options.showTitle !== false) {
-      const title = document.createElement("h2");
-      title.className = "dock-surface-title";
-      title.textContent = options.title;
-      root.append(title);
-    }
-
-    for (const child of options.body(snapshot, legality)) {
-      appendChild(root, child);
-    }
-  }
-
-  function destroy(): void {
-    root.replaceChildren();
-    root.classList.remove(className);
-  }
-
-  return { render, destroy };
-}
-
-/** The "Applies at next Wave" pending-edit marker, duplicated across three surfaces today. */
-export function pendingMarker(): HTMLElement {
-  const marker = document.createElement("p");
-  marker.className = "pending-marker pending-wave";
-  marker.textContent = "Applies at next Wave";
-  return marker;
+  getSelection(): string | null;
+  setSelection(key: string | null): void;
 }
 
 /** Selectors for scroll containers the Management Dock may rebuild on remount. */
@@ -138,10 +94,10 @@ const DOCK_SCROLL_PRESERVE_SELECTORS = [
   ".armory-detail",
 ] as const;
 
-export type ScrollPositionMap = Record<string, { top: number; left: number }>;
+type ScrollPositionMap = Record<string, { top: number; left: number }>;
 
 /** Capture scroll offsets keyed by selector before a remount replaces those nodes. */
-export function captureScrollPositions(
+function captureScrollPositions(
   root: ParentNode,
   selectors: readonly string[] = DOCK_SCROLL_PRESERVE_SELECTORS,
 ): ScrollPositionMap {
@@ -157,7 +113,7 @@ export function captureScrollPositions(
 }
 
 /** Restore scroll offsets onto the post-remount nodes matching the same selectors. */
-export function restoreScrollPositions(root: ParentNode, positions: ScrollPositionMap): void {
+function restoreScrollPositions(root: ParentNode, positions: ScrollPositionMap): void {
   for (const [selector, position] of Object.entries(positions)) {
     const element = root.querySelector(selector);
     if (!(element instanceof HTMLElement)) {
@@ -166,6 +122,136 @@ export function restoreScrollPositions(root: ParentNode, positions: ScrollPositi
     element.scrollTop = position.top;
     element.scrollLeft = position.left;
   }
+}
+
+/** Stable identity from an element's data-* attributes, used to restore focus. */
+function focusIdentity(element: HTMLElement): string | null {
+  const keys = Object.keys(element.dataset).sort();
+  if (keys.length === 0) {
+    return null;
+  }
+  return keys.map((key) => `${key}=${element.dataset[key]}`).join("\0");
+}
+
+function captureFocusIdentity(root: HTMLElement): string | null {
+  const active = document.activeElement;
+  if (!(active instanceof HTMLElement) || !root.contains(active)) {
+    return null;
+  }
+  return focusIdentity(active);
+}
+
+function restoreFocusIdentity(root: HTMLElement, identity: string | null): void {
+  if (identity === null) {
+    return;
+  }
+  for (const node of root.querySelectorAll<HTMLElement>("*")) {
+    if (focusIdentity(node) === identity) {
+      node.focus();
+      return;
+    }
+  }
+}
+
+/**
+ * The shared management-surface shell: clears the root, renders the empty
+ * state when there is no Snapshot yet, renders the title, then the body.
+ * Scroll, focus, selection, and retained nodes survive a rebuild.
+ */
+export function mountSurfaceShell(
+  root: HTMLElement,
+  className: string,
+  options: SurfaceShellOptions,
+): MountedSurface {
+  root.classList.add(className);
+
+  let selectionKey: string | null = null;
+  let lastSnapshot: ReadonlySnapshot | null = null;
+  let lastLegality: EngineLegalityView = EMPTY_ENGINE_LEGALITY;
+  let rendering = false;
+
+  function getSelection(): string | null {
+    if (!options.selection) {
+      return null;
+    }
+    return selectionKey;
+  }
+
+  function setSelection(key: string | null): void {
+    if (!options.selection) {
+      return;
+    }
+    if (selectionKey === key) {
+      return;
+    }
+    selectionKey = key;
+    if (lastSnapshot && !rendering) {
+      render(lastSnapshot, lastLegality);
+    }
+  }
+
+  function render(
+    snapshot: ReadonlySnapshot | null,
+    legality: EngineLegalityView = EMPTY_ENGINE_LEGALITY,
+  ): void {
+    lastSnapshot = snapshot;
+    lastLegality = legality;
+
+    const scrolls = captureScrollPositions(root);
+    const focusKey = captureFocusIdentity(root);
+    const retained = [...root.querySelectorAll<HTMLElement>("[data-surface-retain]")];
+
+    rendering = true;
+    try {
+      root.replaceChildren();
+      if (!snapshot) {
+        const empty = document.createElement("p");
+        empty.className = "surface-empty";
+        empty.textContent = "No Snapshot yet.";
+        root.append(empty);
+        return;
+      }
+
+      if (options.showTitle !== false) {
+        const title = document.createElement("h2");
+        title.className = "dock-surface-title";
+        title.textContent = options.title;
+        root.append(title);
+      }
+
+      for (const child of options.body(snapshot, legality)) {
+        appendChild(root, child);
+      }
+
+      for (const node of retained) {
+        if (!node.isConnected) {
+          root.append(node);
+        }
+      }
+    } finally {
+      rendering = false;
+    }
+
+    restoreScrollPositions(root, scrolls);
+    restoreFocusIdentity(root, focusKey);
+  }
+
+  function destroy(): void {
+    root.replaceChildren();
+    root.classList.remove(className);
+    lastSnapshot = null;
+    selectionKey = null;
+  }
+
+  return { render, destroy, getSelection, setSelection };
+}
+
+/** The "Applies at next Wave" pending-edit marker, duplicated across three surfaces today. */
+export function pendingMarker(): HTMLElement {
+  const marker = document.createElement("p");
+  marker.className = "pending-marker pending-wave";
+  marker.textContent = "Applies at next Wave";
+  return marker;
 }
 
 /**

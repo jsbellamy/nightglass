@@ -883,6 +883,37 @@ describe("Armory surface", () => {
     root.remove();
   });
 
+  it("keeps the compare popover open across a Snapshot pump", () => {
+    const root = document.createElement("div");
+    document.body.append(root);
+    const selected = { current: "knight" as ClassId };
+    const snapshot = armorySnapshot([
+      drop({ dropId: 1, baseId: "fixture-blade-ii", itemLevel: 3, rarity: "rare", seen: false }),
+    ]);
+    const surface = mountWithSelection(root, selected);
+    renderArmory(surface, snapshot);
+
+    const tile = root.querySelector<HTMLElement>('.equipment-card[data-drop-id="1"]')!;
+    tile.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
+    const popover = root.querySelector<HTMLElement>('[data-armory-compare-popover="true"]');
+    expect(popover?.hidden).toBe(false);
+    expect(popover?.querySelector('[data-stat-deltas="true"]')).not.toBeNull();
+
+    const pumped = structuredClone(snapshot);
+    pumped.progression.armory = pumped.progression.armory.map((entry) =>
+      entry.dropId === 1 ? { ...entry, seen: true } : entry,
+    );
+    renderArmory(surface, pumped);
+
+    const popoverAfter = root.querySelector<HTMLElement>('[data-armory-compare-popover="true"]');
+    expect(popoverAfter).toBe(popover);
+    expect(popoverAfter?.hidden).toBe(false);
+    expect(popoverAfter?.querySelector('[data-stat-deltas="true"]')).not.toBeNull();
+
+    surface.destroy();
+    root.remove();
+  });
+
   it("renders comparison popover Equipment rows matching previewEquip for a Character pending into the Party", () => {
     const root = document.createElement("div");
     document.body.append(root);

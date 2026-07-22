@@ -176,6 +176,38 @@ describe("Talents surface", () => {
     surface.destroy();
   });
 
+  it("keeps the selected Talent cell across a Snapshot pump", () => {
+    const root = document.createElement("div");
+    const engine = leveledKnightEngine();
+    const selected = { current: "knight" as ClassId };
+    const surface = mountTalentsSurface(root, mountOptions(selected));
+
+    renderTalents(surface, engine);
+    selectTalentCell(root, "k-fortitude");
+    expect(root.querySelector(".talent-cell.selected")?.getAttribute("data-talent-id")).toBe(
+      "k-fortitude",
+    );
+    expect(root.querySelector('[data-talent-detail="true"] .talent-name')?.textContent).toBe(
+      "Fortitude",
+    );
+
+    engine.allocateTalent("knight", "k-fortitude");
+    renderTalents(surface, engine);
+
+    expect(root.querySelector(".talent-cell.selected")?.getAttribute("data-talent-id")).toBe(
+      "k-fortitude",
+    );
+    expect(root.querySelector('[data-talent-detail="true"] .talent-name')?.textContent).toBe(
+      "Fortitude",
+    );
+    expect(
+      root.querySelector('.talent-cell[data-talent-id="k-fortitude"] .talent-rank-badge')
+        ?.textContent,
+    ).toBe("1/5");
+
+    surface.destroy();
+  });
+
   it("does not auto-select on mount or Class switch", () => {
     const root = document.createElement("div");
     const engine = leveledKnightEngine();

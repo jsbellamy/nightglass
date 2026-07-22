@@ -117,7 +117,7 @@ export function mountArmorySurface(
 
   const comparePopover = el("div", {
     class: "armory-compare-popover",
-    data: { armoryComparePopover: "true" },
+    data: { armoryComparePopover: "true", surfaceRetain: "true" },
     props: { hidden: true },
   });
   comparePopover.style.pointerEvents = "none";
