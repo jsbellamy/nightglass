@@ -1,0 +1,51 @@
+{
+  "provider": "Cursor GenerateImage",
+  "prompt": "TRUE chunky pixel art skill icon ONLY. Drawn on an exact 32x32 logical pixel grid rendered large; every logical pixel is one clean flat square block \u2014 no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered symbolic skill glyph in three-quarter display angle: a compact cluster of three falling cream-gold star motes with short solid berry trail blocks. Not a wearable equipment piece and not a full character \u2014 one readable glyph only. Shrink the silhouette so subject's long side spans about 24-28 logical pixels \u2014 leave at least THREE full magenta cells of clearance on every edge especially top and bottom. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel dark-plum outline. Use only mint / berry / cream / plum Moonberry colours (8-12 flat colors max) \u2014 no brown, tan, cyan, pure white, or pure black. Structural members at least 3 logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "raw_sha256": "b1c508bd41646fa468f8c2804fc872f7d783ff568aea968fc90d4ae4fcc3ef42",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        279,
+        195,
+        775,
+        819
+      ],
+      "pitch_x": {
+        "pitch": 26.211111111111236,
+        "score": 0.11584437921601794
+      },
+      "pitch_y": {
+        "pitch": 27.361111111111253,
+        "score": 0.23760234627227178
+      },
+      "grid": [
+        19,
+        22
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 184,
+      "far_cells": 0,
+      "far_fraction": 0.0,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "contour-plum-deep": 93,
+        "berry-bright": 17,
+        "cream": 57,
+        "berry": 1,
+        "cream-gold": 16
+      }
+    }
+  },
+  "palette_subset": [
+    "contour-plum-deepest",
+    "contour-plum-deep",
+    "cream",
+    "cream-gold",
+    "berry",
+    "berry-bright",
+    "berry-mid",
+    "berry-shadow"
+  ],
+  "evidence_raw": "docs/research/evidence/305-talent-icons-wizard/accepted-raws/starfall.png"
+}

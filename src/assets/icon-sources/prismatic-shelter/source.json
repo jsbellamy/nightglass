@@ -1,0 +1,65 @@
+{
+  "provider": "Cursor GenerateImage",
+  "prompt": "TRUE chunky pixel art skill icon ONLY. Drawn on an exact 32x32 logical pixel grid rendered large; every logical pixel is one clean flat square block \u2014 no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered symbolic skill glyph in three-quarter display angle: a LARGE small faceted mint-cream prism dome / canopy glyph filling the frame. Not a wearable equipment piece and not a full character \u2014 one readable glyph only. Enlarge \u2014 subject's long side spans about 26-30 logical pixels, with at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel dark-plum outline. Use only mint / berry / cream / plum Moonberry colours (8-12 flat colors max) \u2014 no brown, tan, cyan, pure white, or pure black. Structural members at least 3 logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "raw_sha256": "90c86083ba3459489d524924f72dcf4f53ffe5c849014e62425a17b4098cbc01",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        157,
+        40,
+        864,
+        980
+      ],
+      "pitch_x": {
+        "pitch": 33.2888888888889,
+        "score": 0.13756756862905783
+      },
+      "pitch_y": {
+        "pitch": 34.68888888888882,
+        "score": 0.22154966795341677
+      },
+      "grid": [
+        22,
+        27
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 388,
+      "far_cells": 33,
+      "far_fraction": 0.0851,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "contour-plum-deep": 29,
+        "cream-gold": 6,
+        "berry": 68,
+        "berry-mid": 5,
+        "cream": 92,
+        "mint-pale": 24,
+        "mint-light": 47,
+        "sage": 14,
+        "berry-shadow": 2,
+        "mint": 57,
+        "berry-bright": 15,
+        "mint-shadow": 28,
+        "twilight-slate": 1
+      }
+    }
+  },
+  "palette_subset": [
+    "contour-plum-deepest",
+    "contour-plum-deep",
+    "mint-shadow",
+    "mint",
+    "mint-light",
+    "mint-pale",
+    "cream",
+    "cream-gold",
+    "berry-shadow",
+    "berry-mid",
+    "berry",
+    "berry-bright",
+    "sage",
+    "twilight-slate"
+  ],
+  "evidence_raw": "docs/research/evidence/305-talent-icons-wizard/accepted-raws/prismatic-shelter.png"
+}
