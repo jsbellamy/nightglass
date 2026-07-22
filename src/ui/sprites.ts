@@ -2,10 +2,15 @@ import type { Content } from "../core/types";
 import boss1Url from "../assets/sprites/boss-1.png";
 import boss2Url from "../assets/sprites/boss-2.png";
 import boss3Url from "../assets/sprites/boss-3.png";
+import burgerDrakeUrl from "../assets/sprites/burger-drake.png";
+import cornquackerUrl from "../assets/sprites/cornquacker.png";
 import knightUrl from "../assets/sprites/knight.png";
 import pipcapUrl from "../assets/sprites/pipcap.png";
 import hunterUrl from "../assets/sprites/hunter.png";
 import priestUrl from "../assets/sprites/priest.png";
+import scarequackUrl from "../assets/sprites/scarequack.png";
+import theCombineUrl from "../assets/sprites/the-combine.png";
+import theFryerUrl from "../assets/sprites/the-fryer.png";
 import wizardUrl from "../assets/sprites/wizard.png";
 import manifestJson from "../assets/sprites/manifest.json";
 
@@ -42,16 +47,32 @@ export const SPRITE_SOURCES = {
   priest: { url: priestUrl },
   hunter: { url: hunterUrl },
   pipcap: { url: pipcapUrl },
+  "burger-drake": { url: burgerDrakeUrl },
+  cornquacker: { url: cornquackerUrl },
   "boss-1": { url: boss1Url },
   "boss-2": { url: boss2Url },
   "boss-3": { url: boss3Url },
+  "the-combine": { url: theCombineUrl },
+  "the-fryer": { url: theFryerUrl },
+  scarequack: { url: scarequackUrl },
 } as const satisfies Record<string, SpriteSource>;
 
 const KNOWN_SPRITE_KEYS = new Set<string>(Object.keys(SPRITE_SOURCES));
 
 const PARTY_SPRITE_KEYS = new Set(["knight", "wizard", "priest", "hunter"]);
-const ORDINARY_OPPONENT_SPRITE_KEYS = new Set(["pipcap"]);
-const BOSS_SPRITE_KEYS = new Set(["boss-1", "boss-2", "boss-3"]);
+const ORDINARY_OPPONENT_SPRITE_KEYS = new Set([
+  "pipcap",
+  "burger-drake",
+  "cornquacker",
+]);
+const BOSS_SPRITE_KEYS = new Set([
+  "boss-1",
+  "boss-2",
+  "boss-3",
+  "the-combine",
+  "the-fryer",
+  "scarequack",
+]);
 
 /** Test-fixture adapter frame — not a production body profile. */
 const FIXTURE_SMALL_FRAME: readonly [number, number] = [24, 32];
@@ -98,7 +119,7 @@ export function geometryFromManifestEntry(
   if (left < 0 || top < 0 || right > frameWidth || bottom > frameHeight || right <= left || bottom <= top) {
     throw new Error(`visual_bounds exceed frame_size for sprite key: ${spriteKey}`);
   }
-  if (footX !== frameWidth / 2 || footY !== frameHeight) {
+  if (footX !== Math.floor(frameWidth / 2) || footY !== frameHeight) {
     throw new Error(`foot_anchor must be bottom-centre for sprite key: ${spriteKey}`);
   }
   return {

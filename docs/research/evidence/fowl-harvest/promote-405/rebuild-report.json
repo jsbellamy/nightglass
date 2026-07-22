@@ -1,0 +1,82 @@
+{
+  "rebuilds": [
+    {
+      "tag": "the-fryer",
+      "runtime": "src/assets/sprites/the-fryer.png",
+      "committed_sha256": "1f6e17bde9798ceb7d49d6da80b1e14b2cc913aab11cefeb73302cb06f936374",
+      "rebuilt_sha256": "1f6e17bde9798ceb7d49d6da80b1e14b2cc913aab11cefeb73302cb06f936374",
+      "byte_identical": true,
+      "manifest": {
+        "action": "still",
+        "frame_size": [
+          105,
+          72
+        ],
+        "visual_bounds": [
+          0,
+          0,
+          105,
+          72
+        ],
+        "foot_anchor": [
+          52,
+          72
+        ],
+        "palette": "fowl-harvest-24",
+        "baseline_row": 71,
+        "total_ms": 1,
+        "frames": [
+          {
+            "name": "the-fryer",
+            "duration_ms": 1,
+            "sha256": "9ea7ef188974507349317093d052a258285c8bd1e483f8ff205dc21c104ad3ca"
+          }
+        ],
+        "cues_ms": {},
+        "source": {
+          "provider": "Cursor GenerateImage",
+          "raw_sha256": "c99d6f53403da5efdfdce764610304e1deeff1eb9d86c3f53c35ecc54fbbbc8d"
+        }
+      }
+    },
+    {
+      "tag": "scarequack",
+      "runtime": "src/assets/sprites/scarequack.png",
+      "committed_sha256": "e1f0e34305ed474e7020e7c931353779753af52481eb212ba831e182f1119b3f",
+      "rebuilt_sha256": "e1f0e34305ed474e7020e7c931353779753af52481eb212ba831e182f1119b3f",
+      "byte_identical": true,
+      "manifest": {
+        "action": "still",
+        "frame_size": [
+          51,
+          72
+        ],
+        "visual_bounds": [
+          0,
+          0,
+          51,
+          72
+        ],
+        "foot_anchor": [
+          25,
+          72
+        ],
+        "palette": "fowl-harvest-24",
+        "baseline_row": 71,
+        "total_ms": 1,
+        "frames": [
+          {
+            "name": "scarequack",
+            "duration_ms": 1,
+            "sha256": "9c49e53063a4416dbffd15f28d7e3f5d6ebadb6343ceadcb21eb072ecead112d"
+          }
+        ],
+        "cues_ms": {},
+        "source": {
+          "provider": "Cursor GenerateImage",
+          "raw_sha256": "2c92a97aec8bdfb2ab819a33b0c2f0d4f2a897cb434b431e018dfa2b4f8feab9"
+        }
+      }
+    }
+  ]
+}

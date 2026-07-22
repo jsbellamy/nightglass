@@ -1,0 +1,22 @@
+{
+  "bodies": [
+    "burger-drake",
+    "cornquacker",
+    "the-combine",
+    "the-fryer",
+    "scarequack"
+  ],
+  "backdrops": [
+    "last-stop-diner",
+    "crooked-cornfield",
+    "harvest-yard"
+  ],
+  "runtime_sha256": {
+    "burger-drake": "c8a0e66c892465c9fa9355df19275a1c7385f10246286c4f11c2869272f9563f",
+    "cornquacker": "326ec503bc95de96ab98ce82e54e91ca32577ee5d92eebdcb608bcb50a59a8ca",
+    "the-combine": "431f31f1a278a69e7fcd656f458789239a2339a443b3d96ab1cfbe13cd5aba15",
+    "the-fryer": "1f6e17bde9798ceb7d49d6da80b1e14b2cc913aab11cefeb73302cb06f936374",
+    "scarequack": "e1f0e34305ed474e7020e7c931353779753af52481eb212ba831e182f1119b3f"
+  },
+  "layout": "top silhouette strip; then three 480x86 bands (last-stop-diner, crooked-cornfield, harvest-yard) with party + five Fowl bodies + HP/Boss bars + damage chip + effect frame"
+}

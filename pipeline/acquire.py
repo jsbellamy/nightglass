@@ -167,10 +167,9 @@ ASSET_IDENTITIES = {
     },
 }
 
-# Identities still awaiting a complete archived raw bundle. Empty once Fryer
-# (#387) and Scarequack (#388) raws land; shared runtime promotion is #405.
-# Unpromoted complete archives are omitted from default rebuild when the
-# committed runtime PNG is absent. Half-bundles still fail orphan discovery.
+# Interim raw tags that are known identities but must not enter default rebuild
+# until a later promotion slice lands a runtime PNG. Empty after #405 promoted
+# Fryer and Scarequack. Half-bundles still fail orphan discovery.
 MISSING_BODY_BUNDLE_INTERIM_RAW_TAGS = frozenset()
 
 LEGACY_MOONBERRY_IDENTITIES = frozenset({
