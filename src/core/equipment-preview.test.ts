@@ -1,9 +1,17 @@
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { previewEquip } from "./equipment-preview";
+import { createEngine } from "./engine";
+import { equipmentModifiersForLoadout } from "./equipment";
+import { characterStatsFor, previewEquip } from "./equipment-preview";
 import { createDefaultProgression } from "./load-state";
 import type { DropInstance, Snapshot } from "./snapshot";
+import { characterStats } from "./stats";
 import { emptyTalentState } from "./talents";
 import { fixtureContent } from "./testing/fixture-content";
+
+const LOOT_SEED = 42;
 
 const knightKit = fixtureContent.classes.find((entry) => entry.id === "knight")!;
 const fixtureBlade = fixtureContent.equipmentBases.find((entry) => entry.id === "fixture-blade")!;
@@ -182,5 +190,50 @@ describe("previewEquip", () => {
     const basicChange = preview.abilityChanges.find((change) => change.abilityId === "knight-basic");
 
     expect(basicChange?.after).toBe("20 damage");
+  });
+});
+
+describe("characterStatsFor", () => {
+  it("returns the same BaseStats the Engine derives for the Character and Snapshot", () => {
+    const worn = drop({
+      dropId: 50,
+      baseId: "fixture-blade",
+      assignedTo: { classId: "knight", slot: "weapon" },
+    });
+    const progression = createDefaultProgression(fixtureContent);
+    progression.armory = [worn];
+    progression.characterXp.knight = 850;
+    progression.talents.knight = {
+      ...emptyTalentState(knightKit),
+      statRanks: { "k-fortitude": 1, "k-swordcraft": 2 },
+    };
+
+    const engine = createEngine(
+      fixtureContent,
+      baseSnapshot({ progression }),
+      LOOT_SEED,
+    );
+    engine.selectStage(1);
+    const snapshot = engine.snapshot();
+
+    const talentState = snapshot.progression.talents.knight!;
+    const loadout = snapshot.attempt!.equipmentLoadouts.knight ?? {};
+    const engineDerived = characterStats(
+      knightKit,
+      talentState,
+      equipmentModifiersForLoadout(loadout, snapshot.progression.armory, fixtureContent),
+    );
+
+    expect(characterStatsFor(snapshot, fixtureContent, "knight")).toEqual(engineDerived);
+  });
+
+  it("gives previewEquip the same current BaseStats as characterStatsFor", () => {
+    const source = readFileSync(
+      join(dirname(fileURLToPath(import.meta.url)), "equipment-preview.ts"),
+      "utf8",
+    );
+    const previewBody = source.slice(source.indexOf("export function previewEquip"));
+    expect(previewBody).toMatch(/characterStatsFor\(/);
+    expect(previewBody.match(/statsForEquipmentLoadout\(/g)?.length).toBe(1);
   });
 });

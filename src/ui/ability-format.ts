@@ -4,7 +4,7 @@ import type {
   AbilityEffect,
   StatModifiers,
 } from "../core/types";
-import { statLines } from "../core/equipment-preview";
+import { statLines } from "./snapshot-view";
 
 export {
   abilityRawDisplay,
@@ -13,7 +13,7 @@ export {
   statLines,
   type AbilityRawDisplay,
   type StatLine,
-} from "../core/equipment-preview";
+} from "./snapshot-view";
 
 export function formatAbilityTimings(ability: AbilityDef): string {
   const cooldown =

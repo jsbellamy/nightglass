@@ -6,8 +6,7 @@ import type {
   EquipmentSlotId,
   Rarity,
 } from "../core/types";
-import { formatStatModifierPerRank } from "../core/equipment-preview";
-import { CLASS_LABELS } from "./snapshot-view";
+import { formatStatModifierPerRank, CLASS_LABELS } from "./snapshot-view";
 
 export {
   compareAbilityRawChanges,
@@ -17,7 +16,7 @@ export {
   statModifiersForSlotSwap,
   type AbilityRawChange,
   type StatDeltaLine,
-} from "../core/equipment-preview";
+} from "./snapshot-view";
 
 export const RARITY_LABELS: Record<Rarity, string> = {
   common: "Common",
