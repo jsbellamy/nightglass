@@ -94,6 +94,7 @@ describe("effectiveTalentState", () => {
     const snapshot = baseSnapshot();
     const applied = snapshot.progression.talents.knight!;
     applied.statRanks["k-fortitude"] = 2;
+    applied.tierStates[0]!.statRanks["k-fortitude"] = 2;
 
     const result = effectiveTalentState(snapshot, "knight");
     expect(result).toEqual(applied);
