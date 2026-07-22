@@ -42,6 +42,61 @@ function swapFormationOrder(
   return next;
 }
 
+function partySwapButtons(
+  snapshot: ReadonlySnapshot,
+  selected: ClassId,
+  options: CharacterPickerOptions,
+): HTMLElement[] {
+  const { members, reserve } = effectiveParty(snapshot);
+  const selectedPartyIndex = members.indexOf(selected);
+  const selectedIsReserve = selected === reserve;
+  const buttons: HTMLElement[] = [];
+
+  if (selectedIsReserve) {
+    for (let slotIndex = 0; slotIndex < members.length; slotIndex += 1) {
+      const swapButton = el("button", {
+        class: "party-swap focus-ring",
+        data: { partySwapSlot: String(slotIndex) },
+        props: { type: "button" },
+        text: `→ ${FORMATION_SLOTS[slotIndex]}`,
+      });
+      bindPressable(swapButton, () => {
+        const current = effectiveParty(snapshot);
+        const nextMembers = [...current.members] as [ClassId, ClassId, ClassId];
+        nextMembers[slotIndex] = selected;
+        options.onCommand?.({
+          cmd: "setParty",
+          args: [nextMembers, current.members[slotIndex]!],
+        });
+      });
+      buttons.push(swapButton);
+    }
+  } else if (selectedPartyIndex !== -1) {
+    const swapButton = el("button", {
+      class: "party-swap focus-ring",
+      data: { partySwap: selected },
+      props: { type: "button" },
+      text: "Swap with Reserve",
+    });
+    bindPressable(swapButton, () => {
+      const current = effectiveParty(snapshot);
+      const index = current.members.indexOf(selected);
+      if (index === -1) {
+        return;
+      }
+      const nextMembers = [...current.members] as [ClassId, ClassId, ClassId];
+      nextMembers[index] = current.reserve;
+      options.onCommand?.({
+        cmd: "setParty",
+        args: [nextMembers, selected],
+      });
+    });
+    buttons.push(swapButton);
+  }
+
+  return buttons;
+}
+
 export function mountCharacterPicker(
   root: HTMLElement,
   options: CharacterPickerOptions,
@@ -55,11 +110,7 @@ export function mountCharacterPicker(
     class: "character-picker-tabs",
     props: { role: "tablist" },
   });
-  const swapHost = el("div", {
-    class: "character-picker-swaps",
-    aria: { label: "Reserve swaps" },
-  });
-  picker.append(pendingHost, tablist, swapHost);
+  picker.append(pendingHost, tablist);
   root.append(picker);
   const unbindOverflow = bindScrollOverflowAffordance(picker);
 
@@ -117,57 +168,6 @@ export function mountCharacterPicker(
       );
     }
     pendingHost.replaceChildren(...children);
-  }
-
-  function renderSwapControls(snapshot: ReadonlySnapshot, selected: ClassId): void {
-    const { members, reserve } = effectiveParty(snapshot);
-    const selectedPartyIndex = members.indexOf(selected);
-    const selectedIsReserve = selected === reserve;
-    const buttons: HTMLElement[] = [];
-
-    if (selectedIsReserve) {
-      for (let slotIndex = 0; slotIndex < members.length; slotIndex += 1) {
-        const swapButton = el("button", {
-          class: "party-swap focus-ring",
-          data: { partySwapSlot: String(slotIndex) },
-          props: { type: "button" },
-          text: `→ ${FORMATION_SLOTS[slotIndex]}`,
-        });
-        bindPressable(swapButton, () => {
-          const current = effectiveParty(snapshot);
-          const nextMembers = [...current.members] as [ClassId, ClassId, ClassId];
-          nextMembers[slotIndex] = selected;
-          options.onCommand?.({
-            cmd: "setParty",
-            args: [nextMembers, current.members[slotIndex]!],
-          });
-        });
-        buttons.push(swapButton);
-      }
-    } else if (selectedPartyIndex !== -1) {
-      const swapButton = el("button", {
-        class: "party-swap focus-ring",
-        data: { partySwap: selected },
-        props: { type: "button" },
-        text: "Swap with Reserve",
-      });
-      bindPressable(swapButton, () => {
-        const current = effectiveParty(snapshot);
-        const index = current.members.indexOf(selected);
-        if (index === -1) {
-          return;
-        }
-        const nextMembers = [...current.members] as [ClassId, ClassId, ClassId];
-        nextMembers[index] = current.reserve;
-        options.onCommand?.({
-          cmd: "setParty",
-          args: [nextMembers, selected],
-        });
-      });
-      buttons.push(swapButton);
-    }
-
-    swapHost.replaceChildren(...buttons);
   }
 
   function renderChips(snapshot: ReadonlySnapshot, selected: ClassId): void {
@@ -256,12 +256,18 @@ export function mountCharacterPicker(
         );
       }
 
+      if (isSelected) {
+        const swaps = partySwapButtons(snapshot, selected, options);
+        if (swaps.length > 0) {
+          rowChildren.push(el("div", { class: "character-picker-row-swaps" }, swaps));
+        }
+      }
+
       return el("div", { class: "character-picker-row" }, rowChildren);
     });
 
     tablist.replaceChildren(...rows);
     renderPending(snapshot);
-    renderSwapControls(snapshot, selected);
 
     if (restoreFocus) {
       picker.querySelector<HTMLElement>(restoreSelector)?.focus();
@@ -274,7 +280,6 @@ export function mountCharacterPicker(
         chipOrder = [];
         pendingHost.replaceChildren();
         tablist.replaceChildren();
-        swapHost.replaceChildren();
         return;
       }
       renderChips(snapshot, selected);

@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import {
   assertFocusRingVisible,
   attachDockPage,
+  focusCharacterSubTab,
   focusDockTab,
   openDockFromTileKeyboard,
   openTilePage,
@@ -56,6 +57,7 @@ test.describe("accessibility keyboard floor", () => {
 
     await dock.locator('[data-character-chip="knight"]').focus();
     await dock.keyboard.press("Enter");
+    await focusCharacterSubTab(dock, "loadout");
     const loadoutSelect = dock.locator('[data-class-id="knight"] [data-loadout-assign="0"]');
     await loadoutSelect.focus();
     await assertFocusRingVisible(dock, '[data-class-id="knight"] [data-loadout-assign="0"]');
@@ -74,6 +76,7 @@ test.describe("accessibility keyboard floor", () => {
 
     await dock.locator('[data-character-chip="knight"]').focus();
     await dock.keyboard.press("Enter");
+    await focusCharacterSubTab(dock, "talents");
     const fortitudeCell = dock.locator(
       '[data-class-id="knight"] .talent-cell[data-talent-id="fortitude"]',
     );
@@ -100,6 +103,7 @@ test.describe("accessibility keyboard floor", () => {
 
     await dock.locator('[data-character-chip="knight"]').focus();
     await dock.keyboard.press("Enter");
+    await focusCharacterSubTab(dock, "loadout");
     await assertFocusRingVisible(dock, '[data-class-id="knight"] [data-loadout-assign="0"]');
 
     await focusDockTab(dock, "armory");

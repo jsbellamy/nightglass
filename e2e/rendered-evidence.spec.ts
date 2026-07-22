@@ -15,6 +15,7 @@ import {
 import { postBusCommand, postBusSnapshot } from "./helpers/bus";
 import { advanceUntil, advanceUntilVisible } from "./helpers/advance";
 import { contrastRatio, parseRGB } from "./helpers/contrast";
+import { focusDockTab, openTileAndDock } from "./helpers/dock-context";
 
 const SCREENSHOTS = "e2e-screenshots";
 /** Committed review artifact for the knockout-readability judgement (#103). */
@@ -725,6 +726,73 @@ test.describe("rendered-output evidence seam", () => {
     mkdirSync("docs/research/evidence/124-equipment-icon-consumers", { recursive: true });
     const wornStrip = await dock.locator('[data-armory-worn-strip="true"]');
     await wornStrip.screenshot({ path: EQUIPMENT_CHROME_LEGIBILITY_ARTIFACT });
+
+    await context.close();
+  });
+
+  test("evidence: character-loadout-no-scroll — three Ability Loadout slots fit without Character panel scroll at 800×480", async ({
+    browser,
+  }) => {
+    const { context, dock } = await openTileAndDock(browser);
+    await focusDockTab(dock, "character");
+
+    const loadoutFit = await dock.evaluate(() => {
+      const panel = document.querySelector<HTMLElement>('[data-dock-panel="character"]');
+      if (!panel) {
+        return null;
+      }
+      const loadoutSection = panel.querySelector<HTMLElement>('[data-character-section="loadout"]');
+      const panelBox = panel.getBoundingClientRect();
+      const lastSlot = panel.querySelector<HTMLElement>(".loadout-slot:last-of-type");
+      const lastBox = lastSlot?.getBoundingClientRect();
+      return {
+        panelScrollable: panel.scrollHeight > panel.clientHeight + 1,
+        loadoutVisible: Boolean(loadoutSection && !loadoutSection.hidden),
+        overflowY: getComputedStyle(panel).overflowY,
+        slots: panel.querySelectorAll(".loadout-slot").length,
+        lastSlotFits:
+          lastBox !== undefined &&
+          lastBox.bottom <= panelBox.bottom + 1 &&
+          lastBox.top >= panelBox.top - 1,
+      };
+    });
+
+    expect(loadoutFit, "Character panel metrics").not.toBeNull();
+    expect(loadoutFit!.loadoutVisible).toBe(true);
+    expect(loadoutFit!.slots).toBe(3);
+    expect(loadoutFit!.panelScrollable, "loadout fits without panel scroll").toBe(false);
+    expect(loadoutFit!.lastSlotFits, "third loadout slot visible without scroll").toBe(true);
+    expect(loadoutFit!.overflowY).toMatch(/auto|scroll/);
+
+    await context.close();
+  });
+
+  test("evidence: character-talents-no-scroll — current Talent Tier fits without Character panel scroll at 800×480", async ({
+    browser,
+  }) => {
+    const { context, dock } = await openTileAndDock(browser);
+    await focusDockTab(dock, "character");
+    await dock.click('[data-character-sub-tab="talents"]');
+
+    const talentsFit = await dock.evaluate(() => {
+      const panel = document.querySelector<HTMLElement>('[data-dock-panel="character"]');
+      if (!panel) {
+        return null;
+      }
+      const talentsSection = panel.querySelector<HTMLElement>('[data-character-section="talents"]');
+      return {
+        panelScrollable: panel.scrollHeight > panel.clientHeight + 1,
+        talentsVisible: Boolean(talentsSection && !talentsSection.hidden),
+        tierRows: panel.querySelectorAll(".talent-grid .talent-cell").length,
+        overflowY: getComputedStyle(panel).overflowY,
+      };
+    });
+
+    expect(talentsFit, "Character talents metrics").not.toBeNull();
+    expect(talentsFit!.talentsVisible).toBe(true);
+    expect(talentsFit!.tierRows).toBeGreaterThan(0);
+    expect(talentsFit!.panelScrollable, "talents tier fits without panel scroll").toBe(false);
+    expect(talentsFit!.overflowY).toMatch(/auto|scroll/);
 
     await context.close();
   });

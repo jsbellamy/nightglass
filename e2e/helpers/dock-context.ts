@@ -68,6 +68,20 @@ export async function focusDockTab(dock: Page, tab: DockTabId): Promise<void> {
   await expect(dock.locator(`[data-dock-panel="${tab}"]:not([hidden])`)).toBeVisible();
 }
 
+export type CharacterSubTabId = "loadout" | "talents";
+
+/** Activate a nested Character workspace tab (keyboard-only; safe under pointer blocking). */
+export async function focusCharacterSubTab(dock: Page, subTab: CharacterSubTabId): Promise<void> {
+  await focusDockTab(dock, "character");
+  const tabButton = dock.locator(`[data-character-sub-tab="${subTab}"]`);
+  const selected = await tabButton.getAttribute("aria-selected");
+  if (selected !== "true") {
+    await tabButton.focus();
+    await dock.keyboard.press("Enter");
+  }
+  await expect(dock.locator(`[data-character-section="${subTab}"]:not([hidden])`)).toBeVisible();
+}
+
 export async function assertFocusRingVisible(page: Page, selector: string): Promise<void> {
   const ring = await page.evaluate((sel) => {
     const el = document.querySelector<HTMLElement>(sel);
