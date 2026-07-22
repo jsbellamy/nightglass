@@ -8,6 +8,7 @@ import {
   formatAbilityTimings,
 } from "./ability-format";
 import type { TileCommand } from "./bus";
+import type { EngineLegalityView } from "./engine-legality";
 import {
   appliedLoadout,
   CLASS_LABELS,
@@ -19,7 +20,7 @@ import {
 import { el, mountSurfaceShell, pendingMarker } from "./surface-shell";
 
 export interface LoadoutSurface {
-  render(snapshot: ReadonlySnapshot | null): void;
+  render(snapshot: ReadonlySnapshot | null, legality?: EngineLegalityView): void;
   destroy(): void;
 }
 
@@ -224,7 +225,7 @@ export function mountLoadoutSurface(
   });
 
   return {
-    render: (snapshot) => shell.render(snapshot),
+    render: (snapshot, legality) => shell.render(snapshot, legality),
     destroy: () => shell.destroy(),
   };
 }

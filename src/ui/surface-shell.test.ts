@@ -3,6 +3,7 @@
 import { describe, expect, it } from "vitest";
 import { createEngine } from "../core/engine";
 import { buildContent } from "../data";
+import { EMPTY_ENGINE_LEGALITY, type EngineLegalityView } from "./engine-legality";
 import { mountStageSurface } from "./stage-surface";
 import {
   el,
@@ -197,5 +198,48 @@ describe("Management surface shell mount", () => {
 
     stage.destroy();
     shell.destroy();
+  });
+
+  it("passes EMPTY_ENGINE_LEGALITY to body when render omits the legality argument", () => {
+    const root = document.createElement("div");
+    const engine = createEngine(content, undefined, LOOT_SEED);
+    const snapshot = engine.snapshot();
+    let received: EngineLegalityView | undefined;
+    const surface = mountSurfaceShell(root, "party-surface", {
+      title: "Party",
+      body(_snapshot, legality) {
+        received = legality;
+        return [];
+      },
+    });
+
+    surface.render(snapshot);
+
+    expect(received).toBe(EMPTY_ENGINE_LEGALITY);
+    surface.destroy();
+  });
+
+  it("passes the exact legality view argument through to body", () => {
+    const root = document.createElement("div");
+    const engine = createEngine(content, undefined, LOOT_SEED);
+    const snapshot = engine.snapshot();
+    const legality: EngineLegalityView = {
+      canAllocateTalent: () => true,
+      canDeallocateTalent: () => true,
+      canEquip: () => true,
+    };
+    let received: EngineLegalityView | undefined;
+    const surface = mountSurfaceShell(root, "party-surface", {
+      title: "Party",
+      body(_snapshot, legalityArg) {
+        received = legalityArg;
+        return [];
+      },
+    });
+
+    surface.render(snapshot, legality);
+
+    expect(received).toBe(legality);
+    surface.destroy();
   });
 });

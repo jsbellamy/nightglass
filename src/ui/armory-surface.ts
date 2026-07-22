@@ -32,10 +32,7 @@ import {
 import { el, bindScrollOverflowAffordance, mountSurfaceShell } from "./surface-shell";
 
 export interface ArmorySurface {
-  render(
-    snapshot: ReadonlySnapshot | null,
-    legality: EngineLegalityView,
-  ): void;
+  render(snapshot: ReadonlySnapshot | null, legality?: EngineLegalityView): void;
   destroy(): void;
 }
 
@@ -119,7 +116,7 @@ export function mountArmorySurface(
   let activeDrag: ArmoryDragSource | null = null;
   let lastSnapshot: ReadonlySnapshot | null = null;
   let optimisticallySeenDropIds = new Set<number>();
-  let currentLegality: EngineLegalityView = EMPTY_ENGINE_LEGALITY;
+  let lastLegality: EngineLegalityView = EMPTY_ENGINE_LEGALITY;
   let unbindGridOverflow: (() => void) | null = null;
   let comparePopoverHost: HTMLElement | null = null;
   let comparePopoverAnchor: HTMLElement | null = null;
@@ -198,7 +195,7 @@ export function mountArmorySurface(
       return;
     }
     const slot = equipmentBaseForDrop(drop, content).slot;
-    if (!isCompatibleWithSlot(drop, classId, slot, currentLegality.canEquip)) {
+    if (!isCompatibleWithSlot(drop, classId, slot, lastLegality.canEquip)) {
       return;
     }
     host
@@ -317,7 +314,7 @@ export function mountArmorySurface(
       if (!selected || selected !== classId) {
         return;
       }
-      if (!isCompatibleWithSlot(dragged, classId, slot, currentLegality.canEquip)) {
+      if (!isCompatibleWithSlot(dragged, classId, slot, lastLegality.canEquip)) {
         return;
       }
       event.preventDefault();
@@ -345,7 +342,7 @@ export function mountArmorySurface(
         endArmoryDrag(armoryDragHost() ?? root);
         return;
       }
-      if (!isCompatibleWithSlot(dragged, classId, slot, currentLegality.canEquip)) {
+      if (!isCompatibleWithSlot(dragged, classId, slot, lastLegality.canEquip)) {
         endArmoryDrag(armoryDragHost() ?? root);
         return;
       }
@@ -765,7 +762,7 @@ export function mountArmorySurface(
     if (browseCompatibility) {
       const { classId, slot } = browseCompatibility;
       drops = drops.filter((drop) =>
-        isCompatibleWithSlot(drop, classId, slot, currentLegality.canEquip),
+        isCompatibleWithSlot(drop, classId, slot, lastLegality.canEquip),
       );
     }
     return sortArmoryDrops(drops, sort, content);
@@ -1032,14 +1029,14 @@ export function mountArmorySurface(
 
   function render(
     snapshot: ReadonlySnapshot | null,
-    legality: EngineLegalityView = currentLegality,
+    legality: EngineLegalityView = lastLegality,
   ): void {
-    currentLegality = legality;
+    lastLegality = legality;
     if (snapshot) {
       syncOptimisticSeen(snapshot.progression.armory);
     }
     lastSnapshot = snapshot;
-    shell.render(snapshot);
+    shell.render(snapshot, legality);
     comparePopoverHost = root.querySelector<HTMLElement>(".armory-body--compare-host");
     if (comparePopoverDropId !== null && comparePopoverHost && snapshot) {
       const drop = dropById(snapshot.progression.armory, comparePopoverDropId);

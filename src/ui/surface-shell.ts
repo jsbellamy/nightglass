@@ -1,4 +1,5 @@
 import type { ReadonlySnapshot } from "../core/snapshot";
+import { EMPTY_ENGINE_LEGALITY, type EngineLegalityView } from "./engine-legality";
 
 type Child = Node | string | null | undefined | false;
 
@@ -69,11 +70,11 @@ export interface SurfaceShellOptions {
    */
   showTitle?: boolean;
   /** Body builder. Not called when the Snapshot is null. */
-  body(snapshot: ReadonlySnapshot): Child[];
+  body(snapshot: ReadonlySnapshot, legality: EngineLegalityView): Child[];
 }
 
 export interface MountedSurface {
-  render(snapshot: ReadonlySnapshot | null): void;
+  render(snapshot: ReadonlySnapshot | null, legality?: EngineLegalityView): void;
   destroy(): void;
 }
 
@@ -88,7 +89,10 @@ export function mountSurfaceShell(
 ): MountedSurface {
   root.classList.add(className);
 
-  function render(snapshot: ReadonlySnapshot | null): void {
+  function render(
+    snapshot: ReadonlySnapshot | null,
+    legality: EngineLegalityView = EMPTY_ENGINE_LEGALITY,
+  ): void {
     root.replaceChildren();
     if (!snapshot) {
       const empty = document.createElement("p");
@@ -105,7 +109,7 @@ export function mountSurfaceShell(
       root.append(title);
     }
 
-    for (const child of options.body(snapshot)) {
+    for (const child of options.body(snapshot, legality)) {
       appendChild(root, child);
     }
   }

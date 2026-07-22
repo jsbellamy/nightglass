@@ -28,8 +28,6 @@ export interface DockSurfaceMountOptions {
 export interface DockSurfaceEntry {
   id: DockTabId;
   label: string;
-  /** True when this surface's render takes the legality view as a second argument. */
-  needsLegality?: boolean;
   mount(root: HTMLElement, options: DockSurfaceMountOptions): MountedSurface;
 }
 
@@ -37,14 +35,12 @@ export const DOCK_SURFACES: DockSurfaceEntry[] = [
   {
     id: "character",
     label: "Character",
-    needsLegality: true,
-    mount: mountCharacterSurface as DockSurfaceEntry["mount"],
+    mount: mountCharacterSurface,
   },
   {
     id: "armory",
     label: "Armory",
-    needsLegality: true,
-    mount: mountArmorySurface as DockSurfaceEntry["mount"],
+    mount: mountArmorySurface,
   },
   { id: "stage", label: "Stage", mount: mountStageSurface },
 ];
@@ -226,17 +222,7 @@ export function mountManagementDock(
   }
 
   function renderSurface(id: DockTabId): void {
-    const mounted = mountedSurfaces.get(id)!;
-    const entry = DOCK_SURFACES.find((surfaceEntry) => surfaceEntry.id === id);
-    if (entry?.needsLegality) {
-      (
-        mounted as {
-          render(s: typeof heldSnapshot, l: typeof heldLegality): void;
-        }
-      ).render(heldSnapshot, heldLegality);
-    } else {
-      mounted.render(heldSnapshot);
-    }
+    mountedSurfaces.get(id)!.render(heldSnapshot, heldLegality);
   }
 
   function remountPickerAndSurface(): void {

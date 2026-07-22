@@ -119,6 +119,70 @@ describe("Management Dock shell", () => {
     dock.destroy();
   });
 
+  it("delivers the exact legality view to each active surface body across the three tabs", () => {
+    const root = document.createElement("main");
+    const dock = mountDock(root);
+    const boot = createEngine(fixtureContent, undefined, 42);
+    boot.advanceBy(1);
+    const saved = boot.snapshot();
+    saved.progression.characterXp.knight = 850;
+    saved.progression.armory = [
+      {
+        dropId: 1,
+        baseId: "fixture-blade",
+        itemLevel: 1,
+        rarity: "common",
+        affixes: [],
+        awardedAtMs: 100,
+        seen: true,
+        locked: false,
+        assignedTo: null,
+      },
+    ];
+    const engine = createEngine(fixtureContent, saved, 42);
+    const snapshot = engine.snapshot();
+
+    const seen: EngineLegalityView[] = [];
+    const legality: EngineLegalityView = {
+      canAllocateTalent: (...args) => {
+        seen.push(legality);
+        return legalityViewFromEngine(engine).canAllocateTalent(...args);
+      },
+      canDeallocateTalent: (...args) => {
+        seen.push(legality);
+        return legalityViewFromEngine(engine).canDeallocateTalent(...args);
+      },
+      canEquip: (...args) => {
+        seen.push(legality);
+        return legalityViewFromEngine(engine).canEquip(...args);
+      },
+    };
+
+    dock.render(snapshot, legality);
+    root
+      .querySelector<HTMLElement>('.talent-cell[data-talent-id="k-fortitude"]')
+      ?.click();
+    expect(seen.length).toBeGreaterThan(0);
+    expect(seen.every((view) => view === legality)).toBe(true);
+
+    seen.length = 0;
+    root.querySelector<HTMLButtonElement>('[data-dock-tab="armory"]')?.click();
+    root.querySelector<HTMLButtonElement>('[data-worn-slot="weapon"]')?.click();
+    expect(seen.length).toBeGreaterThan(0);
+    expect(seen.every((view) => view === legality)).toBe(true);
+
+    seen.length = 0;
+    root.querySelector<HTMLButtonElement>('[data-dock-tab="stage"]')?.click();
+    dock.render(snapshot, legality);
+    expect(root.querySelector(".stage-list")).not.toBeNull();
+    expect(root.querySelector<HTMLElement>('[data-dock-panel="stage"]')?.hidden).toBe(false);
+    // Stage body ignores legality; the shared dock path still passes it through
+    // MountedSurface.render — covered by the shell passthrough test and the
+    // unconditional renderSurface call.
+
+    dock.destroy();
+  });
+
   it("closes when the active tab is pressed again or the close button is used", () => {
     const root = document.createElement("main");
     const onClose = vi.fn();
