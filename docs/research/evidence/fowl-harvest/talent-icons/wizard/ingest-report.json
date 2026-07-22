@@ -1,0 +1,238 @@
+{
+  "leyline-attunement": {
+    "candidate": "leyline-attunement-r1",
+    "raw_sha256": "839344ba32b6d7a13051b0fdd77fbf41473a5b86801df355d06056985a4bb694",
+    "recovered": {
+      "bbox": [
+        177,
+        69,
+        846,
+        932
+      ],
+      "pitch_x": {
+        "pitch": 39.349999999999696,
+        "score": 0.29922767137279743
+      },
+      "pitch_y": {
+        "pitch": 40.09999999999965,
+        "score": 0.19961444358882727
+      },
+      "grid": [
+        17,
+        22
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 166,
+      "far_cells": 8,
+      "far_fraction": 0.0482,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "contour-plum-deep": 58,
+        "mint": 13,
+        "sage": 1,
+        "mint-light": 37,
+        "mint-shadow": 10,
+        "cream": 28,
+        "mint-pale": 7,
+        "twilight-slate": 1,
+        "berry": 8,
+        "berry-bright": 2,
+        "cream-gold": 1
+      }
+    },
+    "palette_subset": [
+      "contour-plum-deepest",
+      "contour-plum-deep",
+      "mint-shadow",
+      "mint",
+      "mint-light",
+      "mint-pale",
+      "cream",
+      "cream-gold",
+      "berry",
+      "berry-bright",
+      "sage",
+      "twilight-slate"
+    ],
+    "source_grid": "src/assets/icon-sources/leyline-attunement/source.grid",
+    "preview": "docs/research/evidence/fowl-harvest/talent-icons/wizard/previews/leyline-attunement@8x.png"
+  },
+  "glassweave": {
+    "candidate": "glassweave-r4",
+    "raw_sha256": "1ea0085bc467ee90d81e2a504ca8b32fc5f9e868cd44752ceac84157f28b4f68",
+    "recovered": {
+      "bbox": [
+        159,
+        87,
+        861,
+        916
+      ],
+      "pitch_x": {
+        "pitch": 37.80555555555535,
+        "score": 0.272716161043548
+      },
+      "pitch_y": {
+        "pitch": 38.455555555555314,
+        "score": 0.22490957440620432
+      },
+      "grid": [
+        19,
+        22
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 277,
+      "far_cells": 13,
+      "far_fraction": 0.0469,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "cream": 47,
+        "contour-plum-deep": 50,
+        "berry": 32,
+        "mint": 18,
+        "cream-gold": 6,
+        "mint-shadow": 49,
+        "twilight-slate": 14,
+        "mint-light": 32,
+        "berry-shadow": 8,
+        "sage": 6,
+        "berry-bright": 4,
+        "berry-mid": 10,
+        "mint-pale": 1
+      }
+    },
+    "palette_subset": [
+      "contour-plum-deepest",
+      "contour-plum-deep",
+      "mint-shadow",
+      "mint",
+      "mint-light",
+      "mint-pale",
+      "cream",
+      "cream-gold",
+      "berry-mid",
+      "berry",
+      "berry-bright",
+      "berry-shadow",
+      "sage",
+      "twilight-slate"
+    ],
+    "source_grid": "src/assets/icon-sources/glassweave/source.grid",
+    "preview": "docs/research/evidence/fowl-harvest/talent-icons/wizard/previews/glassweave@8x.png"
+  },
+  "wildfire-sigil": {
+    "candidate": "wildfire-sigil-r4",
+    "raw_sha256": "5be73c5d5b11479a56d7836e367b28592e652553a6864730766547830e616c18",
+    "recovered": {
+      "bbox": [
+        65,
+        66,
+        958,
+        891
+      ],
+      "pitch_x": {
+        "pitch": 40.48333333333295,
+        "score": 0.27821630034954953
+      },
+      "pitch_y": {
+        "pitch": 41.23333333333291,
+        "score": 0.22088727076398942
+      },
+      "grid": [
+        23,
+        20
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 238,
+      "far_cells": 7,
+      "far_fraction": 0.0294,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "sage": 6,
+        "contour-plum-deep": 54,
+        "cream": 48,
+        "berry": 49,
+        "mint-light": 46,
+        "mint-pale": 13,
+        "cream-gold": 4,
+        "berry-mid": 10,
+        "berry-shadow": 8
+      }
+    },
+    "palette_subset": [
+      "contour-plum-deepest",
+      "contour-plum-deep",
+      "mint-light",
+      "mint-pale",
+      "cream",
+      "cream-gold",
+      "berry-mid",
+      "berry",
+      "berry-shadow",
+      "sage"
+    ],
+    "source_grid": "src/assets/icon-sources/wildfire-sigil/source.grid",
+    "preview": "docs/research/evidence/fowl-harvest/talent-icons/wizard/previews/wildfire-sigil@8x.png"
+  },
+  "absolute-zero": {
+    "candidate": "absolute-zero-r1",
+    "raw_sha256": "036d246c541fd13fffb3ea3af9a07e7fc6a9b24b53d33fbabfb407fef3e4fcb6",
+    "recovered": {
+      "bbox": [
+        148,
+        71,
+        876,
+        942
+      ],
+      "pitch_x": {
+        "pitch": 30.172222222222306,
+        "score": 0.08754184207700715
+      },
+      "pitch_y": {
+        "pitch": 31.27222222222232,
+        "score": 0.18751987586612145
+      },
+      "grid": [
+        25,
+        28
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 338,
+      "far_cells": 11,
+      "far_fraction": 0.0325,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "contour-plum-deep": 80,
+        "cream": 93,
+        "mint": 52,
+        "berry": 46,
+        "mint-light": 23,
+        "cream-gold": 8,
+        "mint-pale": 6,
+        "mint-shadow": 18,
+        "sage": 7,
+        "berry-mid": 3,
+        "twilight-slate": 2
+      }
+    },
+    "palette_subset": [
+      "contour-plum-deepest",
+      "contour-plum-deep",
+      "mint-shadow",
+      "mint",
+      "mint-light",
+      "mint-pale",
+      "cream",
+      "cream-gold",
+      "berry-mid",
+      "berry",
+      "sage",
+      "twilight-slate"
+    ],
+    "source_grid": "src/assets/icon-sources/absolute-zero/source.grid",
+    "preview": "docs/research/evidence/fowl-harvest/talent-icons/wizard/previews/absolute-zero@8x.png"
+  }
+}

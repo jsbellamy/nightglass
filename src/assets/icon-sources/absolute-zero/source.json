@@ -1,0 +1,61 @@
+{
+  "provider": "Cursor GenerateImage",
+  "prompt": "TRUE chunky pixel art Talent icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block with no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered symbolic Management Dock skill glyph for Absolute Zero: a sharp six-point frost seal with a locked central dot, reading area Frost Damage plus Stun. Not a wearable Equipment item, not a scene, not a full Character, and not a UI frame. The subject long side spans about 26\u201330 logical pixels, with at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Selective one-logical-pixel dark-plum outline. Use only mint, berry, cream, and plum Moonberry colors, 8\u201312 flat colors maximum; no brown, tan, cyan, pure white, or pure black. Structural members are at least three logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "raw_sha256": "036d246c541fd13fffb3ea3af9a07e7fc6a9b24b53d33fbabfb407fef3e4fcb6",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        148,
+        71,
+        876,
+        942
+      ],
+      "pitch_x": {
+        "pitch": 30.172222222222306,
+        "score": 0.08754184207700715
+      },
+      "pitch_y": {
+        "pitch": 31.27222222222232,
+        "score": 0.18751987586612145
+      },
+      "grid": [
+        25,
+        28
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 338,
+      "far_cells": 11,
+      "far_fraction": 0.0325,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "contour-plum-deep": 80,
+        "cream": 93,
+        "mint": 52,
+        "berry": 46,
+        "mint-light": 23,
+        "cream-gold": 8,
+        "mint-pale": 6,
+        "mint-shadow": 18,
+        "sage": 7,
+        "berry-mid": 3,
+        "twilight-slate": 2
+      }
+    }
+  },
+  "palette_subset": [
+    "contour-plum-deepest",
+    "contour-plum-deep",
+    "mint-shadow",
+    "mint",
+    "mint-light",
+    "mint-pale",
+    "cream",
+    "cream-gold",
+    "berry-mid",
+    "berry",
+    "sage",
+    "twilight-slate"
+  ],
+  "evidence_raw": "docs/research/evidence/fowl-harvest/talent-icons/wizard/accepted-raws/absolute-zero.png"
+}

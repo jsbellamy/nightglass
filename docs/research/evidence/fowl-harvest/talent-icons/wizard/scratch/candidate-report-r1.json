@@ -1,0 +1,108 @@
+{
+  "leyline-attunement-r1": {
+    "candidate": "leyline-attunement-r1",
+    "sha256": "839344ba32b6d7a13051b0fdd77fbf41473a5b86801df355d06056985a4bb694",
+    "path": "docs/research/evidence/fowl-harvest/talent-icons/wizard/scratch/leyline-attunement-r1.png",
+    "recovered": {
+      "bbox": [
+        177,
+        69,
+        846,
+        932
+      ],
+      "pitch_x": {
+        "pitch": 39.349999999999696,
+        "score": 0.29922767137279743
+      },
+      "pitch_y": {
+        "pitch": 40.09999999999965,
+        "score": 0.19961444358882727
+      },
+      "grid": [
+        17,
+        22
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 166,
+      "far_cells": 8,
+      "far_fraction": 0.0482,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "contour-plum-deep": 58,
+        "mint": 13,
+        "sage": 1,
+        "mint-light": 37,
+        "mint-shadow": 10,
+        "cream": 28,
+        "mint-pale": 7,
+        "twilight-slate": 1,
+        "berry": 8,
+        "berry-bright": 2,
+        "cream-gold": 1
+      }
+    },
+    "primary_result": "advance",
+    "measurement": "17x22; far 4.8%; pitch x=0.299 y=0.200"
+  },
+  "glassweave-r1": {
+    "candidate": "glassweave-r1",
+    "sha256": "5234f421117ee40c5330845a2ea94566e2ef4fa3d8e838f23f5f78166dbd6b26",
+    "path": "docs/research/evidence/fowl-harvest/talent-icons/wizard/scratch/glassweave-r1.png",
+    "error": "glassweave-r1.png: underfill recovered long axis 19 (need \u226520)",
+    "primary_result": "underfill"
+  },
+  "wildfire-sigil-r1": {
+    "candidate": "wildfire-sigil-r1",
+    "sha256": "722fa5a507f02512011f52094eded6963218d466c6980d7c398567bba35fb19a",
+    "path": "docs/research/evidence/fowl-harvest/talent-icons/wizard/scratch/wildfire-sigil-r1.png",
+    "error": "wildfire-sigil-r1.png: underfill recovered long axis 19 (need \u226520)",
+    "primary_result": "underfill"
+  },
+  "absolute-zero-r1": {
+    "candidate": "absolute-zero-r1",
+    "sha256": "036d246c541fd13fffb3ea3af9a07e7fc6a9b24b53d33fbabfb407fef3e4fcb6",
+    "path": "docs/research/evidence/fowl-harvest/talent-icons/wizard/scratch/absolute-zero-r1.png",
+    "recovered": {
+      "bbox": [
+        148,
+        71,
+        876,
+        942
+      ],
+      "pitch_x": {
+        "pitch": 30.172222222222306,
+        "score": 0.08754184207700715
+      },
+      "pitch_y": {
+        "pitch": 31.27222222222232,
+        "score": 0.18751987586612145
+      },
+      "grid": [
+        25,
+        28
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 338,
+      "far_cells": 11,
+      "far_fraction": 0.0325,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "contour-plum-deep": 80,
+        "cream": 93,
+        "mint": 52,
+        "berry": 46,
+        "mint-light": 23,
+        "cream-gold": 8,
+        "mint-pale": 6,
+        "mint-shadow": 18,
+        "sage": 7,
+        "berry-mid": 3,
+        "twilight-slate": 2
+      }
+    },
+    "primary_result": "advance",
+    "measurement": "25x28; far 3.2%; pitch x=0.088 y=0.188"
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "leyline-attunement-r2": {
+    "candidate": "leyline-attunement-r2",
+    "sha256": "02cdf23b53a2dd05275a0e6520a5c79398b941a0bf6dfcfb9e81d1734802a294",
+    "recovered": {
+      "bbox": [
+        99,
+        46,
+        924,
+        1011
+      ],
+      "pitch_x": {
+        "pitch": 48.48333333333247,
+        "score": 0.2995416494624916
+      },
+      "pitch_y": {
+        "pitch": 49.43333333333241,
+        "score": 0.23888077599947913
+      },
+      "grid": [
+        17,
+        20
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 164,
+      "far_cells": 9,
+      "far_fraction": 0.0549,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "mint-light": 40,
+        "contour-plum-deep": 55,
+        "cream": 24,
+        "mint-shadow": 15,
+        "sage": 3,
+        "mint": 8,
+        "twilight-slate": 3,
+        "cream-gold": 2,
+        "mint-pale": 2,
+        "berry": 9,
+        "berry-shadow": 1,
+        "berry-bright": 2
+      }
+    },
+    "primary_result": "advance",
+    "measurement": "17x20; far 5.5%; pitch x=0.300 y=0.239"
+  },
+  "glassweave-r2": {
+    "candidate": "glassweave-r2",
+    "sha256": "9bc82687417c4c8d6e85f75cac781f9a3f26e541bb3f197925d5b580d56e904f",
+    "error": "glassweave-r2.png: underfill recovered long axis 19 (need \u226520)",
+    "primary_result": "underfill"
+  },
+  "wildfire-sigil-r2": {
+    "candidate": "wildfire-sigil-r2",
+    "sha256": "93b5a29af870f15f98500beb43d2d3c7d207c4da5686a5755d7a2b2846e5ac75",
+    "error": "wildfire-sigil-r2.png: underfill recovered long axis 18 (need \u226520)",
+    "primary_result": "underfill"
+  }
+}
