@@ -789,12 +789,125 @@ html.dock-window body {
   color: var(--dock-text-muted, #d8d0bf);
 }
 
+.dock-body[data-dock-nav="character"] .dock-surface-root {
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
 .character-surface {
   display: flex;
   flex-direction: column;
   gap: 6px;
   min-height: 0;
   flex: 1;
+  overflow: hidden;
+}
+
+.character-build-board > [data-character-section] {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.character-build-board [data-character-section="loadout"] .loadout-surface,
+.character-build-board [data-character-section="talents"] .talents-surface {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.character-build-board [data-character-section="talents"] .talents-character {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.character-build-board [data-character-section="talents"] .surface-section-title,
+.character-build-board [data-character-section="talents"] .talent-points {
+  display: none;
+}
+
+.character-build-board [data-character-section="loadout"] .loadout-body {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.character-workspace-header {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.character-workspace-meta {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+  min-width: 0;
+  font-size: 11px;
+  line-height: 1.25;
+  color: var(--dock-text, #fff9e9);
+}
+
+.character-workspace-name {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.character-workspace-level,
+.character-workspace-position,
+.character-workspace-talent-points {
+  color: var(--dock-text-muted, #d8d0bf);
+}
+
+.character-workspace-header-chrome {
+  flex-shrink: 0;
+}
+
+.character-view-panel {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.character-view-panel[hidden] {
+  display: none !important;
+}
+
+.character-build-board {
+  display: flex;
+  flex: 1;
+  gap: 6px;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.character-build-board [data-character-section="loadout"] {
+  flex: 0 0 230px;
+  max-width: 230px;
+  overflow: hidden;
+}
+
+.character-build-board [data-character-section="talents"] {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .character-subtabs {

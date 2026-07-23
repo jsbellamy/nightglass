@@ -133,13 +133,18 @@ test.describe("Character progression evidence scenarios", () => {
         return null;
       }
       const talentsSection = panel.querySelector<HTMLElement>('[data-character-section="talents"]');
+      const treeScroll = panel.querySelector<HTMLElement>(".talent-tree-scroll");
       return {
         panelScrollable: panel.scrollHeight > panel.clientHeight + 1,
+        treeScrollable: Boolean(
+          treeScroll && treeScroll.scrollHeight > treeScroll.clientHeight + 1,
+        ),
         talentsVisible: Boolean(talentsSection && !talentsSection.hidden),
         tierSections: panel.querySelectorAll("[data-talent-tier]").length,
         tierRows: panel.querySelectorAll(".talent-tree-scroll .talent-cell").length,
         stickyDetail: panel.querySelector('[data-talent-detail="true"], aside.talent-detail') !== null,
         overflowY: getComputedStyle(panel).overflowY,
+        treeOverflowY: treeScroll ? getComputedStyle(treeScroll).overflowY : "",
       };
     });
 
@@ -147,9 +152,11 @@ test.describe("Character progression evidence scenarios", () => {
     expect(talentsFit!.talentsVisible).toBe(true);
     expect(talentsFit!.tierSections).toBe(2);
     expect(talentsFit!.tierRows).toBeGreaterThanOrEqual(8);
-    expect(talentsFit!.panelScrollable, "two-tier tree scrolls inside the panel").toBe(true);
+    expect(talentsFit!.panelScrollable, "Character panel does not outer-scroll").toBe(false);
+    expect(talentsFit!.treeScrollable, "two-tier tree scrolls inside the column").toBe(true);
     expect(talentsFit!.stickyDetail, "sticky Talent detail retired").toBe(false);
     expect(talentsFit!.overflowY).toMatch(/auto|scroll/);
+    expect(talentsFit!.treeOverflowY).toMatch(/auto|scroll/);
 
     const allocate = dock.locator(
       '[data-class-id="knight"] [data-talent-id="fortitude"][data-talent-action="allocate"]',

@@ -101,6 +101,7 @@ const DOCK_SCROLL_PRESERVE_SELECTORS = [
   ".dock-panel:not([hidden])",
   ".armory-grid",
   ".armory-detail",
+  ".talent-tree-scroll",
 ] as const;
 
 type ScrollPositionMap = Record<string, { top: number; left: number }>;

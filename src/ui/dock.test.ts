@@ -95,6 +95,31 @@ describe("Management Dock shell", () => {
     dock.destroy();
   });
 
+  it("updates the Character workspace header when rail selection changes", () => {
+    const root = document.createElement("main");
+    const dock = mountDock(root);
+    const boot = createEngine(fixtureContent, undefined, 42);
+    boot.advanceBy(1);
+    const saved = boot.snapshot();
+    saved.progression.characterXp.knight = 850;
+    const engine = createEngine(fixtureContent, saved, 42);
+
+    dock.render(engine.snapshot(), EMPTY_ENGINE_LEGALITY);
+    root.querySelector<HTMLButtonElement>('[data-dock-tab="character"]')?.click();
+
+    expect(root.querySelector("[data-character-header-name='true']")?.textContent).toBe("Knight");
+
+    root.querySelector<HTMLElement>('[data-character-chip="wizard"]')?.click();
+    dock.render(engine.snapshot(), EMPTY_ENGINE_LEGALITY);
+
+    expect(root.querySelector("[data-character-header-name='true']")?.textContent).toBe("Wizard");
+    expect(root.querySelector("[data-character-header-position='true']")?.textContent).toBe(
+      "Middle",
+    );
+
+    dock.destroy();
+  });
+
   it("passes legality into Character so Talent allocate buttons reflect the view", () => {
     const root = document.createElement("main");
     const dock = mountDock(root);
@@ -410,7 +435,7 @@ describe("Management Dock active-surface rendering", () => {
     dock.render(engine.snapshot());
 
     expect(root.querySelector(".armory-surface")?.childElementCount).toBeGreaterThan(0);
-    expect(root.querySelector(".character-surface")?.childElementCount).toBe(4);
+    expect(root.querySelector(".character-surface")?.childElementCount).toBe(3);
     expect(root.querySelector(".party-surface")).toBeNull();
     expect(root.querySelector(".character-picker [data-character-chip]")).not.toBeNull();
     expect(root.querySelector(".loadout-surface")?.childElementCount).toBe(0);

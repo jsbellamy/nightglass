@@ -151,6 +151,13 @@ test.describe("Management Dock evidence scenarios", () => {
         }
         const shellBox = shell.getBoundingClientRect();
         const tolerance = 2;
+        const sectionRoot =
+          activeSubTab === "loadout"
+            ? panel.querySelector<HTMLElement>('[data-character-section="loadout"]')
+            : activeSubTab === "stats"
+              ? panel.querySelector<HTMLElement>('[data-character-section="stats"]')
+              : panel.querySelector<HTMLElement>('[data-character-section="talents"]');
+        const clipRoot = sectionRoot ?? panel;
         const candidates =
           activeSubTab === "talents"
             ? [
@@ -158,7 +165,7 @@ test.describe("Management Dock evidence scenarios", () => {
                   "[data-character-sub-tab], [data-talent-points]",
                 ),
               ]
-            : [...panel.querySelectorAll<HTMLElement>("button, [tabindex='0']")];
+            : [...clipRoot.querySelectorAll<HTMLElement>("button, [tabindex='0']")];
         if (activeSubTab === "talents") {
           const scroll = panel.querySelector<HTMLElement>(".talent-tree-scroll");
           if (scroll) {
