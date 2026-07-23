@@ -998,6 +998,9 @@ function resolveKnockouts(
     if (!combatant.knockedOut && combatant.health <= 0) {
       combatant.knockedOut = true;
       combatant.health = 0;
+      for (const status of combatant.statuses) {
+        delete status.nextTickAtMs;
+      }
       if (combatant.action && !combatant.action.impactResolved) {
         combatant.action = null;
       }
@@ -1304,6 +1307,7 @@ function nextBoundaryMs(state: EngineState): number | null {
     for (const status of combatant.statuses) {
       boundaries.push(status.expiresAtMs);
       if (
+        !combatant.knockedOut &&
         status.nextTickAtMs !== undefined &&
         status.nextTickAtMs < status.expiresAtMs
       ) {

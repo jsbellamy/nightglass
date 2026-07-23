@@ -4,6 +4,7 @@ import type { EngineEvent } from "./events";
 import { partyEntityId } from "./entity-id";
 import type { DropInstance, Snapshot } from "./snapshot";
 import { statuses as shippedStatuses } from "../data/statuses";
+import { wizardTier2Abilities } from "../data/classes/wizard";
 import { effectiveTalentState } from "./pending-edits";
 import { characterStats } from "./stats";
 import { fixtureContent, fixtureContentWithAuthoredStages, fourTierFixtureContent } from "./testing/fixture-content";
@@ -3171,6 +3172,73 @@ describe("ticking Status Effects", () => {
       .snapshot()
       .attempt!.combatants.find((entry) => entry.entityId === opponent.entityId);
     expect(downed?.knockedOut).toBe(true);
+    expect(downed?.statuses.every((status) => status.nextTickAtMs === undefined)).toBe(true);
+    const catchUpStart = Date.now();
+    engine.advanceOffline(60_000);
+    expect(Date.now() - catchUpStart).toBeLessThan(5_000);
+    expect(engine.snapshot().simNowMs).toBeGreaterThan(startMs + 1_000);
+    const stillDowned = engine
+      .snapshot()
+      .attempt!.combatants.find((entry) => entry.entityId === opponent.entityId);
+    const postCatchUpTicks = engine.advanceBy(4_000).filter(
+      (event): event is Extract<EngineEvent, { type: "impact" }> =>
+        event.type === "impact" && event.abilityId === "status:scorched",
+    );
+    expect(postCatchUpTicks).toHaveLength(0);
+    expect(stillDowned?.health ?? 0).toBe(0);
+  });
+
+  it("does not deadlock when Wildfire Sigil kills while applying Scorched", () => {
+    const wildfireSigil = wizardTier2Abilities.find((ability) => ability.id === "wildfire-sigil");
+    if (!wildfireSigil) {
+      throw new Error("missing wildfire-sigil");
+    }
+    const wildfireContent: Content = {
+      ...scorchedTickContent,
+      abilities: [...scorchedTickContent.abilities, wildfireSigil],
+    };
+    const startMs = 0;
+    const snap = scenario().build();
+    snap.simNowMs = startMs;
+    const wizardMiddle = partyEntityId("wizard", 1);
+    const opponent = snap.attempt!.combatants.find((entry) => entry.side === "opponent");
+    if (!opponent) {
+      throw new Error("missing opponent");
+    }
+    stunCombatants(snap, startMs, [wizardMiddle]);
+    opponent.health = 1;
+    opponent.maxHealth = 100;
+    const wizard = snap.attempt!.combatants.find((entry) => entry.entityId === wizardMiddle);
+    wizard!.action = {
+      abilityId: "wildfire-sigil",
+      startedAtMs: startMs,
+      impactAtMs: startMs,
+      endsAtMs: startMs + wildfireSigil.windUpMs + wildfireSigil.recoveryMs,
+      targetIds: [opponent.entityId],
+      impactResolved: false,
+    };
+
+    const engine = createEngine(wildfireContent, snap, LOOT_SEED, fixtureNow);
+    const impactEvents = engine.advanceBy(1);
+    expect(
+      impactEvents.some((event) => event.type === "knockout" && event.entityId === opponent.entityId),
+    ).toBe(true);
+    const downed = engine
+      .snapshot()
+      .attempt!.combatants.find((entry) => entry.entityId === opponent.entityId);
+    expect(downed?.knockedOut).toBe(true);
+    expect(downed?.statuses.every((status) => status.nextTickAtMs === undefined)).toBe(true);
+    const scorched = downed?.statuses.find((status) => status.statusId === "scorched");
+    expect(scorched?.expiresAtMs).toBeGreaterThan(startMs);
+
+    const catchUpStart = Date.now();
+    const catchUpEvents = engine.advanceOffline(60_000);
+    expect(Date.now() - catchUpStart).toBeLessThan(5_000);
+    expect(
+      catchUpEvents.some((event) => event.type === "wave-cleared" && event.encounter === 1) ||
+        impactEvents.some((event) => event.type === "wave-cleared" && event.encounter === 1),
+    ).toBe(true);
+    expect(engine.snapshot().simNowMs).toBeGreaterThan(startMs + 1_000);
   });
 
   it("clears the encounter wave when a tick knockouts the last opponent", () => {
@@ -3204,6 +3272,12 @@ describe("ticking Status Effects", () => {
       true,
     );
     expect(engine.snapshot().attempt?.phase).toBe("wave-transition");
+    const downed = engine
+      .snapshot()
+      .attempt!.combatants.find((entry) => entry.entityId === opponent.entityId);
+    expect(downed?.statuses.every((status) => status.nextTickAtMs === undefined)).toBe(true);
+    engine.advanceOffline(60_000);
+    expect(engine.snapshot().simNowMs).toBeGreaterThan(startMs + 5_000);
   });
 
   it("is chunk-neutral for ticking statuses", () => {
