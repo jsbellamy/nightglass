@@ -67,6 +67,8 @@ export async function navigateDockShell(dock: Page): Promise<void> {
 export type AttachDockPageOptions = {
   /** When set, waits for tile bus handshake before populated-dock poll. */
   tile?: Page;
+  /** Invoked immediately after the dock page is created, before navigation. */
+  onDockPage?: (dock: Page) => void;
 };
 
 /** Browser-degraded Management Dock: second page on the same origin + bus handshake. */
@@ -75,6 +77,7 @@ export async function attachDockPage(
   options: AttachDockPageOptions = {},
 ): Promise<Page> {
   const dock = await prepareDockPage(context);
+  options.onDockPage?.(dock);
   await navigateDockShell(dock);
   if (options.tile) {
     await waitForDockOpenedSnapshotHandshake(options.tile);

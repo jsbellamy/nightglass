@@ -131,9 +131,10 @@ async function openDockPeer(
   pageErrors: string[],
   options: { tile?: Page } = {},
 ): Promise<Page> {
-  const dock = await attachDockPage(context, options);
-  trackPageErrors(dock, pageErrors);
-  return dock;
+  return attachDockPage(context, {
+    ...options,
+    onDockPage: (dock) => trackPageErrors(dock, pageErrors),
+  });
 }
 
 function sessionHandle(
