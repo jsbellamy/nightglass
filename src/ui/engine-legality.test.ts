@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { EngineEvent } from "../core/events";
 import { cloneSnapshot, type DropInstance } from "../core/snapshot";
-import { talentTierDefs } from "../core/talents";
+import { talentTierDefs } from "./snapshot-view";
 import type { ClassId, EquipmentSlotId } from "../core/types";
 import { buildContent } from "../data";
 import {

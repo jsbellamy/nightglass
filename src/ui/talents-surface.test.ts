@@ -671,6 +671,61 @@ describe("Talents surface", () => {
 
     surface.destroy();
   });
+
+  it("renders two stacked Talent Tiers for every shipped Class", () => {
+    const fullContent = buildContent();
+    const boot = createEngine(fullContent, undefined, LOOT_SEED);
+    boot.advanceBy(1);
+    const engine = createEngine(fullContent, boot.snapshot(), LOOT_SEED);
+
+    for (const classId of ["knight", "wizard", "hunter", "priest"] as const) {
+      const root = document.createElement("div");
+      const selected = { current: classId };
+      const surface = mountTalentsSurface(root, {
+        content: fullContent,
+        getSelectedClassId: () => selected.current,
+      });
+      surface.render(engine.snapshot(), legalityViewFromEngine(engine));
+      const section = root.querySelector<HTMLElement>(`[data-class-id="${classId}"]`);
+      expect(section?.querySelectorAll("[data-talent-tier]")).toHaveLength(2);
+      expect(section?.querySelectorAll(".talent-stat-row .talent-cell")).toHaveLength(4);
+      expect(section?.querySelectorAll(".talent-ability-row .talent-cell")).toHaveLength(4);
+      surface.destroy();
+    }
+  });
+
+  it("gates each Tier 2 Ability Row until five Stat Row points are spent in that tier", () => {
+    const fullContent = buildContent();
+    const root = document.createElement("div");
+    const boot = createEngine(fullContent, undefined, LOOT_SEED);
+    boot.advanceBy(1);
+    const saved = boot.snapshot();
+    saved.progression.characterXp.knight = 3_000;
+    const engine = createEngine(fullContent, saved, LOOT_SEED);
+    for (let rank = 0; rank < 5; rank += 1) {
+      engine.allocateTalent("knight", rank % 2 === 0 ? "fortitude" : "swordcraft");
+    }
+    engine.allocateTalent("knight", "hold-the-line");
+    engine.allocateTalent("knight", "iron-discipline");
+    const selected = { current: "knight" as ClassId };
+    const surface = mountTalentsSurface(root, {
+      content: fullContent,
+      getSelectedClassId: () => selected.current,
+    });
+
+    surface.render(engine.snapshot(), legalityViewFromEngine(engine));
+    const tierTwo = knightSection(root).querySelector('[data-talent-tier="2"]');
+    expect(tierTwo?.querySelector(".talent-gate-note")?.textContent).toMatch(
+      /Spend 5 Stat Row points/i,
+    );
+    selectTalentCell(root, "vanguard");
+    const pick = root.querySelector<HTMLButtonElement>(
+      `[data-talent-id="vanguard"][data-talent-action="allocate"]`,
+    );
+    expect(pick?.disabled).toBe(true);
+
+    surface.destroy();
+  });
 });
 
 describe("Talents surface source boundary", () => {
