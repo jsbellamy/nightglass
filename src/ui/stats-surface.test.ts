@@ -40,7 +40,7 @@ function knightSection(root: HTMLElement): HTMLElement {
 }
 
 describe("Stats surface", () => {
-  it("shows Level and XP progress for the selected Character", () => {
+  it("shows XP progress in the overview without Level or Talent Points", () => {
     const root = document.createElement("div");
     const engine = leveledKnightEngine();
     const selected = { current: "knight" as ClassId };
@@ -49,11 +49,10 @@ describe("Stats surface", () => {
     renderStats(surface, engine);
     const knight = knightSection(root);
     const overview = knight.querySelector('[data-stats-overview="true"]');
-    expect(overview?.querySelector('[data-stats-level="true"]')?.textContent).toBe("Level 5");
     expect(knight.querySelector('[data-stats-xp="true"]')?.textContent).toMatch(/700/);
-    expect(knight.querySelector('[data-stats-talent-points="true"]')?.textContent).toMatch(
-      /Talent Point/,
-    );
+    expect(overview?.querySelector('[data-stats-level="true"]')).toBeNull();
+    expect(overview?.querySelector('[data-stats-talent-points="true"]')).toBeNull();
+    expect(overview?.textContent).not.toMatch(/Talent Point/);
 
     surface.destroy();
   });

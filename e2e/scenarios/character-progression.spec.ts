@@ -50,6 +50,7 @@ test.describe("Character progression evidence scenarios", () => {
         );
       });
       const last = rows.at(-1)?.getBoundingClientRect();
+      const overview = section.querySelector<HTMLElement>('[data-stats-overview="true"]');
       return {
         groups: [...section.querySelectorAll<HTMLElement>("[data-stats-group]")].map(
           (group) => group.dataset["statsGroup"],
@@ -63,6 +64,9 @@ test.describe("Character progression evidence scenarios", () => {
           last !== undefined &&
           last.bottom <= shellBox.bottom + 1 &&
           last.top >= shellBox.top - 1,
+        xpVisible: section.querySelector("[data-stats-xp='true']")?.textContent?.length ?? 0,
+        levelInOverview: overview?.querySelector("[data-stats-level='true']") !== null,
+        talentPointsInOverview: overview?.querySelector("[data-stats-talent-points='true']") !== null,
       };
     });
     expect(statsFit).not.toBeNull();
@@ -79,6 +83,9 @@ test.describe("Character progression evidence scenarios", () => {
     expect(statsFit!.interactiveRows).toBe(0);
     expect(statsFit!.panelScrollable).toBe(false);
     expect(statsFit!.lastFits).toBe(true);
+    expect(statsFit!.xpVisible).toBeGreaterThan(0);
+    expect(statsFit!.levelInOverview).toBe(false);
+    expect(statsFit!.talentPointsInOverview).toBe(false);
 
     await focusCharacterSection(dock, "talents");
     await dock

@@ -179,6 +179,7 @@ test.describe("Management Dock evidence scenarios", () => {
       const shellBox = shell.getBoundingClientRect();
       const tolerance = 2;
       const panelScrollable = panel.scrollHeight > panel.clientHeight + 1;
+      const overview = section.querySelector<HTMLElement>('[data-stats-overview="true"]');
       const candidates = [...section.querySelectorAll<HTMLElement>("button, [tabindex='0']")];
       const clipped = candidates
         .filter((control) => {
@@ -194,10 +195,19 @@ test.describe("Management Dock evidence scenarios", () => {
           );
         })
         .map((control) => control.getAttribute("aria-label") ?? control.className);
-      return { clipped, panelScrollable };
+      return {
+        clipped,
+        panelScrollable,
+        xpVisible: (section.querySelector("[data-stats-xp='true']")?.textContent?.length ?? 0) > 0,
+        levelInOverview: overview?.querySelector("[data-stats-level='true']") !== null,
+        talentPointsInOverview: overview?.querySelector("[data-stats-talent-points='true']") !== null,
+      };
     });
     expect(statsClip.panelScrollable, "Character panel does not outer-scroll on Stats").toBe(false);
     expect(statsClip.clipped, "no clipped live controls on Character/Stats").toEqual([]);
+    expect(statsClip.xpVisible, "Stats overview shows XP progress").toBe(true);
+    expect(statsClip.levelInOverview, "Stats overview omits Level").toBe(false);
+    expect(statsClip.talentPointsInOverview, "Stats overview omits Talent Points").toBe(false);
     await captureReviewScene(dock, "dock-cross-webview-surfaces", CHARACTER_SUB_SCENE.stats);
 
     const firstTab = tabs[0]!;

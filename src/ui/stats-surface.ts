@@ -5,9 +5,6 @@ import { EMPTY_ENGINE_LEGALITY } from "./engine-legality";
 import {
   characterStatBreakdown,
   characterXpProgressLabel,
-  effectiveTalentState,
-  levelFor,
-  spentTalentPoints,
   statsDifferFromCommittedCombat,
   type CharacterStatBreakdownLine,
   type CharacterStatKey,
@@ -126,28 +123,14 @@ export function mountStatsSurface(root: HTMLElement, options: StatsSurfaceOption
     title: "Stats",
     body(snapshot) {
       const classId = options.getSelectedClassId()!;
-      const level = levelFor(snapshot, content, classId);
-      const talentState = effectiveTalentState(snapshot, classId);
-      const points = Math.max(0, level - spentTalentPoints(talentState));
       const lines = characterStatBreakdown(snapshot, content, classId);
       const linesByKey = new Map(lines.map((line) => [line.key, line]));
       const showPending = statsDifferFromCommittedCombat(snapshot, content, classId);
       const xpLabel = characterXpProgressLabel(snapshot, content, classId);
-      const talentLabel = `${points} Talent Point${points === 1 ? "" : "s"} available`;
 
       const sectionChildren: HTMLElement[] = [
         el("div", { class: "stats-overview", data: { statsOverview: "true" } }, [
-          el("p", { class: "stats-overview-line" }, [
-            el("span", { data: { statsLevel: "true" }, text: `Level ${level}` }),
-            el("span", { class: "stats-overview-sep", text: " · " }),
-            el("span", { data: { statsXp: "true" }, text: xpLabel }),
-            el("span", { class: "stats-overview-sep", text: " · " }),
-            el("span", {
-              class: "stats-talent-points",
-              data: { statsTalentPoints: "true" },
-              text: talentLabel,
-            }),
-          ]),
+          el("p", { class: "stats-overview-line stats-xp", data: { statsXp: "true" }, text: xpLabel }),
         ]),
       ];
 
