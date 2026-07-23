@@ -71,6 +71,30 @@ CHARM_TO_LOCKET: dict[str, str] = {
 }
 
 
+BASIC_CORE_ABILITY_KEYS: tuple[str, ...] = (
+    "steel-cut",
+    "sweeping-arc",
+    "shield-brace",
+    "rallying-guard",
+    "pommel-break",
+    "arc-spark",
+    "cinder-bloom",
+    "frost-lance",
+    "prism-ward",
+    "thunder-ring",
+    "sun-mote",
+    "mending-light",
+    "dawn-recall",
+    "war-hymn",
+    "judgment",
+    "quickshot",
+    "pinpoint-shot",
+    "barbed-arrow",
+    "split-volley",
+    "snareburst",
+)
+
+
 @dataclass(frozen=True)
 class IconVariant:
     icon_key: str
@@ -121,6 +145,16 @@ class IconFamily:
 
 def _subset(*names: str) -> tuple[str, ...]:
     return names
+
+
+def _source_local_one_variant(key: str) -> IconFamily:
+    return IconFamily(
+        key,
+        (),
+        (IconVariant(key, {}),),
+        f"{key}/source.grid",
+        color_mode=SOURCE_LOCAL_COLOR_MODE,
+    )
 
 
 FAMILIES: tuple[IconFamily, ...] = (
@@ -1111,6 +1145,7 @@ FAMILIES: tuple[IconFamily, ...] = (
         "threshertooth-blade/source.grid",
         palette_id="fowl-harvest-24",
     ),
+    *tuple(_source_local_one_variant(key) for key in BASIC_CORE_ABILITY_KEYS),
 )
 
 # Pipeline verification family — synthetic geometry, not Equipment art.
