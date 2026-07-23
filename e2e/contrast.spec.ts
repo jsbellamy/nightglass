@@ -113,7 +113,7 @@ test.describe("accessibility contrast floor", () => {
     expect(toggleSample).not.toBeNull();
     assertAaContrast(toggleSample!);
 
-    await live.finish({ assertPageErrors: false });
+    await live.finish();
 
     const isolated = await openEvidenceSession(browser, "isolated-dock", {
       dockSnapshot: armoryColourSnapshot(),
@@ -289,7 +289,7 @@ test.describe("accessibility contrast floor", () => {
         knockout.stackTransform !== "none",
     ).toBe(true);
 
-    await live.finish({ assertPageErrors: false });
+    await live.finish();
 
     const isolated = await openEvidenceSession(browser, "isolated-dock", {
       dockSnapshot: armoryColourSnapshot(),
