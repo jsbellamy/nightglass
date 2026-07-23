@@ -170,6 +170,9 @@ export function mountArmorySurface(
     for (const node of host.querySelectorAll<HTMLElement>(".armory-collection-drop-target--valid")) {
       node.classList.remove("armory-collection-drop-target--valid");
     }
+    for (const node of host.querySelectorAll<HTMLElement>("[data-surface-preserve-live]")) {
+      delete node.dataset["surfacePreserveLive"];
+    }
   }
 
   function endArmoryDrag(host: HTMLElement): void {
@@ -238,6 +241,7 @@ export function mountArmorySurface(
       activeDrag = source;
       host.classList.add("armory-body--collection-drag");
       tile.classList.add("armory-drag-source");
+      tile.dataset["surfacePreserveLive"] = "true";
       highlightCollectionDragTargets(snapshot, drop.dropId);
       event.dataTransfer?.setData(ARMORY_DRAG_MIME, JSON.stringify(source));
       if (event.dataTransfer) {
@@ -276,6 +280,7 @@ export function mountArmorySurface(
       activeDrag = source;
       host.classList.add("armory-body--worn-drag");
       button.classList.add("armory-drag-source");
+      button.dataset["surfacePreserveLive"] = "true";
       highlightWornDragTargets();
       event.dataTransfer?.setData(ARMORY_DRAG_MIME, JSON.stringify(source));
       if (event.dataTransfer) {
@@ -971,6 +976,7 @@ export function mountArmorySurface(
   }
 
   const shell = mountSurfaceShell(root, "armory-surface", {
+    reconcile: true,
     title: "Armory",
     showTitle: false,
     body(snapshot) {
