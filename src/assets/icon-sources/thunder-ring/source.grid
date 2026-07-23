@@ -5,36 +5,43 @@ outline: 58,6,20
 
 legend
 . .
-A 51,2,76
-B 34,156,251
-C 48,46,202
-D 56,2,78
-E 248,253,217
-F 124,246,242
-G 38,100,251
-H 35,119,241
-I 42,224,251
-J 54,5,143
+A 43,11,253
+B 35,168,253
+C 64,240,253
+D 246,253,222
+E 38,90,253
+F 253,253,217
+G 111,248,244
+H 44,8,243
+I 44,3,110
+J 43,1,51
 
 grid
-.......ABBCD.......
-.....ABEEFEFGA.....
-...AHEEIGFIGGFBA...
-..ABFBCDIEHDDHFBD..
-..HEHDD.GEED..GEG..
-.BFHA....IID...GFG.
-AFHD.....BA....DIID
-JFG.............GED
-BH.......B......CEB
-FHC.....DED......IB
-FEH....DEEEC....IIB
-HFC..D.AHEHA....GEH
-JI.DCEA.DBD.DCD.DIA
-ABGIEH......AEFGGB.
-.AEEI........DEIED.
-.AIIHA.......AHEI..
-..AIFBA.....AHEIA..
-...AIFBGC.CBIFBA...
-....DHIFFIFEIHA....
-......ACBIICA......
-.........A.........
+............AAAAAA...........
+..........ABCCCDCCBEA........
+.......AEBCFFGGFGFFCBBA......
+......ABGDFCEBCCBBCFDGBA.....
+.....ABGFCAA.ACCBHAACFGBA....
+....ABGFCA...ACFB...ACFGBA...
+...ABGFCA...HCFCA....ACFGBA..
+...BGFCA.....BFC......ACFGE..
+..ABFCA.......CGE......ACFBA.
+..BCGA.........B........ADGA.
+.ABDCI..................HCGB.
+.ACFE.........HA.........BFBA
+.BCGI........ACCB........HDCA
+.BDCI.......HCDDGA.......HCGA
+.BDBI........AGDC........HCGA
+.BDCA....AAH..ABA.....A..ACGA
+.ACFBA.HCFA.......BGBDCA.EFBA
+.ABDCBECFA.........CDCGBACCB.
+..ACFCGFDCE........AAADCCFBA.
+..HBFFCBBFC...........BFGGB..
+...ABFCAHAC...........ICDBA..
+....BGFGAJA...........BFGA...
+....ABGFGAA........IACFCBA...
+.....ABGFFCAAA...AACCFCBA....
+......IABCDFGBBBBCGFCBAH.....
+........AEBCCDFGFDCBEA.......
+..........HABBCCCBAI.........
+.............IIII............

@@ -2,12 +2,12 @@
   "provider": "Cursor GenerateImage",
   "acquisition_tool": "GenerateImage",
   "prompt": "TRUE chunky pixel-art ability icon only, exact 32\u00d732 logical pixel grid rendered large. Prism Ward: a faceted triangular prism enclosed by three interlocking protective arcs, clearly party protection rather than an attack. Centered 26\u201330 pixels, two #ff00ff cells clear, flat square pixels, structures at least 3 pixels, selective charcoal-plum outline, upper-left light. Use distinct ruby, amber, emerald, cyan and violet prism faces balanced by deep navy outline; source-local spectrum colors, no named game palette constraint. Solid #ff00ff background. No people, letters, UI frame, landscape, shadow, bloom haze, loose sparkles, gradient interpolation, anti-aliasing, blur, dithering, watermark, or transparency.",
-  "raw_sha256": "e893fff0b5d440754b0e57985a95227ffb4e68dde018b4606a34b7afde26e575",
+  "raw_sha256": "cd163f48e4eca4a709821cacca56d4051beb9d0900fa4b2963b65437962aeb31",
   "asset_class": "interface",
   "kind": "ability-loadout-icon",
   "color_mode": "source-local",
   "runtime_destination": "src/assets/icon-sources/prism-ward/source.grid (unregistered; runtime PNG deferred to #534)",
-  "candidate": "prism-ward-r4",
+  "candidate": "prism-ward-r7",
   "style_references": [
     {
       "path": "src/assets/icons/preview/verify-ability-canary@8x.png",
@@ -43,27 +43,27 @@
   "ingest": {
     "recovered": {
       "bbox": [
-        136,
-        112,
-        887,
-        874
+        37,
+        47,
+        964,
+        972
       ],
       "pitch_x": {
-        "pitch": 36.54444444444434,
-        "score": 0.26381979333853983
+        "pitch": 44.27777777777717,
+        "score": 0.25777663052916594
       },
       "pitch_y": {
-        "pitch": 37.094444444444306,
-        "score": 0.26317879372875014
+        "pitch": 44.02777777777718,
+        "score": 0.1841528831381609
       },
       "grid": [
-        21,
-        20
+        20,
+        22
       ]
     },
     "mode": "source-local",
     "quantize": {
-      "unique_before": 244,
+      "unique_before": 131,
       "unique_after": 10,
       "target": 10,
       "centers": 10
@@ -71,5 +71,5 @@
   },
   "evidence_raw": "docs/research/evidence/character-ability-icons-wizard/accepted-raws/prism-ward.png",
   "issue": 533,
-  "acquisition_notes": "Recovered cells flattened to \u226410 source-local RGBs (contract 8\u201312 flat colours) and exterior near-outline charcoal stripped so Stage-2 derived ring owns the contour; provider raw remains immutable evidence."
+  "acquisition_notes": "Recovered cells flattened to 8\u201312 source-local RGBs; exterior near-outline charcoal stripped when count remains in-band. Provider raw immutable."
 }

@@ -2,12 +2,12 @@
   "provider": "Cursor GenerateImage",
   "acquisition_tool": "GenerateImage",
   "prompt": "TRUE chunky pixel-art ability icon only on an exact 32\u00d732 logical pixel grid rendered large. Arc Spark: a compact forked lightning bolt jumping between two small conductor nodes, immediate single-target lightning read. Centered 26\u201330 pixels, two full #ff00ff cells clearance, flat blocks, structures at least 3 pixels thick, selective one-pixel charcoal-plum outline, upper-left lighting. Use electric cyan, saturated blue, pale yellow-white core, deep violet shadow; source-local colors, no named game palette. Solid #ff00ff background. No character, text, UI frame, cloud scene, cast shadow, soft glow, particle field, gradients, anti-aliasing, blur, dithering, watermark, or transparency.",
-  "raw_sha256": "c024a81a650e52e702c44184afd10f7ca4f761d05f769602b7715d4d8c29e76d",
+  "raw_sha256": "82df51a7c4a6f765e8a031ea95413c9df20716aec904557662ba06687770493d",
   "asset_class": "interface",
   "kind": "ability-loadout-icon",
   "color_mode": "source-local",
   "runtime_destination": "src/assets/icon-sources/arc-spark/source.grid (unregistered; runtime PNG deferred to #534)",
-  "candidate": "arc-spark-r3",
+  "candidate": "arc-spark-r5",
   "style_references": [
     {
       "path": "src/assets/icons/preview/verify-ability-canary@8x.png",
@@ -43,33 +43,33 @@
   "ingest": {
     "recovered": {
       "bbox": [
-        196,
-        156,
-        836,
-        820
+        110,
+        73,
+        931,
+        907
       ],
       "pitch_x": {
-        "pitch": 26.72222222222234,
-        "score": 0.44138353612194436
+        "pitch": 28.194444444444514,
+        "score": 0.23084498429445732
       },
       "pitch_y": {
-        "pitch": 27.57222222222235,
-        "score": 0.5173347066559594
+        "pitch": 29.044444444444526,
+        "score": 0.14684468230607395
       },
       "grid": [
-        24,
-        24
+        29,
+        29
       ]
     },
     "mode": "source-local",
     "quantize": {
-      "unique_before": 135,
-      "unique_after": 7,
+      "unique_before": 231,
+      "unique_after": 9,
       "target": 10,
-      "centers": 8
+      "centers": 9
     }
   },
   "evidence_raw": "docs/research/evidence/character-ability-icons-wizard/accepted-raws/arc-spark.png",
   "issue": 533,
-  "acquisition_notes": "Recovered cells flattened to \u226410 source-local RGBs (contract 8\u201312 flat colours) and exterior near-outline charcoal stripped so Stage-2 derived ring owns the contour; provider raw remains immutable evidence."
+  "acquisition_notes": "Recovered cells flattened to 8\u201312 source-local RGBs; exterior near-outline charcoal stripped when count remains in-band. Provider raw immutable."
 }

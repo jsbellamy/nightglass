@@ -32,15 +32,17 @@ runtime PNG, manifest, and UI wiring are deferred to #534 / #535.
 
 | iconKey | Mechanic read | Accepted candidate | Recovered grid | Flat colours |
 | --- | --- | --- | --- | --- |
-| `arc-spark` | Forked lightning bolt between two conductor nodes (Basic, single-target lightning) | **r3** | 24×24 | 135→7 |
+| `arc-spark` | Forked lightning bolt between two conductor nodes (Basic, single-target lightning) | **r5** | 29×29 | (rework; 8–12 flats) |
 | `cinder-bloom` | Fire blossom with three flame petals (all-opponents fire burst) | **r1** | 30×27 | 159→9 |
 | `frost-lance` | Crystalline ice spear with faceted head (single-target frost projectile) | **r2** | 27×29 | 192→10 |
-| `prism-ward` | Triangular prism with interlocking protective arcs (party ward) | **r4** | 21×20 | 244→10 |
-| `thunder-ring` | Electric ring with inward lightning teeth + center stun star (AoE lightning stun) | **r4** | 19×21 | 196→10 |
+| `prism-ward` | Triangular prism with interlocking protective arcs (party ward) | **r7** | 20×22 | preference thin; gate-pass |
+| `thunder-ring` | Electric ring with inward lightning teeth + center stun star (AoE lightning stun) | **r6** | 29×28 | (rework; 8–12 flats) |
 
-Acquisition flatten: recovered cells are median-cut quantized to ≤10 opaque RGBs
-(contract “8–12 flat colours”) and exterior near-outline charcoal is stripped so
-Stage-2 derived outline owns the ring. Provider raws stay byte-immutable evidence.
+Acquisition flatten: recovered cells are median-cut quantized into the contract
+**8–12 flat colours** band; exterior near-outline charcoal is stripped when the
+count remains in-band so Stage-2 derived outline owns the ring. Provider raws
+stay byte-immutable evidence. `prism-ward` remains preference-thin (long axis 22)
+after repeated enlarge retries that either underfill preference or overshoot MAX_BODY.
 
 ## Candidate table
 
@@ -48,7 +50,7 @@ Stage-2 derived outline owns the ring. Provider raws stay byte-immutable evidenc
 | --- | --- | --- | --- | --- | --- | --- |
 | arc-spark-r1 | ability icon | pass | none | 23×23 | preference thin | enlarge |
 | arc-spark-r2 | ability icon | fail | none | 30×31 | overshoot | shrink + clearance |
-| arc-spark-r3 | ability icon | pass | none | 24×24 | advance | accept |
+| arc-spark-r3 | ability icon | pass | none | 24×24 | preference thin | enlarge (superseded by r5) |
 | cinder-bloom-r1 | ability icon | pass | none | 30×27 | advance | accept |
 | frost-lance-r1 | ability icon | pass | none | 23×27 | preference thin | enlarge |
 | frost-lance-r2 | ability icon | pass | none | 27×29 | advance | accept |
@@ -61,19 +63,32 @@ Stage-2 derived outline owns the ring. Provider raws stay byte-immutable evidenc
 | thunder-ring-r3 | ability icon | fail | none | 32×33 | overshoot | peer size anchor |
 | thunder-ring-r4 | ability icon | pass | none | 19×21 | advance (preference thin) | accept |
 
+| arc-spark-r5 | ability icon | pass | none | 29×29 | advance | accept (C2 rework) |
+| prism-ward-r5 | ability icon | pass | none | 22×19 | preference thin | enlarge |
+| prism-ward-r6 | ability icon | pass | none | 20×21 | preference thin | enlarge |
+| prism-ward-r7 | ability icon | pass | none | 20×22 | advance (preference thin) | accept |
+| thunder-ring-r5 | ability icon | pass | none | 19×20 | preference thin | enlarge |
+| thunder-ring-r6 | ability icon | pass | none | 29×28 | advance | accept (C2 rework) |
+
 ## Rejected candidates
 
 | Candidate | Primary failure | Recovered / signal |
 | --- | --- | --- |
 | arc-spark-r1 | preference underfill (gate-pass; superseded) | 23×23 |
 | arc-spark-r2 | overshoot | 30×31 |
+| arc-spark-r3 | preference underfill (gate-pass; superseded by r5) | 24×24 |
 | frost-lance-r1 | preference underfill (gate-pass; superseded) | 23×27 |
 | prism-ward-r1 | underfill | long axis 19 |
 | prism-ward-r2 | overshoot | 35×34 |
 | prism-ward-r3 | overshoot | 36×36 |
+| prism-ward-r4 | preference underfill (gate-pass; superseded by r7) | 21×20 |
+| prism-ward-r5 | preference underfill (gate-pass; superseded by r7) | 22×19 |
+| prism-ward-r6 | preference underfill (gate-pass; superseded by r7) | 20×21 |
 | thunder-ring-r1 | overshoot | 18×36 |
 | thunder-ring-r2 | overshoot | 30×31 |
 | thunder-ring-r3 | overshoot | 32×33 |
+| thunder-ring-r4 | preference underfill (gate-pass; superseded by r6) | 19×21 |
+| thunder-ring-r5 | preference underfill (gate-pass; superseded by r6) | 19×20 |
 
 Rejected provider raws were pruned from `scratch/`; durable record is the table
 above. Provider raws are evidence only — **nothing added to `assets-raw/`**.
@@ -84,9 +99,12 @@ Composite: [`wizard-ability-sheet@8x.png`](./wizard-ability-sheet@8x.png)
 (left→right: arc-spark | cinder-bloom | frost-lance | prism-ward | thunder-ring).
 Native companion: [`wizard-ability-sheet.png`](./wizard-ability-sheet.png).
 
-Subagent verdict: **accept**. All five match mechanic identity (forked spark, flame blossom,
-ice spear, prism+arcs, electric ring+stun center), read as Ability Loadout glyphs rather
-than Equipment, and are glance-distinguishable as a set. No blocking defects.
+Subagent verdict: **accept** (initial + post-C2-rework). All five match mechanic identity
+(forked spark, flame blossom, ice spear, prism+arcs, electric ring+stun center), read as
+Ability Loadout glyphs rather than Equipment, and are glance-distinguishable as a set.
+`prism-ward` remains preference-thin vs peers (long axis 22 after enlarge retries that
+oscillated between preference underfill and MAX_BODY overshoot) — not blocking. No other
+blocking defects.
 
 ## Artifacts
 
