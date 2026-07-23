@@ -5,7 +5,7 @@ import {
   readTextContrastSample,
 } from "./helpers/contrast";
 import {
-  focusCharacterSubTab,
+  focusCharacterSection,
   focusDockTab,
 } from "./helpers/dock-context";
 import { declareEvidenceScenario } from "./helpers/evidence-scenarios";
@@ -126,7 +126,7 @@ test.describe("accessibility contrast floor", () => {
       await focusDockTab(seededDock, tab);
       if (tab === "character") {
         if (selector.includes('[data-character-section="loadout"]')) {
-          await focusCharacterSubTab(seededDock, "loadout");
+          await focusCharacterSection(seededDock, "loadout");
           if (
             selector.includes('[data-loadout-ability-popover="true"]') &&
             !loadoutPopoverPrepared
@@ -143,9 +143,9 @@ test.describe("accessibility contrast floor", () => {
             loadoutPopoverPrepared = true;
           }
         } else if (selector.includes('[data-character-section="stats"]')) {
-          await focusCharacterSubTab(seededDock, "stats");
+          await focusCharacterSection(seededDock, "stats");
         } else if (selector.includes('[data-character-section="talents"]')) {
-          await focusCharacterSubTab(seededDock, "talents");
+          await focusCharacterSection(seededDock, "talents");
           if (!talentPopoverPrepared) {
             const fortitudeCell = seededDock.locator(
               '[data-character-section="talents"] [data-class-id="knight"] .talent-cell[data-talent-id="fortitude"]',

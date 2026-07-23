@@ -1,5 +1,9 @@
 import { expect, test } from "@playwright/test";
-import { focusDockTab } from "../helpers/dock-context";
+import {
+  expectApprovedCharacterNavigationOrder,
+  focusCharacterSection,
+  focusDockTab,
+} from "../helpers/dock-context";
 import {
   closeEvidenceSession,
   openEvidenceSession,
@@ -24,15 +28,15 @@ test.describe("Character progression evidence scenarios", () => {
     }
     await focusDockTab(dock, "character");
 
-    const subTabOrder = await dock.evaluate(() =>
-      [...document.querySelectorAll("[data-character-sub-tab]")].map(
-        (button) => (button as HTMLElement).dataset.characterSubTab,
-      ),
-    );
-    expect(subTabOrder).toEqual(["loadout", "talents", "stats"]);
-    await expect(dock.locator('[data-character-sub-tab="loadout"][aria-selected="true"]')).toBeVisible();
+    const navModel = await expectApprovedCharacterNavigationOrder(dock);
+    if (navModel === "legacy") {
+      await expect(dock.locator('[data-character-sub-tab="loadout"][aria-selected="true"]')).toBeVisible();
+    } else {
+      await expect(dock.locator('[data-character-sub-tab="build"][aria-selected="true"]')).toBeVisible();
+      await expect(dock.locator('[data-character-section="loadout"]:not([hidden])')).toBeVisible();
+    }
 
-    await dock.click('[data-character-sub-tab="stats"]');
+    await focusCharacterSection(dock, "stats");
     const statsFit = await dock.evaluate(() => {
       const shell = document.querySelector<HTMLElement>(".dock-shell");
       const panel = document.querySelector<HTMLElement>('[data-dock-panel="character"]');
@@ -77,13 +81,13 @@ test.describe("Character progression evidence scenarios", () => {
     expect(statsFit!.panelScrollable).toBe(false);
     expect(statsFit!.lastFits).toBe(true);
 
-    await dock.locator('[data-character-sub-tab="talents"]').click();
+    await focusCharacterSection(dock, "talents");
     await dock
       .locator(
         '[data-class-id="knight"] [data-talent-id="fortitude"][data-talent-action="allocate"]',
       )
       .click();
-    await dock.click('[data-character-sub-tab="stats"]');
+    await focusCharacterSection(dock, "stats");
     await expect(dock.locator('[data-class-id="knight"] [data-pending-kind="stats"]')).toBeVisible({
       timeout: 10_000,
     });
@@ -120,7 +124,7 @@ test.describe("Character progression evidence scenarios", () => {
       throw new Error("live-tile-and-dock session must include a Dock page");
     }
     await focusDockTab(dock, "character");
-    await dock.click('[data-character-sub-tab="talents"]');
+    await focusCharacterSection(dock, "talents");
 
     const talentsFit = await dock.evaluate(() => {
       const panel = document.querySelector<HTMLElement>('[data-dock-panel="character"]');

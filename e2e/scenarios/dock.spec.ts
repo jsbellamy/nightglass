@@ -2,7 +2,8 @@ import { expect, test } from "@playwright/test";
 import { DOCK_HEIGHT, DOCK_WIDTH } from "../../src/ui/dock-geometry";
 import { PUMP_INTERVAL_MS } from "../../src/ui/pump";
 import {
-  focusCharacterSubTab,
+  expectApprovedCharacterNavigationOrder,
+  focusCharacterSection,
   focusDockTab,
 } from "../helpers/dock-context";
 import { closeEvidenceSession, openEvidenceSession } from "../helpers/evidence-session";
@@ -138,15 +139,10 @@ test.describe("Management Dock evidence scenarios", () => {
     }
 
     await focusDockTab(dock, "character");
-    const subTabs = ["loadout", "talents", "stats"] as const;
-    const subTabOrder = await dock.evaluate(() =>
-      [...document.querySelectorAll("[data-character-sub-tab]")].map(
-        (button) => (button as HTMLElement).dataset.characterSubTab,
-      ),
-    );
-    expect(subTabOrder).toEqual([...subTabs]);
-    for (const subTab of subTabs) {
-      await focusCharacterSubTab(dock, subTab);
+    await expectApprovedCharacterNavigationOrder(dock);
+    const characterSections = ["loadout", "talents", "stats"] as const;
+    for (const section of characterSections) {
+      await focusCharacterSection(dock, section);
       const clipState = await dock.evaluate((activeSubTab) => {
         const shell = document.querySelector(".dock-shell");
         const panel = document.querySelector(".dock-panel:not([hidden])");
@@ -187,12 +183,12 @@ test.describe("Management Dock evidence scenarios", () => {
           })
           .map((control) => control.getAttribute("aria-label") ?? control.className);
         return { clipped };
-      }, subTab);
-      expect(clipState.clipped, `no clipped live controls on Character/${subTab}`).toEqual([]);
+      }, section);
+      expect(clipState.clipped, `no clipped live controls on Character/${section}`).toEqual([]);
       await captureReviewScene(
         dock,
         "dock-cross-webview-surfaces",
-        CHARACTER_SUB_SCENE[subTab],
+        CHARACTER_SUB_SCENE[section],
       );
     }
 

@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { NIGHTGLASS_BUS_CHANNEL } from "../../src/ui/bus";
-import { focusDockTab } from "../helpers/dock-context";
+import { focusCharacterSection, focusDockTab } from "../helpers/dock-context";
 import {
   closeEvidenceSession,
   openEvidenceSession,
@@ -261,10 +261,10 @@ test.describe("Character Loadout evidence scenarios", () => {
     expect(abilityPopover!.hasAction).toBe(false);
 
     await dock.mouse.move(0, 0);
-    await dock.locator('[data-character-sub-tab="loadout"]').focus();
+    await focusCharacterSection(dock, "loadout", { focusTabChrome: true });
     await expect(dock.locator('[data-loadout-ability-popover="true"]')).toBeHidden();
 
-    await dock.click('[data-character-sub-tab="talents"]');
+    await focusCharacterSection(dock, "talents");
     const fortitude = dock.locator(
       '[data-class-id="knight"] .talent-cell[data-talent-id="fortitude"]',
     );
@@ -302,7 +302,7 @@ test.describe("Character Loadout evidence scenarios", () => {
     expect(talentPopover!.hasAction).toBe(false);
 
     await dock.mouse.move(0, 0);
-    await dock.locator('[data-character-sub-tab="talents"]').focus();
+    await focusCharacterSection(dock, "talents", { focusTabChrome: true });
     await expect(dock.locator('[data-talent-popover="true"]')).toBeHidden();
 
     await closeEvidenceSession(session);

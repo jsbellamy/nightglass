@@ -68,18 +68,112 @@ export async function focusDockTab(dock: Page, tab: DockTabId): Promise<void> {
   await expect(dock.locator(`[data-dock-panel="${tab}"]:not([hidden])`)).toBeVisible();
 }
 
-export type CharacterSubTabId = "loadout" | "talents" | "stats";
+export type CharacterSectionId = "loadout" | "talents" | "stats";
 
-/** Activate a nested Character workspace tab (keyboard-only; safe under pointer blocking). */
-export async function focusCharacterSubTab(dock: Page, subTab: CharacterSubTabId): Promise<void> {
-  await focusDockTab(dock, "character");
-  const tabButton = dock.locator(`[data-character-sub-tab="${subTab}"]`);
+/** @deprecated Use {@link CharacterSectionId}. */
+export type CharacterSubTabId = CharacterSectionId;
+
+export const LEGACY_CHARACTER_NAV_ORDER = ["loadout", "talents", "stats"] as const;
+export const SUCCESSOR_CHARACTER_NAV_ORDER = ["build", "stats"] as const;
+
+export type CharacterNavigationModel = "legacy" | "successor";
+
+/**
+ * Expand Character evidence helpers for the Build/Stats migration (#511) —
+ * classifies DOM tab order during the interim expand phase only.
+ */
+export function classifyCharacterNavigationOrder(
+  subTabIds: readonly (string | undefined)[],
+): CharacterNavigationModel {
+  const order = subTabIds.map((id) => id ?? "");
+  if (order.length === LEGACY_CHARACTER_NAV_ORDER.length) {
+    const legacy = LEGACY_CHARACTER_NAV_ORDER.every((id, index) => order[index] === id);
+    if (legacy) {
+      return "legacy";
+    }
+  }
+  if (order.length === SUCCESSOR_CHARACTER_NAV_ORDER.length) {
+    const successor = SUCCESSOR_CHARACTER_NAV_ORDER.every((id, index) => order[index] === id);
+    if (successor) {
+      return "successor";
+    }
+  }
+  throw new Error(
+    `Character navigation must be exactly ${LEGACY_CHARACTER_NAV_ORDER.join(",")} or ${SUCCESSOR_CHARACTER_NAV_ORDER.join(",")}; got ${order.join(",")}`,
+  );
+}
+
+export async function readCharacterNavigationOrder(dock: Page): Promise<string[]> {
+  return dock.evaluate(() =>
+    [...document.querySelectorAll("[data-character-sub-tab]")].map(
+      (button) => (button as HTMLElement).dataset.characterSubTab ?? "",
+    ),
+  );
+}
+
+export async function expectApprovedCharacterNavigationOrder(dock: Page): Promise<CharacterNavigationModel> {
+  const order = await readCharacterNavigationOrder(dock);
+  const model = classifyCharacterNavigationOrder(order);
+  if (model === "legacy") {
+    expect(order).toEqual([...LEGACY_CHARACTER_NAV_ORDER]);
+  } else {
+    expect(order).toEqual([...SUCCESSOR_CHARACTER_NAV_ORDER]);
+  }
+  return model;
+}
+
+export type FocusCharacterSectionOptions = {
+  /** Focus the header tab control even when that section is already active (popover dismiss, Loadout reconcile). */
+  focusTabChrome?: boolean;
+};
+
+function characterHeaderTabForSection(
+  model: CharacterNavigationModel,
+  section: CharacterSectionId,
+): string {
+  if (model === "legacy") {
+    return section;
+  }
+  return section === "stats" ? "stats" : "build";
+}
+
+async function activateCharacterNavTab(
+  dock: Page,
+  tabId: string,
+  options: { focusTabChrome?: boolean } = {},
+): Promise<void> {
+  const tabButton = dock.locator(`[data-character-sub-tab="${tabId}"]`);
   const selected = await tabButton.getAttribute("aria-selected");
   if (selected !== "true") {
     await tabButton.focus();
     await dock.keyboard.press("Enter");
+  } else if (options.focusTabChrome) {
+    await tabButton.focus();
   }
-  await expect(dock.locator(`[data-character-section="${subTab}"]:not([hidden])`)).toBeVisible();
+  await expect(tabButton).toHaveAttribute("aria-selected", "true");
+}
+
+/**
+ * Expand Character evidence helpers for the Build/Stats migration (#511) —
+ * opens the semantic Character section on legacy three-sub-tab or successor Build/Stats UI.
+ */
+export async function focusCharacterSection(
+  dock: Page,
+  section: CharacterSectionId,
+  options: FocusCharacterSectionOptions = {},
+): Promise<void> {
+  await focusDockTab(dock, "character");
+  const model = classifyCharacterNavigationOrder(await readCharacterNavigationOrder(dock));
+  const headerTab = characterHeaderTabForSection(model, section);
+
+  await activateCharacterNavTab(dock, headerTab, options);
+
+  await expect(dock.locator(`[data-character-section="${section}"]:not([hidden])`)).toBeVisible();
+}
+
+/** @deprecated Prefer {@link focusCharacterSection}. */
+export async function focusCharacterSubTab(dock: Page, subTab: CharacterSubTabId): Promise<void> {
+  await focusCharacterSection(dock, subTab);
 }
 
 export async function assertFocusRingVisible(page: Page, selector: string): Promise<void> {
