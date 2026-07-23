@@ -1,9 +1,16 @@
 import { expect, test } from "@playwright/test";
 import {
   EVIDENCE_SCENARIOS,
-  EVIDENCE_SLUG_CATALOG,
   evidenceScenarioTitle,
 } from "./helpers/evidence-scenarios";
+import {
+  findDeclarationDrift,
+  findDocsCitationDrift,
+  findRawEvidenceTitles,
+  findSceneEmissionDrift,
+  findScenarioSlugCatalogDrift,
+  findUnsafeScreenshotPaths,
+} from "./helpers/registry-drift";
 import { assertSafeReviewOutputPath, reviewSceneOutputPath, reviewSceneRoot } from "./helpers/review-scenes";
 
 function collect<T>(items: readonly T[], key: (item: T) => string): Map<string, T[]> {
@@ -32,17 +39,7 @@ test.describe("evidence scenario registry", () => {
   });
 
   test("registers the evidence slug catalog and browser-floor empty slug lists", () => {
-    const catalogSlugs = new Set(EVIDENCE_SLUG_CATALOG);
-    const used = new Set<string>();
-    for (const scenario of EVIDENCE_SCENARIOS) {
-      for (const slug of scenario.slugs) {
-        expect(catalogSlugs.has(slug), `unknown slug ${slug}`).toBe(true);
-        used.add(slug);
-      }
-    }
-    for (const slug of EVIDENCE_SLUG_CATALOG) {
-      expect(used.has(slug), `orphan catalog slug ${slug}`).toBe(true);
-    }
+    expect(findScenarioSlugCatalogDrift(), "slug catalog drift").toEqual([]);
     const keyboard = EVIDENCE_SCENARIOS.find((s) => s.id === "keyboard-floor");
     const colour = EVIDENCE_SCENARIOS.find((s) => s.id === "colour-independence");
     expect(keyboard?.slugs).toEqual([]);
@@ -129,5 +126,22 @@ test.describe("evidence scenario registry", () => {
     expect(() => assertSafeReviewOutputPath("/tmp/evil.png")).toThrow();
     expect(() => assertSafeReviewOutputPath("e2e-screenshots/../secrets.png")).toThrow();
     expect(() => assertSafeReviewOutputPath("docs/research/evidence/knockout-readability/tile-combat.png")).toThrow();
+  });
+
+  test("enforces final declarations and spec sources", () => {
+    expect(findDeclarationDrift(), "declaration drift").toEqual([]);
+  });
+
+  test("rejects hand-written evidence titles and unsafe tracked outputs", () => {
+    expect(findRawEvidenceTitles(), "raw evidence titles").toEqual([]);
+    expect(findUnsafeScreenshotPaths(), "unsafe screenshot paths").toEqual([]);
+  });
+
+  test("requires registered review scenes to be emitted", () => {
+    expect(findSceneEmissionDrift(), "scene emission drift").toEqual([]);
+  });
+
+  test("keeps acceptance-guide evidence citations on the registry", () => {
+    expect(findDocsCitationDrift(), "docs citation drift").toEqual([]);
   });
 });
