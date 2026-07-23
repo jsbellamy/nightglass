@@ -48,8 +48,12 @@ describe("Stats surface", () => {
 
     renderStats(surface, engine);
     const knight = knightSection(root);
-    expect(knight.querySelector(".surface-section-title")?.textContent).toBe("Knight · Level 5");
+    const overview = knight.querySelector('[data-stats-overview="true"]');
+    expect(overview?.querySelector('[data-stats-level="true"]')?.textContent).toBe("Level 5");
     expect(knight.querySelector('[data-stats-xp="true"]')?.textContent).toMatch(/700/);
+    expect(knight.querySelector('[data-stats-talent-points="true"]')?.textContent).toMatch(
+      /Talent Point/,
+    );
 
     surface.destroy();
   });
@@ -163,6 +167,53 @@ describe("Stats surface", () => {
     expect(
       knightSection(root).querySelector('[data-pending-kind="stats"]')?.textContent,
     ).toMatch(/next Wave/i);
+
+    surface.destroy();
+  });
+
+  it("groups canonical stats under Vitals, Offense, and Defense", () => {
+    const root = document.createElement("div");
+    const engine = leveledKnightEngine();
+    const selected = { current: "knight" as ClassId };
+    const surface = mountStatsSurface(root, mountOptions(selected));
+
+    renderStats(surface, engine);
+    const knight = knightSection(root);
+    expect(knight.querySelector('[data-stats-group="vitals"] .stats-group-heading')?.textContent).toBe(
+      "Vitals",
+    );
+    expect(
+      knight.querySelector('[data-stats-group="vitals"] [data-stat-key="maxHealth"]'),
+    ).not.toBeNull();
+    expect(knight.querySelector('[data-stats-group="offense"] .stats-group-heading')?.textContent).toBe(
+      "Offense",
+    );
+    expect(
+      knight.querySelectorAll('[data-stats-group="offense"] [data-stat-key]').length,
+    ).toBe(2);
+    expect(knight.querySelector('[data-stats-group="defense"] .stats-group-heading')?.textContent).toBe(
+      "Defense",
+    );
+    expect(
+      knight.querySelectorAll('[data-stats-group="defense"] [data-stat-key]').length,
+    ).toBe(2);
+
+    surface.destroy();
+  });
+
+  it("exposes no focusable controls inside the grouped stat sheet", () => {
+    const root = document.createElement("div");
+    const engine = leveledKnightEngine();
+    const selected = { current: "knight" as ClassId };
+    const surface = mountStatsSurface(root, mountOptions(selected));
+
+    renderStats(surface, engine);
+    const sheet = knightSection(root).querySelector('[data-stats-table="true"]');
+    expect(sheet).not.toBeNull();
+    const focusable = sheet!.querySelectorAll<HTMLElement>(
+      'button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+    );
+    expect(focusable.length).toBe(0);
 
     surface.destroy();
   });
