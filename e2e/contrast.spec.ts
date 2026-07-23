@@ -87,7 +87,6 @@ test.describe("accessibility contrast floor", () => {
     test.setTimeout(60_000);
     const { context, tile } = await openTilePage(browser);
     const dock = await attachDockPage(context);
-    await postBusSnapshot(dock, armoryColourSnapshot());
 
     const statusSample = await readTextContrastSample(tile, ".stage-wave-text");
     expect(statusSample).not.toBeNull();
@@ -96,6 +95,14 @@ test.describe("accessibility contrast floor", () => {
     const toggleSample = await readTextContrastSample(tile, ".dock-toggle");
     expect(toggleSample).not.toBeNull();
     assertAaContrast(toggleSample!);
+
+    // The live Battle Tile keeps pumping its own Snapshot over the shared bus, which
+    // races with — and overwrites — the seeded Armory fixture (dropping the epic
+    // drop-id 99 the assertions below rely on). Everything past this point drives the
+    // Dock from the fixture alone, so close the Tile first: with no pump peer, the
+    // seeded Snapshot cannot be clobbered.
+    await tile.close();
+    await postBusSnapshot(dock, armoryColourSnapshot());
 
     let talentDetailPrepared = false;
     for (const { tab, selector } of DOCK_PRIMARY_TEXT) {
