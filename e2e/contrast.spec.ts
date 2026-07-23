@@ -1,16 +1,15 @@
 import { expect, test } from "@playwright/test";
-import { postBusSnapshot } from "./helpers/bus";
 import { advanceUntilVisible } from "./helpers/advance";
 import {
   assertAaContrast,
   readTextContrastSample,
 } from "./helpers/contrast";
 import {
-  attachDockPage,
   focusCharacterSubTab,
   focusDockTab,
-  openTilePage,
 } from "./helpers/dock-context";
+import { declareEvidenceScenario } from "./helpers/evidence-scenarios";
+import { openEvidenceSession } from "./helpers/evidence-session";
 import { armoryColourSnapshot } from "./helpers/snapshots";
 
 const ARMORY_COMPARE_VISIBLE = '[data-armory-compare-popover="true"]:not([hidden])';
@@ -101,12 +100,10 @@ const CHARACTER_PICKER_TEXT = [
 ] as const;
 
 test.describe("accessibility contrast floor", () => {
-  test("evidence: aa-contrast / evidence: dock-surfaces — status line and Dock surfaces meet WCAG AA; scroll affordance appears only when a panel overflows", async ({
-    browser,
-  }) => {
+  declareEvidenceScenario("contrast-aa-dock-surfaces", async ({ browser }) => {
     test.setTimeout(60_000);
-    const { context, tile } = await openTilePage(browser);
-    const dock = await attachDockPage(context);
+    const live = await openEvidenceSession(browser, "live-tile-and-dock");
+    const tile = live.tile!;
 
     const statusSample = await readTextContrastSample(tile, ".stage-wave-text");
     expect(statusSample).not.toBeNull();
@@ -116,47 +113,46 @@ test.describe("accessibility contrast floor", () => {
     expect(toggleSample).not.toBeNull();
     assertAaContrast(toggleSample!);
 
-    // The live Battle Tile keeps pumping its own Snapshot over the shared bus, which
-    // races with — and overwrites — the seeded Armory fixture (dropping the epic
-    // drop-id 99 the assertions below rely on). Everything past this point drives the
-    // Dock from the fixture alone, so close the Tile first: with no pump peer, the
-    // seeded Snapshot cannot be clobbered.
-    await tile.close();
-    await postBusSnapshot(dock, armoryColourSnapshot());
+    await live.finish({ assertPageErrors: false });
+
+    const isolated = await openEvidenceSession(browser, "isolated-dock", {
+      dockSnapshot: armoryColourSnapshot(),
+    });
+    const seededDock = isolated.dock!;
 
     let loadoutPopoverPrepared = false;
     let talentPopoverPrepared = false;
     for (const { tab, selector } of DOCK_PRIMARY_TEXT) {
-      await focusDockTab(dock, tab);
+      await focusDockTab(seededDock, tab);
       if (tab === "character") {
         if (selector.includes('[data-character-section="loadout"]')) {
-          await focusCharacterSubTab(dock, "loadout");
+          await focusCharacterSubTab(seededDock, "loadout");
           if (
             selector.includes('[data-loadout-ability-popover="true"]') &&
             !loadoutPopoverPrepared
           ) {
-            const poolTile = dock.locator(
+            const poolTile = seededDock.locator(
               '[data-character-section="loadout"] .loadout-pool-tiles [data-loadout-assign-tile]',
             ).first();
             await poolTile.hover();
             await expect(
-              dock.locator(
+              seededDock.locator(
                 '[data-character-section="loadout"] [data-loadout-ability-popover="true"] [data-ability-description="true"]',
               ),
             ).toBeVisible();
             loadoutPopoverPrepared = true;
           }
         } else if (selector.includes('[data-character-section="stats"]')) {
-          await focusCharacterSubTab(dock, "stats");
+          await focusCharacterSubTab(seededDock, "stats");
         } else if (selector.includes('[data-character-section="talents"]')) {
-          await focusCharacterSubTab(dock, "talents");
+          await focusCharacterSubTab(seededDock, "talents");
           if (!talentPopoverPrepared) {
-            const fortitudeCell = dock.locator(
+            const fortitudeCell = seededDock.locator(
               '[data-character-section="talents"] [data-class-id="knight"] .talent-cell[data-talent-id="fortitude"]',
             );
             await fortitudeCell.hover();
             await expect(
-              dock.locator(
+              seededDock.locator(
                 '[data-character-section="talents"] [data-talent-popover="true"] .talent-popover-name',
               ),
             ).toBeVisible();
@@ -165,30 +161,30 @@ test.describe("accessibility contrast floor", () => {
         }
       }
       if (tab === "armory" && selector === ".character-picker .character-chip-name") {
-        await expect(dock.locator(".character-picker .character-chip-name").first()).toBeVisible({
+        await expect(seededDock.locator(".character-picker .character-chip-name").first()).toBeVisible({
           timeout: 15_000,
         });
       }
       if (tab === "armory" && selector.includes(ARMORY_COMPARE_VISIBLE)) {
-        await showArmoryComparePopover(dock, selector.includes("stat-table"));
+        await showArmoryComparePopover(seededDock, selector.includes("stat-table"));
       }
-      const sample = await readTextContrastSample(dock, selector);
+      const sample = await readTextContrastSample(seededDock, selector);
       expect(sample, `sample for ${selector}`).not.toBeNull();
       const ratio = assertAaContrast(sample!);
       expect(ratio, `contrast on ${selector}`).toBeGreaterThanOrEqual(4.5);
     }
 
-    await focusDockTab(dock, "character");
+    await focusDockTab(seededDock, "character");
     for (const selector of CHARACTER_PICKER_TEXT) {
-      const sample = await readTextContrastSample(dock, selector);
+      const sample = await readTextContrastSample(seededDock, selector);
       expect(sample, `picker sample ${selector}`).not.toBeNull();
       const ratio = assertAaContrast(sample!);
       expect(ratio, `picker contrast ${selector}`).toBeGreaterThanOrEqual(4.5);
     }
 
-    await focusDockTab(dock, "stage");
+    await focusDockTab(seededDock, "stage");
     const lockedStageSample = await readTextContrastSample(
-      dock,
+      seededDock,
       '[data-stage-id="2"] .stage-name',
     );
     expect(lockedStageSample, "locked Stage row name").not.toBeNull();
@@ -196,9 +192,9 @@ test.describe("accessibility contrast floor", () => {
       4.5,
     );
 
-    await focusDockTab(dock, "character");
+    await focusDockTab(seededDock, "character");
     const disabledControlSample = await readTextContrastSample(
-      dock,
+      seededDock,
       ".formation-action:disabled",
     );
     expect(disabledControlSample, "disabled formation action").not.toBeNull();
@@ -207,8 +203,8 @@ test.describe("accessibility contrast floor", () => {
       "disabled control contrast",
     ).toBeGreaterThanOrEqual(4.5);
 
-    await focusDockTab(dock, "stage");
-    const stageFits = await dock.evaluate(() => {
+    await focusDockTab(seededDock, "stage");
+    const stageFits = await seededDock.evaluate(() => {
       const panel = document.querySelector(".dock-panel:not([hidden])");
       if (!panel) {
         return null;
@@ -229,7 +225,7 @@ test.describe("accessibility contrast floor", () => {
     expect(stageFits!.scrollbarWidth).toBe("thin");
     expect(stageFits!.attachment.includes("local")).toBe(false);
 
-    await dock.evaluate(() => {
+    await seededDock.evaluate(() => {
       const panel = document.querySelector(".dock-panel:not([hidden])");
       if (!panel) {
         return;
@@ -243,13 +239,13 @@ test.describe("accessibility contrast floor", () => {
     });
     await expect
       .poll(async () => {
-        return dock.evaluate(() => {
+        return seededDock.evaluate(() => {
           const panel = document.querySelector(".dock-panel:not([hidden])");
           return (panel as HTMLElement | null)?.dataset.overflow ?? null;
         });
       })
       .toBe("true");
-    const overflowing = await dock.evaluate(() => {
+    const overflowing = await seededDock.evaluate(() => {
       const panel = document.querySelector(".dock-panel:not([hidden])");
       if (!panel) {
         return null;
@@ -265,15 +261,13 @@ test.describe("accessibility contrast floor", () => {
     expect(overflowing?.canScroll).toBe(true);
     expect(overflowing?.attachment.includes("local")).toBe(true);
 
-    await context.close();
+    await isolated.finish();
   });
 
-  test("colour independence — knockout, rarity, and locked-stage states expose non-colour signals", async ({
-    browser,
-  }) => {
+  declareEvidenceScenario("colour-independence", async ({ browser }) => {
     test.setTimeout(60_000);
-    const { context, tile } = await openTilePage(browser);
-    const dock = await attachDockPage(context);
+    const live = await openEvidenceSession(browser, "live-tile-and-dock");
+    const tile = live.tile!;
 
     await advanceUntilVisible(tile, tile.locator(".combatant.knocked-out"));
     await expect(tile.locator(".combatant.knocked-out")).toBeVisible();
@@ -295,15 +289,19 @@ test.describe("accessibility contrast floor", () => {
         knockout.stackTransform !== "none",
     ).toBe(true);
 
-    await postBusSnapshot(dock, armoryColourSnapshot());
-    await tile.close();
+    await live.finish({ assertPageErrors: false });
 
-    await focusDockTab(dock, "armory");
-    const epicCard = dock.locator(".armory-grid .equipment-card.rarity-epic");
+    const isolated = await openEvidenceSession(browser, "isolated-dock", {
+      dockSnapshot: armoryColourSnapshot(),
+    });
+    const seededDock = isolated.dock!;
+
+    await focusDockTab(seededDock, "armory");
+    const epicCard = seededDock.locator(".armory-grid .equipment-card.rarity-epic");
     await expect(epicCard).toBeVisible({ timeout: 5_000 });
     await epicCard.hover();
-    await expect(dock.locator('[data-armory-compare-popover="true"]:not([hidden])')).toBeVisible();
-    const popoverFocus = await dock.evaluate(() => {
+    await expect(seededDock.locator('[data-armory-compare-popover="true"]:not([hidden])')).toBeVisible();
+    const popoverFocus = await seededDock.evaluate(() => {
       const popover = document.querySelector<HTMLElement>('[data-armory-compare-popover="true"]');
       const tile = document.querySelector<HTMLElement>('.armory-grid .equipment-card[data-drop-id="99"]');
       return {
@@ -326,12 +324,12 @@ test.describe("accessibility contrast floor", () => {
     expect(raritySignals.hasNameText).toBe(false);
     expect(raritySignals.hasUnseenWord).toBe(false);
 
-    const tileLock = dock.locator('[data-tile-lock="99"]');
+    const tileLock = seededDock.locator('[data-tile-lock="99"]');
     await expect(tileLock).toBeVisible();
     await expect(tileLock).toContainText(/Unlock/);
 
-    await focusDockTab(dock, "stage");
-    const lockedStage = await dock.evaluate(() => {
+    await focusDockTab(seededDock, "stage");
+    const lockedStage = await seededDock.evaluate(() => {
       const row = document.querySelector('[data-stage-id="2"]');
       return {
         ariaDisabled: row?.getAttribute("aria-disabled"),
@@ -343,6 +341,6 @@ test.describe("accessibility contrast floor", () => {
     expect(lockedStage.disabled).toBe(true);
     expect(lockedStage.glyph).toBeTruthy();
 
-    await context.close();
+    await isolated.finish();
   });
 });

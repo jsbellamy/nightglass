@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
-import { TILE_HEIGHT, TILE_WIDTH } from "../src/ui/battle-tile-layout";
-import { openTilePage } from "./helpers/dock-context";
+import { declareEvidenceScenario } from "./helpers/evidence-scenarios";
+import { openEvidenceSession } from "./helpers/evidence-session";
 
 async function waitForActorPool(tile: import("@playwright/test").Page): Promise<void> {
   await expect
@@ -28,19 +28,11 @@ async function waitForLungeOffset(tile: import("@playwright/test").Page): Promis
 }
 
 test.describe("accessibility reduced motion", () => {
-  test("evidence: reduced-motion — actor pool stays visible during Action Cycles while lunge/recoil offsets stay disabled", async ({
-    browser,
-  }) => {
+  declareEvidenceScenario("reduced-motion", async ({ browser }) => {
     test.setTimeout(120_000);
 
-    const motionContext = await browser.newContext({
-      viewport: { width: TILE_WIDTH, height: TILE_HEIGHT },
-      deviceScaleFactor: 1,
-      reducedMotion: "reduce",
-    });
-    const reducedTile = await motionContext.newPage();
-    await reducedTile.goto("/", { waitUntil: "networkidle" });
-    await reducedTile.waitForSelector(".battle-tile .status-line");
+    const reduced = await openEvidenceSession(browser, "reduced-motion-live-tile");
+    const reducedTile = reduced.tile!;
 
     await waitForActorPool(reducedTile);
     const reducedState = await reducedTile.evaluate(() => {
@@ -59,10 +51,11 @@ test.describe("accessibility reduced motion", () => {
     expect(reducedState.pools).toBeGreaterThan(0);
     expect(reducedState.maxOffset).toBe(0);
 
-    await motionContext.close();
+    await reduced.finish();
 
-    const { context, tile } = await openTilePage(browser);
+    const control = await openEvidenceSession(browser, "live-tile");
+    const tile = control.tile!;
     await waitForLungeOffset(tile);
-    await context.close();
+    await control.finish();
   });
 });
