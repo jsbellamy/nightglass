@@ -1,5 +1,5 @@
 import type { ReadonlySnapshot } from "../core/snapshot";
-import type { ClassId, Content, StatTalentDef } from "../core/types";
+import type { ClassId, Content, StatTalentDef, TalentTierDef } from "../core/types";
 import { formatAbilityDescription, formatStatTalentDelta } from "./ability-format";
 import type { TileCommand } from "./bus";
 import { EMPTY_ENGINE_LEGALITY, type EngineLegalityView } from "./engine-legality";
@@ -13,6 +13,11 @@ import {
   effectiveTalentState,
   formatStatModifierPerRank,
   levelFor,
+  spentTalentPoints,
+  talentTierDefs,
+  totalStatPoints,
+  type ClassTalentState,
+  type TierTalentState,
 } from "./snapshot-view";
 import { el, mountSurfaceShell, pendingMarker } from "./surface-shell";
 
@@ -28,12 +33,16 @@ export interface TalentsSurfaceOptions {
   getSelectedClassId(): ClassId | null;
 }
 
-function totalStatPoints(statRanks: Record<string, number>): number {
-  return Object.values(statRanks).reduce((sum, rank) => sum + rank, 0);
+function spentInTier(tierState: TierTalentState): number {
+  return totalStatPoints(tierState.statRanks) + (tierState.abilityTalentId ? 1 : 0);
 }
 
-function spentTalentPoints(talentState: ReturnType<typeof effectiveTalentState>): number {
-  return totalStatPoints(talentState.statRanks) + (talentState.abilityTalentId ? 1 : 0);
+function isTalentTierUnlocked(talentState: ClassTalentState, tierIndex: number): boolean {
+  if (tierIndex === 0) {
+    return true;
+  }
+  const previous = talentState.tierStates[tierIndex - 1];
+  return previous !== undefined && spentInTier(previous) >= 6;
 }
 
 function availableTalentPoints(snapshot: ReadonlySnapshot, classId: ClassId, content: Content): number {
@@ -272,6 +281,75 @@ export function mountTalentsSurface(
     return children;
   }
 
+  function renderTalentTierSection(
+    tierIndex: number,
+    tierDef: TalentTierDef,
+    tierState: TierTalentState,
+    talentState: ClassTalentState,
+    multiTier: boolean,
+  ): HTMLElement {
+    const statCells = tierDef.statRow.map((statTalent) => {
+      const rank = tierState.statRanks[statTalent.id] ?? 0;
+      return renderStatCell(statTalent, rank);
+    });
+
+    const abilityCells = tierDef.abilityRow.map((abilityId) => {
+      const ability = content.abilities.find((entry) => entry.id === abilityId);
+      const chosen = tierState.abilityTalentId === abilityId;
+      return renderAbilityCell(
+        abilityId,
+        ability?.name ?? abilityId,
+        ability?.iconKey ?? abilityId,
+        chosen,
+      );
+    });
+
+    const statPointsInTier = totalStatPoints(tierState.statRanks);
+    const tierChildren: HTMLElement[] = [];
+
+    if (multiTier) {
+      tierChildren.push(
+        el("h3", {
+          class: "talent-tier-title",
+          text: `Talent Tier ${tierIndex + 1}`,
+        }),
+      );
+    }
+
+    if (tierIndex > 0 && !isTalentTierUnlocked(talentState, tierIndex)) {
+      tierChildren.push(
+        el("p", {
+          class: "talent-tier-gate-note",
+          data: { talentTierGate: "true" },
+          text: "Spend 6 points in Talent Tier 1 to unlock Talent Tier 2",
+        }),
+      );
+    }
+
+    tierChildren.push(
+      el("h4", { class: "talent-row-title", text: "Stat Row" }),
+      el("div", { class: "talent-stat-row" }, statCells),
+      el("h4", { class: "talent-row-title", text: "Ability Row" }),
+      el("p", {
+        class: "talent-gate-note",
+        text:
+          statPointsInTier >= 5
+            ? "Ability Row unlocked"
+            : "Spend 5 Stat Row points to unlock the Ability Row",
+      }),
+      el("div", { class: "talent-ability-row" }, abilityCells),
+    );
+
+    return el(
+      "section",
+      {
+        class: "talent-tier-section",
+        data: { talentTier: String(tierIndex + 1) },
+      },
+      tierChildren,
+    );
+  }
+
   shell = mountSurfaceShell(root, "talents-surface", {
     reconcile: true,
     title: "Talents",
@@ -281,51 +359,37 @@ export function mountTalentsSurface(
 
       const classKit = classKitFor(content, classId);
       const talentState = effectiveTalentState(snapshot, classId);
+      const tierDefs = talentTierDefs(classKit);
       const level = levelFor(snapshot, content, classId);
       const hasPending = snapshot.pendingEdits.some(
         (edit) => edit.kind === "talent" && edit.classId === classId,
       );
       const points = availableTalentPoints(snapshot, classId, content);
 
-      const knownIds = new Set<string>([
-        ...classKit.talents.statRow.map((talent) => talent.id),
-        ...classKit.talents.abilityRow,
-      ]);
+      const knownIds = new Set<string>(
+        tierDefs.flatMap((tierDef) => [
+          ...tierDef.statRow.map((talent) => talent.id),
+          ...tierDef.abilityRow,
+        ]),
+      );
       const selectedTalentId = shell.getSelection();
       if (selectedTalentId !== null && !knownIds.has(selectedTalentId)) {
         shell.setSelection(null);
       }
       const activeSelection = shell.getSelection();
 
-      const statCells = classKit.talents.statRow.map((statTalent) => {
-        const rank = talentState.statRanks[statTalent.id] ?? 0;
-        return renderStatCell(statTalent, rank);
-      });
+      const multiTier = tierDefs.length > 1;
+      const tierSections = tierDefs.map((tierDef, tierIndex) =>
+        renderTalentTierSection(
+          tierIndex,
+          tierDef,
+          talentState.tierStates[tierIndex]!,
+          talentState,
+          multiTier,
+        ),
+      );
 
-      const abilityCells = classKit.talents.abilityRow.map((abilityId) => {
-        const ability = content.abilities.find((entry) => entry.id === abilityId);
-        const chosen = talentState.abilityTalentId === abilityId;
-        return renderAbilityCell(
-          abilityId,
-          ability?.name ?? abilityId,
-          ability?.iconKey ?? abilityId,
-          chosen,
-        );
-      });
-
-      const grid = el("div", { class: "talent-grid" }, [
-        el("h4", { class: "talent-row-title", text: "Stat Row" }),
-        el("div", { class: "talent-stat-row" }, statCells),
-        el("h4", { class: "talent-row-title", text: "Ability Row" }),
-        el("p", {
-          class: "talent-gate-note",
-          text:
-            totalStatPoints(talentState.statRanks) >= 5
-              ? "Ability Row unlocked"
-              : "Spend 5 Stat Row points to unlock the Ability Row",
-        }),
-        el("div", { class: "talent-ability-row" }, abilityCells),
-      ]);
+      const grid = el("div", { class: "talent-grid" }, tierSections);
 
       const detail = el("aside", {
         class: "talent-detail",
@@ -341,18 +405,27 @@ export function mountTalentsSurface(
           }),
         );
       } else {
-        const statTalent = classKit.talents.statRow.find(
-          (talent) => talent.id === activeSelection,
-        );
+        const statTalent = tierDefs
+          .flatMap((tierDef) => tierDef.statRow)
+          .find((talent) => talent.id === activeSelection);
         if (statTalent) {
-          const rank = talentState.statRanks[statTalent.id] ?? 0;
+          let rank = 0;
+          for (const tier of talentState.tierStates) {
+            if (statTalent.id in tier.statRanks) {
+              rank = tier.statRanks[statTalent.id] ?? 0;
+              break;
+            }
+          }
           for (const child of renderStatDetail(classId, statTalent, rank, legality)) {
             detail.append(child);
           }
         } else {
           const abilityId = activeSelection;
           const ability = content.abilities.find((entry) => entry.id === abilityId);
-          const chosen = talentState.abilityTalentId === abilityId;
+          const chosenTier = talentState.tierStates.find(
+            (tier) => tier.abilityTalentId === abilityId,
+          );
+          const chosen = chosenTier !== undefined;
           for (const child of renderAbilityDetail(
             snapshot,
             classId,

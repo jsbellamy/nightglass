@@ -1186,6 +1186,26 @@ html.dock-window body {
   gap: 4px;
 }
 
+.talent-tier-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.talent-tier-title {
+  margin: 8px 0 2px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.talent-tier-gate-note {
+  margin: 0 0 4px;
+  font-size: 11px;
+  line-height: 1.35;
+  color: #c9c2b2;
+}
+
 .talent-stat-row,
 .talent-ability-row {
   display: flex;

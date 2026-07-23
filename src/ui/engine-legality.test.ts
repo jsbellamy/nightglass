@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { EngineEvent } from "../core/events";
 import { cloneSnapshot, type DropInstance } from "../core/snapshot";
+import { talentTierDefs } from "./snapshot-view";
 import type { ClassId, EquipmentSlotId } from "../core/types";
 import { buildContent } from "../data";
 import {
@@ -253,6 +254,36 @@ describe("Dock-derived equip legality", () => {
     assertCanEquipEquivalence(engine, view, snapshot);
     expect(view.canEquip(1, "hunter", "weapon")).toBe(true);
     expect(engine.canEquip(1, "hunter", "weapon")).toBe(true);
+  });
+
+  it("matches Engine talent legality for every Stat and Ability Talent in every shipped tier", () => {
+    const engine = createEngine(content, undefined, LOOT_SEED);
+    const snapshot = engine.snapshot();
+    const serialized = serializeEngineLegality(engine, snapshot, content);
+    for (const classId of rosterClassIds(snapshot)) {
+      const classKit = content.classes.find((entry) => entry.id === classId);
+      if (!classKit) {
+        continue;
+      }
+      for (const tierDef of talentTierDefs(classKit)) {
+        for (const statTalent of tierDef.statRow) {
+          const key = `${classId}:${statTalent.id}`;
+          expect(serialized.talentAllocate[key]).toBe(
+            engine.canAllocateTalent(classId, statTalent.id),
+          );
+          expect(serialized.talentDeallocate[key]).toBe(
+            engine.canDeallocateTalent(classId, statTalent.id),
+          );
+        }
+        for (const abilityId of tierDef.abilityRow) {
+          const key = `${classId}:${abilityId}`;
+          expect(serialized.talentAllocate[key]).toBe(engine.canAllocateTalent(classId, abilityId));
+          expect(serialized.talentDeallocate[key]).toBe(
+            engine.canDeallocateTalent(classId, abilityId),
+          );
+        }
+      }
+    }
   });
 
   it("keeps the serialized legality key count independent of Armory size", () => {

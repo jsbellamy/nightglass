@@ -4,6 +4,7 @@ import type { ClassId, Content, EquipmentSlotId } from "../core/types";
 import {
   canEquipToSlot,
   rosterClassIds,
+  talentTierDefs,
   type Engine,
 } from "./snapshot-view";
 
@@ -77,15 +78,17 @@ export function serializeEngineLegality(
     if (!classKit) {
       continue;
     }
-    for (const statTalent of classKit.talents.statRow) {
-      const key = talentKey(classId, statTalent.id);
-      talentAllocate[key] = engine.canAllocateTalent(classId, statTalent.id);
-      talentDeallocate[key] = engine.canDeallocateTalent(classId, statTalent.id);
-    }
-    for (const abilityId of classKit.talents.abilityRow) {
-      const key = talentKey(classId, abilityId);
-      talentAllocate[key] = engine.canAllocateTalent(classId, abilityId);
-      talentDeallocate[key] = engine.canDeallocateTalent(classId, abilityId);
+    for (const tierDef of talentTierDefs(classKit)) {
+      for (const statTalent of tierDef.statRow) {
+        const key = talentKey(classId, statTalent.id);
+        talentAllocate[key] = engine.canAllocateTalent(classId, statTalent.id);
+        talentDeallocate[key] = engine.canDeallocateTalent(classId, statTalent.id);
+      }
+      for (const abilityId of tierDef.abilityRow) {
+        const key = talentKey(classId, abilityId);
+        talentAllocate[key] = engine.canAllocateTalent(classId, abilityId);
+        talentDeallocate[key] = engine.canDeallocateTalent(classId, abilityId);
+      }
     }
   }
 
