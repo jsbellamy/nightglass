@@ -53,7 +53,7 @@ describe("equipment icon registry", () => {
     expect(chrome.height).toBe(CHROME_ICON_SIZE);
   });
 
-  it("sets data-icon-pool-key from iconKey and tier", () => {
+  it("tags each Equipment icon with a tier-scoped pool identity", () => {
     const content = createEquipmentIconElement("thornquill-blade", "content");
     expect(content.dataset["iconPoolKey"]).toBe("thornquill-blade:content");
     expect(content.dataset["iconKey"]).toBe("thornquill-blade");

@@ -554,7 +554,7 @@ describe("Management surface shell reconcile mode", () => {
     outside.remove();
   });
 
-  it("pauses rebuild while a preserve-live node is present and flushes on dragend", () => {
+  it("pauses rebuild while a preserve-live node is present and flushes on dragend", async () => {
     const root = document.createElement("div");
     document.body.append(root);
     const engine = createEngine(content, undefined, LOOT_SEED);
@@ -585,11 +585,13 @@ describe("Management surface shell reconcile mode", () => {
     expect(root.querySelector(".probe-stage")).toBe(probe);
     expect(probe!.textContent).toBe("stage-1");
 
-    // Flush while live: body still includes preserve-live, so keep the marker
-    // until after the flush would re-enter pause — remove it first to model
-    // dragend teardown, then dispatch so the pending Snapshot applies.
-    root.querySelector("[data-surface-preserve-live]")?.remove();
+    // Model a bubble-phase dragend teardown (future Armory producer) that clears
+    // the live marker after capture has already queued the shell flush.
+    root.addEventListener("dragend", () => {
+      root.querySelector("[data-surface-preserve-live]")?.removeAttribute("data-surface-preserve-live");
+    });
     root.dispatchEvent(new Event("dragend", { bubbles: true }));
+    await Promise.resolve();
 
     expect(root.querySelector(".probe-stage")?.textContent).toBe("stage-2");
 

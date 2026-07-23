@@ -203,9 +203,10 @@ export function mountSurfaceShell(
   if (options.reconcile) {
     // focusout: the new activeElement settles after this event, so re-check on a microtask.
     root.addEventListener("focusout", () => queueMicrotask(flushPending));
-    // Capture phase so the flush is queued before per-node dragend handlers tear down state.
-    root.addEventListener("dragend", flushPending, true);
-    root.addEventListener("drop", flushPending, true);
+    // Capture phase so the flush is queued before per-node dragend handlers tear down
+    // state; microtask so hasLiveInteraction observes the post-teardown DOM.
+    root.addEventListener("dragend", () => queueMicrotask(flushPending), true);
+    root.addEventListener("drop", () => queueMicrotask(flushPending), true);
   }
 
   function getSelection(): string | null {
