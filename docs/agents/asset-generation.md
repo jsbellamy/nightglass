@@ -124,13 +124,13 @@ for icons. Attach Knight / Wizard / Priest stills as style references:
 > pixel grid rendered large**; every logical pixel is one clean flat square
 > block — no smaller detail, smooth gradient, anti-aliasing, blur, or dithering.
 > A single centered storybook night-garden fantasy item in three-quarter display
-> angle: **\<SUBJECT\>**. Subject's long side spans about **26–30 logical
-> pixels**, with at least **two** full magenta cells of clearance on every edge.
-> Flat solid magenta **`#ff00ff`** background, nothing else in frame. Selective
-> one-logical-pixel dark-plum outline. Use **only** mint / berry / cream / plum
-> Moonberry colours (8–12 flat colors max) — **no brown, tan, cyan, pure white,
-> or pure black**. Structural members at least **3 logical pixels** thick. No
-> shadow, glow, sparkle, particles, text, watermark, or transparency.
+> angle: **\<SUBJECT\>**. Leave at least **two** full magenta cells of clearance
+> on every edge. Flat solid magenta **`#ff00ff`** background, nothing else in
+> frame. Selective one-logical-pixel dark-plum outline. Use **only** mint /
+> berry / cream / plum Moonberry colours (8–12 flat colors max) — **no brown,
+> tan, cyan, pure white, or pure black**. Structural members at least **3
+> logical pixels** thick. No shadow, glow, sparkle, particles, text, watermark,
+> or transparency.
 
 Name materials that exist on `moonberry-16`. A "wooden" bow must be prompted as
 mint/sage stave (or similar on-palette read); brown wood will pass chroma-key and
@@ -225,34 +225,40 @@ role ceiling.
 
 ### Equipment icons (logical grid, named palette)
 
-For **Equipment Base** and **Talent / Ability Talent** icons, read `ingest-report.json` beside
-the provider raws;
-each entry matches the structure `pipeline/icons/ingest.py` returns from ingest
-(`recovered`, `ramp`) and carries the measurement the failure table below is keyed on:
+For **Equipment Base**, **Talent / Ability Talent**, and **Ability** icons, read
+`ingest-report.json` beside the provider raws; each entry matches the structure
+`pipeline/icons/ingest.py` returns from ingest (`recovered`, `ramp`) and carries
+the measurement the tables below are keyed on.
 
-| Failure | Report key |
+Size is a **router**, not a reject: overshoot auto-fits; thin advances with a
+review annotation. Hard rejects stay raw-gate, clip, pitch, and off-ramp
+(named-palette path).
+
+| Signal | Report key |
 | --- | --- |
-| Overshoot | `recovered.grid` vs the acceptance canvas |
-| Underfill | `recovered.grid` long axis vs `MIN_LONG_AXIS` |
+| Auto-fit (overshoot) | `recovered.fit` (`from` / `to` / `reason: overshoot`) |
+| Thin (size review) | `recovered.size_review == "thin"` vs `MIN_LONG_AXIS` |
 | Pitch-fail | `recovered.pitch_x.score` / `recovered.pitch_y.score` vs `MIN_GRID_SCORE` |
 | Clip-fail | `recovered.bbox` touching the raw canvas edge |
 | Off-ramp | `ramp.far_fraction` / `ramp.off_ramp_reject` |
 
-Classify each icon reject as exactly one primary failure, then retry
-**prompt-side** with that class's move. Keep render resolution constant; never
-resize a failed candidate into an accepted raw.
+Classify each icon **reject** as exactly one primary failure, then retry
+**prompt-side** with that class's move. Keep render resolution constant. Never
+upscale a soft/underfilled generation into an accepted raw. Downscale-to-fit of
+a gate-clean recovered grid is the sole permitted size exception (see ADR-0006).
 
-| Failure | Signal | Retry move |
+| Outcome | Signal | Next action |
 | --- | --- | --- |
-| **Overshoot** | Recovered grid wider/taller than the acceptance canvas | Preserve identity; shrink silhouette; restate magenta clearance on every edge. |
-| **Underfill** | Recovered long axis below the icon gate (`MIN_LONG_AXIS = 20` in `pipeline/icons/constants.py`; **preference** 26–30 on a ~32-cell grid) | Regenerate larger in frame, or exaggerate the identity feature. Do not nearest-neighbour upscale a soft generation into an accepted raw. |
+| **Overshoot (auto-fit)** | Recovered grid wider/taller than `MAX_BODY` | Deterministic nearest-neighbour downscale to fit; advance with `recovered.fit`. Do not reprompt for size alone. |
+| **Thin (size review)** | Recovered long axis below `MIN_LONG_AXIS` (20) | Advance with `recovered.size_review: thin`. Step 6 adjudicates fidelity; do not mechanically enlarge. |
 | **Pitch-fail** | X or Y pitch confidence below the icon contract gate | Strengthen the icon grid shell; attach an already-accepted grid-faithful raw as **style reference**; demand uniform square blocks. |
 | **Clip-fail** | Subject touches a raw canvas edge | Preserve identity; add at least two magenta cells of clearance on the clipped side(s). |
-| **Off-ramp** | More than ~20% of opaque subject cells are far from every `moonberry-16` swatch, or the Stage-2 preview shows a whole material plane silently recolored. Threshold: `OFF_RAMP_REJECT` in `pipeline/icons/constants.py` / `docs/icon-contract.md`. | Keep geometry fixed; retry with **exact on-palette material names** (mint/sage stave, berry vine, cream string — never "brown wood"). |
+| **Off-ramp** | More than ~20% of opaque subject cells are far from every allowed swatch, or the Stage-2 preview shows a whole material plane silently recolored. Threshold: `OFF_RAMP_REJECT` in `pipeline/icons/constants.py` / `docs/icon-contract.md`. | Keep geometry fixed; retry with **exact on-palette material names** (mint/sage stave, berry vine, cream string — never "brown wood"). |
 
-For icons, if two signals fire, fix **raw-gate-fail** first unless measurable
-clipping is present; then **clip-fail**, **overshoot**, **pitch-fail**,
-**off-ramp**, and **underfill** in that order.
+For icons, if two hard-fail signals fire, fix **raw-gate-fail** first unless
+measurable clipping is present; then **clip-fail**, **pitch-fail**, and
+**off-ramp** in that order. Auto-fit and thin are not rejects — they advance to
+step 6.
 
 ### Autonomous candidate decisions
 
@@ -269,16 +275,18 @@ For every candidate, record one row before generating the next:
 
 Apply this state machine:
 
-1. **Reject and retry** when any raw gate fails, any side is clipped, or the
-   measurement exceeds the owning contract gate (body: role opaque ceiling in
-   [`../body-sprite-contract.md`](../body-sprite-contract.md); icon: recovered
-   grid vs acceptance canvas and pitch scores).
+1. **Reject and retry** when any raw gate fails, any side is clipped, or a
+   hard-fail measurement misses the owning contract gate (body: role opaque
+   ceiling in [`../body-sprite-contract.md`](../body-sprite-contract.md); icon:
+   pitch scores — not size). Icon overshoot auto-fits and advances; icon thin
+   advances with `size_review: thin`.
 2. Choose exactly one primary failure using the priority above. Preserve the
    subject identity and change only the prompt clauses needed by that retry move.
 3. **Advance to visual review** only after every deterministic advancement gate
-   passes. Visual review then judges role-correct
-   facing, identity, silhouette, cohort consistency, and runtime obstructions;
-   visual appeal never overrides a deterministic failure.
+   passes (including auto-fitted and thin icons). Visual review then judges
+   role-correct facing, identity, silhouette, cohort consistency, runtime
+   obstructions, and — for fitted/thin icons — size fidelity; visual appeal
+   never overrides a deterministic hard failure.
 4. **Accept** only after deterministic validation and visual review both pass.
    Promote the chosen provider raw byte-for-byte with its complete provenance;
    record rejected candidates as table rows and remove redundant PNG copies.
@@ -373,6 +381,9 @@ only — not in the implementing agent's context. Give it:
 
 - the one composite image path;
 - the asset class's identity, silhouette, readability, and separation questions;
+- for icons carrying `recovered.fit` or `recovered.size_review: thin`, the
+  size-fidelity question: **did the fit/scale reduce the clarity or intent of
+  the intended read?**;
 - the accept bar from the owning contract (step 1 pointers).
 
 It returns an explicit **accept / retry / reject** verdict plus written answers to
@@ -381,6 +392,10 @@ those questions. The implementing agent records that text as step-6 evidence and
 returns, so the review image is paid for on that subagent's handful of turns
 instead of on every remaining request of the asset task — the bound is structural,
 not a matter of remembering to be careful.
+
+When step 6 requests a retry for size fidelity (or any other visual miss) on a
+subset of icons, regenerate only those icons and **re-review on a mini-composite
+of only the changed icon(s)** — not a fresh full family sheet.
 
 **Human-in-the-loop review** is unchanged: a person looking at an image costs no
 context and is not required to use a subagent. A HITL prototype remains open until

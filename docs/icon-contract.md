@@ -111,7 +111,7 @@ asset identities**: the Talent Tree ships under **Talent / Ability Talent** (nam
 CANVAS   = 34    # runtime PNG
 DRAWABLE = 32    # centered band inside the canvas
 RING     = 1     # derived outline ring (build-time only; never prompt for it)
-MAX_BODY = 30    # structural: DRAWABLE − 2×RING — not a tunable gate
+MAX_BODY = 30    # structural fit target: DRAWABLE − 2×RING — overshoot downscales to this
 ```
 
 Outline swatch is palette-specific: `contour-plum-deepest` on `moonberry-16`,
@@ -126,11 +126,14 @@ Thresholds were provisional at n=2 on the
 accepted icons (`dewlight-focus`, `bramblesong-bow`). **Recalibrated in
 [#131](https://github.com/jsbellamy/nightglass/issues/131)** after all six families
 landed — see `docs/research/evidence/126-equipment-icons/` for measurements.
+**Size routing in [#552](https://github.com/jsbellamy/nightglass/issues/552):**
+`MAX_BODY` / `MIN_LONG_AXIS` no longer reject; they route to fit / thin review
+(ADR-0006).
 
 | Gate | Value | Status |
 | --- | --- | --- |
-| `MAX_BODY` | 30 | Structural (see geometry) |
-| `MIN_LONG_AXIS` | 20 | Held at n=6 (`#131`) |
+| `MAX_BODY` | 30 | Structural fit target — overshoot downscales to fit (not a reject) |
+| `MIN_LONG_AXIS` | 20 | Review-annotation threshold — thin advances with `size_review: thin` (not a reject) |
 | Off-ramp distance | ≤20% of subject cells farther than ~40 RGB from nearest allowed swatch | Retuned in `#131` (n=2 was 15%; measured peak 16.4%) |
 | Grid-recovery score | `pipeline/acquire.py` `MIN_GRID_SCORE` (0.04 on `main`) | Held at n=6 (`#131`) |
 | Colour count cap | *dropped* | Vacuous on `moonberry-16` |
@@ -199,14 +202,14 @@ Fowl Equipment acquisition uses the same geometry and clearance discipline with
 > grid rendered large**; every logical pixel is one clean flat square block — no
 > smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single
 > centered Fowl Harvest rural-mutation item in three-quarter display angle:
-> **\<SUBJECT\>**. Subject's long side spans about **26–30 logical pixels**, with at
-> least **two** full magenta cells of clearance on every edge. Flat solid magenta
-> **`#ff00ff`** background, nothing else in frame. Selective one-logical-pixel oily
-> near-black contour (`oil-ink` read). Use **only** named **fowl-harvest-24**
-> swatches (duck/corn golds, beak and rust oranges, patty/toast browns, field/husk
-> greens, diner cream, restrained condiment red, storm slate, oily near-black) —
-> **8–12 flat colors max**. Structural members at least **3 logical pixels** thick.
-> No shadow, glow, sparkle, particles, text, watermark, or transparency.
+> **\<SUBJECT\>**. Leave at least **two** full magenta cells of clearance on every
+> edge. Flat solid magenta **`#ff00ff`** background, nothing else in frame.
+> Selective one-logical-pixel oily near-black contour (`oil-ink` read). Use
+> **only** named **fowl-harvest-24** swatches (duck/corn golds, beak and rust
+> oranges, patty/toast browns, field/husk greens, diner cream, restrained
+> condiment red, storm slate, oily near-black) — **8–12 flat colors max**.
+> Structural members at least **3 logical pixels** thick. No shadow, glow,
+> sparkle, particles, text, watermark, or transparency.
 
 Do not prompt for the derived outline ring; build derives `oil-ink` (Fowl) or
 `contour-plum-deepest` (Moonberry) deterministically.

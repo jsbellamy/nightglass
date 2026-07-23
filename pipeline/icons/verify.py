@@ -18,10 +18,11 @@ import ast
 import acquire  # noqa: E402
 
 from icons import build as icon_build  # noqa: E402
-from icons.constants import MIN_GRID_SCORE, MIN_LONG_AXIS, OFF_RAMP_REJECT  # noqa: E402
+from icons.constants import MAX_BODY, MIN_GRID_SCORE, MIN_LONG_AXIS, OFF_RAMP_REJECT  # noqa: E402
 from icons.fixture_raws import write_gate_fixtures  # noqa: E402
 from icons.ingest import (  # noqa: E402
     cells_to_swatches,
+    ingest_raw_to_local_text_source,
     ingest_raw_to_text_source,
     recover_icon_grid,
 )
@@ -524,13 +525,46 @@ write_gate_fixtures(FIXTURES)
 subset = VERIFY_CANARY_FAMILY.palette_subset
 
 pass_long, _ = recover_icon_grid(FIXTURES / "long-axis-pass.png")
-fail_long = False
-try:
-    recover_icon_grid(FIXTURES / "long-axis-fail.png")
-except ValueError as exc:
-    fail_long = "underfill" in str(exc) or str(MIN_LONG_AXIS) in str(exc)
+thin_cells, thin_meta = recover_icon_grid(FIXTURES / "long-axis-fail.png")
 check("MIN_LONG_AXIS pass fixture accepted", len(pass_long) > 0)
-check("MIN_LONG_AXIS fail fixture rejected", fail_long)
+check(
+    "thin fixture advances with size_review",
+    thin_meta.get("size_review") == "thin" and len(thin_cells) > 0,
+    str(thin_meta),
+)
+check(
+    "thin long axis is below annotation threshold",
+    max(thin_meta["grid"]) < MIN_LONG_AXIS,
+    str(thin_meta["grid"]),
+)
+
+overshoot_cells, overshoot_meta = recover_icon_grid(FIXTURES / "overshoot-fit.png")
+fit = overshoot_meta.get("fit") or {}
+fit_from = fit.get("from") or [0, 0]
+fit_to = fit.get("to") or [0, 0]
+check(
+    "overshoot-fit recovers above MAX_BODY then fits",
+    fit.get("reason") == "overshoot"
+    and max(fit_from) > MAX_BODY
+    and fit_to[0] <= MAX_BODY
+    and fit_to[1] <= MAX_BODY
+    and len(overshoot_cells) == fit_to[1]
+    and (len(overshoot_cells[0]) if overshoot_cells else 0) == fit_to[0],
+    str(overshoot_meta),
+)
+overshoot_swatches = [
+    [None if rgb is None else swatch_for_local_rgb(rgb) for rgb in row]
+    for row in overshoot_cells
+]
+overshoot_icon = paint_source_local_icon(
+    overshoot_swatches,
+    outline=swatch_for_local_rgb(SOURCE_LOCAL_OUTLINE_RGB),
+)
+check(
+    "overshoot-fit paints without raising",
+    overshoot_icon.size == (34, 34),
+    str(overshoot_icon.size),
+)
 
 _, ramp_pass = cells_to_swatches(
     recover_icon_grid(FIXTURES / "off-ramp-pass.png")[0], subset
@@ -569,6 +603,28 @@ check("grid-recovery fail fixture rejected", grid_fail)
 
 with tempfile.TemporaryDirectory() as tmp:
     tmp_path = pathlib.Path(tmp)
+    named_report = ingest_raw_to_text_source(
+        FIXTURES / "overshoot-fit.png",
+        source_key="fixture-overshoot",
+        palette_subset=subset,
+        out_path=tmp_path / "overshoot.grid",
+    )
+    check(
+        "named-palette ingest surfaces fit in recovered meta",
+        "fit" in named_report["recovered"]
+        and named_report["recovered"]["fit"]["reason"] == "overshoot",
+        str(named_report.get("recovered")),
+    )
+    local_report = ingest_raw_to_local_text_source(
+        FIXTURES / "long-axis-fail.png",
+        source_key="fixture-thin",
+        out_path=tmp_path / "thin.grid",
+    )
+    check(
+        "source-local ingest surfaces size_review in recovered meta",
+        local_report["recovered"].get("size_review") == "thin",
+        str(local_report.get("recovered")),
+    )
     ingest_raw_to_text_source(
         FIXTURES / "grid-recovery-pass.png",
         source_key="fixture-ingest",
