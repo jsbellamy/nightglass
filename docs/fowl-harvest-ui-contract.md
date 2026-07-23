@@ -251,7 +251,7 @@ behavior remain authoritative unless a later issue changes them.
 │ ┌─ talent-tree-scroll ───────────────────────────────────────────┐ │
 │ │ TALENT TIER 1                                                  │ │
 │ │ Stat Row    [3/5  − +] [2/5  − +]                              │ │
-│ │ Ability Row [✓ A  − +] [  B  − +]                              │ │
+│ │ Ability Row [✓ pick A] [  pick B ]                              │ │
 │ │           ║  gate connector                                    │ │
 │ │ TALENT TIER 2 — LOCKED …                                       │ │
 │ └────────────────────────────────────────────────────────────────┘ │
