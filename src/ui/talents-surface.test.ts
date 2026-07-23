@@ -11,6 +11,7 @@ import { formatAbilityDescription } from "./ability-format";
 import { characterStatsFor } from "./snapshot-view";
 import { mountTalentsSurface } from "./talents-surface";
 import { legalityViewFromEngine } from "./engine-legality";
+import { buildContent } from "../data";
 
 const LOOT_SEED = 42;
 
@@ -585,6 +586,90 @@ describe("Talents surface", () => {
 
     surface.destroy();
     root.remove();
+  });
+
+  it("stacks Talent Tier 1 and Tier 2 with tier gate, selection, and Tier-2 ability descriptions", () => {
+    const fullContent = buildContent();
+    const root = document.createElement("div");
+    const boot = createEngine(fullContent, undefined, LOOT_SEED);
+    boot.advanceBy(1);
+    const saved = boot.snapshot();
+    saved.progression.characterXp.knight = 3_000;
+    const engine = createEngine(fullContent, saved, LOOT_SEED);
+    const selected = { current: "knight" as ClassId };
+    const surface = mountTalentsSurface(root, {
+      content: fullContent,
+      getSelectedClassId: () => selected.current,
+    });
+
+    surface.render(engine.snapshot(), legalityViewFromEngine(engine));
+    const knight = knightSection(root);
+    const tiers = knight.querySelectorAll("[data-talent-tier]");
+    expect(tiers).toHaveLength(2);
+    expect(tiers[0]?.getAttribute("data-talent-tier")).toBe("1");
+    expect(tiers[1]?.getAttribute("data-talent-tier")).toBe("2");
+    expect(knight.querySelectorAll(".talent-stat-row .talent-cell")).toHaveLength(4);
+    expect(knight.querySelectorAll(".talent-ability-row .talent-cell")).toHaveLength(4);
+    expect(knight.querySelector('[data-talent-tier-gate="true"]')?.textContent).toBe(
+      "Spend 6 points in Talent Tier 1 to unlock Talent Tier 2",
+    );
+
+    selectTalentCell(root, "iron-discipline");
+    const tier2Pick = root.querySelector<HTMLButtonElement>(
+      `[data-talent-id="iron-discipline"][data-talent-action="allocate"]`,
+    );
+    expect(tier2Pick?.disabled).toBe(true);
+
+    for (let rank = 0; rank < 5; rank += 1) {
+      engine.allocateTalent("knight", rank % 2 === 0 ? "fortitude" : "swordcraft");
+    }
+    engine.allocateTalent("knight", "hold-the-line");
+    surface.render(engine.snapshot(), legalityViewFromEngine(engine));
+    expect(knightSection(root).querySelector('[data-talent-tier-gate="true"]')).toBeNull();
+
+    engine.allocateTalent("knight", "iron-discipline");
+    surface.render(engine.snapshot(), legalityViewFromEngine(engine));
+    selectTalentCell(root, "vanguard");
+    const vanguard = fullContent.abilities.find((entry) => entry.id === "vanguard")!;
+    const description = knightSection(root)
+      .querySelector('[data-talent-detail="true"]')
+      ?.querySelector('[data-ability-description="true"]');
+    expect(description?.textContent).toBe(
+      formatAbilityDescription(
+        vanguard,
+        characterStatsFor(engine.snapshot(), fullContent, "knight"),
+        fullContent.statuses,
+      ),
+    );
+
+    surface.destroy();
+  });
+
+  it("counts available Talent Points using spend across all tiers", () => {
+    const fullContent = buildContent();
+    const root = document.createElement("div");
+    const boot = createEngine(fullContent, undefined, LOOT_SEED);
+    boot.advanceBy(1);
+    const saved = boot.snapshot();
+    saved.progression.characterXp.knight = 3_000;
+    const engine = createEngine(fullContent, saved, LOOT_SEED);
+    for (let rank = 0; rank < 5; rank += 1) {
+      engine.allocateTalent("knight", rank % 2 === 0 ? "fortitude" : "swordcraft");
+    }
+    engine.allocateTalent("knight", "hold-the-line");
+    engine.allocateTalent("knight", "iron-discipline");
+    const selected = { current: "knight" as ClassId };
+    const surface = mountTalentsSurface(root, {
+      content: fullContent,
+      getSelectedClassId: () => selected.current,
+    });
+
+    surface.render(engine.snapshot(), legalityViewFromEngine(engine));
+    expect(knightSection(root).querySelector('[data-talent-points="true"]')?.textContent).toBe(
+      "3 Talent Points available",
+    );
+
+    surface.destroy();
   });
 });
 

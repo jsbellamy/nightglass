@@ -47,6 +47,14 @@ export {
   equipViolation,
 } from "../core/equipment";
 
+export {
+  spentTalentPoints,
+  talentTierDefs,
+  totalStatPoints,
+  type ClassTalentState,
+  type TierTalentState,
+} from "../core/talents";
+
 export const CLASS_LABELS: Record<ClassId, string> = {
   knight: "Knight",
   wizard: "Wizard",
