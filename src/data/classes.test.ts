@@ -48,6 +48,10 @@ describe("assembled Class Kit content", () => {
     expect(validateContent(content, { fixture: true })).toEqual([]);
   });
 
+  it("ships no behaviorless Abilities, Status Effects, or Stat Talents", () => {
+    expect(validateContent(content)).toEqual([]);
+  });
+
   it("authored Stat Talents and Ability Talents use iconKey equal to id", () => {
     for (const classKit of content.classes) {
       for (const tier of talentTierDefs(classKit)) {
