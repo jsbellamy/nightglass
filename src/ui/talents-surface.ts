@@ -260,6 +260,7 @@ export function mountTalentsSurface(
   }
 
   shell = mountSurfaceShell(root, "talents-surface", {
+    reconcile: true,
     title: "Talents",
     selection: true,
     body(snapshot, legality) {

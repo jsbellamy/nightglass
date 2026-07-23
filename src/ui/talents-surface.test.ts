@@ -128,6 +128,26 @@ describe("Talents surface", () => {
     surface.destroy();
   });
 
+  it("reuses the same talent icon node across renders with a changed Snapshot", () => {
+    const root = document.createElement("div");
+    const engine = leveledKnightEngine();
+    const selected = { current: "knight" as ClassId };
+    const surface = mountTalentsSurface(root, mountOptions(selected));
+
+    renderTalents(surface, engine);
+    const before = root.querySelector<HTMLImageElement>(".equipment-icon-img--content");
+    expect(before).not.toBeNull();
+
+    const next = structuredClone(engine.snapshot());
+    next.progression.characterXp.knight += 1;
+    surface.render(next, legalityViewFromEngine(engine));
+
+    const after = root.querySelector<HTMLImageElement>(".equipment-icon-img--content");
+    expect(after).toBe(before);
+
+    surface.destroy();
+  });
+
   it("shows Stat rank badges without name or pip prose on the cell", () => {
     const root = document.createElement("div");
     const engine = leveledKnightEngine();
