@@ -14,7 +14,7 @@ import {
   formatAbilityTimings,
 } from "./ability-format";
 import { characterStatsFor, classKitFor, effectiveTalentState, unlockableAbilityIds } from "./snapshot-view";
-import { computeLoadoutAssignment, mountLoadoutSurface } from "./loadout-surface";
+import { computeLoadoutAssignment, availableAbilityIdsForLoadout, mountLoadoutSurface } from "./loadout-surface";
 
 const LOOT_SEED = 42;
 
@@ -102,6 +102,35 @@ describe("Loadout assignment tuple", () => {
   });
 });
 
+describe("Available Ability derivation", () => {
+  it("lists every unlocked non-Basic Ability not in the effective Loadout once", () => {
+    const unlocked = ["basic", "a", "b", "c", "d", "e"];
+    const loadout: [string, string, string] = ["a", "b", "c"];
+    expect(availableAbilityIdsForLoadout(unlocked, "basic", loadout)).toEqual(["d", "e"]);
+  });
+
+  it("supports ten unslotted choices for strip stress fixtures", () => {
+    const unlocked = [
+      "basic",
+      "s0",
+      "s1",
+      "s2",
+      "s3",
+      "s4",
+      "s5",
+      "s6",
+      "s7",
+      "s8",
+      "s9",
+      "s10",
+      "s11",
+      "s12",
+    ];
+    const loadout: [string, string, string] = ["s0", "s1", "s2"];
+    expect(availableAbilityIdsForLoadout(unlocked, "basic", loadout)).toHaveLength(10);
+  });
+});
+
 describe("Loadout surface", () => {
   it("renders only the picker's selected Character", () => {
     const root = document.createElement("div");
@@ -117,9 +146,11 @@ describe("Loadout surface", () => {
     expect(knightSection(root).querySelector(".basic-attack")).not.toBeNull();
     expect(knightSection(root).querySelectorAll(".loadout-slot")).toHaveLength(3);
     expect(knightSection(root).querySelector('[data-slot="0"] .slot-label')?.textContent).toMatch(
-      /Slot 1/,
+      /Slot I/,
     );
-    expect(root.querySelector(".loadout-order-note")).not.toBeNull();
+    expect(root.querySelector(".loadout-assignment-hint")?.textContent).toMatch(
+      /Select a skill, then a slot/i,
+    );
     expect(root.querySelector(".loadout-assign")).toBeNull();
     expect(root.querySelector("select")).toBeNull();
 
@@ -145,7 +176,7 @@ describe("Loadout surface", () => {
     surface.destroy();
   });
 
-  it("lists every unlocked Ability once in the pool", () => {
+  it("lists only unslotted unlocked Abilities in the Available strip", () => {
     const root = document.createElement("div");
     const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
     const selected = { current: "knight" as ClassId };
@@ -154,14 +185,148 @@ describe("Loadout surface", () => {
     surface.render(engine.snapshot());
     const classKit = classKitFor(fixtureContent, "knight");
     const talentState = effectiveTalentState(engine.snapshot(), "knight");
-    const expectedPool = unlockableAbilityIds(classKit, talentState).filter(
-      (id) => id !== classKit.basicAbilityId,
+    const loadout = engine.snapshot().progression.loadouts.knight;
+    const expectedPool = availableAbilityIdsForLoadout(
+      unlockableAbilityIds(classKit, talentState),
+      classKit.basicAbilityId,
+      loadout,
     );
     const poolIds = [
       ...(root.querySelectorAll<HTMLElement>(".loadout-pool-tiles [data-ability-id]") ?? []),
     ].map((node) => node.dataset["abilityId"]);
     expect(poolIds).toEqual(expectedPool);
     expect(new Set(poolIds).size).toBe(poolIds.length);
+    for (const slotted of loadout) {
+      expect(poolIds).not.toContain(slotted);
+    }
+
+    surface.destroy();
+  });
+
+  it("returns a displaced Ability to the Available strip after pool-to-slot replace", () => {
+    const root = document.createElement("div");
+    const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
+    engine.advanceBy(1);
+    const selected = { current: "knight" as ClassId };
+    const surface = mountLoadoutSurface(
+      root,
+      mountOptions(fixtureContent, selected, (command) => {
+        if (command.cmd === "setLoadout") {
+          engine.setLoadout(command.args[0], command.args[1]);
+        }
+      }),
+    );
+
+    surface.render(engine.snapshot());
+    expect(poolTile(root, "k-pommel")).not.toBeNull();
+    dragBetween(poolTile(root, "k-pommel"), root.querySelector('[data-loadout-slot-drop][data-slot="0"]')!);
+    surface.render(engine.snapshot());
+    expect(
+      root.querySelector('.loadout-pool-tiles [data-ability-id="k-shield-brace"]'),
+    ).not.toBeNull();
+    expect(
+      root.querySelector('.loadout-pool-tiles [data-ability-id="k-pommel"]'),
+    ).toBeNull();
+
+    surface.destroy();
+  });
+
+  it("renders ten strip icons and horizontal scroll for the stress fixture", () => {
+    const root = document.createElement("div");
+    const content = structuredClone(fixtureContent);
+    const extraIds: string[] = [];
+    for (let index = 0; index < 9; index += 1) {
+      const id = `k-extra-${index}`;
+      extraIds.push(id);
+      content.abilities.push({
+        id,
+        name: `Extra ${index}`,
+        classId: "knight",
+        slot: "core",
+        targeting: { kind: "closest-opponent" },
+        effects: [{ kind: "damage", channel: "physical", coefficient: 0.5 }],
+        windUpMs: 200,
+        recoveryMs: 300,
+        cooldownMs: 1000,
+        iconKey: "k-hold-line",
+      });
+    }
+    const knight = content.classes.find((entry) => entry.id === "knight")!;
+    knight.coreAbilityIds = [...knight.coreAbilityIds, ...extraIds] as typeof knight.coreAbilityIds;
+
+    const engine = createEngine(content, undefined, LOOT_SEED);
+    const selected = { current: "knight" as ClassId };
+    const surface = mountLoadoutSurface(root, mountOptions(content, selected));
+
+    surface.render(engine.snapshot());
+    const tiles = root.querySelectorAll(".loadout-pool-tiles [data-loadout-assign-tile]");
+    expect(tiles).toHaveLength(10);
+    const strip = root.querySelector<HTMLElement>(".loadout-pool-strip .loadout-pool-tiles");
+    expect(strip).not.toBeNull();
+    expect(root.querySelector(".loadout-pool-strip")).not.toBeNull();
+    expect(strip!.childElementCount).toBe(10);
+
+    surface.destroy();
+  });
+
+  it("discloses the Ability name in the strip heading on hover and focus", () => {
+    const root = document.createElement("div");
+    const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
+    const selected = { current: "knight" as ClassId };
+    const surface = mountLoadoutSurface(root, mountOptions(fixtureContent, selected));
+
+    surface.render(engine.snapshot());
+    const heading = root.querySelector<HTMLElement>("[data-loadout-available-heading]");
+    expect(heading?.textContent).toBe("Available skills");
+
+    const tile = poolTile(root, "k-pommel");
+    expect(tile.getAttribute("aria-label")).toBe(
+      fixtureContent.abilities.find((entry) => entry.id === "k-pommel")!.name,
+    );
+    tile.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
+    expect(heading?.textContent).toBe(
+      fixtureContent.abilities.find((entry) => entry.id === "k-pommel")!.name,
+    );
+    tile.dispatchEvent(new MouseEvent("mouseleave", { bubbles: true }));
+    expect(heading?.textContent).toBe("Available skills");
+
+    tile.focus();
+    tile.dispatchEvent(new FocusEvent("focusin", { bubbles: true }));
+    expect(heading?.textContent).toBe(
+      fixtureContent.abilities.find((entry) => entry.id === "k-pommel")!.name,
+    );
+
+    surface.destroy();
+  });
+
+  it("shows selection guidance in the strip heading while assigning", () => {
+    const root = document.createElement("div");
+    document.body.append(root);
+    const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
+    engine.advanceBy(1);
+    const selected = { current: "knight" as ClassId };
+    const surface = mountLoadoutSurface(root, mountOptions(fixtureContent, selected));
+
+    surface.render(engine.snapshot());
+    const heading = root.querySelector<HTMLElement>("[data-loadout-available-heading]");
+    const source = poolTile(root, "k-pommel");
+    source.focus();
+    pressEnter(source);
+    expect(heading?.textContent).toMatch(/Selected · choose a target slot/i);
+
+    surface.destroy();
+    root.remove();
+  });
+
+  it("does not render a reset or default-loadout control", () => {
+    const root = document.createElement("div");
+    const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
+    const selected = { current: "knight" as ClassId };
+    const surface = mountLoadoutSurface(root, mountOptions(fixtureContent, selected));
+
+    surface.render(engine.snapshot());
+    expect(root.querySelector("[data-loadout-reset]")).toBeNull();
+    expect(root.textContent?.toLowerCase()).not.toMatch(/default loadout|reset loadout|refresh loadout/);
 
     surface.destroy();
   });
@@ -262,20 +427,20 @@ describe("Loadout surface", () => {
     const surface = mountLoadoutSurface(root, mountOptions(fixtureContent, selected));
     const snapshot = engine.snapshot();
     const stats = characterStatsFor(snapshot, fixtureContent, "knight");
-    const sweep = fixtureContent.abilities.find((entry) => entry.id === "k-sweep")!;
+    const pommel = fixtureContent.abilities.find((entry) => entry.id === "k-pommel")!;
 
     surface.render(snapshot);
-    const tile = poolTile(root, "k-sweep");
+    const tile = poolTile(root, "k-pommel");
     tile.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
 
     const popover = root.querySelector<HTMLElement>('[data-loadout-ability-popover="true"]');
     expect(popover?.hidden).toBe(false);
     expect(popover?.style.pointerEvents).toBe("none");
     expect(popover?.querySelector('[data-ability-description="true"]')?.textContent).toBe(
-      formatAbilityDescription(sweep, stats, fixtureContent.statuses),
+      formatAbilityDescription(pommel, stats, fixtureContent.statuses),
     );
     expect(popover?.querySelector(".ability-timings")?.textContent).toBe(
-      formatAbilityTimings(sweep),
+      formatAbilityTimings(pommel),
     );
     expect(tile.getAttribute("aria-describedby")).toMatch(/^loadout-ability-desc-/);
 
@@ -294,7 +459,7 @@ describe("Loadout surface", () => {
     const surface = mountLoadoutSurface(root, mountOptions(fixtureContent, selected));
 
     surface.render(engine.snapshot());
-    const tile = poolTile(root, "k-sweep");
+    const tile = poolTile(root, "k-pommel");
     tile.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
 
     const popover = root.querySelector<HTMLElement>('[data-loadout-ability-popover="true"]');
@@ -322,7 +487,7 @@ describe("Loadout surface", () => {
     );
 
     surface.render(engine.snapshot());
-    const tile = poolTile(root, "k-sweep");
+    const tile = poolTile(root, "k-pommel");
     tile.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
     const popover = root.querySelector<HTMLElement>('[data-loadout-ability-popover="true"]');
     expect(popover?.hidden).toBe(false);
@@ -343,7 +508,7 @@ describe("Loadout surface", () => {
     const surface = mountLoadoutSurface(root, mountOptions(fixtureContent, selected));
 
     surface.render(engine.snapshot());
-    const tile = poolTile(root, "k-sweep");
+    const tile = poolTile(root, "k-pommel");
     tile.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
 
     const popover = root.querySelector<HTMLElement>('[data-loadout-ability-popover="true"]');
@@ -726,12 +891,12 @@ describe("Loadout surface", () => {
     );
 
     surface.render(engine.snapshot());
-    const tile = poolTile(root, "k-sweep");
+    const tile = poolTile(root, "k-pommel");
     tile.focus();
     expect(document.activeElement).toBe(tile);
     const pausedSnapshot = engine.snapshot();
     const pausedDesc = formatAbilityDescription(
-      fixtureContent.abilities.find((entry) => entry.id === "k-sweep")!,
+      fixtureContent.abilities.find((entry) => entry.id === "k-pommel")!,
       characterStatsFor(pausedSnapshot, fixtureContent, "knight"),
       fixtureContent.statuses,
     );
@@ -757,7 +922,7 @@ describe("Loadout surface", () => {
     expect(document.activeElement).toBe(outside);
     surface.render(engine.snapshot());
     const flushedDesc = formatAbilityDescription(
-      fixtureContent.abilities.find((entry) => entry.id === "k-sweep")!,
+      fixtureContent.abilities.find((entry) => entry.id === "k-pommel")!,
       characterStatsFor(engine.snapshot(), fixtureContent, "knight"),
       fixtureContent.statuses,
     );
@@ -795,10 +960,10 @@ describe("Loadout surface", () => {
     );
 
     surface.render(engine.snapshot());
-    const tile = poolTile(root, "k-sweep");
+    const tile = poolTile(root, "k-pommel");
     tile.focus();
     const before = formatAbilityDescription(
-      fixtureContent.abilities.find((entry) => entry.id === "k-sweep")!,
+      fixtureContent.abilities.find((entry) => entry.id === "k-pommel")!,
       characterStatsFor(engine.snapshot(), fixtureContent, "knight"),
       fixtureContent.statuses,
     );
@@ -814,7 +979,7 @@ describe("Loadout surface", () => {
 
     tile.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
     const after = formatAbilityDescription(
-      fixtureContent.abilities.find((entry) => entry.id === "k-sweep")!,
+      fixtureContent.abilities.find((entry) => entry.id === "k-pommel")!,
       characterStatsFor(engine.snapshot(), fixtureContent, "knight"),
       fixtureContent.statuses,
     );

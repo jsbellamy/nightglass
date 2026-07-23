@@ -37,12 +37,12 @@ const DOCK_PRIMARY_TEXT: { tab: "character" | "armory" | "stage"; selector: stri
   },
   {
     tab: "character",
-    selector: '[data-character-section="loadout"] .loadout-character .surface-section-title',
+    selector: '[data-character-section="loadout"] .loadout-assignment-hint',
   },
   {
     tab: "character",
     selector:
-      '[data-character-section="loadout"] .loadout-pool-tiles [data-loadout-assign-tile] .ability-name',
+      '[data-character-section="loadout"] .loadout-slots .loadout-assign-tile .ability-name',
   },
   {
     tab: "character",
