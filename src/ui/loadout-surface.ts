@@ -84,6 +84,7 @@ export function mountLoadoutSurface(
   const { content } = options;
 
   const shell = mountSurfaceShell(root, "loadout-surface", {
+    reconcile: true,
     title: "Loadout",
     body(snapshot) {
       const classId = options.getSelectedClassId()!;
