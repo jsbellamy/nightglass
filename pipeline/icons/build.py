@@ -106,7 +106,6 @@ def build_all() -> dict[str, str]:
                 f"{path}: palette {source.palette_id!r} does not match family "
                 f"{family.palette_id!r}"
             )
-        cells = cells_from_source(source)
         subset = frozenset(family.palette_subset)
         outline_name = outline_swatch_name(family.palette_id)
         for variant in family.variants:

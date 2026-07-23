@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 import pathlib
-import re
 from dataclasses import dataclass
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
@@ -108,17 +107,23 @@ def load_palette() -> dict[str, Swatch]:
 PALETTE = load_palette()
 PALETTE_NAMES = frozenset(PALETTE.keys())
 
-_RGB_TOKEN = re.compile(r"^\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*$")
-
 
 def parse_opaque_rgb(token: str, *, context: str) -> tuple[int, int, int]:
-    match = _RGB_TOKEN.fullmatch(token)
-    if not match:
+    stripped = token.strip()
+    if stripped.lower() == "transparent":
+        raise ValueError(f"{context}: transparent legend entries must use '.'")
+    parts = [part.strip() for part in stripped.split(",")]
+    if len(parts) == 4:
+        raise ValueError(f"{context}: transparent rgba legend entries are forbidden")
+    if len(parts) != 3:
         raise ValueError(f"{context}: malformed rgb {token!r} (expected r,g,b)")
-    parts = tuple(int(match.group(i)) for i in range(1, 4))
-    if any(channel < 0 or channel > 255 for channel in parts):
+    try:
+        channels = tuple(int(part) for part in parts)
+    except ValueError as exc:
+        raise ValueError(f"{context}: malformed rgb {token!r} (expected r,g,b)") from exc
+    if any(channel < 0 or channel > 255 for channel in channels):
         raise ValueError(f"{context}: rgb out of range {token!r}")
-    return parts  # type: ignore[return-value]
+    return channels  # type: ignore[return-value]
 
 
 def format_opaque_rgb(rgb: tuple[int, int, int]) -> str:

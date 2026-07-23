@@ -315,6 +315,76 @@ except ValueError as exc:
     check("out-of-range source-local rgb rejected", "out of range" in str(exc))
 oor_rgb.unlink()
 
+bad_outline = HERE / "_bad_local_outline.grid"
+bad_outline.write_text(
+    "\n".join(
+        [
+            "source_key: bad-outline",
+            "color_mode: source-local",
+            "outline: 1,2,3",
+            "legend",
+            ". .",
+            "A 10,20,30",
+            "grid",
+            ".A",
+        ]
+    )
+    + "\n"
+)
+try:
+    parse_text(bad_outline)
+    check("non-common source-local outline rejected", False)
+except ValueError as exc:
+    check("non-common source-local outline rejected", "outline rgb" in str(exc))
+bad_outline.unlink()
+
+transparent_rgba = HERE / "_transparent_rgba.grid"
+transparent_rgba.write_text(
+    "\n".join(
+        [
+            "source_key: transparent-rgba",
+            "color_mode: source-local",
+            "outline: 58,6,20",
+            "legend",
+            ". .",
+            "A 10,20,30,0",
+            "grid",
+            ".A",
+        ]
+    )
+    + "\n"
+)
+try:
+    parse_text(transparent_rgba)
+    check("transparent rgba legend entry rejected", False)
+except ValueError as exc:
+    check("transparent rgba legend entry rejected", "transparent" in str(exc))
+transparent_rgba.unlink()
+
+palette_forbidden = HERE / "_palette_forbidden_local.grid"
+palette_forbidden.write_text(
+    "\n".join(
+        [
+            "source_key: palette-forbidden",
+            "color_mode: source-local",
+            "outline: 58,6,20",
+            "palette: moonberry-16",
+            "legend",
+            ". .",
+            "A 10,20,30",
+            "grid",
+            ".A",
+        ]
+    )
+    + "\n"
+)
+try:
+    parse_text(palette_forbidden)
+    check("palette line forbidden in source-local mode", False)
+except ValueError as exc:
+    check("palette line forbidden in source-local mode", "forbidden" in str(exc))
+palette_forbidden.unlink()
+
 with tempfile.TemporaryDirectory() as tmp:
     tmp_path = pathlib.Path(tmp)
     canonical = cells_to_local_source(
