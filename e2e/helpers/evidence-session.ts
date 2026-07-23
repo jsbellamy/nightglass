@@ -9,10 +9,17 @@ import {
   bindBusCommandReplayerEngine,
   installBusSpy,
   postBusSnapshot,
-  waitForDockOpenedSnapshotHandshake,
 } from "./bus";
 import { engineLegalityForSnapshot } from "./snapshots";
-import { focusCharacterView, openTilePage } from "./dock-context";
+import {
+  attachDockPage,
+  attachTilePage,
+  createTileInteractiveContext,
+  focusCharacterView,
+  navigateDockShell,
+  prepareDockPage,
+  waitForPopulatedDock,
+} from "./dock-context";
 import type { EvidenceFixtureId } from "./evidence-scenarios";
 import { reviewSceneRoot } from "./review-scenes";
 
@@ -57,18 +64,7 @@ export type EvidenceSession = {
   finish: (options?: { assertPageErrors?: boolean }) => Promise<void>;
 };
 
-export async function waitForPopulatedDock(dock: Page, timeout = 10_000): Promise<void> {
-  await expect
-    .poll(
-      async () =>
-        dock.evaluate(() => {
-          const panel = document.querySelector(".dock-panel:not([hidden])");
-          return panel ? panel.textContent?.trim().length ?? 0 : 0;
-        }),
-      { timeout },
-    )
-    .toBeGreaterThan(20);
-}
+export { waitForPopulatedDock } from "./dock-context";
 
 function trackPageErrors(page: Page, pageErrors: string[]): void {
   page.on("pageerror", (error) => pageErrors.push(String(error)));
@@ -86,6 +82,59 @@ async function installCharacterLoadoutEvidenceFixture(
       fixtureId: "character-loadout-evidence",
     },
   );
+}
+
+type InteractiveContextOptions = {
+  viewport: { width: number; height: number };
+  deviceScaleFactor?: number;
+  reducedMotion?: "reduce";
+  bootSaveJson?: string;
+  characterLoadoutEvidence?: boolean;
+};
+
+async function createInteractiveContext(
+  browser: Browser,
+  options: InteractiveContextOptions,
+): Promise<{ context: BrowserContext; pageErrors: string[] }> {
+  const pageErrors: string[] = [];
+  const context = await browser.newContext({
+    viewport: options.viewport,
+    deviceScaleFactor: options.deviceScaleFactor ?? 1,
+    ...(options.reducedMotion ? { reducedMotion: options.reducedMotion } : {}),
+  });
+  if (options.characterLoadoutEvidence) {
+    await installCharacterLoadoutEvidenceFixture(context);
+  }
+  if (options.bootSaveJson) {
+    await context.addInitScript((raw) => {
+      localStorage.setItem("nightglass-save-v1", raw);
+    }, options.bootSaveJson);
+  }
+  return { context, pageErrors };
+}
+
+async function openTilePeer(
+  context: BrowserContext,
+  pageErrors: string[],
+  options: { busSpy?: boolean } = {},
+): Promise<Page> {
+  const tile = await attachTilePage(context);
+  trackPageErrors(tile, pageErrors);
+  if (options.busSpy) {
+    await installBusSpy(tile);
+  }
+  return tile;
+}
+
+async function openDockPeer(
+  context: BrowserContext,
+  pageErrors: string[],
+  options: { tile?: Page } = {},
+): Promise<Page> {
+  return attachDockPage(context, {
+    ...options,
+    onDockPage: (dock) => trackPageErrors(dock, pageErrors),
+  });
 }
 
 function sessionHandle(
@@ -109,80 +158,57 @@ function sessionHandle(
   };
 }
 
-async function openLiveTileAndDockSession(
-  browser: Browser,
-  bootSaveJson?: string,
-  options: { characterLoadoutEvidence?: boolean } = {},
-): Promise<EvidenceSession> {
-  const pageErrors: string[] = [];
-  const context = await browser.newContext({
-    viewport: { width: TILE_WIDTH, height: TILE_HEIGHT },
-    deviceScaleFactor: 1,
-  });
-  if (options.characterLoadoutEvidence) {
-    await installCharacterLoadoutEvidenceFixture(context);
-  }
-  if (bootSaveJson) {
-    await context.addInitScript((raw) => {
-      localStorage.setItem("nightglass-save-v1", raw);
-    }, bootSaveJson);
-  }
-  const tile = await context.newPage();
-  await tile.goto("/", { waitUntil: "networkidle" });
-  await tile.waitForSelector(".battle-tile .status-line");
-  trackPageErrors(tile, pageErrors);
-  await installBusSpy(tile);
-  const dock = await context.newPage();
-  trackPageErrors(dock, pageErrors);
-  await dock.setViewportSize({ width: DOCK_WIDTH, height: DOCK_HEIGHT });
-  await dock.goto("/?window=dock", { waitUntil: "networkidle" });
-  await dock.waitForSelector(".management-dock");
-  await waitForDockOpenedSnapshotHandshake(tile);
-  await waitForPopulatedDock(dock);
-  return sessionHandle(context, tile, dock, pageErrors);
-}
-
 async function openEvidenceSessionForPreset(
   browser: Browser,
   preset: EvidenceFixtureId,
   options: EvidenceSessionOptions = {},
 ): Promise<EvidenceSession> {
-  const pageErrors: string[] = [];
   const bootSaveJson = options.bootSaveJson;
 
   switch (preset) {
     case "live-tile": {
       mkdirSync(reviewSceneRoot, { recursive: true });
-      const { context, tile } = await openTilePage(browser, bootSaveJson);
-      trackPageErrors(tile, pageErrors);
+      const pageErrors: string[] = [];
+      const context = await createTileInteractiveContext(browser, bootSaveJson);
+      const tile = await openTilePeer(context, pageErrors);
       return sessionHandle(context, tile, null, pageErrors);
     }
     case "live-tile-seeded-snapshot": {
-      const { context, tile } = await openTilePage(browser, bootSaveJson);
-      trackPageErrors(tile, pageErrors);
+      const pageErrors: string[] = [];
+      const context = await createTileInteractiveContext(browser, bootSaveJson);
+      const tile = await openTilePeer(context, pageErrors);
       return sessionHandle(context, tile, null, pageErrors);
     }
     case "live-tile-and-dock": {
-      return openLiveTileAndDockSession(browser, bootSaveJson);
+      const { context, pageErrors } = await createInteractiveContext(browser, {
+        viewport: { width: TILE_WIDTH, height: TILE_HEIGHT },
+        bootSaveJson,
+      });
+      const tile = await openTilePeer(context, pageErrors, { busSpy: true });
+      const dock = await openDockPeer(context, pageErrors, { tile });
+      return sessionHandle(context, tile, dock, pageErrors);
     }
     case "character-loadout-evidence": {
-      return openLiveTileAndDockSession(browser, bootSaveJson, {
+      const { context, pageErrors } = await createInteractiveContext(browser, {
+        viewport: { width: TILE_WIDTH, height: TILE_HEIGHT },
+        bootSaveJson,
         characterLoadoutEvidence: true,
       });
+      const tile = await openTilePeer(context, pageErrors, { busSpy: true });
+      const dock = await openDockPeer(context, pageErrors, { tile });
+      return sessionHandle(context, tile, dock, pageErrors);
     }
     case "isolated-dock": {
-      const context = await browser.newContext({
+      const { context, pageErrors } = await createInteractiveContext(browser, {
         viewport: { width: DOCK_WIDTH, height: DOCK_HEIGHT },
-        deviceScaleFactor: 1,
       });
-      const dock = await context.newPage();
+      const dock = await prepareDockPage(context);
       const seedInteractive =
         Boolean(options.dockSnapshot) && Boolean(options.seedEngineLegality);
       if (seedInteractive && options.dockSnapshot) {
         await bindBusCommandReplayerEngine(dock, options.dockSnapshot);
       }
-      await dock.goto("/?window=dock", { waitUntil: "networkidle" });
-      await dock.waitForSelector(".management-dock");
+      await navigateDockShell(dock);
       if (options.dockSnapshot) {
         const legality = options.seedEngineLegality
           ? engineLegalityForSnapshot(options.dockSnapshot)
@@ -197,20 +223,12 @@ async function openEvidenceSessionForPreset(
       return sessionHandle(context, null, dock, pageErrors);
     }
     case "reduced-motion-live-tile": {
-      const context = await browser.newContext({
+      const { context, pageErrors } = await createInteractiveContext(browser, {
         viewport: { width: TILE_WIDTH, height: TILE_HEIGHT },
-        deviceScaleFactor: 1,
+        bootSaveJson,
         reducedMotion: "reduce",
       });
-      if (bootSaveJson) {
-        await context.addInitScript((raw) => {
-          localStorage.setItem("nightglass-save-v1", raw);
-        }, bootSaveJson);
-      }
-      const tile = await context.newPage();
-      await tile.goto("/", { waitUntil: "networkidle" });
-      await tile.waitForSelector(".battle-tile .status-line");
-      trackPageErrors(tile, pageErrors);
+      const tile = await openTilePeer(context, pageErrors);
       return sessionHandle(context, tile, null, pageErrors);
     }
     default: {

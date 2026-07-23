@@ -2,11 +2,25 @@ import { expect, type Browser, type Page } from "@playwright/test";
 import { DOCK_HEIGHT, DOCK_WIDTH } from "../../src/ui/dock-geometry";
 import type { DockTabId } from "../../src/ui/dock";
 import { TILE_HEIGHT, TILE_WIDTH } from "../../src/ui/battle-tile-layout";
+import { waitForDockOpenedSnapshotHandshake } from "./bus";
 
-export async function openTilePage(
+export async function waitForPopulatedDock(dock: Page, timeout = 10_000): Promise<void> {
+  await expect
+    .poll(
+      async () =>
+        dock.evaluate(() => {
+          const panel = document.querySelector(".dock-panel:not([hidden])");
+          return panel ? panel.textContent?.trim().length ?? 0 : 0;
+        }),
+      { timeout },
+    )
+    .toBeGreaterThan(20);
+}
+
+export async function createTileInteractiveContext(
   browser: Browser,
   savedSnapshotJson?: string,
-): Promise<{ context: Awaited<ReturnType<Browser["newContext"]>>; tile: Page }> {
+): Promise<Awaited<ReturnType<Browser["newContext"]>>> {
   const context = await browser.newContext({
     viewport: { width: TILE_WIDTH, height: TILE_HEIGHT },
     deviceScaleFactor: 1,
@@ -16,30 +30,59 @@ export async function openTilePage(
       localStorage.setItem("nightglass-save-v1", raw);
     }, savedSnapshotJson);
   }
+  return context;
+}
+
+export async function attachTilePage(
+  context: Awaited<ReturnType<Browser["newContext"]>>,
+): Promise<Page> {
   const tile = await context.newPage();
   await tile.goto("/", { waitUntil: "networkidle" });
   await tile.waitForSelector(".battle-tile .status-line");
+  return tile;
+}
+
+export async function openTilePage(
+  browser: Browser,
+  savedSnapshotJson?: string,
+): Promise<{ context: Awaited<ReturnType<Browser["newContext"]>>; tile: Page }> {
+  const context = await createTileInteractiveContext(browser, savedSnapshotJson);
+  const tile = await attachTilePage(context);
   return { context, tile };
 }
 
-/** Browser-degraded Management Dock: second page on the same origin + bus handshake. */
-export async function attachDockPage(
+export async function prepareDockPage(
   context: Awaited<ReturnType<Browser["newContext"]>>,
 ): Promise<Page> {
   const dock = await context.newPage();
   await dock.setViewportSize({ width: DOCK_WIDTH, height: DOCK_HEIGHT });
+  return dock;
+}
+
+export async function navigateDockShell(dock: Page): Promise<void> {
   await dock.goto("/?window=dock", { waitUntil: "networkidle" });
   await dock.waitForSelector(".management-dock");
-  await expect
-    .poll(
-      async () =>
-        dock.evaluate(() => {
-          const panel = document.querySelector(".dock-panel:not([hidden])");
-          return panel ? panel.textContent?.trim().length ?? 0 : 0;
-        }),
-      { timeout: 10_000 },
-    )
-    .toBeGreaterThan(20);
+}
+
+export type AttachDockPageOptions = {
+  /** When set, waits for tile bus handshake before populated-dock poll. */
+  tile?: Page;
+  /** Invoked immediately after the dock page is created, before navigation. */
+  onDockPage?: (dock: Page) => void;
+};
+
+/** Browser-degraded Management Dock: second page on the same origin + bus handshake. */
+export async function attachDockPage(
+  context: Awaited<ReturnType<Browser["newContext"]>>,
+  options: AttachDockPageOptions = {},
+): Promise<Page> {
+  const dock = await prepareDockPage(context);
+  options.onDockPage?.(dock);
+  await navigateDockShell(dock);
+  if (options.tile) {
+    await waitForDockOpenedSnapshotHandshake(options.tile);
+  }
+  await waitForPopulatedDock(dock);
   return dock;
 }
 
