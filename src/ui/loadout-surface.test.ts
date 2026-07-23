@@ -295,6 +295,9 @@ describe("Loadout surface", () => {
     const engine = createEngine(content, undefined, LOOT_SEED);
     const selected = { current: "knight" as ClassId };
     const surface = mountLoadoutSurface(root, mountOptions(content, selected));
+    root.style.height = "320px";
+    root.style.width = "230px";
+    document.body.append(root);
 
     surface.render(engine.snapshot());
     const tiles = root.querySelectorAll(".loadout-pool-tiles [data-loadout-assign-tile]");
@@ -303,6 +306,25 @@ describe("Loadout surface", () => {
     expect(strip).not.toBeNull();
     expect(root.querySelector(".loadout-pool-strip")).not.toBeNull();
     expect(strip!.childElementCount).toBe(10);
+
+    const baselineRoot = document.createElement("div");
+    baselineRoot.style.height = "320px";
+    baselineRoot.style.width = "230px";
+    document.body.append(baselineRoot);
+
+    const baselineSurface = mountLoadoutSurface(
+      baselineRoot,
+      mountOptions(fixtureContent, selected),
+    );
+    const baselineEngine = createEngine(fixtureContent, undefined, LOOT_SEED);
+    baselineSurface.render(baselineEngine.snapshot());
+    const baselineHeight = baselineRoot.getBoundingClientRect().height;
+    const stressHeight = root.getBoundingClientRect().height;
+    expect(stressHeight).toBe(baselineHeight);
+
+    baselineSurface.destroy();
+    baselineRoot.remove();
+    root.remove();
 
     surface.destroy();
   });

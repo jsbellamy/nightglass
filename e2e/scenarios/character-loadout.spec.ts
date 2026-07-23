@@ -75,6 +75,16 @@ test.describe("Character Loadout evidence scenarios", () => {
           lastBox.bottom <= shellBox.bottom + 1,
         inlineAbilityCopy: [...panel.querySelectorAll(".loadout-assign-tile .ability-description")]
           .length,
+        loadoutHeadingVisible:
+          panel.querySelector<HTMLElement>(".loadout-surface .dock-surface-title") !== null &&
+          getComputedStyle(
+            panel.querySelector<HTMLElement>(".loadout-surface .dock-surface-title")!,
+          ).display !== "none",
+        talentsHeadingVisible:
+          panel.querySelector<HTMLElement>(".talents-surface .dock-surface-title") !== null &&
+          getComputedStyle(
+            panel.querySelector<HTMLElement>(".talents-surface .dock-surface-title")!,
+          ).display !== "none",
       };
     });
 
@@ -91,6 +101,8 @@ test.describe("Character Loadout evidence scenarios", () => {
     expect(loadoutFit!.lastSlotFits, "third loadout slot visible without scroll").toBe(true);
     expect(loadoutFit!.overflowY).toMatch(/auto|scroll/);
     expect(loadoutFit!.inlineAbilityCopy, "no inline Ability copy on tiles").toBe(0);
+    expect(loadoutFit!.loadoutHeadingVisible, "Loadout heading visible on Build").toBe(true);
+    expect(loadoutFit!.talentsHeadingVisible, "Talents heading visible on Build").toBe(true);
 
     const stripViewportCapacity = await dock.evaluate(() => {
       const strip = document.querySelector<HTMLElement>(
