@@ -13,6 +13,24 @@ import {
 } from "./helpers/dock-context";
 import { armoryColourSnapshot } from "./helpers/snapshots";
 
+const ARMORY_COMPARE_VISIBLE = '[data-armory-compare-popover="true"]:not([hidden])';
+const ARMORY_COMPARE_DROP = ".armory-grid .equipment-card.rarity-epic[data-drop-id='99']";
+
+async function showArmoryComparePopover(
+  dock: import("@playwright/test").Page,
+  requireStatTable: boolean,
+): Promise<void> {
+  const card = dock.locator(ARMORY_COMPARE_DROP);
+  await expect(card).toBeVisible({ timeout: 15_000 });
+  await card.dispatchEvent("mouseenter");
+  await expect(dock.locator(ARMORY_COMPARE_VISIBLE)).toBeVisible({ timeout: 15_000 });
+  if (requireStatTable) {
+    await expect(
+      dock.locator(`${ARMORY_COMPARE_VISIBLE} .armory-compare-stat-table th`).first(),
+    ).toBeVisible({ timeout: 15_000 });
+  }
+}
+
 const DOCK_PRIMARY_TEXT: { tab: "character" | "armory" | "stage"; selector: string }[] = [
   {
     tab: "character",
@@ -36,11 +54,20 @@ const DOCK_PRIMARY_TEXT: { tab: "character" | "armory" | "stage"; selector: stri
     selector:
       '[data-character-section="talents"] [data-talent-detail="true"] [data-talent-action="allocate"]',
   },
+  {
+    tab: "character",
+    selector: '[data-character-section="stats"] [data-stats-xp="true"]',
+  },
+  {
+    tab: "character",
+    selector:
+      '[data-character-section="stats"] [data-stat-key="physical"] .stats-total',
+  },
   { tab: "armory", selector: ".armory-worn-strip .armory-worn-slot-label" },
   { tab: "armory", selector: '.armory-worn-strip [data-slot-filled="false"] .armory-worn-slot-empty' },
   { tab: "armory", selector: ".character-picker .character-chip-name" },
-  { tab: "armory", selector: ".armory-compare-popover .armory-compare-name" },
-  { tab: "armory", selector: ".armory-compare-popover .armory-compare-stat-table th" },
+  { tab: "armory", selector: `${ARMORY_COMPARE_VISIBLE} .armory-compare-name` },
+  { tab: "armory", selector: `${ARMORY_COMPARE_VISIBLE} .armory-compare-stat-table th` },
   { tab: "armory", selector: ".armory-slot-segment" },
   { tab: "armory", selector: ".armory-state-select" },
   { tab: "stage", selector: ".attempt-position" },
@@ -76,6 +103,8 @@ test.describe("accessibility contrast floor", () => {
       if (tab === "character") {
         if (selector.includes('[data-character-section="loadout"]')) {
           await focusCharacterSubTab(dock, "loadout");
+        } else if (selector.includes('[data-character-section="stats"]')) {
+          await focusCharacterSubTab(dock, "stats");
         } else if (selector.includes('[data-character-section="talents"]')) {
           await focusCharacterSubTab(dock, "talents");
           if (!talentDetailPrepared) {
@@ -98,13 +127,8 @@ test.describe("accessibility contrast floor", () => {
           timeout: 15_000,
         });
       }
-      if (tab === "armory" && selector.includes("armory-compare-popover")) {
-        const tile = dock.locator('.armory-grid .equipment-card[data-drop-id="99"]');
-        await expect(tile).toBeVisible();
-        await tile.dispatchEvent("mouseenter");
-        await expect(
-          dock.locator('[data-armory-compare-popover="true"]:not([hidden])'),
-        ).toBeVisible({ timeout: 15_000 });
+      if (tab === "armory" && selector.includes(ARMORY_COMPARE_VISIBLE)) {
+        await showArmoryComparePopover(dock, selector.includes("stat-table"));
       }
       const sample = await readTextContrastSample(dock, selector);
       expect(sample, `sample for ${selector}`).not.toBeNull();
