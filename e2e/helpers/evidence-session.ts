@@ -4,10 +4,13 @@ import type { Snapshot } from "../../src/core/snapshot";
 import { DOCK_HEIGHT, DOCK_WIDTH } from "../../src/ui/dock-geometry";
 import { TILE_HEIGHT, TILE_WIDTH } from "../../src/ui/battle-tile-layout";
 import {
+  attachBusCommandReplayerListener,
+  bindBusCommandReplayerEngine,
   installBusSpy,
   postBusSnapshot,
   waitForDockOpenedSnapshotHandshake,
 } from "./bus";
+import { engineLegalityForSnapshot } from "./snapshots";
 import { openTilePage } from "./dock-context";
 import type { EvidenceFixtureId } from "./evidence-scenarios";
 import { reviewSceneRoot } from "./review-scenes";
@@ -32,6 +35,11 @@ export type EvidenceSessionOptions = {
   bootSaveJson?: string;
   /** Seeds the Dock when using isolated-dock (no live Tile pump peer). */
   dockSnapshot?: Snapshot;
+  /**
+   * When set with dockSnapshot, posts production Content-derived serialized legality
+   * instead of the generic empty legality helper.
+   */
+  seedEngineLegality?: boolean;
 };
 
 export type EvidenceSession = {
@@ -128,10 +136,21 @@ async function openEvidenceSessionForPreset(
         deviceScaleFactor: 1,
       });
       const dock = await context.newPage();
+      const seedInteractive =
+        Boolean(options.dockSnapshot) && Boolean(options.seedEngineLegality);
+      if (seedInteractive && options.dockSnapshot) {
+        await bindBusCommandReplayerEngine(dock, options.dockSnapshot);
+      }
       await dock.goto("/?window=dock", { waitUntil: "networkidle" });
       await dock.waitForSelector(".management-dock");
       if (options.dockSnapshot) {
-        await postBusSnapshot(dock, options.dockSnapshot);
+        const legality = options.seedEngineLegality
+          ? engineLegalityForSnapshot(options.dockSnapshot)
+          : undefined;
+        await postBusSnapshot(dock, options.dockSnapshot, legality);
+        if (seedInteractive) {
+          await attachBusCommandReplayerListener(dock);
+        }
       }
       trackPageErrors(dock, pageErrors);
       await waitForPopulatedDock(dock);
