@@ -1141,6 +1141,37 @@ describe("Armory surface", () => {
     root.remove();
   });
 
+  it("marks a worn-slot drag source live and clears the marker on drag end", () => {
+    const root = document.createElement("div");
+    document.body.append(root);
+    const selected = { current: "knight" as ClassId };
+    const snapshot = armorySnapshot([
+      drop({
+        dropId: 1,
+        baseId: "fixture-blade",
+        assignedTo: { classId: "knight", slot: "weapon" },
+      }),
+    ]);
+    const surface = mountWithSelection(root, selected);
+    renderArmory(surface, snapshot);
+
+    const weaponSlot = root.querySelector<HTMLElement>('[data-worn-slot="weapon"]')!;
+    const dataTransfer = new DataTransfer();
+    weaponSlot.dispatchEvent(
+      new DragEvent("dragstart", { bubbles: true, cancelable: true, dataTransfer }),
+    );
+    expect(weaponSlot.dataset["surfacePreserveLive"]).toBe("true");
+
+    weaponSlot.dispatchEvent(
+      new DragEvent("dragend", { bubbles: true, cancelable: true, dataTransfer }),
+    );
+    expect(weaponSlot.dataset["surfacePreserveLive"]).toBeUndefined();
+    expect(root.querySelector("[data-surface-preserve-live]")).toBeNull();
+
+    surface.destroy();
+    root.remove();
+  });
+
   it("keeps the focused State select across a Snapshot pump and flushes on blur", async () => {
     const root = document.createElement("div");
     document.body.append(root);
