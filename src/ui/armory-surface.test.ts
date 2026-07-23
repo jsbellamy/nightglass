@@ -1072,6 +1072,114 @@ describe("Armory surface", () => {
     surface.destroy();
     root.remove();
   });
+
+  it("reuses the same equipment icon node across Snapshot pumps under reconcile", () => {
+    const root = document.createElement("div");
+    document.body.append(root);
+    const selected = { current: "knight" as ClassId };
+    const first = armorySnapshot([drop({ dropId: 1, baseId: "fixture-blade" })]);
+    const surface = mountWithSelection(root, selected);
+    renderArmory(surface, first);
+
+    const before = root.querySelector<HTMLElement>(
+      '.armory-grid .equipment-card[data-drop-id="1"] [data-icon-pool-key]',
+    );
+    expect(before).not.toBeNull();
+
+    const changed = cloneSnapshot(first);
+    changed.simNowMs += 250;
+    const partyCombatant = changed.attempt?.combatants.find((c) => c.side === "party");
+    if (partyCombatant) {
+      partyCombatant.health = Math.max(1, partyCombatant.health - 7);
+    }
+    renderArmory(surface, changed);
+
+    const after = root.querySelector<HTMLElement>(
+      '.armory-grid .equipment-card[data-drop-id="1"] [data-icon-pool-key]',
+    );
+    expect(after).toBe(before);
+
+    surface.destroy();
+    root.remove();
+  });
+
+  it("keeps the dragged collection tile connected while a Snapshot pump arrives mid-drag", async () => {
+    const root = document.createElement("div");
+    document.body.append(root);
+    const selected = { current: "knight" as ClassId };
+    const first = armorySnapshot([drop({ dropId: 1, baseId: "fixture-blade" })]);
+    const surface = mountWithSelection(root, selected);
+    renderArmory(surface, first);
+
+    const tile = root.querySelector<HTMLElement>('.equipment-card[data-drop-id="1"]')!;
+    const dataTransfer = new DataTransfer();
+    tile.dispatchEvent(
+      new DragEvent("dragstart", { bubbles: true, cancelable: true, dataTransfer }),
+    );
+    expect(tile.dataset["surfacePreserveLive"]).toBe("true");
+
+    const midDrag = cloneSnapshot(first);
+    midDrag.progression.armory = [
+      ...midDrag.progression.armory,
+      drop({ dropId: 2, baseId: "fixture-armor" }),
+    ];
+    renderArmory(surface, midDrag);
+
+    expect(tile.isConnected).toBe(true);
+    expect(root.querySelector('.equipment-card[data-drop-id="1"]')).toBe(tile);
+    expect(root.querySelector('.equipment-card[data-drop-id="2"]')).toBeNull();
+
+    tile.dispatchEvent(
+      new DragEvent("dragend", { bubbles: true, cancelable: true, dataTransfer }),
+    );
+    expect(tile.dataset["surfacePreserveLive"]).toBeUndefined();
+    await Promise.resolve();
+
+    expect(root.querySelector('.equipment-card[data-drop-id="2"]')).not.toBeNull();
+
+    surface.destroy();
+    root.remove();
+  });
+
+  it("keeps the focused State select across a Snapshot pump and flushes on blur", async () => {
+    const root = document.createElement("div");
+    document.body.append(root);
+    const outside = document.createElement("button");
+    outside.type = "button";
+    outside.textContent = "outside";
+    document.body.append(outside);
+    const selected = { current: "knight" as ClassId };
+    const first = armorySnapshot([drop({ dropId: 1, baseId: "fixture-blade" })]);
+    const surface = mountWithSelection(root, selected);
+    renderArmory(surface, first);
+
+    const select = root.querySelector<HTMLSelectElement>(".armory-state-select");
+    expect(select).not.toBeNull();
+    select!.focus();
+    expect(document.activeElement).toBe(select);
+
+    const changed = cloneSnapshot(first);
+    changed.progression.armory = [
+      ...changed.progression.armory,
+      drop({ dropId: 2, baseId: "fixture-armor" }),
+    ];
+    renderArmory(surface, changed);
+
+    expect(root.querySelector(".armory-state-select")).toBe(select);
+    expect(document.activeElement).toBe(select);
+    expect(root.querySelector('.equipment-card[data-drop-id="2"]')).toBeNull();
+
+    outside.focus();
+    select!.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
+    await Promise.resolve();
+
+    expect(root.querySelector('.equipment-card[data-drop-id="2"]')).not.toBeNull();
+    expect(document.activeElement).toBe(outside);
+
+    surface.destroy();
+    root.remove();
+    outside.remove();
+  });
 });
 
 describe("Armory surface source boundary", () => {
