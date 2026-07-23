@@ -1,0 +1,75 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "prompt": "TRUE chunky pixel-art ability icon only, exact 32\u00d732 logical pixel grid rendered large. Thunder Ring: a thick circular electric ring with three inward lightning teeth and a compact stun star at center, reading as an area lightning stun. Centered 26\u201330 pixels, two-cell #ff00ff clearance, flat pixels, structures at least 3 pixels, selective one-pixel charcoal-plum outline, upper-left lighting. Use electric cyan, vivid blue, yellow-white charge, violet shadow; source-local colors without Moonberry/Fowl limits. Solid #ff00ff background only. No character, text, UI frame, storm landscape, cast shadow, soft glow cloud, particle field, gradients, anti-aliasing, blur, dithering, watermark, or transparency.",
+  "raw_sha256": "09af761d654f074568ba4278dc8c5ab7bdb6c8fa02e685069cc0acd8d0b40383",
+  "asset_class": "interface",
+  "kind": "ability-loadout-icon",
+  "color_mode": "source-local",
+  "runtime_destination": "src/assets/icon-sources/thunder-ring/source.grid (unregistered; runtime PNG deferred to #534)",
+  "candidate": "thunder-ring-r4",
+  "style_references": [
+    {
+      "path": "src/assets/icons/preview/verify-ability-canary@8x.png",
+      "role": "style_cohort",
+      "sha256": "82a04baf5f96334431bbb23c8b3767055b80379202ede610b964301c26873ea9"
+    },
+    {
+      "path": "src/assets/icon-sources/verify-ability-canary/source.grid",
+      "role": "source_form_reference",
+      "sha256": "07d4d4cb1bdca6b9d80c8a80217533dd050985f1639e96c543a811a3abd97614"
+    },
+    {
+      "path": "src/assets/icons/preview/starfall@8x.png",
+      "role": "style_cohort",
+      "sha256": "5e3c5ea975a02c6226538e0b7dd749c1add4efd0ee5348ece42d11bbc13b6dfd"
+    },
+    {
+      "path": "src/assets/icons/preview/wildfire-sigil@8x.png",
+      "role": "style_cohort",
+      "sha256": "59c557c706d5d31bee1c91283b84a4b8eb6d41bea80f6fe0da87b2118a7673ce"
+    },
+    {
+      "path": "src/assets/icons/preview/leyline-attunement@8x.png",
+      "role": "style_cohort",
+      "sha256": "8175ff3b8aa0b4c1248d28951e6e5e33bd44d3daa389653567393b58eb2bc5c4"
+    },
+    {
+      "path": "src/assets/icons/preview/elemental-practice@8x.png",
+      "role": "style_cohort",
+      "sha256": "f5a70d806871ca0e7eb756f817f1bd9a3419a3cf68098c92c10adb14344a6e5d"
+    }
+  ],
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        105,
+        91,
+        919,
+        936
+      ],
+      "pitch_x": {
+        "pitch": 40.74999999999962,
+        "score": 0.24305980078804784
+      },
+      "pitch_y": {
+        "pitch": 41.1499999999996,
+        "score": 0.27729243960356276
+      },
+      "grid": [
+        19,
+        21
+      ]
+    },
+    "mode": "source-local",
+    "quantize": {
+      "unique_before": 196,
+      "unique_after": 10,
+      "target": 10,
+      "centers": 10
+    }
+  },
+  "evidence_raw": "docs/research/evidence/character-ability-icons-wizard/accepted-raws/thunder-ring.png",
+  "issue": 533,
+  "acquisition_notes": "Recovered cells flattened to \u226410 source-local RGBs (contract 8\u201312 flat colours) and exterior near-outline charcoal stripped so Stage-2 derived ring owns the contour; provider raw remains immutable evidence."
+}

@@ -1,0 +1,75 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "prompt": "TRUE chunky pixel-art ability icon only, exact 32\u00d732 logical pixel grid rendered large. Prism Ward: a faceted triangular prism enclosed by three interlocking protective arcs, clearly party protection rather than an attack. Centered 26\u201330 pixels, two #ff00ff cells clear, flat square pixels, structures at least 3 pixels, selective charcoal-plum outline, upper-left light. Use distinct ruby, amber, emerald, cyan and violet prism faces balanced by deep navy outline; source-local spectrum colors, no named game palette constraint. Solid #ff00ff background. No people, letters, UI frame, landscape, shadow, bloom haze, loose sparkles, gradient interpolation, anti-aliasing, blur, dithering, watermark, or transparency.",
+  "raw_sha256": "e893fff0b5d440754b0e57985a95227ffb4e68dde018b4606a34b7afde26e575",
+  "asset_class": "interface",
+  "kind": "ability-loadout-icon",
+  "color_mode": "source-local",
+  "runtime_destination": "src/assets/icon-sources/prism-ward/source.grid (unregistered; runtime PNG deferred to #534)",
+  "candidate": "prism-ward-r4",
+  "style_references": [
+    {
+      "path": "src/assets/icons/preview/verify-ability-canary@8x.png",
+      "role": "style_cohort",
+      "sha256": "82a04baf5f96334431bbb23c8b3767055b80379202ede610b964301c26873ea9"
+    },
+    {
+      "path": "src/assets/icon-sources/verify-ability-canary/source.grid",
+      "role": "source_form_reference",
+      "sha256": "07d4d4cb1bdca6b9d80c8a80217533dd050985f1639e96c543a811a3abd97614"
+    },
+    {
+      "path": "src/assets/icons/preview/starfall@8x.png",
+      "role": "style_cohort",
+      "sha256": "5e3c5ea975a02c6226538e0b7dd749c1add4efd0ee5348ece42d11bbc13b6dfd"
+    },
+    {
+      "path": "src/assets/icons/preview/wildfire-sigil@8x.png",
+      "role": "style_cohort",
+      "sha256": "59c557c706d5d31bee1c91283b84a4b8eb6d41bea80f6fe0da87b2118a7673ce"
+    },
+    {
+      "path": "src/assets/icons/preview/leyline-attunement@8x.png",
+      "role": "style_cohort",
+      "sha256": "8175ff3b8aa0b4c1248d28951e6e5e33bd44d3daa389653567393b58eb2bc5c4"
+    },
+    {
+      "path": "src/assets/icons/preview/elemental-practice@8x.png",
+      "role": "style_cohort",
+      "sha256": "f5a70d806871ca0e7eb756f817f1bd9a3419a3cf68098c92c10adb14344a6e5d"
+    }
+  ],
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        136,
+        112,
+        887,
+        874
+      ],
+      "pitch_x": {
+        "pitch": 36.54444444444434,
+        "score": 0.26381979333853983
+      },
+      "pitch_y": {
+        "pitch": 37.094444444444306,
+        "score": 0.26317879372875014
+      },
+      "grid": [
+        21,
+        20
+      ]
+    },
+    "mode": "source-local",
+    "quantize": {
+      "unique_before": 244,
+      "unique_after": 10,
+      "target": 10,
+      "centers": 10
+    }
+  },
+  "evidence_raw": "docs/research/evidence/character-ability-icons-wizard/accepted-raws/prism-ward.png",
+  "issue": 533,
+  "acquisition_notes": "Recovered cells flattened to \u226410 source-local RGBs (contract 8\u201312 flat colours) and exterior near-outline charcoal stripped so Stage-2 derived ring owns the contour; provider raw remains immutable evidence."
+}
