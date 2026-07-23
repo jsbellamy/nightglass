@@ -55,6 +55,15 @@ export {
   type TierTalentState,
 } from "../core/talents";
 
+export {
+  characterStatBreakdown,
+  characterStatsCommittedFor,
+  statsDifferFromCommittedCombat,
+  type CharacterStatBreakdownLine,
+  type CharacterStatKey,
+  type ModifierContribution,
+} from "../core/stat-breakdown";
+
 export const CLASS_LABELS: Record<ClassId, string> = {
   knight: "Knight",
   wizard: "Wizard",
@@ -85,4 +94,20 @@ export function combatantForClass(
 export function levelFor(snapshot: Snapshot, content: Content, classId: ClassId): number {
   const xp = snapshot.progression.characterXp[classId];
   return levelFromXp(xp, content.xpThresholds);
+}
+
+/** XP progress copy for Character management surfaces (Stats header). */
+export function characterXpProgressLabel(
+  snapshot: Snapshot,
+  content: Content,
+  classId: ClassId,
+): string {
+  const xp = snapshot.progression.characterXp[classId] ?? 0;
+  const thresholds = content.xpThresholds;
+  const level = levelFor(snapshot, content, classId);
+  if (level >= thresholds.length) {
+    return "Max Level";
+  }
+  const ceiling = thresholds[level]!;
+  return `${xp} / ${ceiling} XP toward Level ${level + 1}`;
 }

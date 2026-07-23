@@ -68,7 +68,7 @@ export async function focusDockTab(dock: Page, tab: DockTabId): Promise<void> {
   await expect(dock.locator(`[data-dock-panel="${tab}"]:not([hidden])`)).toBeVisible();
 }
 
-export type CharacterSubTabId = "loadout" | "talents";
+export type CharacterSubTabId = "loadout" | "talents" | "stats";
 
 /** Activate a nested Character workspace tab (keyboard-only; safe under pointer blocking). */
 export async function focusCharacterSubTab(dock: Page, subTab: CharacterSubTabId): Promise<void> {

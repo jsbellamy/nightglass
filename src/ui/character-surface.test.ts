@@ -39,7 +39,7 @@ function visibleCharacterSections(root: HTMLElement): string[] {
 }
 
 describe("Character surface", () => {
-  it("mounts Loadout and Talents sections without Equipment or Party", () => {
+  it("mounts Loadout, Talents, and Stats sections without Equipment or Party", () => {
     const root = document.createElement("div");
     const selected = { current: "knight" as ClassId };
     const surface = mountCharacterSurface(root, mountOptions(selected));
@@ -53,6 +53,7 @@ describe("Character surface", () => {
     expect(sections.map((section) => section.dataset["characterSection"])).toEqual([
       "loadout",
       "talents",
+      "stats",
     ]);
     expect(root.querySelector('[data-character-section="equipment"]')).toBeNull();
     expect(root.querySelector(".character-equipment")).toBeNull();
@@ -62,6 +63,7 @@ describe("Character surface", () => {
     expect(root.querySelector(".party-swap")).toBeNull();
     expect(sections[0]?.classList.contains("loadout-surface")).toBe(true);
     expect(sections[1]?.classList.contains("talents-surface")).toBe(true);
+    expect(sections[2]?.classList.contains("stats-surface")).toBe(true);
     expect(visibleCharacterSections(root)).toEqual(["loadout"]);
 
     surface.destroy();
@@ -77,9 +79,13 @@ describe("Character surface", () => {
     expect(visibleCharacterSections(root)).toEqual(["loadout"]);
     expect(root.querySelector(".loadout-surface")).not.toBeNull();
     expect(root.querySelector(".talents-surface")).not.toBeNull();
+    expect(root.querySelector(".stats-surface")).not.toBeNull();
 
     root.querySelector<HTMLButtonElement>('[data-character-sub-tab="talents"]')?.click();
     expect(visibleCharacterSections(root)).toEqual(["talents"]);
+
+    root.querySelector<HTMLButtonElement>('[data-character-sub-tab="stats"]')?.click();
+    expect(visibleCharacterSections(root)).toEqual(["stats"]);
 
     root.querySelector<HTMLButtonElement>('[data-character-sub-tab="loadout"]')?.click();
     expect(visibleCharacterSections(root)).toEqual(["loadout"]);
@@ -96,20 +102,22 @@ describe("Character surface", () => {
     surface.render(engine.snapshot(), EMPTY_ENGINE_LEGALITY);
 
     const loadoutTab = root.querySelector<HTMLButtonElement>('[data-character-sub-tab="loadout"]');
+    const talentsTab = root.querySelector<HTMLButtonElement>('[data-character-sub-tab="talents"]');
     loadoutTab?.focus();
     loadoutTab?.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
     expect(visibleCharacterSections(root)).toEqual(["talents"]);
+    talentsTab?.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
+    expect(visibleCharacterSections(root)).toEqual(["stats"]);
     expect(document.activeElement).toBe(
-      root.querySelector('[data-character-sub-tab="talents"]'),
+      root.querySelector('[data-character-sub-tab="stats"]'),
     );
 
-    const talentsTab = root.querySelector<HTMLButtonElement>('[data-character-sub-tab="talents"]');
     talentsTab?.dispatchEvent(new KeyboardEvent("keydown", { key: "Home", bubbles: true }));
     expect(visibleCharacterSections(root)).toEqual(["loadout"]);
 
     loadoutTab?.focus();
     loadoutTab?.dispatchEvent(new KeyboardEvent("keydown", { key: "End", bubbles: true }));
-    expect(visibleCharacterSections(root)).toEqual(["talents"]);
+    expect(visibleCharacterSections(root)).toEqual(["stats"]);
 
     root.remove();
     surface.destroy();
@@ -192,7 +200,7 @@ describe("Character surface", () => {
     surface.destroy();
   });
 
-  it("destroys composed Loadout and Talents surfaces", () => {
+  it("destroys composed Loadout, Talents, and Stats surfaces", () => {
     const root = document.createElement("div");
     const selected = { current: "knight" as ClassId };
     const surface = mountCharacterSurface(root, mountOptions(selected));
@@ -201,16 +209,18 @@ describe("Character surface", () => {
 
     expect(root.querySelector(".loadout-surface")).not.toBeNull();
     expect(root.querySelector(".talents-surface")).not.toBeNull();
+    expect(root.querySelector(".stats-surface")).not.toBeNull();
 
     surface.destroy();
 
     expect(root.querySelector(".loadout-surface")).toBeNull();
     expect(root.querySelector(".talents-surface")).toBeNull();
+    expect(root.querySelector(".stats-surface")).toBeNull();
     expect(root.querySelector("[data-character-section]")).toBeNull();
     expect(root.classList.contains("character-surface")).toBe(false);
   });
 
-  it("fans render to Loadout and Talents only", () => {
+  it("fans render to Loadout, Talents, and Stats", () => {
     const root = document.createElement("div");
     const selected = { current: "knight" as ClassId };
     const surface = mountCharacterSurface(root, mountOptions(selected));
@@ -221,6 +231,7 @@ describe("Character surface", () => {
     expect(root.querySelector('[data-character-section="equipment"]')).toBeNull();
     expect(root.querySelector(".loadout-surface .dock-surface-title")?.textContent).toBe("Loadout");
     expect(root.querySelector(".talents-surface .dock-surface-title")?.textContent).toBe("Talents");
+    expect(root.querySelector(".stats-surface .dock-surface-title")?.textContent).toBe("Stats");
 
     surface.destroy();
   });

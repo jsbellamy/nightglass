@@ -86,6 +86,7 @@ describe("Management Dock shell", () => {
     expect(sections.map((section) => section.dataset["characterSection"])).toEqual([
       "loadout",
       "talents",
+      "stats",
     ]);
     expect(root.querySelector('[data-character-section="equipment"]')).toBeNull();
     expect(root.querySelector(".party-surface")).toBeNull();
@@ -388,12 +389,14 @@ describe("Management Dock shell", () => {
     expect(root.querySelector(".character-picker")).not.toBeNull();
     expect(root.querySelector(".loadout-surface")).not.toBeNull();
     expect(root.querySelector(".talents-surface")).not.toBeNull();
+    expect(root.querySelector(".stats-surface")).not.toBeNull();
 
     dock.destroy();
 
     expect(root.querySelector(".character-picker")).toBeNull();
     expect(root.querySelector(".loadout-surface")).toBeNull();
     expect(root.querySelector(".talents-surface")).toBeNull();
+    expect(root.querySelector(".stats-surface")).toBeNull();
     expect(root.querySelector(".character-surface")).toBeNull();
   });
 });
@@ -407,11 +410,12 @@ describe("Management Dock active-surface rendering", () => {
     dock.render(engine.snapshot());
 
     expect(root.querySelector(".armory-surface")?.childElementCount).toBeGreaterThan(0);
-    expect(root.querySelector(".character-surface")?.childElementCount).toBe(3);
+    expect(root.querySelector(".character-surface")?.childElementCount).toBe(4);
     expect(root.querySelector(".party-surface")).toBeNull();
     expect(root.querySelector(".character-picker [data-character-chip]")).not.toBeNull();
     expect(root.querySelector(".loadout-surface")?.childElementCount).toBe(0);
     expect(root.querySelector(".talents-surface")?.childElementCount).toBe(0);
+    expect(root.querySelector(".stats-surface")?.childElementCount).toBe(0);
     expect(root.querySelector(".stage-surface")?.childElementCount).toBe(0);
 
     dock.destroy();
