@@ -122,8 +122,9 @@ faster, not to skip the gate.
 
 One branch per issue (`issue-<N>-<slug>`, based on `main`); never work
 directly on `main`. Finish with a pull request that includes `Closes #<N>` and
-an acceptance matrix: every issue checkbox as an evidence row citing evidence
-at the seam named by `docs/agents/acceptance-evidence.md`.
+a completion matrix: one row per issue Contract claim, keyed by its claim ID
+and citing evidence that satisfies its Proof mapping at a seam authorized by
+`docs/agents/acceptance-evidence.md`.
 
 ## Delegating work
 
