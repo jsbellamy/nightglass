@@ -304,14 +304,14 @@ describe("Talents surface", () => {
     const surface = mountTalentsSurface(root, mountOptions(selected));
 
     renderTalents(surface, engine);
-    expect(root.querySelector('[data-talent-popover="true"]')?.hidden).toBe(true);
+    expect(root.querySelector<HTMLElement>('[data-talent-popover="true"]')?.hidden).toBe(true);
 
     openTalentPopover(root, "k-fortitude");
-    expect(root.querySelector('[data-talent-popover="true"]')?.hidden).toBe(false);
+    expect(root.querySelector<HTMLElement>('[data-talent-popover="true"]')?.hidden).toBe(false);
 
     selected.current = "wizard";
     renderTalents(surface, engine);
-    expect(root.querySelector('[data-talent-popover="true"]')?.hidden).toBe(true);
+    expect(root.querySelector<HTMLElement>('[data-talent-popover="true"]')?.hidden).toBe(true);
 
     surface.destroy();
   });
