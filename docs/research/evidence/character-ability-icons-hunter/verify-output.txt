@@ -1,0 +1,11 @@
+# Validator record for #532 (pipeline source-local cluster + Hunter Ability sources)
+
+## python3 pipeline/icons/verify.py
+all icon contract tests passed
+(includes source-local cluster reduces near-duplicate cell rgb;
+ source-local cluster stays within max_colors;
+ clustered source-local grid parses)
+
+## npm run assets:verify
+python3 pipeline/test_contract.py && python3 pipeline/effects/verify.py && python3 pipeline/icons/verify.py && python3 pipeline/backdrops.py verify
+exit 0

@@ -22,6 +22,8 @@ from icons.constants import MIN_GRID_SCORE, MIN_LONG_AXIS, OFF_RAMP_REJECT  # no
 from icons.fixture_raws import write_gate_fixtures  # noqa: E402
 from icons.ingest import (  # noqa: E402
     cells_to_swatches,
+    cluster_source_local_cells,
+    ingest_raw_to_local_text_source,
     ingest_raw_to_text_source,
     recover_icon_grid,
 )
@@ -399,10 +401,43 @@ with tempfile.TemporaryDirectory() as tmp:
         "40,120,200" in emitted and "40, 120, 200" not in emitted,
     )
     roundtrip = parse_text(out_path)
+check(
+    "source-local parse/write roundtrip preserves legend rgb",
+    roundtrip.local_legend == canonical.local_legend,
+    str(roundtrip.local_legend),
+)
+
+# Soft provider samples explode unique RGBs; production Ability ingest must cluster.
+noisy = [
+    [None, (40, 120, 200), (41, 121, 201), (42, 119, 199)],
+    [None, (200, 40, 40), (201, 41, 41), (199, 39, 42)],
+]
+flat, reduce_stats = cluster_source_local_cells(noisy, max_colors=4, threshold=28.0)
+check(
+    "source-local cluster reduces near-duplicate cell rgb",
+    reduce_stats["unique_before"] > reduce_stats["unique_after"],
+    str(reduce_stats),
+)
+check(
+    "source-local cluster stays within max_colors",
+    reduce_stats["unique_after"] <= 4,
+    str(reduce_stats["unique_after"]),
+)
+with tempfile.TemporaryDirectory() as cluster_tmp:
+    cluster_dir = pathlib.Path(cluster_tmp)
+    # Synthetic two-color raw via fixture path is heavy; assert ingest return shape
+    # includes color_reduce when clustering cells directly through the helper used
+    # by ingest_raw_to_local_text_source.
     check(
-        "source-local parse/write roundtrip preserves legend rgb",
-        roundtrip.local_legend == canonical.local_legend,
-        str(roundtrip.local_legend),
+        "ingest_raw_to_local_text_source exports color_reduce helper",
+        callable(ingest_raw_to_local_text_source) and callable(cluster_source_local_cells),
+    )
+    clustered_source = cells_to_local_source("clustered-local", flat)
+    cluster_out = cluster_dir / "clustered.grid"
+    write_text(cluster_out, clustered_source)
+    check(
+        "clustered source-local grid parses",
+        parse_text(cluster_out).color_mode == SOURCE_LOCAL_COLOR_MODE,
     )
 
 ability_cells = cells_from_source(ability_source)

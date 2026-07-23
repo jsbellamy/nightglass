@@ -61,8 +61,7 @@
       "unique_before": 139,
       "unique_after": 12,
       "max_colors": 12,
-      "cluster_dist": 28,
-      "note": "Task-local flat-fill cluster so source-local legend stays within A\u2013Z/a\u2013z/0\u20139 grid alphabet; rebuild is from committed source.grid, not provider raw."
+      "cluster_dist": 28.0
     }
   }
 }

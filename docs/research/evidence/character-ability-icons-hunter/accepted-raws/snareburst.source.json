@@ -1,13 +1,13 @@
 {
   "provider": "Cursor GenerateImage",
   "acquisition_tool": "GenerateImage",
-  "prompt": "TRUE chunky pixel-art ability icon only, exact 32\u00d732 logical pixel grid rendered large. Snareburst: a circular toothed trap cord snapping shut around three inward arrowheads with one compact stun star, clearly an area snare burst. Shrink the glyph \u2014 long side about 26\u201328 logical pixels with generous empty magenta. At least THREE full #ff00ff cells clear on every edge. Flat blocks, structures at least 3 pixels, selective charcoal-plum outline, upper-left lighting. Use trap iron, rope gold, forest green, warning orange-red, pale impact; source-local colors, no named game palette. Solid #ff00ff background. No victim, hunter, text, UI border, ground scene, cast shadow, diffuse glow, loose debris, gradient, anti-aliasing, blur, dithering, watermark, or transparency.",
-  "raw_sha256": "198a23631146992d9a664734139c0a69a40e0df015576468d63930c22d36fcc3",
+  "prompt": "TRUE chunky pixel-art ability icon only, exact 32\u00d732 logical pixel grid rendered large. Snareburst identity MUST show all three: (1) a circular toothed ROPE/CORD trap ring, (2) THREE arrowheads pointing INWARD from the ring toward center, (3) ONE compact pale stun star at center. Keep the whole glyph SMALLER in the middle of the frame \u2014 about 24\u201327 logical pixels \u2014 with at least FIVE full solid #ff00ff magenta cells of clearance on EVERY edge; subject must not touch any canvas edge. Flat square chunky pixels only, no soft shading, structures \u22653 pixels, selective charcoal-plum outline, upper-left lighting. Trap iron, rope gold, forest green, warning orange-red, pale impact. Solid #ff00ff background. No victim, hunter, text, UI border, ground, cast shadow, glow, debris, gradient, anti-aliasing, blur, dithering, watermark, or transparency.",
+  "raw_sha256": "87960ae8a76b2e8eaa8882cfa4ac104fa7ef12bd80e98da085ffebfdecf97be0",
   "asset_class": "interface",
   "kind": "ability-loadout-icon",
   "color_mode": "source-local",
   "runtime_destination": "src/assets/icon-sources/snareburst/source.grid",
-  "candidate": "snareburst-r2",
+  "candidate": "snareburst-r7",
   "style_references": [
     {
       "path": "src/assets/icons/preview/verify-ability-canary@8x.png",
@@ -38,31 +38,30 @@
   "ingest": {
     "recovered": {
       "bbox": [
-        223,
-        177,
-        799,
-        815
+        248,
+        244,
+        774,
+        773
       ],
       "pitch_x": {
-        "pitch": 30.700000000000184,
-        "score": 0.14007149900565494
+        "pitch": 17.42222222222226,
+        "score": 0.3805466648938273
       },
       "pitch_y": {
-        "pitch": 25.650000000000112,
-        "score": 0.09023765363672248
+        "pitch": 17.572222222222262,
+        "score": 0.30962379449115657
       },
       "grid": [
-        19,
-        25
+        30,
+        30
       ]
     },
     "mode": "source-local",
     "color_reduce": {
-      "unique_before": 168,
+      "unique_before": 365,
       "unique_after": 12,
       "max_colors": 12,
-      "cluster_dist": 28,
-      "note": "Task-local flat-fill cluster so source-local legend stays within A\u2013Z/a\u2013z/0\u20139 grid alphabet; rebuild is from committed source.grid, not provider raw."
+      "cluster_dist": 28.0
     }
   }
 }
