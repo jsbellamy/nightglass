@@ -332,4 +332,224 @@ describe("validateContent", () => {
       'class "knight" talentTiers[0] abilityId "k-missing-tier-two" not found',
     );
   });
+
+  it("reports an Ability with no effects", () => {
+    const content: Content = {
+      ...fixtureContent,
+      abilities: fixtureContent.abilities.map((ability) =>
+        ability.id === "k-sweep" ? { ...ability, effects: [] } : ability,
+      ),
+    };
+    expect(validateContent(content, { fixture: true })).toContain(
+      'ability "k-sweep" must declare at least one effect',
+    );
+  });
+
+  it("reports zero or negative damage, heal, and revive coefficients while omitted coefficients stay valid", () => {
+    const base = fixtureContent.abilities.find((ability) => ability.id === "k-sweep")!;
+    const content: Content = {
+      ...fixtureContent,
+      abilities: [
+        ...fixtureContent.abilities.filter((ability) => ability.id !== "k-sweep"),
+        { ...base, id: "k-zero-damage", effects: [{ kind: "damage", channel: "physical", coefficient: 0 }] },
+        {
+          ...base,
+          id: "k-omitted-coeff",
+          effects: [{ kind: "damage", channel: "physical" }],
+        },
+        {
+          ...base,
+          id: "k-negative-heal",
+          classId: "priest",
+          effects: [{ kind: "heal", coefficient: -0.1 }],
+        },
+        {
+          ...base,
+          id: "k-zero-revive",
+          classId: "priest",
+          effects: [{ kind: "revive", coefficient: 0 }],
+        },
+      ],
+    };
+    const violations = validateContent(content, { fixture: true });
+    expect(violations).toEqual(
+      expect.arrayContaining([
+        'ability "k-zero-damage" damage effect coefficient must be greater than 0',
+        'ability "k-negative-heal" heal effect coefficient must be greater than 0',
+        'ability "k-zero-revive" revive effect coefficient must be greater than 0',
+      ]),
+    );
+    expect(violations).not.toEqual(
+      expect.arrayContaining([
+        expect.stringContaining("k-omitted-coeff"),
+      ]),
+    );
+  });
+
+  it("reports apply-status without a non-empty statusId and preserves unknown-status errors", () => {
+    const base = fixtureContent.abilities.find((ability) => ability.id === "k-sweep")!;
+    const content: Content = {
+      ...fixtureContent,
+      abilities: [
+        ...fixtureContent.abilities.filter((ability) => ability.id !== "k-sweep"),
+        {
+          ...base,
+          id: "k-empty-status",
+          effects: [{ kind: "apply-status", statusId: "" }],
+        },
+        {
+          ...base,
+          id: "k-missing-status",
+          effects: [{ kind: "apply-status" }],
+        },
+        {
+          ...base,
+          id: "k-unknown-status",
+          effects: [{ kind: "apply-status", statusId: "not-a-status" }],
+        },
+      ],
+    };
+    const violations = validateContent(content, { fixture: true });
+    expect(violations).toEqual(
+      expect.arrayContaining([
+        'ability "k-empty-status" apply-status effect must declare a non-empty statusId',
+        'ability "k-missing-status" apply-status effect must declare a non-empty statusId',
+        'ability "k-unknown-status" effect references unknown status "not-a-status"',
+      ]),
+    );
+  });
+
+  it("reports non-positive and non-integer Status Effect durations", () => {
+    const content: Content = {
+      ...fixtureContent,
+      statuses: [
+        ...fixtureContent.statuses,
+        {
+          id: "zero-duration",
+          name: "Zero Duration",
+          kind: "buff",
+          durationMs: 0,
+          modifiers: { flat: { armor: 1 } },
+        },
+        {
+          id: "fractional-duration",
+          name: "Fractional Duration",
+          kind: "stun",
+          durationMs: 500.5,
+        },
+      ],
+    };
+    const violations = validateContent(content, { fixture: true });
+    expect(violations).toEqual(
+      expect.arrayContaining([
+        'status "zero-duration" durationMs must be a positive integer',
+        'status "fractional-duration" durationMs must be a positive integer',
+      ]),
+    );
+  });
+
+  it("reports Buffs and Debuffs with no modifiers or valid tick while Stun stays valid without modifiers", () => {
+    const content: Content = {
+      ...fixtureContent,
+      statuses: [
+        ...fixtureContent.statuses,
+        {
+          id: "empty-buff",
+          name: "Empty Buff",
+          kind: "buff",
+          durationMs: 1000,
+        },
+        {
+          id: "zero-mod-debuff",
+          name: "Zero Mod Debuff",
+          kind: "debuff",
+          durationMs: 1000,
+          modifiers: { percent: { maxHealth: 0 } },
+        },
+        {
+          id: "valid-stun",
+          name: "Valid Stun",
+          kind: "stun",
+          durationMs: 800,
+        },
+      ],
+    };
+    const violations = validateContent(content, { fixture: true });
+    expect(violations).toEqual(
+      expect.arrayContaining([
+        'status "empty-buff" must declare a non-zero modifier or a valid tick effect',
+        'status "zero-mod-debuff" must declare a non-zero modifier or a valid tick effect',
+      ]),
+    );
+    expect(violations).not.toEqual(
+      expect.arrayContaining([expect.stringContaining("valid-stun")]),
+    );
+  });
+
+  it("reports zero-damage status ticks", () => {
+    const content: Content = {
+      ...fixtureContent,
+      statuses: [
+        ...fixtureContent.statuses,
+        {
+          id: "zero-tick",
+          name: "Zero Tick",
+          kind: "debuff",
+          durationMs: 2000,
+          tickEveryMs: 1000,
+          tickEffect: { kind: "damage", channel: "elemental", element: "fire", coefficient: 0 },
+        },
+      ],
+    };
+    expect(validateContent(content, { fixture: true })).toContain(
+      'status "zero-tick" tickEffect damage coefficient must be greater than 0',
+    );
+  });
+
+  it("reports Stat Talents with empty or all-zero perRank modifiers in any Talent Tier", () => {
+    const knight = fixtureContent.classes.find((entry) => entry.id === "knight")!;
+    const content: Content = {
+      ...fixtureContent,
+      classes: fixtureContent.classes.map((classKit) =>
+        classKit.id === "knight"
+          ? {
+              ...knight,
+              talents: {
+                ...knight.talents,
+                statRow: [
+                  {
+                    ...knight.talents.statRow[0]!,
+                    id: "k-noop-tier-one",
+                    perRank: {},
+                  },
+                  knight.talents.statRow[1]!,
+                ],
+              },
+              talentTiers: [
+                {
+                  statRow: [
+                    {
+                      id: "k-noop-tier-two",
+                      name: "Noop II",
+                      perRank: { flat: { armor: 0 }, percent: { physicalPower: 0 } },
+                      maxRanks: 5,
+                      iconKey: "k-noop-tier-two",
+                    },
+                    knight.talents.statRow[1]!,
+                  ],
+                  abilityRow: knight.talentTiers?.[0]?.abilityRow ?? knight.talents.abilityRow,
+                },
+              ],
+            }
+          : classKit,
+      ),
+    };
+    const violations = validateContent(content, { fixture: true });
+    expect(violations).toEqual(
+      expect.arrayContaining([
+        'class "knight" talents stat talent "k-noop-tier-one" perRank has no gameplay effect',
+        'class "knight" talentTiers[0] stat talent "k-noop-tier-two" perRank has no gameplay effect',
+      ]),
+    );
+  });
 });

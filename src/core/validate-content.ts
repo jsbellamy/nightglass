@@ -6,6 +6,7 @@ import type {
   EquipmentBaseDef,
   EquipmentTier,
   OpponentDef,
+  StatModifiers,
   StatusEffectDef,
   TalentTierDef,
 } from "./types";
@@ -42,6 +43,38 @@ const ALL_AFFIX_IDS: AffixId[] = [
 
 const CLASS_IDS: ClassId[] = ["knight", "wizard", "priest", "hunter"];
 
+export function statModifiersHaveEffect(modifiers: StatModifiers | undefined): boolean {
+  if (!modifiers) {
+    return false;
+  }
+  if (modifiers.flat) {
+    for (const value of Object.values(modifiers.flat)) {
+      if (value !== undefined && value !== 0) {
+        return true;
+      }
+    }
+  }
+  if (modifiers.percent) {
+    for (const value of Object.values(modifiers.percent)) {
+      if (value !== undefined && value !== 0) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+export function abilityEffectHasEffect(effect: AbilityEffect): boolean {
+  switch (effect.kind) {
+    case "damage":
+    case "heal":
+    case "revive":
+      return effect.coefficient === undefined || effect.coefficient > 0;
+    case "apply-status":
+      return effect.statusId !== undefined && effect.statusId.length > 0;
+  }
+}
+
 function validateTalentTier(
   classKit: Content["classes"][number],
   tierDef: TalentTierDef,
@@ -56,6 +89,11 @@ function validateTalentTier(
     if (statTalent.maxRanks !== 5) {
       violations.push(
         `class "${classKit.id}" ${tierLabel} stat talent "${statTalent.id}" must have maxRanks 5`,
+      );
+    }
+    if (!statModifiersHaveEffect(statTalent.perRank)) {
+      violations.push(
+        `class "${classKit.id}" ${tierLabel} stat talent "${statTalent.id}" perRank has no gameplay effect`,
       );
     }
   }
@@ -103,6 +141,8 @@ export function validateContent(
   violations.push(...duplicateIds(content.stages, "stages"));
   violations.push(...duplicateIds(content.statuses, "statuses"));
   for (const status of content.statuses) {
+    violations.push(...validateStatusDuration(status));
+    violations.push(...validateStatusBehavior(status));
     violations.push(...validateStatusTickSchedule(status));
   }
   violations.push(...duplicateIds(content.equipmentBases, "equipmentBases"));
@@ -121,7 +161,12 @@ export function validateContent(
       );
     }
 
+    if (ability.effects.length === 0) {
+      violations.push(`ability "${ability.id}" must declare at least one effect`);
+    }
+
     for (const effect of ability.effects) {
+      violations.push(...validateAbilityEffect(ability.id, effect));
       if (effect.kind === "apply-status" && effect.statusId && !statusIds.has(effect.statusId)) {
         violations.push(
           `ability "${ability.id}" effect references unknown status "${effect.statusId}"`,
@@ -415,6 +460,71 @@ function equipmentBaseCardinalityViolations(bases: EquipmentBaseDef[]): string[]
   return violations;
 }
 
+function validateAbilityEffect(abilityId: string, effect: AbilityEffect): string[] {
+  const violations: string[] = [];
+  switch (effect.kind) {
+    case "damage":
+    case "heal":
+    case "revive":
+      if (effect.coefficient !== undefined && effect.coefficient <= 0) {
+        violations.push(
+          `ability "${abilityId}" ${effect.kind} effect coefficient must be greater than 0`,
+        );
+      }
+      break;
+    case "apply-status":
+      if (!effect.statusId || effect.statusId.length === 0) {
+        violations.push(
+          `ability "${abilityId}" apply-status effect must declare a non-empty statusId`,
+        );
+      }
+      break;
+  }
+  return violations;
+}
+
+function validateStatusDuration(status: StatusEffectDef): string[] {
+  if (!Number.isInteger(status.durationMs) || status.durationMs <= 0) {
+    return [`status "${status.id}" durationMs must be a positive integer`];
+  }
+  return [];
+}
+
+function statusHasValidTickEffect(status: StatusEffectDef): boolean {
+  if (status.tickEveryMs === undefined || status.tickEffect === undefined) {
+    return false;
+  }
+  if (!Number.isInteger(status.tickEveryMs) || status.tickEveryMs <= 0) {
+    return false;
+  }
+  const tickEffect = status.tickEffect;
+  if (!abilityEffectHasEffect(tickEffect)) {
+    return false;
+  }
+  if (tickEffect.kind !== "damage") {
+    return false;
+  }
+  if (tickEffect.channel !== "physical" && tickEffect.channel !== "elemental") {
+    return false;
+  }
+  return true;
+}
+
+function validateStatusBehavior(status: StatusEffectDef): string[] {
+  if (status.kind === "stun") {
+    return [];
+  }
+  if (status.kind !== "buff" && status.kind !== "debuff") {
+    return [];
+  }
+  if (statModifiersHaveEffect(status.modifiers) || statusHasValidTickEffect(status)) {
+    return [];
+  }
+  return [
+    `status "${status.id}" must declare a non-zero modifier or a valid tick effect`,
+  ];
+}
+
 function validateStatusTickSchedule(status: StatusEffectDef): string[] {
   const violations: string[] = [];
   const hasTickEvery = status.tickEveryMs !== undefined;
@@ -448,8 +558,8 @@ function validateStatusTickEffect(statusId: string, effect: AbilityEffect): stri
   if (effect.channel !== "physical" && effect.channel !== "elemental") {
     violations.push(`status "${statusId}" tickEffect damage must declare a channel`);
   }
-  if (effect.coefficient === undefined || effect.coefficient < 0) {
-    violations.push(`status "${statusId}" tickEffect damage must declare coefficient >= 0`);
+  if (effect.coefficient !== undefined && effect.coefficient <= 0) {
+    violations.push(`status "${statusId}" tickEffect damage coefficient must be greater than 0`);
   }
   return violations;
 }
