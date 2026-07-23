@@ -178,12 +178,17 @@ export function mountSurfaceShell(
   let lastSnapshot: ReadonlySnapshot | null = null;
   let lastLegality: EngineLegalityView = EMPTY_ENGINE_LEGALITY;
   let rendering = false;
+  let pointerHeld = false;
   let pending: {
     snapshot: ReadonlySnapshot | null;
     legality: EngineLegalityView;
   } | null = null;
+  const teardown: Array<() => void> = [];
 
   function hasLiveInteraction(): boolean {
+    if (pointerHeld) {
+      return true;
+    }
     const active = document.activeElement;
     if (active instanceof HTMLSelectElement && root.contains(active)) {
       return true;
@@ -205,8 +210,39 @@ export function mountSurfaceShell(
     root.addEventListener("focusout", () => queueMicrotask(flushPending));
     // Capture phase so the flush is queued before per-node dragend handlers tear down
     // state; microtask so hasLiveInteraction observes the post-teardown DOM.
-    root.addEventListener("dragend", () => queueMicrotask(flushPending), true);
+    root.addEventListener(
+      "dragend",
+      () => {
+        pointerHeld = false;
+        queueMicrotask(flushPending);
+      },
+      true,
+    );
     root.addEventListener("drop", () => queueMicrotask(flushPending), true);
+    // A pointer pressed inside the surface — grabbing a tile before its HTML5 dragstart
+    // fires, or click-holding a control — must not be torn out from under the gesture.
+    // Pause rebuilds for the whole press and flush the latest Snapshot on release. This
+    // covers the mousedown -> dragstart window that the preserve-live marker cannot,
+    // because the marker is only set once dragstart has already fired.
+    const onPointerDown = (): void => {
+      pointerHeld = true;
+    };
+    const onPointerRelease = (): void => {
+      if (!pointerHeld) {
+        return;
+      }
+      pointerHeld = false;
+      queueMicrotask(flushPending);
+    };
+    root.addEventListener("pointerdown", onPointerDown);
+    // Release can land outside root (drag, or the pointer leaves the window), so listen
+    // wide and clean these up on destroy.
+    document.addEventListener("pointerup", onPointerRelease, true);
+    document.addEventListener("pointercancel", onPointerRelease, true);
+    teardown.push(() => {
+      document.removeEventListener("pointerup", onPointerRelease, true);
+      document.removeEventListener("pointercancel", onPointerRelease, true);
+    });
   }
 
   function getSelection(): string | null {
@@ -243,19 +279,21 @@ export function mountSurfaceShell(
     lastSnapshot = snapshot;
     lastLegality = legality;
 
+    if (options.reconcile) {
+      renderReconcile(snapshot, legality);
+    } else {
+      renderDestructive(snapshot, legality);
+    }
+  }
+
+  /** The default path: tear the whole surface down and rebuild it every render. */
+  function renderDestructive(
+    snapshot: ReadonlySnapshot | null,
+    legality: EngineLegalityView,
+  ): void {
     const scrolls = captureScrollPositions(root);
     const focusKey = captureFocusIdentity(root);
     const retained = [...root.querySelectorAll<HTMLElement>("[data-surface-retain]")];
-
-    const iconPool = new Map<string, HTMLElement[]>();
-    if (options.reconcile) {
-      for (const img of root.querySelectorAll<HTMLElement>("[data-icon-pool-key]")) {
-        const key = img.dataset["iconPoolKey"]!;
-        const bucket = iconPool.get(key) ?? [];
-        bucket.push(img);
-        iconPool.set(key, bucket);
-      }
-    }
 
     rendering = true;
     try {
@@ -284,20 +322,95 @@ export function mountSurfaceShell(
           root.append(node);
         }
       }
+    } finally {
+      rendering = false;
+    }
 
-      if (options.reconcile) {
-        for (const fresh of root.querySelectorAll<HTMLElement>("[data-icon-pool-key]")) {
-          const key = fresh.dataset["iconPoolKey"]!;
-          const reused = iconPool.get(key)?.shift();
-          if (reused && reused !== fresh) {
-            const aria = fresh.getAttribute("aria-label");
-            if (aria !== null) {
-              reused.setAttribute("aria-label", aria);
-            } else {
-              reused.removeAttribute("aria-label");
-            }
-            fresh.replaceWith(reused);
+    restoreScrollPositions(root, scrolls);
+    restoreFocusIdentity(root, focusKey);
+  }
+
+  /**
+   * Non-destructive path: reconcile root's top-level children in place so nodes that
+   * are the same instance across renders (a persistent, retained body) are never
+   * detached — the key to preserving native `:hover`, an active drag, and decoded
+   * icons through a rebuild, since any detach (even momentary) drops all three. Loose
+   * decoded icons — those NOT inside a retained subtree, which manages its own reuse —
+   * are pooled and reattached without a re-decode flash.
+   */
+  function renderReconcile(
+    snapshot: ReadonlySnapshot | null,
+    legality: EngineLegalityView,
+  ): void {
+    const scrolls = captureScrollPositions(root);
+    const focusKey = captureFocusIdentity(root);
+
+    if (!snapshot) {
+      const empty = document.createElement("p");
+      empty.className = "surface-empty";
+      empty.textContent = "No Snapshot yet.";
+      root.replaceChildren(empty);
+      return;
+    }
+
+    const iconPool = new Map<string, HTMLElement[]>();
+    for (const img of root.querySelectorAll<HTMLElement>("[data-icon-pool-key]")) {
+      if (img.closest("[data-surface-retain]")) {
+        continue;
+      }
+      const key = img.dataset["iconPoolKey"]!;
+      const bucket = iconPool.get(key) ?? [];
+      bucket.push(img);
+      iconPool.set(key, bucket);
+    }
+
+    rendering = true;
+    try {
+      const next: Node[] = [];
+      if (options.showTitle !== false) {
+        const title = document.createElement("h2");
+        title.className = "dock-surface-title";
+        title.textContent = options.title;
+        next.push(title);
+      }
+      for (const child of options.body(snapshot, legality)) {
+        if (child === null || child === undefined || child === false) {
+          continue;
+        }
+        next.push(typeof child === "string" ? document.createTextNode(child) : child);
+      }
+
+      // Remove children that are gone, then order the rest — insertBefore skips any node
+      // already sitting in its target position, so a persistent body is left untouched.
+      const keep = new Set<Node>(next);
+      for (const current of [...root.childNodes]) {
+        if (!keep.has(current)) {
+          root.removeChild(current);
+        }
+      }
+      let cursor = root.firstChild;
+      for (const node of next) {
+        if (node === cursor) {
+          cursor = cursor.nextSibling;
+          continue;
+        }
+        root.insertBefore(node, cursor);
+      }
+
+      for (const fresh of root.querySelectorAll<HTMLElement>("[data-icon-pool-key]")) {
+        if (fresh.closest("[data-surface-retain]")) {
+          continue;
+        }
+        const key = fresh.dataset["iconPoolKey"]!;
+        const reused = iconPool.get(key)?.shift();
+        if (reused && reused !== fresh) {
+          const aria = fresh.getAttribute("aria-label");
+          if (aria !== null) {
+            reused.setAttribute("aria-label", aria);
+          } else {
+            reused.removeAttribute("aria-label");
           }
+          fresh.replaceWith(reused);
         }
       }
     } finally {
@@ -309,6 +422,9 @@ export function mountSurfaceShell(
   }
 
   function destroy(): void {
+    for (const fn of teardown) {
+      fn();
+    }
     root.replaceChildren();
     root.classList.remove(className);
     lastSnapshot = null;

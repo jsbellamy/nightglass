@@ -46,6 +46,7 @@ function partySwapButtons(
   snapshot: ReadonlySnapshot,
   selected: ClassId,
   options: CharacterPickerOptions,
+  getSnapshot: () => ReadonlySnapshot | null,
 ): HTMLElement[] {
   const { members, reserve } = effectiveParty(snapshot);
   const selectedPartyIndex = members.indexOf(selected);
@@ -61,7 +62,11 @@ function partySwapButtons(
         text: `→ ${FORMATION_SLOTS[slotIndex]}`,
       });
       bindPressable(swapButton, () => {
-        const current = effectiveParty(snapshot);
+        const live = getSnapshot();
+        if (!live) {
+          return;
+        }
+        const current = effectiveParty(live);
         const nextMembers = [...current.members] as [ClassId, ClassId, ClassId];
         nextMembers[slotIndex] = selected;
         options.onCommand?.({
@@ -79,7 +84,11 @@ function partySwapButtons(
       text: "Swap with Reserve",
     });
     bindPressable(swapButton, () => {
-      const current = effectiveParty(snapshot);
+      const live = getSnapshot();
+      if (!live) {
+        return;
+      }
+      const current = effectiveParty(live);
       const index = current.members.indexOf(selected);
       if (index === -1) {
         return;
@@ -115,6 +124,7 @@ export function mountCharacterPicker(
   const unbindOverflow = bindScrollOverflowAffordance(picker);
 
   let chipOrder: ClassId[] = [];
+  let lastSnapshot: ReadonlySnapshot | null = null;
 
   function selectAt(index: number): void {
     const classId = chipOrder[index];
@@ -170,7 +180,141 @@ export function mountCharacterPicker(
     pendingHost.replaceChildren(...children);
   }
 
+  /**
+   * Folds everything that determines a row's DOM into one string. Rows whose
+   * key is unchanged are reused in place across a render so the browser keeps
+   * their native `:hover` state — detaching them (as `replaceChildren` did)
+   * drops `:hover` until the next mousemove, which read as a flash on every
+   * management-relevant pump.
+   */
+  function rowStateKey(
+    snapshot: ReadonlySnapshot,
+    selected: ClassId,
+    classId: ClassId,
+    index: number,
+  ): string {
+    const isSelected = classId === selected;
+    const showFormationControls = snapshot.progression.pendingParty === null;
+    let swapKey = "";
+    if (isSelected) {
+      const { members, reserve } = effectiveParty(snapshot);
+      swapKey = `${members.join(",")}~${reserve}`;
+    }
+    return [
+      classId,
+      index,
+      isSelected ? "sel" : "",
+      levelFor(snapshot, options.content, classId),
+      showFormationControls ? "fc" : "",
+      swapKey,
+    ].join("|");
+  }
+
+  function buildRow(
+    snapshot: ReadonlySnapshot,
+    selected: ClassId,
+    classId: ClassId,
+    index: number,
+  ): HTMLElement {
+    const isSelected = classId === selected;
+    const positionKey = index < 3 ? POSITION_KEYS[index]! : "reserve";
+    const positionLabel = index < 3 ? POSITION_LABELS[index]! : "Reserve";
+    const isPartySlot = index < 3;
+    const formation = effectiveFormation(snapshot);
+    const showFormationControls = snapshot.progression.pendingParty === null;
+
+    const chip = el(
+      "button",
+      {
+        class: "character-picker-chip focus-ring",
+        data: { characterChip: classId },
+        props: {
+          type: "button",
+          role: "tab",
+          tabIndex: isSelected ? 0 : -1,
+        },
+      },
+      [
+        el("span", { class: "character-chip-name", text: CLASS_LABELS[classId] }),
+        el("span", {
+          class: "character-chip-level",
+          text: `Level ${levelFor(snapshot, options.content, classId)}`,
+        }),
+        el("span", {
+          class: "character-chip-position",
+          data: { pickerPosition: positionKey },
+          text: positionLabel,
+        }),
+      ],
+    );
+    chip.setAttribute("aria-selected", isSelected ? "true" : "false");
+    bindPressable(chip, () => options.onSelect(classId));
+    chip.addEventListener("keydown", (event) => onChipKeydown(event, classId));
+
+    const rowChildren: HTMLElement[] = [chip];
+    if (isPartySlot && showFormationControls) {
+      const moveUp = el("button", {
+        class: "formation-action focus-ring",
+        data: { formationAction: "move-up", slot: String(index) },
+        props: { type: "button", disabled: index === 0 },
+        aria: { label: "Move up" },
+        text: "↑",
+      });
+      bindPressable(moveUp, () => {
+        const live = lastSnapshot;
+        if (!live) {
+          return;
+        }
+        options.onCommand?.({
+          cmd: "setFormation",
+          args: [swapFormationOrder(effectiveFormation(live), index, "up")],
+        });
+      });
+
+      const moveDown = el("button", {
+        class: "formation-action focus-ring",
+        data: { formationAction: "move-down", slot: String(index) },
+        props: { type: "button", disabled: index === formation.length - 1 },
+        aria: { label: "Move down" },
+        text: "↓",
+      });
+      bindPressable(moveDown, () => {
+        const live = lastSnapshot;
+        if (!live) {
+          return;
+        }
+        options.onCommand?.({
+          cmd: "setFormation",
+          args: [swapFormationOrder(effectiveFormation(live), index, "down")],
+        });
+      });
+
+      rowChildren.push(
+        el("div", { class: "character-picker-formation-controls" }, [moveUp, moveDown]),
+      );
+    }
+
+    if (isSelected) {
+      const swaps = partySwapButtons(snapshot, selected, options, () => lastSnapshot);
+      if (swaps.length > 0) {
+        rowChildren.push(el("div", { class: "character-picker-row-swaps" }, swaps));
+      }
+    }
+
+    // Keyed by Roster slot index (unique) rather than Class — a Class can appear
+    // in both a Party slot and Reserve, so Class alone would collide.
+    const row = el("div", {
+      class: "character-picker-row",
+      data: {
+        characterRow: String(index),
+        rowStateKey: rowStateKey(snapshot, selected, classId, index),
+      },
+    }, rowChildren);
+    return row;
+  }
+
   function renderChips(snapshot: ReadonlySnapshot, selected: ClassId): void {
+    lastSnapshot = snapshot;
     const restoreFocus = picker.contains(document.activeElement);
     const active = document.activeElement;
     const restoreSelector =
@@ -185,88 +329,38 @@ export function mountCharacterPicker(
         : `[data-character-chip="${selected}"]`;
 
     chipOrder = rosterClassIds(snapshot);
-    const formation = effectiveFormation(snapshot);
-    const showFormationControls = snapshot.progression.pendingParty === null;
-    const rows = chipOrder.map((classId, index) => {
-      const isSelected = classId === selected;
-      const positionKey = index < 3 ? POSITION_KEYS[index]! : "reserve";
-      const positionLabel = index < 3 ? POSITION_LABELS[index]! : "Reserve";
-      const isPartySlot = index < 3;
 
-      const chip = el(
-        "button",
-        {
-          class: "character-picker-chip focus-ring",
-          data: { characterChip: classId },
-          props: {
-            type: "button",
-            role: "tab",
-            tabIndex: isSelected ? 0 : -1,
-          },
-        },
-        [
-          el("span", { class: "character-chip-name", text: CLASS_LABELS[classId] }),
-          el("span", {
-            class: "character-chip-level",
-            text: `Level ${levelFor(snapshot, options.content, classId)}`,
-          }),
-          el("span", {
-            class: "character-chip-position",
-            data: { pickerPosition: positionKey },
-            text: positionLabel,
-          }),
-        ],
-      );
-      chip.setAttribute("aria-selected", isSelected ? "true" : "false");
-      bindPressable(chip, () => options.onSelect(classId));
-      chip.addEventListener("keydown", (event) => onChipKeydown(event, classId));
-
-      const rowChildren: HTMLElement[] = [chip];
-      if (isPartySlot && showFormationControls) {
-        const moveUp = el("button", {
-          class: "formation-action focus-ring",
-          data: { formationAction: "move-up", slot: String(index) },
-          props: { type: "button", disabled: index === 0 },
-          aria: { label: "Move up" },
-          text: "↑",
-        });
-        bindPressable(moveUp, () => {
-          options.onCommand?.({
-            cmd: "setFormation",
-            args: [swapFormationOrder(formation, index, "up")],
-          });
-        });
-
-        const moveDown = el("button", {
-          class: "formation-action focus-ring",
-          data: { formationAction: "move-down", slot: String(index) },
-          props: { type: "button", disabled: index === formation.length - 1 },
-          aria: { label: "Move down" },
-          text: "↓",
-        });
-        bindPressable(moveDown, () => {
-          options.onCommand?.({
-            cmd: "setFormation",
-            args: [swapFormationOrder(formation, index, "down")],
-          });
-        });
-
-        rowChildren.push(
-          el("div", { class: "character-picker-formation-controls" }, [moveUp, moveDown]),
-        );
+    const existing = new Map<string, HTMLElement>();
+    for (const child of [...tablist.children]) {
+      const key = (child as HTMLElement).dataset["characterRow"];
+      if (key !== undefined) {
+        existing.set(key, child as HTMLElement);
       }
+    }
 
-      if (isSelected) {
-        const swaps = partySwapButtons(snapshot, selected, options);
-        if (swaps.length > 0) {
-          rowChildren.push(el("div", { class: "character-picker-row-swaps" }, swaps));
-        }
+    const desired: HTMLElement[] = chipOrder.map((classId, index) => {
+      const prev = existing.get(String(index));
+      if (prev && prev.dataset["rowStateKey"] === rowStateKey(snapshot, selected, classId, index)) {
+        return prev;
       }
-
-      return el("div", { class: "character-picker-row" }, rowChildren);
+      return buildRow(snapshot, selected, classId, index);
     });
 
-    tablist.replaceChildren(...rows);
+    const keep = new Set<Node>(desired);
+    for (const child of [...tablist.childNodes]) {
+      if (!keep.has(child)) {
+        tablist.removeChild(child);
+      }
+    }
+    let cursor = tablist.firstChild;
+    for (const node of desired) {
+      if (node === cursor) {
+        cursor = cursor.nextSibling;
+        continue;
+      }
+      tablist.insertBefore(node, cursor);
+    }
+
     renderPending(snapshot);
 
     if (restoreFocus) {
@@ -278,6 +372,7 @@ export function mountCharacterPicker(
     render(snapshot, selected) {
       if (!snapshot) {
         chipOrder = [];
+        lastSnapshot = null;
         pendingHost.replaceChildren();
         tablist.replaceChildren();
         return;

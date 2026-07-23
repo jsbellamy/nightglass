@@ -337,6 +337,11 @@ const DOCK_WEBVIEW_BASE_OPTIONS = {
   resizable: false,
   visible: false,
   focus: true,
+  // The Armory equips gear via HTML5 drag-and-drop. Tauri's webview intercepts OS-level
+  // drag/drop by default, which swallows the page's `drop` events (the drag starts and
+  // the target slot highlights, but nothing lands). Disabling it hands drag-and-drop
+  // back to the frontend.
+  dragDropEnabled: false,
 } as const;
 
 export function wrapDockWebviewWindow(
