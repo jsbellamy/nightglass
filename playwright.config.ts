@@ -13,6 +13,9 @@ export default defineConfig({
     // Native-1× rendering is itself an acceptance criterion.
     deviceScaleFactor: 1,
     viewport: null,
+    trace: "retain-on-failure",
+    video: "retain-on-failure",
+    screenshot: "only-on-failure",
   },
   webServer: {
     command: "npm run build:evidence && npm run preview -- --host 127.0.0.1 --port 4173 --strictPort",
