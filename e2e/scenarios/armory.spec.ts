@@ -142,13 +142,15 @@ test.describe("Armory evidence scenarios", () => {
     expect(commands).toContainEqual({ cmd: "equip", args: [100, "wizard", "weapon"] });
     expect(commands).toContainEqual({ cmd: "unequip", args: ["wizard", "weapon"] });
 
-    const afterUnequip = await dock.evaluate(() => {
-      const weapon = document.querySelector<HTMLElement>('[data-worn-slot="weapon"]');
-      return {
-        weaponEmpty: weapon?.dataset["slotFilled"] === "false",
-      };
-    });
-    expect(afterUnequip.weaponEmpty).toBe(true);
+    await expect
+      .poll(async () => {
+        const weaponEmpty = await dock.evaluate(() => {
+          const weapon = document.querySelector<HTMLElement>('[data-worn-slot="weapon"]');
+          return weapon?.dataset["slotFilled"] === "false";
+        });
+        return weaponEmpty;
+      })
+      .toBe(true);
 
     const layoutAfterDrag = await dock.evaluate(() => {
       const panel = document.querySelector<HTMLElement>('[data-dock-panel="armory"]');
