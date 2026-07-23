@@ -26,6 +26,10 @@ Equipment and Talent icons **must** keep named-palette validation mandatory. Abi
 | Runtime | `src/assets/icons/<iconKey>.png` + `manifest.json` | 34×34 inventory icons consumed by the UI; manifest records the family's selected `palette` id and palette-specific `outline` swatch name |
 | Review | `src/assets/icons/preview/<iconKey>@8x.png`, `family-sheet@8x.png` | PR-review approval targets (binary PNG diff) |
 
+**Ability (Loadout)** icons use the same runtime path and preview discipline when their
+families land; manifest entries for source-local Ability icons will record geometry and
+rebuild digests without requiring a named `palette` id (pipeline follow-on).
+
 Provider raws are **evidence, not build inputs**. Archive them under
 `docs/research/evidence/` with a `.source.json` sidecar (`provider`, `prompt`,
 `raw_sha256`, ingest report). Do **not** put icon raws in `assets-raw/grid_raw/`

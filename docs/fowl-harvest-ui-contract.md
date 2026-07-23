@@ -203,8 +203,8 @@ behavior remain authoritative unless a later issue changes them.
 │ Knight · Level 12 · N Talent Points available · Front                    │
 ├─ Loadout (compact) ─┬─ Talents (wider) ─────────────────────────────────┤
 │ Basic Attack        │ ┌ talent-tree-scroll ────────────────────────────┐ │
-│ Slots [ I ][ II ][ III ]                                                │ │
-│ Available skills ►  │ │ TIER 1 … attached − | rank/max | + steppers   │ │
+│ Slots [ I ][ II ][ III ] │ TIER 1 … attached − | rank/max | + steppers   │ │
+│ Available skills ►  │ │ …                                               │ │
 │ [■][■][■][■] scroll │ └──────────────────────────────────────────────┘ │
 └─────────────────────┴──────────────────────────────────────────────────┘
 ```

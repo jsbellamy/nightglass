@@ -102,6 +102,7 @@ to today's DOM. Cite the successor slug when a live row needs the same intent.
 | Three separate Character sub-tabs **Loadout** / **Talents** / **Stats** | Worked examples or harness journeys that cycle Loadout → Talents → Stats as distinct Character sub-tabs (instead of **Build** with simultaneous columns, then **Stats**) | `evidence: dock-surfaces`, `evidence: character-stats-breakdown` |
 | Full unlocked Ability pool duplicating slotted Abilities | Rows requiring a complete unlocked pool that still lists Abilities currently in Loadout slots (instead of unslotted-only **Available skills**) | `evidence: character-loadout-assignment`, `evidence: character-loadout-no-scroll` |
 | Large detached Talent **+** / **−** action blocks below rows | Layout or contrast samples targeting standalone action blocks separate from the attached rank stepper beside each Stat Talent row | `evidence: talent-direct-actions`, `evidence: character-talents-tree-scroll` |
+| Loadout focus order **Basic Attack → Available skills → slots 1–3** | Harness or contract rows requiring pool-before-slots tab order | `evidence: character-loadout-assignment` (Variant C: **Basic Attack → Slots I–III → Available skills**) |
 
 ## Three dispositions
 
