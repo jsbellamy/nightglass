@@ -2,12 +2,12 @@ import { expect, test } from "@playwright/test";
 import {
   assertFocusRingVisible,
   characterPickerChipLocator,
-  attachDockPage,
   focusCharacterSubTab,
   focusDockTab,
   openDockFromTileKeyboard,
-  openTilePage,
 } from "./helpers/dock-context";
+import { declareEvidenceScenario } from "./helpers/evidence-scenarios";
+import { openEvidenceSession } from "./helpers/evidence-session";
 import { keyboardBootSnapshot } from "./helpers/snapshots";
 
 /**
@@ -25,12 +25,14 @@ async function pressEnterKeydown(
 }
 
 test.describe("accessibility keyboard floor", () => {
-  test("keyboard — Armory → Character → Stage journeys with Loadout assign/swap, Talent +/−, and popover disclosure without pointer", async ({
-    browser,
-  }) => {
+  declareEvidenceScenario("keyboard-floor", async ({ browser }) => {
     test.setTimeout(180_000);
     const bootSave = JSON.stringify(keyboardBootSnapshot());
-    const { context, tile } = await openTilePage(browser, bootSave);
+    const session = await openEvidenceSession(browser, "live-tile-and-dock", {
+      bootSaveJson: bootSave,
+    });
+    const tile = session.tile!;
+    const dock = session.dock!;
     await tile.addInitScript(() => {
       const block = (event: Event) => {
         if (event instanceof PointerEvent) {
@@ -44,7 +46,6 @@ test.describe("accessibility keyboard floor", () => {
     });
 
     await openDockFromTileKeyboard(tile);
-    const dock = await attachDockPage(context);
 
     // Fresh Dock starts on Armory.
     await expect(dock.locator('[data-dock-tab="armory"][aria-selected="true"]')).toBeVisible();
@@ -333,6 +334,6 @@ test.describe("accessibility keyboard floor", () => {
     await dock.keyboard.press("Enter");
     await expect(dock.locator(".stage-confirm")).toHaveCount(0);
 
-    await context.close();
+    await session.finish();
   });
 });

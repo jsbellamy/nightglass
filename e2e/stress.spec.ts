@@ -1,23 +1,20 @@
 import { expect, test } from "@playwright/test";
-import { mkdirSync } from "node:fs";
 import { advanceUntil } from "./helpers/advance";
 import { postBusCommand } from "./helpers/bus";
-import { openTilePage } from "./helpers/dock-context";
+import { declareEvidenceScenario } from "./helpers/evidence-scenarios";
+import { openEvidenceSession } from "./helpers/evidence-session";
+import { captureReviewScene } from "./helpers/review-scenes";
 import { stageThreeStressSnapshot } from "./helpers/snapshots";
 
-const SCREENSHOTS = "e2e-screenshots";
 const POOL_OVERLAP_TOLERANCE_PX = 2;
 
 test.describe("presentation concurrency stress", () => {
-  test("evidence: five-actor-pools — Stage 3 five-opponent wave renders five actor pools without pool overlap beyond tolerance", async ({
-    browser,
-  }) => {
+  declareEvidenceScenario("five-actor-pools", async ({ browser }) => {
     test.setTimeout(60_000);
-    mkdirSync(SCREENSHOTS, { recursive: true });
-    const { context, tile } = await openTilePage(
-      browser,
-      JSON.stringify(stageThreeStressSnapshot()),
-    );
+    const session = await openEvidenceSession(browser, "live-tile-seeded-snapshot", {
+      bootSaveJson: JSON.stringify(stageThreeStressSnapshot()),
+    });
+    const tile = session.tile!;
 
     await postBusCommand(tile, { cmd: "selectStage", args: [3] });
     await advanceUntil(tile, async () => {
@@ -76,7 +73,7 @@ test.describe("presentation concurrency stress", () => {
     expect(layout.poolCount).toBe(5);
     expect(layout.collisions, "actor pool overlap").toEqual([]);
 
-    await tile.screenshot({ path: `${SCREENSHOTS}/07-stage3-five-pools.png` });
-    await context.close();
+    await captureReviewScene(tile, "five-actor-pools", "stage-stress-five-pools");
+    await session.finish();
   });
 });
