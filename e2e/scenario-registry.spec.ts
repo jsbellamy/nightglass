@@ -77,11 +77,11 @@ test.describe("evidence scenario registry", () => {
     }
   });
 
-  test("lists seven monolith scenarios on rendered-evidence with generated titles", () => {
+  test("lists four monolith scenarios on rendered-evidence with generated titles", () => {
     const monolith: EvidenceScenario[] = EVIDENCE_SCENARIOS.filter(
       (s) => s.spec.path === "e2e/rendered-evidence.spec.ts",
     );
-    expect(monolith).toHaveLength(7);
+    expect(monolith).toHaveLength(4);
     for (const scenario of monolith) {
       const title = evidenceScenarioTitle(scenario);
       for (const slug of scenario.slugs) {
@@ -91,7 +91,7 @@ test.describe("evidence scenario registry", () => {
     }
   });
 
-  test("catalogues ten supplemental scenarios on dedicated spec files", () => {
+  test("catalogues thirteen supplemental scenarios on dedicated spec files", () => {
     const supplementalPaths = [
       "e2e/contrast.spec.ts",
       "e2e/keyboard.spec.ts",
@@ -99,14 +99,17 @@ test.describe("evidence scenario registry", () => {
       "e2e/stress.spec.ts",
       "e2e/scenarios/tile.spec.ts",
       "e2e/scenarios/dock.spec.ts",
+      "e2e/scenarios/armory.spec.ts",
     ];
     const supplemental = EVIDENCE_SCENARIOS.filter((s) => supplementalPaths.includes(s.spec.path));
-    expect(supplemental).toHaveLength(10);
+    expect(supplemental).toHaveLength(13);
     const tileScenarios = EVIDENCE_SCENARIOS.filter((s) => s.spec.path === "e2e/scenarios/tile.spec.ts");
     expect(tileScenarios).toHaveLength(3);
     const dockScenarios = EVIDENCE_SCENARIOS.filter((s) => s.spec.path === "e2e/scenarios/dock.spec.ts");
     expect(dockScenarios).toHaveLength(2);
-    for (const scenario of tileScenarios) {
+    const armoryScenarios = EVIDENCE_SCENARIOS.filter((s) => s.spec.path === "e2e/scenarios/armory.spec.ts");
+    expect(armoryScenarios).toHaveLength(3);
+    for (const scenario of [...tileScenarios, ...armoryScenarios]) {
       const title = evidenceScenarioTitle(scenario);
       for (const slug of scenario.slugs) {
         expect(title).toContain(`evidence: ${slug}`);

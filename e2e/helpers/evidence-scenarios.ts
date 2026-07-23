@@ -180,9 +180,9 @@ export const EVIDENCE_SCENARIOS: readonly EvidenceScenario[] = [
     slugs: ["armory-collection-unequipped", "armory-comparison-popover"],
     spec: {
       id: "rendered-evidence:armory-collection-compare",
-      path: "e2e/rendered-evidence.spec.ts",
+      path: "e2e/scenarios/armory.spec.ts",
     },
-    fixture: "live-tile-and-dock",
+    fixture: "isolated-dock",
     reviewScenes: [],
     summary:
       "unequipped collection grid and transient comparison popover at dock size",
@@ -192,9 +192,9 @@ export const EVIDENCE_SCENARIOS: readonly EvidenceScenario[] = [
     slugs: ["armory-drag-equip-unequip", "armory-density-no-outer-scroll"],
     spec: {
       id: "rendered-evidence:armory-drag-density",
-      path: "e2e/rendered-evidence.spec.ts",
+      path: "e2e/scenarios/armory.spec.ts",
     },
-    fixture: "live-tile-and-dock",
+    fixture: "isolated-dock",
     reviewScenes: [],
     summary:
       "pointer drag equip and unequip with 800×480 layout without outer-panel scroll",
@@ -204,9 +204,9 @@ export const EVIDENCE_SCENARIOS: readonly EvidenceScenario[] = [
     slugs: ["equipment-icon-content-tier", "equipment-icon-chrome-legibility"],
     spec: {
       id: "rendered-evidence:equipment-icon-tiers",
-      path: "e2e/rendered-evidence.spec.ts",
+      path: "e2e/scenarios/armory.spec.ts",
     },
-    fixture: "live-tile-and-dock",
+    fixture: "isolated-dock",
     reviewScenes: [
       {
         id: "armory-worn-strip",

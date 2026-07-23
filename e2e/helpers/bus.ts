@@ -1,7 +1,10 @@
 import { expect, type Page } from "@playwright/test";
-import type { Snapshot } from "../../src/core/snapshot";
-import { NIGHTGLASS_BUS_CHANNEL } from "../../src/ui/bus";
+import { createEngine } from "../../src/core/engine";
+import { cloneSnapshot, type Snapshot } from "../../src/core/snapshot";
+import { buildContent } from "../../src/data";
+import { applyTileCommand, NIGHTGLASS_BUS_CHANNEL } from "../../src/ui/bus";
 import type { TileCommand } from "../../src/ui/bus";
+import { serializeEngineLegality, type SerializedEngineLegality } from "../../src/ui/engine-legality";
 
 const EMPTY_SERIALIZED_LEGALITY = {
   talentAllocate: {},
@@ -21,14 +24,18 @@ export async function postBusCommand(page: Page, command: TileCommand): Promise<
 }
 
 /** Publish a Snapshot to every bus peer (e.g. seed the Management Dock Armory). */
-export async function postBusSnapshot(page: Page, snapshot: Snapshot): Promise<void> {
+export async function postBusSnapshot(
+  page: Page,
+  snapshot: Snapshot,
+  legality: SerializedEngineLegality = EMPTY_SERIALIZED_LEGALITY,
+): Promise<void> {
   await page.evaluate(
-    ({ channelName, snapshot: snap, legality }) => {
+    ({ channelName, snapshot: snap, legality: leg }) => {
       const channel = new BroadcastChannel(channelName);
-      channel.postMessage({ type: "snapshot", snapshot: snap, legality });
+      channel.postMessage({ type: "snapshot", snapshot: snap, legality: leg });
       channel.close();
     },
-    { channelName: NIGHTGLASS_BUS_CHANNEL, snapshot, legality: EMPTY_SERIALIZED_LEGALITY },
+    { channelName: NIGHTGLASS_BUS_CHANNEL, snapshot, legality },
   );
 }
 
@@ -86,4 +93,56 @@ export async function waitForDockOpenedSnapshotHandshake(tile: Page, timeout = 5
     },
     timeout,
   );
+}
+
+const BUS_COMMAND_BRIDGE = "__ngApplyBusCommand";
+
+export async function bindBusCommandReplayerEngine(
+  page: Page,
+  seededSnapshot: Snapshot,
+): Promise<void> {
+  const content = buildContent();
+  const engine = createEngine(content, cloneSnapshot(seededSnapshot), 42);
+
+  await page.exposeFunction(BUS_COMMAND_BRIDGE, async (command: TileCommand) => {
+    applyTileCommand(engine, command);
+    const snapshot = engine.snapshot();
+    const legality = serializeEngineLegality(engine, snapshot, content);
+    await postBusSnapshot(page, snapshot, legality);
+  });
+}
+
+export async function attachBusCommandReplayerListener(page: Page): Promise<void> {
+  await page.evaluate(
+    ({ channelName, bridge }) => {
+      const w = window as unknown as {
+        __ngCmdReplayer?: BroadcastChannel;
+      };
+      w.__ngCmdReplayer?.close();
+      const channel = new BroadcastChannel(channelName);
+      channel.onmessage = (event: MessageEvent<{ type: string; command?: TileCommand }>) => {
+        if (event.data.type === "command" && event.data.command) {
+          const apply = (window as unknown as Record<string, (cmd: TileCommand) => void>)[bridge];
+          void apply(event.data.command);
+        }
+      };
+      w.__ngCmdReplayer = channel;
+    },
+    { channelName: NIGHTGLASS_BUS_CHANNEL, bridge: BUS_COMMAND_BRIDGE },
+  );
+}
+
+/**
+ * Third-peer command loop for isolated Dock sessions: applies commands with the real
+ * Engine in Node and republishes snapshot + legality (no live Tile pump peer).
+ *
+ * `bindBusCommandReplayerEngine` must run before the page navigates; call
+ * `attachBusCommandReplayerListener` after the Dock shell is mounted.
+ */
+export async function installBusCommandReplayer(
+  page: Page,
+  seededSnapshot: Snapshot,
+): Promise<void> {
+  await bindBusCommandReplayerEngine(page, seededSnapshot);
+  await attachBusCommandReplayerListener(page);
 }
