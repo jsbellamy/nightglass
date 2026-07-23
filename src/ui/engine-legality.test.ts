@@ -5,7 +5,9 @@ import { talentTierDefs } from "./snapshot-view";
 import type { ClassId, EquipmentSlotId } from "../core/types";
 import { buildContent } from "../data";
 import {
+  EMPTY_ENGINE_LEGALITY,
   invalidatesLegality,
+  legalityViewFromEngine,
   legalityViewFromSerialized,
   serializeEngineLegality,
 } from "./engine-legality";
@@ -284,6 +286,49 @@ describe("Dock-derived equip legality", () => {
         }
       }
     }
+  });
+
+  it("treats independently cloned serialized Talent legality as equivalent for management remount gating", () => {
+    const engine = createEngine(content, undefined, LOOT_SEED);
+    const snapshot = engine.snapshot();
+    const serialized = serializeEngineLegality(engine, snapshot, content);
+    const cloneA = structuredClone(serialized);
+    const cloneB = structuredClone(serialized);
+    const viewA = legalityViewFromSerialized(cloneA, structuredClone(snapshot), content);
+    const viewB = legalityViewFromSerialized(cloneB, structuredClone(snapshot), content);
+    expect(viewA.managementKey).toBeDefined();
+    expect(viewA.managementKey).not.toBe("");
+    expect(viewB.managementKey).toBe(viewA.managementKey);
+    expect(viewA).not.toBe(viewB);
+  });
+
+  it("changes the stable Talent legality token when allocate permission flips for a Stat Talent", () => {
+    const engine = createEngine(content, undefined, LOOT_SEED);
+    const snapshot = engine.snapshot();
+    const before = serializeEngineLegality(engine, snapshot, content);
+    const beforeKey = legalityViewFromSerialized(
+      structuredClone(before),
+      snapshot,
+      content,
+    ).managementKey;
+    const after = structuredClone(before);
+    const sampleKey = Object.keys(after.talentAllocate)[0];
+    if (!sampleKey) {
+      throw new Error("expected at least one talent legality entry");
+    }
+    after.talentAllocate[sampleKey] = !after.talentAllocate[sampleKey];
+    const afterKey = legalityViewFromSerialized(after, snapshot, content).managementKey;
+    expect(afterKey).not.toBe(beforeKey);
+  });
+
+  it("keeps live Engine legality views without a stable comparison token", () => {
+    const engine = createEngine(content, undefined, LOOT_SEED);
+    expect(legalityViewFromEngine(engine).managementKey).toBeUndefined();
+  });
+
+  it("exposes a non-empty stable comparison token on empty serialized legality", () => {
+    expect(EMPTY_ENGINE_LEGALITY.managementKey).toBeDefined();
+    expect(EMPTY_ENGINE_LEGALITY.managementKey).not.toBe("");
   });
 
   it("keeps the serialized legality key count independent of Armory size", () => {

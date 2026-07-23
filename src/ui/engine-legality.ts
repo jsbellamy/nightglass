@@ -9,6 +9,7 @@ import {
 } from "./snapshot-view";
 
 export interface EngineLegalityView {
+  readonly managementKey?: string;
   canAllocateTalent(classId: ClassId, talentId: string): boolean;
   canDeallocateTalent(classId: ClassId, talentId: string): boolean;
   canEquip(dropId: number, classId: ClassId, slot: EquipmentSlotId): boolean;
@@ -22,6 +23,27 @@ export interface SerializedEngineLegality {
 function talentKey(classId: ClassId, talentId: string): string {
   return `${classId}:${talentId}`;
 }
+
+function stableBooleanRecord(record: Record<string, boolean>): Record<string, boolean> {
+  const stable: Record<string, boolean> = {};
+  for (const key of Object.keys(record).sort()) {
+    stable[key] = record[key]!;
+  }
+  return stable;
+}
+
+/** Deterministic token for serialized talent legality; excludes Armory equip semantics. */
+function managementKeyFromSerialized(data: SerializedEngineLegality): string {
+  return JSON.stringify({
+    talentAllocate: stableBooleanRecord(data.talentAllocate),
+    talentDeallocate: stableBooleanRecord(data.talentDeallocate),
+  });
+}
+
+const EMPTY_SERIALIZED_MANAGEMENT_KEY = managementKeyFromSerialized({
+  talentAllocate: {},
+  talentDeallocate: {},
+});
 
 /**
  * Whether an event can change equip or talent legality.
@@ -115,6 +137,7 @@ export function legalityViewFromSerialized(
     return memoizedLegalityView;
   }
   const view: EngineLegalityView = {
+    managementKey: managementKeyFromSerialized(data),
     canAllocateTalent: (classId, talentId) =>
       data.talentAllocate[talentKey(classId, talentId)] ?? false,
     canDeallocateTalent: (classId, talentId) =>
@@ -135,6 +158,7 @@ export function legalityViewFromSerialized(
 }
 
 export const EMPTY_ENGINE_LEGALITY: EngineLegalityView = {
+  managementKey: EMPTY_SERIALIZED_MANAGEMENT_KEY,
   canAllocateTalent: () => false,
   canDeallocateTalent: () => false,
   canEquip: () => false,

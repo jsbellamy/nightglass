@@ -568,6 +568,137 @@ describe("Management Dock active-surface rendering", () => {
     dock.destroy();
   });
 
+  it("preserves Character rail rows, chip anchor, focus, and scroll across four equivalent legality pumps", () => {
+    const root = document.createElement("main");
+    document.body.append(root);
+    const dock = mountDock(root);
+    const engine = createEngine(fixtureContent, undefined, 3);
+    const baseSnapshot = engine.snapshot();
+    const baseLegality = serializeEngineLegality(engine, baseSnapshot, fixtureContent);
+    const firstView = legalityViewFromSerialized(
+      structuredClone(baseLegality),
+      structuredClone(baseSnapshot),
+      fixtureContent,
+    );
+    dock.render(structuredClone(baseSnapshot), firstView);
+    root.querySelector<HTMLButtonElement>('[data-dock-tab="character"]')?.click();
+
+    const panel = root.querySelector<HTMLElement>('[data-dock-panel="character"]');
+    expect(panel).not.toBeNull();
+    panel!.scrollTop = 44;
+
+    const selected = baseSnapshot.progression.party[0]!;
+    const chip = root.querySelector<HTMLElement>(`[data-character-chip="${selected}"]`);
+    expect(chip).not.toBeNull();
+    chip!.focus();
+    expect(document.activeElement).toBe(chip);
+
+    const rowsBefore = [...root.querySelectorAll<HTMLElement>("[data-character-row]")];
+
+    for (let pump = 0; pump < 4; pump += 1) {
+      const snapshot = structuredClone(baseSnapshot);
+      if (snapshot.attempt) {
+        const partyCombatant = snapshot.attempt.combatants.find((c) => c.side === "party");
+        if (partyCombatant) {
+          partyCombatant.health = Math.max(1, partyCombatant.health - 1);
+        }
+        snapshot.simNowMs += 250;
+      }
+      const legality = legalityViewFromSerialized(
+        structuredClone(baseLegality),
+        snapshot,
+        fixtureContent,
+      );
+      dock.render(snapshot, legality);
+    }
+
+    const rowsAfter = [...root.querySelectorAll<HTMLElement>("[data-character-row]")];
+    expect(rowsAfter).toHaveLength(rowsBefore.length);
+    for (let i = 0; i < rowsBefore.length; i += 1) {
+      expect(rowsAfter[i]).toBe(rowsBefore[i]);
+    }
+    expect(document.activeElement).toBe(chip);
+    expect(panel!.scrollTop).toBe(44);
+    expect(root.querySelector<HTMLElement>(`[data-character-chip="${selected}"]`)).toBe(chip);
+
+    root.remove();
+    dock.destroy();
+  });
+
+  it("updates Talent allocate disabled state when legality changes but the management Snapshot is unchanged", () => {
+    const root = document.createElement("main");
+    document.body.append(root);
+    const dock = mountDock(root);
+    const boot = createEngine(fixtureContent, undefined, 42);
+    boot.advanceBy(1);
+    const saved = boot.snapshot();
+    saved.progression.characterXp.knight = 850;
+    const engine = createEngine(fixtureContent, saved, 42);
+    const snapshot = structuredClone(engine.snapshot());
+    const serialized = serializeEngineLegality(engine, snapshot, fixtureContent);
+    dock.render(
+      snapshot,
+      legalityViewFromSerialized(structuredClone(serialized), snapshot, fixtureContent),
+    );
+    root.querySelector<HTMLButtonElement>('[data-dock-tab="character"]')?.click();
+    root
+      .querySelector<HTMLElement>('.talent-cell[data-talent-id="k-fortitude"]')
+      ?.click();
+
+    const allocateBefore = root.querySelector<HTMLButtonElement>(
+      '[data-talent-id="k-fortitude"][data-talent-action="allocate"]',
+    );
+    expect(allocateBefore?.disabled).toBe(false);
+
+    const changed = structuredClone(serialized);
+    changed.talentAllocate["knight:k-fortitude"] = false;
+    const changedView = legalityViewFromSerialized(changed, snapshot, fixtureContent);
+    dock.render(structuredClone(snapshot), changedView);
+
+    const allocateAfter = root.querySelector<HTMLButtonElement>(
+      '[data-talent-id="k-fortitude"][data-talent-action="allocate"]',
+    );
+    expect(allocateAfter?.disabled).toBe(true);
+
+    dock.render(
+      structuredClone(snapshot),
+      legalityViewFromSerialized(structuredClone(changed), snapshot, fixtureContent),
+    );
+    expect(
+      root.querySelector<HTMLButtonElement>(
+        '[data-talent-id="k-fortitude"][data-talent-action="allocate"]',
+      ),
+    ).toBe(allocateAfter);
+
+    root.remove();
+    dock.destroy();
+  });
+
+  it("skips management remount when the same keyless legality view reference is pumped twice", () => {
+    const root = document.createElement("main");
+    document.body.append(root);
+    const dock = mountDock(root);
+    const engine = createEngine(fixtureContent, undefined, 3);
+    const snapshot = engine.snapshot();
+    const legality = legalityViewFromEngine(engine);
+    dock.render(snapshot, legality);
+    root.querySelector<HTMLButtonElement>('[data-dock-tab="character"]')?.click();
+    const panel = root.querySelector<HTMLElement>('[data-dock-panel="character"]');
+    panel!.scrollTop = 22;
+    const rowsBefore = [...root.querySelectorAll<HTMLElement>("[data-character-row]")];
+
+    dock.render(structuredClone(snapshot), legality);
+
+    const rowsAfter = [...root.querySelectorAll<HTMLElement>("[data-character-row]")];
+    for (let i = 0; i < rowsBefore.length; i += 1) {
+      expect(rowsAfter[i]).toBe(rowsBefore[i]);
+    }
+    expect(panel!.scrollTop).toBe(22);
+
+    root.remove();
+    dock.destroy();
+  });
+
   it("does not remount Character panel or reset scrollTop on an HP-only Snapshot pump", () => {
     const root = document.createElement("main");
     document.body.append(root);
