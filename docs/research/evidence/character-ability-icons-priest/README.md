@@ -15,7 +15,7 @@ Content, runtime PNG, manifest, or UI change in this slice (activation → #534)
 | Visual vocabulary | source-local mechanic colours; common outline `58,6,20`; no `moonberry-16` / `fowl-harvest-24` |
 | Geometry | Icon grid shell; long side preference 26–30; gates in `pipeline/icons/constants.py` |
 | Review context | `priest-ability-sheet@8x.png` (evidence composite) + native 1× sheet |
-| Validator | targeted source-local ingest of the five accepted raws → `source.grid`; `python3 -m icons.verify` proves registered catalog unchanged; CI `assets` job for full-catalog byte-identity after push |
+| Validator | targeted source-local ingest of the five accepted raws → `source.grid`; `python3 pipeline/icons/verify.py` proves registered catalog unchanged; CI `assets` job for full-catalog byte-identity after push |
 
 ## Style cohort (shared)
 
