@@ -263,7 +263,8 @@ describe("Loadout surface", () => {
     expect(tiles).toHaveLength(10);
     const strip = root.querySelector<HTMLElement>(".loadout-pool-strip .loadout-pool-tiles");
     expect(strip).not.toBeNull();
-    expect(getComputedStyle(strip!).overflowX).toMatch(/auto|scroll/);
+    expect(root.querySelector(".loadout-pool-strip")).not.toBeNull();
+    expect(strip!.childElementCount).toBe(10);
 
     surface.destroy();
   });

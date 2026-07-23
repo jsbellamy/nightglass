@@ -206,9 +206,7 @@ export function mountLoadoutSurface(
       node.classList.remove("loadout-drop-target--valid");
     }
     for (const node of host.querySelectorAll<HTMLElement>("[data-surface-preserve-live]")) {
-      if (!node.draggable) {
-        delete node.dataset["surfacePreserveLive"];
-      }
+      delete node.dataset["surfacePreserveLive"];
     }
   }
 
