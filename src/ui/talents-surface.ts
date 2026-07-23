@@ -1,12 +1,13 @@
 import type { ReadonlySnapshot } from "../core/snapshot";
 import type { ClassId, Content, StatTalentDef } from "../core/types";
-import { formatStatTalentDelta } from "./ability-format";
+import { formatAbilityDescription, formatStatTalentDelta } from "./ability-format";
 import type { TileCommand } from "./bus";
 import { EMPTY_ENGINE_LEGALITY, type EngineLegalityView } from "./engine-legality";
 import { bindPressable } from "./keyboard";
 import { createEquipmentIconElement } from "./icons";
 import {
   CLASS_LABELS,
+  characterStatsFor,
   classKitFor,
   effectiveLoadout,
   effectiveTalentState,
@@ -203,9 +204,21 @@ export function mountTalentsSurface(
     selected: boolean,
     legality: EngineLegalityView,
   ): HTMLElement[] {
+    const ability = content.abilities.find((entry) => entry.id === abilityId);
+    const stats = characterStatsFor(snapshot, content, classId);
     const children: HTMLElement[] = [
       el("p", { class: "talent-name", text: abilityName }),
     ];
+
+    if (ability) {
+      children.push(
+        el("p", {
+          class: "ability-description",
+          data: { abilityDescription: "true" },
+          text: formatAbilityDescription(ability, stats, content.statuses),
+        }),
+      );
+    }
 
     if (selected && abilityTalentSlotted(snapshot, classId, abilityId)) {
       children.push(

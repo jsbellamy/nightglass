@@ -875,10 +875,23 @@ html.dock-window body {
 }
 
 .character-section .ability-name,
+.character-section .ability-description,
 .character-section .ability-raw,
 .character-section .ability-timings {
   margin: 0;
   line-height: 1.25;
+}
+
+.character-section .ability-description {
+  font-size: 10px;
+  color: var(--text-muted, #9aa3b2);
+}
+
+.talent-detail .ability-description {
+  margin: 4px 0 6px;
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--text-muted, #9aa3b2);
 }
 
 .character-section .ability-name {

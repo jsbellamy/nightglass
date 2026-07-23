@@ -9,6 +9,8 @@ import { fixtureContent } from "../core/testing/fixture-content";
 import type { ClassId } from "../core/types";
 import type { Snapshot } from "../core/snapshot";
 import { mountBattleTile } from "./battle-tile";
+import { formatAbilityChoiceLabel, formatAbilityDescription } from "./ability-format";
+import { characterStatsFor } from "./snapshot-view";
 import { mountLoadoutSurface } from "./loadout-surface";
 
 const LOOT_SEED = 42;
@@ -38,10 +40,18 @@ function knightSection(root: HTMLElement): HTMLElement {
   return section;
 }
 
-function sweepRawText(root: HTMLElement): string | undefined {
+function sweepDescriptionText(root: HTMLElement): string | undefined {
   return knightSection(root)
-    .querySelector<HTMLElement>('[data-ability-id="k-sweep"] .ability-raw')
+    .querySelector<HTMLElement>('[data-ability-id="k-sweep"] [data-ability-description="true"]')
     ?.textContent ?? undefined;
+}
+
+function expectedSweepDescription(snapshot: Snapshot): string {
+  return formatAbilityDescription(
+    fixtureContent.abilities.find((entry) => entry.id === "k-sweep")!,
+    characterStatsFor(snapshot, fixtureContent, "knight"),
+    fixtureContent.statuses,
+  );
 }
 
 describe("Loadout surface", () => {
@@ -85,7 +95,7 @@ describe("Loadout surface", () => {
     surface.destroy();
   });
 
-  it("recomputes raw damage when a Stat Talent rank changes", () => {
+  it("recomputes ability descriptions when a Stat Talent rank changes", () => {
     const root = document.createElement("div");
     const boot = createEngine(fixtureContent, undefined, LOOT_SEED);
     boot.advanceBy(1);
@@ -103,12 +113,46 @@ describe("Loadout surface", () => {
     );
 
     surface.render(engine.snapshot());
-    expect(sweepRawText(root)).toBe("9 damage");
+    expect(sweepDescriptionText(root)).toBe(expectedSweepDescription(engine.snapshot()));
 
     engine.allocateTalent("knight", "k-swordcraft");
     engine.allocateTalent("knight", "k-swordcraft");
     surface.render(engine.snapshot());
-    expect(sweepRawText(root)).toBe("10 damage");
+    expect(sweepDescriptionText(root)).toBe(expectedSweepDescription(engine.snapshot()));
+
+    surface.destroy();
+  });
+
+  it("renders compact mechanical summaries on loadout assignment options", () => {
+    const root = document.createElement("div");
+    const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
+    const selected = { current: "knight" as ClassId };
+    const surface = mountLoadoutSurface(root, mountOptions(fixtureContent, selected));
+    const snapshot = engine.snapshot();
+    const stats = characterStatsFor(snapshot, fixtureContent, "knight");
+
+    surface.render(snapshot);
+    const select = knightSection(root).querySelector<HTMLSelectElement>(
+      '[data-loadout-assign="0"]',
+    );
+    const shieldBrace = fixtureContent.abilities.find((entry) => entry.id === "k-shield-brace")!;
+    const selectedOption = select?.selectedOptions[0];
+    expect(selectedOption?.textContent).toBe(
+      formatAbilityChoiceLabel(shieldBrace, stats, fixtureContent.statuses),
+    );
+
+    surface.destroy();
+  });
+
+  it("exposes full ability descriptions as accessible DOM text on every card", () => {
+    const root = document.createElement("div");
+    const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
+    const selected = { current: "knight" as ClassId };
+    const surface = mountLoadoutSurface(root, mountOptions(fixtureContent, selected));
+
+    surface.render(engine.snapshot());
+    const descriptions = knightSection(root).querySelectorAll('[data-ability-description="true"]');
+    expect(descriptions.length).toBeGreaterThanOrEqual(4);
 
     surface.destroy();
   });
@@ -316,7 +360,8 @@ describe("Loadout surface", () => {
     }
     select.focus();
     expect(document.activeElement).toBe(select);
-    expect(sweepRawText(root)).toBe("9 damage");
+    const pausedSnapshot = engine.snapshot();
+    expect(sweepDescriptionText(root)).toBe(expectedSweepDescription(pausedSnapshot));
 
     engine.allocateTalent("knight", "k-swordcraft");
     engine.allocateTalent("knight", "k-swordcraft");
@@ -324,7 +369,7 @@ describe("Loadout surface", () => {
 
     expect(root.querySelector(".loadout-assign")).toBe(select);
     expect(document.activeElement).toBe(select);
-    expect(sweepRawText(root)).toBe("9 damage");
+    expect(sweepDescriptionText(root)).toBe(expectedSweepDescription(pausedSnapshot));
 
     surface.destroy();
     root.remove();
@@ -358,18 +403,19 @@ describe("Loadout surface", () => {
       throw new Error("missing loadout select");
     }
     select.focus();
-    expect(sweepRawText(root)).toBe("9 damage");
+    const pausedSnapshot = engine.snapshot();
+    expect(sweepDescriptionText(root)).toBe(expectedSweepDescription(pausedSnapshot));
 
     engine.allocateTalent("knight", "k-swordcraft");
     engine.allocateTalent("knight", "k-swordcraft");
     surface.render(engine.snapshot());
-    expect(sweepRawText(root)).toBe("9 damage");
+    expect(sweepDescriptionText(root)).toBe(expectedSweepDescription(pausedSnapshot));
 
     outside.focus();
     select.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
     await Promise.resolve();
 
-    expect(sweepRawText(root)).toBe("10 damage");
+    expect(sweepDescriptionText(root)).toBe(expectedSweepDescription(engine.snapshot()));
     expect(document.activeElement).toBe(outside);
 
     surface.destroy();

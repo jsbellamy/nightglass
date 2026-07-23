@@ -1,9 +1,14 @@
 import { describe, expect, it } from "vitest";
+import { previewEffectRaw } from "../core/combat";
+import { buildContent } from "../data/index";
 import { fixtureContent } from "../core/testing/fixture-content";
 import type { StatModifiers } from "../core/types";
 import {
   actionCyclePhase,
+  formatAbilityChoiceLabel,
+  formatAbilityDescription,
   formatCooldownState,
+  formatDurationMs,
   formatStatTalentDelta,
 } from "./ability-format";
 import {
@@ -13,7 +18,173 @@ import {
   statLines,
 } from "./snapshot-view";
 
+const production = buildContent();
+const knightBase = production.classes.find((entry) => entry.id === "knight")!.base;
+const hunterBase = production.classes.find((entry) => entry.id === "hunter")!.base;
+const priestBase = production.classes.find((entry) => entry.id === "priest")!.base;
+const wizardBase = production.classes.find((entry) => entry.id === "wizard")!.base;
+
+function abilityById(content: typeof production, id: string) {
+  const ability = content.abilities.find((entry) => entry.id === id);
+  if (!ability) {
+    throw new Error(`missing ability ${id}`);
+  }
+  return ability;
+}
+
 const knightBasic = fixtureContent.abilities.find((entry) => entry.id === "knight-basic")!;
+
+describe("formatDurationMs", () => {
+  it("formats whole and fractional seconds for people", () => {
+    expect(formatDurationMs(1200)).toBe("1.2s");
+    expect(formatDurationMs(6000)).toBe("6s");
+    expect(formatDurationMs(15_000)).toBe("15s");
+  });
+});
+
+describe("formatAbilityDescription", () => {
+  it("describes representative Knight, Hunter, and Priest Abilities at base stats", () => {
+    expect(
+      formatAbilityDescription(
+        abilityById(production, "hold-the-line"),
+        knightBase,
+        production.statuses,
+      ),
+    ).toBe(
+      "Hold the Line: While below 50% Health, grant yourself Hold the Line for 6s: +60 Armor and +30 Elemental Resistance",
+    );
+    expect(
+      formatAbilityDescription(
+        abilityById(production, "pommel-break"),
+        knightBase,
+        production.statuses,
+      ),
+    ).toBe(
+      "Pommel Break: Deal 12 Physical Damage to the closest Opponent and Stun it for 1.2s",
+    );
+    expect(
+      formatAbilityDescription(
+        abilityById(production, "twin-fang"),
+        hunterBase,
+        production.statuses,
+      ),
+    ).toBe(
+      "Twin Fang: Deal 17 then 17 Physical Damage to the closest Opponent",
+    );
+    expect(
+      formatAbilityDescription(
+        abilityById(production, "dawn-recall"),
+        priestBase,
+        production.statuses,
+      ),
+    ).toBe(
+      "Dawn Recall: Revive the first Knocked Out Party Member with 26 Health",
+    );
+  });
+
+  it("covers every AbilityTargeting variant", () => {
+    expect(
+      formatAbilityDescription(
+        abilityById(production, "sweeping-arc"),
+        knightBase,
+        production.statuses,
+      ),
+    ).toContain("all Opponents");
+    expect(
+      formatAbilityDescription(
+        abilityById(production, "shield-brace"),
+        knightBase,
+        production.statuses,
+      ),
+    ).toContain("yourself");
+    expect(
+      formatAbilityDescription(
+        abilityById(production, "rallying-guard"),
+        knightBase,
+        production.statuses,
+      ),
+    ).toContain("your Party");
+    expect(
+      formatAbilityDescription(
+        abilityById(production, "mending-light"),
+        priestBase,
+        production.statuses,
+      ),
+    ).toContain("the lowest-health Party Member");
+  });
+
+  it("covers all three validWhile activation conditions", () => {
+    expect(
+      formatAbilityDescription(
+        abilityById(production, "shield-brace"),
+        knightBase,
+        production.statuses,
+      ),
+    ).toContain("While you lack Braced");
+    expect(
+      formatAbilityDescription(
+        abilityById(production, "moonwell"),
+        priestBase,
+        production.statuses,
+      ),
+    ).toContain("While any Party Member is missing Health");
+    expect(
+      formatAbilityDescription(
+        abilityById(production, "hold-the-line"),
+        knightBase,
+        production.statuses,
+      ),
+    ).toContain("While below 50% Health");
+  });
+
+  it("describes Scorched tick cadence and mixed damage plus status", () => {
+    const wildfire = abilityById(production, "wildfire-sigil");
+    const description = formatAbilityDescription(wildfire, wizardBase, production.statuses);
+    const tickRaw = previewEffectRaw(
+      production.statuses.find((entry) => entry.id === "scorched")!.tickEffect!,
+      wizardBase,
+    );
+    expect(description).toContain("all Opponents");
+    expect(description).toMatch(/Scorched/i);
+    expect(description).toContain(`${tickRaw} Fire Elemental Damage every 1s`);
+  });
+
+  it("never exposes coefficients or Power totals", () => {
+    const description = formatAbilityDescription(
+      abilityById(production, "pommel-break"),
+      knightBase,
+      production.statuses,
+    );
+    expect(description.toLowerCase()).not.toMatch(/\bpower\b/);
+    expect(description).not.toMatch(/coefficient|×|0\.\d/);
+  });
+});
+
+describe("formatAbilityChoiceLabel", () => {
+  it("uses compact mechanical summaries with activation conditions", () => {
+    expect(
+      formatAbilityChoiceLabel(
+        abilityById(production, "pommel-break"),
+        knightBase,
+        production.statuses,
+      ),
+    ).toBe("Pommel Break — 12 Physical Damage + Stun 1.2s");
+    expect(
+      formatAbilityChoiceLabel(
+        abilityById(production, "twin-fang"),
+        hunterBase,
+        production.statuses,
+      ),
+    ).toBe("Twin Fang — 17 + 17 Physical Damage");
+    expect(
+      formatAbilityChoiceLabel(
+        abilityById(production, "shield-brace"),
+        knightBase,
+        production.statuses,
+      ),
+    ).toBe("Shield Brace — While you lack Braced, +50 Armor for 5s");
+  });
+});
 
 describe("statLines", () => {
   const allFields: StatModifiers = {
@@ -82,10 +253,10 @@ describe("formatStatModifierPerRank and formatStatTalentDelta", () => {
 });
 
 describe("abilityRawDisplay", () => {
-  const knightBase = fixtureContent.classes.find((entry) => entry.id === "knight")!.base;
+  const knightBaseFixture = fixtureContent.classes.find((entry) => entry.id === "knight")!.base;
 
   it("returns physical damage from the first damage effect", () => {
-    const display = abilityRawDisplay(knightBasic, knightBase);
+    const display = abilityRawDisplay(knightBasic, knightBaseFixture);
     expect(display).toEqual({ kind: "damage", value: 14, channel: "physical" });
   });
 });
