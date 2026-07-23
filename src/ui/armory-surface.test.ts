@@ -42,9 +42,6 @@ function mountWithSelection(
   return mountArmorySurface(root, {
     content: fixtureContent,
     getSelectedClassId: () => selected.current,
-    selectClassId: (classId) => {
-      selected.current = classId;
-    },
     ...(onCommand ? { onCommand } : {}),
   });
 }
@@ -120,90 +117,23 @@ function pendingHunterInSnapshot(armory: DropInstance[]): Snapshot {
 }
 
 describe("Armory surface", () => {
-  it("renders a compact horizontal Character selector with name and Level above the worn strip", () => {
+  it("does not render a compact horizontal Character selector", () => {
     const root = document.createElement("div");
     const selected = { current: "knight" as ClassId };
     const snapshot = armorySnapshot([]);
     const surface = mountWithSelection(root, selected);
     renderArmory(surface, snapshot);
 
-    const selector = root.querySelector<HTMLElement>('[data-armory-character-selector="true"]');
-    expect(selector).not.toBeNull();
-    expect(selector?.getAttribute("role")).toBe("tablist");
-    const chips = [...root.querySelectorAll<HTMLElement>(".armory-character-selector [data-character-chip]")];
-    expect(chips.map((chip) => chip.dataset["characterChip"])).toEqual(rosterClassIds(snapshot));
-    expect(chips.every((chip) => chip.querySelector(".character-chip-name")?.textContent?.length)).toBe(
-      true,
-    );
-    expect(chips.every((chip) => chip.querySelector(".character-chip-level")?.textContent?.match(/^Level /))).toBe(
-      true,
-    );
-    expect(root.querySelector(".armory-character-selector .character-chip-position")).toBeNull();
-    expect(
-      root.querySelector('.armory-character-selector [data-character-chip="knight"]')?.getAttribute(
-        "aria-selected",
-      ),
-    ).toBe("true");
+    expect(root.querySelector('[data-armory-character-selector="true"]')).toBeNull();
+    expect(root.querySelector(".armory-character-selector")).toBeNull();
 
     const wornStrip = root.querySelector('[data-armory-worn-strip="true"]');
     expect(wornStrip).not.toBeNull();
-    expect(selector!.compareDocumentPosition(wornStrip!) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
-      Node.DOCUMENT_POSITION_FOLLOWING,
-    );
 
     surface.destroy();
   });
 
-  it("reuses Character selector chips across a re-render so hovered tabs do not flash", () => {
-    const root = document.createElement("div");
-    const selected = { current: "knight" as ClassId };
-    const snapshot = armorySnapshot([]);
-    const surface = mountWithSelection(root, selected);
-    renderArmory(surface, snapshot);
-
-    const chipsFor = (): HTMLElement[] => [
-      ...root.querySelectorAll<HTMLElement>(".armory-character-selector [data-character-chip]"),
-    ];
-    const before = chipsFor();
-
-    // Re-render with the identical Snapshot and selection: every chip node persists.
-    renderArmory(surface, snapshot);
-    const after = chipsFor();
-
-    expect(after).toHaveLength(before.length);
-    for (let i = 0; i < before.length; i += 1) {
-      expect(after[i]).toBe(before[i]);
-    }
-
-    surface.destroy();
-  });
-
-  it("rebuilds only the selector chips whose selection changed", () => {
-    const root = document.createElement("div");
-    const selected = { current: "knight" as ClassId };
-    const snapshot = armorySnapshot([]);
-    const surface = mountWithSelection(root, selected);
-    renderArmory(surface, snapshot);
-
-    const roster = rosterClassIds(snapshot);
-    const chipAt = (index: number): HTMLElement =>
-      [...root.querySelectorAll<HTMLElement>(".armory-character-selector [data-character-chip]")][
-        index
-      ]!;
-    const selectedSlotBefore = chipAt(0);
-    const unaffectedSlotBefore = chipAt(2);
-
-    // Move selection from slot 0 to slot 1: slot 2's selected-state is unchanged.
-    selected.current = roster[1]!;
-    renderArmory(surface, snapshot);
-
-    expect(chipAt(0)).not.toBe(selectedSlotBefore);
-    expect(chipAt(2)).toBe(unaffectedSlotBefore);
-
-    surface.destroy();
-  });
-
-  it("moves Armory Character selection with Arrow keys and retargets the worn strip", () => {
+  it("retargets worn strip and browse scope when getSelectedClassId changes", () => {
     const root = document.createElement("div");
     const selected = { current: "knight" as ClassId };
     const snapshot = armorySnapshot([
@@ -221,35 +151,51 @@ describe("Armory surface", () => {
     const surface = mountWithSelection(root, selected);
     renderArmory(surface, snapshot);
 
-    const roster = rosterClassIds(snapshot);
-    const knightChip = root.querySelector<HTMLElement>('.armory-character-selector [data-character-chip="knight"]');
-    knightChip?.focus();
-    knightChip?.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
-    renderArmory(surface, snapshot);
-    expect(selected.current).toBe(roster[1]);
     expect(
-      root.querySelector(`.armory-character-selector [data-character-chip="${roster[1]}"]`)?.getAttribute(
-        "aria-selected",
-      ),
-    ).toBe("true");
+      root.querySelector('[data-worn-slot="weapon"]')?.getAttribute("aria-label"),
+    ).toMatch(/Fixture Blade/);
+
+    selected.current = "wizard";
+    renderArmory(surface, snapshot);
     expect(
       root.querySelector('[data-worn-slot="weapon"]')?.getAttribute("aria-label"),
     ).toMatch(/Fixture Focus/);
 
-    const lastClass = roster[roster.length - 1]!;
-    const lastChip = root.querySelector<HTMLElement>(
-      `.armory-character-selector [data-character-chip="${lastClass}"]`,
-    );
-    lastChip?.focus();
-    lastChip?.dispatchEvent(new KeyboardEvent("keydown", { key: "Home", bubbles: true }));
-    renderArmory(surface, snapshot);
-    expect(selected.current).toBe(roster[0]);
-
-    lastChip?.dispatchEvent(new KeyboardEvent("keydown", { key: "End", bubbles: true }));
-    renderArmory(surface, snapshot);
-    expect(selected.current).toBe(lastClass);
-
     surface.destroy();
+  });
+
+  it("retargets Armory from the shared Dock Character rail without a duplicate selector", () => {
+    const dockRoot = document.createElement("main");
+    document.body.append(dockRoot);
+    const dock = mountManagementDock(dockRoot, { content: fixtureContent });
+    const snapshot = armorySnapshot([
+      drop({
+        dropId: 1,
+        baseId: "fixture-blade",
+        assignedTo: { classId: "knight", slot: "weapon" },
+      }),
+      drop({
+        dropId: 2,
+        baseId: "fixture-focus",
+        assignedTo: { classId: "wizard", slot: "weapon" },
+      }),
+    ]);
+    renderDock(dock, snapshot);
+
+    expect(dockRoot.querySelector('[data-armory-character-selector="true"]')).toBeNull();
+    expect(
+      dockRoot.querySelector('[data-worn-slot="weapon"]')?.getAttribute("aria-label"),
+    ).toMatch(/Fixture Blade/);
+
+    dockRoot.querySelector<HTMLElement>('.character-picker [data-character-chip="wizard"]')?.click();
+    renderDock(dock, snapshot);
+    expect(
+      dockRoot.querySelector('[data-worn-slot="weapon"]')?.getAttribute("aria-label"),
+    ).toMatch(/Fixture Focus/);
+    expect(dockRoot.querySelector(".character-picker [data-formation-action]")).not.toBeNull();
+
+    dockRoot.remove();
+    dock.destroy();
   });
 
   it("renders a worn loadout strip for the selected Class above the full-width collection grid", () => {
@@ -606,9 +552,6 @@ describe("Armory surface", () => {
     const surface = mountArmorySurface(root, {
       content: fixtureContent,
       getSelectedClassId: () => selected.current,
-      selectClassId: (classId) => {
-        selected.current = classId;
-      },
       onCommand: (command) => {
         commands.push(command);
         if (command.cmd === "equip") {
@@ -647,9 +590,6 @@ describe("Armory surface", () => {
     const surface = mountArmorySurface(root, {
       content: fixtureContent,
       getSelectedClassId: () => selected.current,
-      selectClassId: (classId) => {
-        selected.current = classId;
-      },
       onCommand: (command) => {
         commands.push(command);
         if (command.cmd === "equip") {
@@ -691,9 +631,6 @@ describe("Armory surface", () => {
     const surface = mountArmorySurface(root, {
       content: fixtureContent,
       getSelectedClassId: () => selected.current,
-      selectClassId: (classId) => {
-        selected.current = classId;
-      },
       onCommand: (command) => {
         commands.push(command);
         if (command.cmd === "unequip") {
@@ -998,9 +935,6 @@ describe("Armory surface", () => {
     const surface = mountArmorySurface(root, {
       content: fullContent,
       getSelectedClassId: () => selected.current,
-      selectClassId: (classId) => {
-        selected.current = classId;
-      },
     });
     const engine = createEngine(fullContent, snapshot, LOOT_SEED);
     surface.render(snapshot, legalityViewFromEngine(engine));
@@ -1055,9 +989,6 @@ describe("Armory surface", () => {
     const surface = mountArmorySurface(root, {
       content: fullContent,
       getSelectedClassId: () => selected.current,
-      selectClassId: (classId) => {
-        selected.current = classId;
-      },
     });
     surface.render(snapshot, legalityViewFromSerialized(serialized, snapshot, fullContent));
 

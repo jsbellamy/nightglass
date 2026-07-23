@@ -18,9 +18,7 @@ import { EMPTY_ENGINE_LEGALITY, type EngineLegalityView } from "./engine-legalit
 import { createEquipmentIconElement } from "./icons";
 import {
   CLASS_LABELS,
-  levelFor,
   previewEquip,
-  rosterClassIds,
 } from "./snapshot-view";
 import { el, bindScrollOverflowAffordance, mountSurfaceShell } from "./surface-shell";
 
@@ -34,8 +32,6 @@ export interface ArmorySurfaceOptions {
   onCommand?: (command: TileCommand) => void;
   /** The Character the Dock picker has selected. Read at render time. */
   getSelectedClassId(): ClassId | null;
-  /** Updates session-local Character selection owned by the Management Dock shell. */
-  selectClassId(classId: ClassId): void;
 }
 
 type BrowseCompatibility = { classId: ClassId; slot: EquipmentSlotId };
@@ -123,7 +119,7 @@ export function mountArmorySurface(
   // collection grid never leaves the DOM across a rebuild, so a hovered tile keeps its
   // native :hover (the lock button / discard checkbox stay put) and a tile grabbed for
   // drag is never torn out from under the pointer. Only the parts that actually change
-  // — the toolbar, Character selector, worn strip, and the keyed grid tiles — update.
+  // — the toolbar, worn strip, and the keyed grid tiles — update.
   const gridEl = el("div", {
     class: "armory-grid",
     data: { armoryCollection: "true" },
@@ -131,14 +127,6 @@ export function mountArmorySurface(
     aria: { label: "Armory collection" },
   });
   const armoryPanes = el("div", { class: "armory-panes armory-panes--full" }, [gridEl]);
-  // Persistent Character-selector tablist: its chips reconcile in place so a hovered tab
-  // keeps its native :hover instead of flashing when a management pump rebuilds the body.
-  const selectorEl = el("div", {
-    class: "armory-character-selector",
-    data: { armoryCharacterSelector: "true" },
-    props: { role: "tablist" },
-    aria: { label: "Characters" },
-  });
   const bodyEl = el("div", {
     class: "armory-body armory-body--compare-host",
     data: { surfaceRetain: "true" },
@@ -595,129 +583,6 @@ export function mountArmorySurface(
     browseCompatibility = { classId, slot };
   }
 
-  function selectorSelectAt(index: number): void {
-    const roster = lastSnapshot ? rosterClassIds(lastSnapshot) : [];
-    const classId = roster[index];
-    if (!classId) {
-      return;
-    }
-    options.selectClassId(classId);
-  }
-
-  function onSelectorChipKeydown(event: KeyboardEvent, classId: ClassId): void {
-    const roster = lastSnapshot ? rosterClassIds(lastSnapshot) : [];
-    const index = roster.indexOf(classId);
-    if (index < 0 || roster.length === 0) {
-      return;
-    }
-    const last = roster.length - 1;
-    if (event.key === "ArrowRight") {
-      event.preventDefault();
-      selectorSelectAt((index + 1) % roster.length);
-      return;
-    }
-    if (event.key === "ArrowLeft") {
-      event.preventDefault();
-      selectorSelectAt((index - 1 + roster.length) % roster.length);
-      return;
-    }
-    if (event.key === "Home") {
-      event.preventDefault();
-      selectorSelectAt(0);
-      return;
-    }
-    if (event.key === "End") {
-      event.preventDefault();
-      selectorSelectAt(last);
-    }
-  }
-
-  function selectorChipStateKey(
-    snapshot: ReadonlySnapshot,
-    selected: ClassId | null,
-    classId: ClassId,
-  ): string {
-    return [classId, classId === selected ? "sel" : "", levelFor(snapshot, content, classId)].join(
-      "|",
-    );
-  }
-
-  function buildSelectorChip(
-    snapshot: ReadonlySnapshot,
-    selected: ClassId | null,
-    classId: ClassId,
-  ): HTMLElement {
-    const isSelected = classId === selected;
-    const chip = el(
-      "button",
-      {
-        class: "character-picker-chip focus-ring",
-        data: {
-          characterChip: classId,
-          selectorChipKey: selectorChipStateKey(snapshot, selected, classId),
-        },
-        props: {
-          type: "button",
-          role: "tab",
-          tabIndex: isSelected ? 0 : -1,
-        },
-      },
-      [
-        el("span", { class: "character-chip-name", text: CLASS_LABELS[classId] }),
-        el("span", {
-          class: "character-chip-level",
-          text: `Level ${levelFor(snapshot, content, classId)}`,
-        }),
-      ],
-    );
-    chip.setAttribute("aria-selected", isSelected ? "true" : "false");
-    bindPressable(chip, () => options.selectClassId(classId));
-    chip.addEventListener("keydown", (event) => onSelectorChipKeydown(event, classId));
-    return chip;
-  }
-
-  function reconcileCharacterSelector(snapshot: ReadonlySnapshot): void {
-    if (selectorEl.parentNode !== bodyEl) {
-      // Insert once, after the toolbar and before the panes/worn strip.
-      bodyEl.insertBefore(selectorEl, armoryPanes);
-    }
-    const roster = rosterClassIds(snapshot);
-    const selected = options.getSelectedClassId();
-
-    // Keyed by Roster slot index (unique) — a Class can occupy both a Party slot
-    // and Reserve, so Class alone would collide.
-    const existing = new Map<number, HTMLElement>();
-    [...selectorEl.children].forEach((child, index) => {
-      existing.set(index, child as HTMLElement);
-    });
-
-    const desired: HTMLElement[] = roster.map((classId, index) => {
-      const prev = existing.get(index);
-      if (
-        prev &&
-        prev.dataset["selectorChipKey"] === selectorChipStateKey(snapshot, selected, classId)
-      ) {
-        return prev;
-      }
-      return buildSelectorChip(snapshot, selected, classId);
-    });
-
-    const keep = new Set<Node>(desired);
-    for (const child of [...selectorEl.childNodes]) {
-      if (!keep.has(child)) {
-        selectorEl.removeChild(child);
-      }
-    }
-    let cursor = selectorEl.firstChild;
-    for (const node of desired) {
-      if (node === cursor) {
-        cursor = cursor.nextSibling;
-        continue;
-      }
-      selectorEl.insertBefore(node, cursor);
-    }
-  }
-
   function renderWornStrip(snapshot: ReadonlySnapshot): HTMLElement {
     const classId = options.getSelectedClassId();
     const strip = el("div", {
@@ -1128,7 +993,6 @@ export function mountArmorySurface(
     showTitle: false,
     body(snapshot) {
       currentToolbar = swapBodySection(currentToolbar, renderToolbar(snapshot));
-      reconcileCharacterSelector(snapshot);
       currentWornStrip = swapBodySection(currentWornStrip, renderWornStrip(snapshot));
       reconcileGrid(snapshot, bodyEl);
       return [bodyEl];

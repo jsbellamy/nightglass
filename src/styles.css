@@ -582,21 +582,9 @@ html.dock-window body {
 }
 
 .dock-body[data-dock-nav="armory"] .dock-surface,
+.dock-body[data-dock-nav="character"] .dock-surface,
 .dock-body[data-dock-nav="stage"] .dock-surface {
   flex: 1;
-  min-width: 0;
-}
-
-.armory-character-selector {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  gap: 4px;
-  padding: 4px 0 6px;
-}
-
-.armory-character-selector .character-picker-chip {
-  flex: 1 1 0;
   min-width: 0;
 }
 
@@ -610,6 +598,10 @@ html.dock-window body {
   overflow-y: auto;
   scrollbar-width: thin;
   border-right: 1px solid rgba(255, 249, 233, 0.14);
+}
+
+.character-picker[hidden] {
+  display: none;
 }
 
 .character-picker-pending {

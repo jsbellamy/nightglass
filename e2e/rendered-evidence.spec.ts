@@ -578,7 +578,7 @@ test.describe("rendered-output evidence seam", () => {
     const tabs = await dock.evaluate(() =>
       [...document.querySelectorAll("[data-dock-tab]")].map((b) => (b as HTMLElement).dataset.dockTab),
     );
-    expect(tabs).toHaveLength(3);
+    expect(tabs).toEqual(["armory", "character", "stage"]);
 
     const tabFit = await dock.evaluate(() => {
       const list = document.querySelector(".dock-tabs");
@@ -610,41 +610,57 @@ test.describe("rendered-output evidence seam", () => {
           (p) => !(p as HTMLElement).hidden,
         );
         const picker = document.querySelector<HTMLElement>(".dock-body > .character-picker");
-        const armorySelector = panel?.querySelector<HTMLElement>(
-          '[data-armory-character-selector="true"]',
-        );
+        const dockBody = document.querySelector<HTMLElement>(".dock-body");
+        const dockSurface = document.querySelector<HTMLElement>(".dock-surface");
+        const armorySelector = document.querySelector('[data-armory-character-selector="true"]');
         const formationControl = document.querySelector(
           ".character-picker [data-formation-action]",
         );
+        const pickerBox = picker?.getBoundingClientRect();
+        const bodyBox = dockBody?.getBoundingClientRect();
+        const surfaceBox = dockSurface?.getBoundingClientRect();
+        const pickerStyle = picker ? getComputedStyle(picker) : null;
+        const railVisible = t === "armory" || t === "character";
         return {
           chars: panel ? panel.textContent?.trim().length ?? 0 : 0,
           visibleCount: visible.length,
-          pickerHidden: picker?.hidden === true,
-          armorySelectorInPanel: armorySelector !== null,
-          formationOnCharacterTab: t === "character" && formationControl !== null,
-          stageHasPicker: t === "stage" && picker?.hidden === true,
+          pickerHiddenAttr: picker?.hidden === true,
+          pickerDisplay: pickerStyle?.display ?? null,
+          pickerWidth: pickerBox?.width ?? 0,
+          pickerInert: picker?.inert === true,
+          pickerAriaHidden: picker?.getAttribute("aria-hidden"),
+          armorySelectorPresent: armorySelector !== null,
+          formationPresent: formationControl !== null,
+          stageSurfaceWidth:
+            t === "stage" && bodyBox && surfaceBox
+              ? surfaceBox.width / Math.max(bodyBox.width, 1)
+              : null,
         };
       }, tab);
       await dock.screenshot({ path: `${SCREENSHOTS}/04-dock-${i + 1}-${tab}.png` });
       expect(state.chars, `dock surface ${tab} content`).toBeGreaterThan(20);
       expect(state.visibleCount, `one panel for ${tab}`).toBe(1);
-      if (tab === "character") {
-        expect(state.pickerHidden, "full Character rail on Character").toBe(false);
-        expect(state.formationOnCharacterTab, "formation controls on Character").toBe(true);
-      } else {
-        expect(state.pickerHidden, `full rail hidden on ${tab}`).toBe(true);
-      }
-      if (tab === "armory") {
-        expect(state.armorySelectorInPanel, "Armory compact selector").toBe(true);
+      expect(state.armorySelectorPresent, "no compact Armory selector").toBe(false);
+      if (tab === "armory" || tab === "character") {
+        expect(state.pickerHiddenAttr, `Character rail visible on ${tab}`).toBe(false);
+        expect(state.pickerDisplay, `rail not display:none on ${tab}`).not.toBe("none");
+        expect(state.pickerWidth, `rail occupies width on ${tab}`).toBeGreaterThan(10);
+        expect(state.pickerInert, `rail interactive on ${tab}`).toBe(false);
+        expect(state.pickerAriaHidden, `rail aria on ${tab}`).toBe("false");
+        expect(state.formationPresent, `formation on ${tab}`).toBe(true);
       }
       if (tab === "stage") {
-        expect(state.stageHasPicker, "Stage omits Character nav").toBe(true);
-        expect(state.armorySelectorInPanel, "Stage has no Armory selector").toBe(false);
+        expect(state.pickerHiddenAttr, "Stage hides Character rail").toBe(true);
+        expect(state.pickerDisplay, "Stage rail display none").toBe("none");
+        expect(state.pickerWidth, "Stage rail width zero").toBeLessThan(1);
+        expect(state.pickerInert, "Stage rail inert").toBe(true);
+        expect(state.pickerAriaHidden, "Stage rail aria-hidden").toBe("true");
+        expect(state.stageSurfaceWidth, "Stage reclaims rail width").toBeGreaterThan(0.85);
       }
     }
 
-    const firstTab = tabs[0];
-    expect(firstTab).toBeTruthy();
+    const firstTab = tabs[0]!;
+    expect(firstTab).toBe("armory");
     await dock.click(`[data-dock-tab="${firstTab}"]`);
     await dock.focus(`[data-dock-tab="${firstTab}"]`);
     await dock.keyboard.press("ArrowRight");
@@ -758,7 +774,7 @@ test.describe("rendered-output evidence seam", () => {
     await postArmoryReviewSnapshot(dock);
     await dock.click('[data-dock-tab="armory"]');
     await dock.waitForSelector('.armory-grid .equipment-card[data-drop-id="100"]');
-    await dock.click('.armory-character-selector [data-character-chip="wizard"]');
+    await dock.click('.character-picker [data-character-chip="wizard"]');
     await installBusSpy(dock);
     await dock.evaluate((channelName) => {
       const w = window as unknown as { __ngCmdLog?: unknown[]; __ngCmdSpy?: BroadcastChannel };
@@ -941,7 +957,7 @@ test.describe("rendered-output evidence seam", () => {
 
     const classIds = ["knight", "wizard", "priest", "hunter"] as const;
     for (const classId of classIds) {
-      await dock.click(`.armory-character-selector [data-character-chip="${classId}"]`);
+      await dock.click(`.character-picker [data-character-chip="${classId}"]`);
       const slotFits = await dock.evaluate(() => {
         return [...document.querySelectorAll<HTMLElement>("[data-worn-slot]")].map((row) => {
           const img = row.querySelector<HTMLImageElement>(".equipment-icon-img--content");
