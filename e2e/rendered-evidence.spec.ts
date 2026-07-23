@@ -1031,7 +1031,7 @@ test.describe("rendered-output evidence seam", () => {
     await context.close();
   });
 
-  test("evidence: character-talents-no-scroll — current Talent Tier fits without Character panel scroll at 800×480", async ({
+  test("evidence: character-talents-tree-scroll — both Talent Tiers scroll inside the Character panel at 800×480", async ({
     browser,
   }) => {
     const { context, dock } = await openTileAndDock(browser);
@@ -1047,6 +1047,7 @@ test.describe("rendered-output evidence seam", () => {
       return {
         panelScrollable: panel.scrollHeight > panel.clientHeight + 1,
         talentsVisible: Boolean(talentsSection && !talentsSection.hidden),
+        tierSections: panel.querySelectorAll("[data-talent-tier]").length,
         tierRows: panel.querySelectorAll(".talent-grid .talent-cell").length,
         overflowY: getComputedStyle(panel).overflowY,
       };
@@ -1054,8 +1055,9 @@ test.describe("rendered-output evidence seam", () => {
 
     expect(talentsFit, "Character talents metrics").not.toBeNull();
     expect(talentsFit!.talentsVisible).toBe(true);
-    expect(talentsFit!.tierRows).toBeGreaterThan(0);
-    expect(talentsFit!.panelScrollable, "talents tier fits without panel scroll").toBe(false);
+    expect(talentsFit!.tierSections).toBe(2);
+    expect(talentsFit!.tierRows).toBeGreaterThanOrEqual(8);
+    expect(talentsFit!.panelScrollable, "two-tier tree scrolls inside the panel").toBe(true);
     expect(talentsFit!.overflowY).toMatch(/auto|scroll/);
 
     await context.close();
