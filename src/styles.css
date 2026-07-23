@@ -789,6 +789,13 @@ html.dock-window body {
   color: var(--dock-text-muted, #d8d0bf);
 }
 
+.dock-body[data-dock-nav="character"] .dock-surface-root {
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
 .character-surface {
   display: flex;
   flex-direction: column;
@@ -798,8 +805,39 @@ html.dock-window body {
   overflow: hidden;
 }
 
-.dock-body[data-dock-nav="character"] .dock-panel:not([hidden]) {
+.character-build-board > [data-character-section] {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.character-build-board [data-character-section="loadout"] .loadout-surface,
+.character-build-board [data-character-section="talents"] .talents-surface {
+  flex: 1;
+  min-height: 0;
   overflow: hidden;
+}
+
+.character-build-board [data-character-section="talents"] .talents-character {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.character-build-board [data-character-section="talents"] .surface-section-title,
+.character-build-board [data-character-section="talents"] .talent-points {
+  display: none;
+}
+
+.character-build-board [data-character-section="loadout"] .loadout-body {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .character-workspace-header {
@@ -843,6 +881,7 @@ html.dock-window body {
   flex-direction: column;
   min-height: 0;
   min-width: 0;
+  overflow: hidden;
 }
 
 .character-view-panel[hidden] {
