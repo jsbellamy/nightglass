@@ -76,7 +76,15 @@ export type EvidenceFixtureId =
 export type ReviewSceneId =
   | "tile-combat"
   | "armory-worn-strip"
-  | "stage-stress-five-pools";
+  | "stage-stress-five-pools"
+  | "dock-initial"
+  | "dock-tab-armory"
+  | "dock-tab-character"
+  | "dock-tab-stage"
+  | "character-sub-loadout"
+  | "character-sub-talents"
+  | "character-sub-stats"
+  | "dock-navigation-ownership-stage";
 
 export type ReviewScene = {
   id: ReviewSceneId;
@@ -140,10 +148,18 @@ export const EVIDENCE_SCENARIOS: readonly EvidenceScenario[] = [
     slugs: ["cross-webview-delivery", "dock-surfaces"],
     spec: {
       id: "rendered-evidence:dock-cross-webview-surfaces",
-      path: "e2e/rendered-evidence.spec.ts",
+      path: "e2e/scenarios/dock.spec.ts",
     },
     fixture: "live-tile-and-dock",
-    reviewScenes: [],
+    reviewScenes: [
+      { id: "dock-initial" },
+      { id: "dock-tab-armory" },
+      { id: "dock-tab-character" },
+      { id: "dock-tab-stage" },
+      { id: "character-sub-loadout" },
+      { id: "character-sub-talents" },
+      { id: "character-sub-stats" },
+    ],
     summary:
       "Management Dock populates from the Battle Tile over a shared bus and cycles Armory, Character, and Stage with Character sub-tab scenes",
   },
@@ -152,10 +168,10 @@ export const EVIDENCE_SCENARIOS: readonly EvidenceScenario[] = [
     slugs: ["dock-navigation-ownership"],
     spec: {
       id: "rendered-evidence:dock-navigation-ownership",
-      path: "e2e/rendered-evidence.spec.ts",
+      path: "e2e/scenarios/dock.spec.ts",
     },
     fixture: "live-tile-and-dock",
-    reviewScenes: [],
+    reviewScenes: [{ id: "dock-navigation-ownership-stage" }],
     summary:
       "Armory and Character share one left rail; Stage has zero rail width; no compact Armory selector",
   },

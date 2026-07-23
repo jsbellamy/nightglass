@@ -3,8 +3,12 @@ import { mkdirSync } from "node:fs";
 import type { Snapshot } from "../../src/core/snapshot";
 import { DOCK_HEIGHT, DOCK_WIDTH } from "../../src/ui/dock-geometry";
 import { TILE_HEIGHT, TILE_WIDTH } from "../../src/ui/battle-tile-layout";
-import { postBusSnapshot } from "./bus";
-import { attachDockPage, openTilePage } from "./dock-context";
+import {
+  installBusSpy,
+  postBusSnapshot,
+  waitForDockOpenedSnapshotHandshake,
+} from "./bus";
+import { openTilePage } from "./dock-context";
 import type { EvidenceFixtureId } from "./evidence-scenarios";
 import { reviewSceneRoot } from "./review-scenes";
 
@@ -15,6 +19,14 @@ export type LiveTileEvidenceSessionOptions = {
   /** Serialized save JSON for boot-from-snapshot evidence (third-peer bus still applies). */
   savedSnapshotJson?: string;
 };
+
+export type LiveTileAndDockEvidenceSessionOptions = {
+  preset: "live-tile-and-dock";
+};
+
+export type EvidenceSessionObjectOptions =
+  | LiveTileEvidenceSessionOptions
+  | LiveTileAndDockEvidenceSessionOptions;
 
 export type EvidenceSessionOptions = {
   bootSaveJson?: string;
@@ -30,6 +42,19 @@ export type EvidenceSession = {
   /** Closes the browser context; optionally asserts collected page errors first. */
   finish: (options?: { assertPageErrors?: boolean }) => Promise<void>;
 };
+
+export async function waitForPopulatedDock(dock: Page, timeout = 10_000): Promise<void> {
+  await expect
+    .poll(
+      async () =>
+        dock.evaluate(() => {
+          const panel = document.querySelector(".dock-panel:not([hidden])");
+          return panel ? panel.textContent?.trim().length ?? 0 : 0;
+        }),
+      { timeout },
+    )
+    .toBeGreaterThan(20);
+}
 
 function trackPageErrors(page: Page, pageErrors: string[]): void {
   page.on("pageerror", (error) => pageErrors.push(String(error)));
@@ -56,6 +81,24 @@ function sessionHandle(
   };
 }
 
+async function openLiveTileAndDockSession(
+  browser: Browser,
+  bootSaveJson?: string,
+): Promise<EvidenceSession> {
+  const pageErrors: string[] = [];
+  const { context, tile } = await openTilePage(browser, bootSaveJson);
+  trackPageErrors(tile, pageErrors);
+  await installBusSpy(tile);
+  const dock = await context.newPage();
+  trackPageErrors(dock, pageErrors);
+  await dock.setViewportSize({ width: DOCK_WIDTH, height: DOCK_HEIGHT });
+  await dock.goto("/?window=dock", { waitUntil: "networkidle" });
+  await dock.waitForSelector(".management-dock");
+  await waitForDockOpenedSnapshotHandshake(tile);
+  await waitForPopulatedDock(dock);
+  return sessionHandle(context, tile, dock, pageErrors);
+}
+
 async function openEvidenceSessionForPreset(
   browser: Browser,
   preset: EvidenceFixtureId,
@@ -77,11 +120,7 @@ async function openEvidenceSessionForPreset(
       return sessionHandle(context, tile, null, pageErrors);
     }
     case "live-tile-and-dock": {
-      const { context, tile } = await openTilePage(browser, bootSaveJson);
-      trackPageErrors(tile, pageErrors);
-      const dock = await attachDockPage(context);
-      trackPageErrors(dock, pageErrors);
-      return sessionHandle(context, tile, dock, pageErrors);
+      return openLiveTileAndDockSession(browser, bootSaveJson);
     }
     case "isolated-dock": {
       const context = await browser.newContext({
@@ -95,16 +134,7 @@ async function openEvidenceSessionForPreset(
         await postBusSnapshot(dock, options.dockSnapshot);
       }
       trackPageErrors(dock, pageErrors);
-      await expect
-        .poll(
-          async () =>
-            dock.evaluate(() => {
-              const panel = document.querySelector(".dock-panel:not([hidden])");
-              return panel ? panel.textContent?.trim().length ?? 0 : 0;
-            }),
-          { timeout: 10_000 },
-        )
-        .toBeGreaterThan(20);
+      await waitForPopulatedDock(dock);
       return sessionHandle(context, null, dock, pageErrors);
     }
     case "reduced-motion-live-tile": {
@@ -137,15 +167,22 @@ export async function openEvidenceSession(
 ): Promise<EvidenceSession & { tile: Page }>;
 export async function openEvidenceSession(
   browser: Browser,
+  options: LiveTileAndDockEvidenceSessionOptions,
+): Promise<EvidenceSession>;
+export async function openEvidenceSession(
+  browser: Browser,
   preset: EvidenceSessionPreset,
   options?: EvidenceSessionOptions,
 ): Promise<EvidenceSession>;
 export async function openEvidenceSession(
   browser: Browser,
-  presetOrOptions: EvidenceSessionPreset | LiveTileEvidenceSessionOptions,
+  presetOrOptions: EvidenceSessionPreset | EvidenceSessionObjectOptions,
   maybeOptions?: EvidenceSessionOptions,
 ): Promise<EvidenceSession> {
   if (typeof presetOrOptions === "object") {
+    if (presetOrOptions.preset === "live-tile-and-dock") {
+      return openEvidenceSessionForPreset(browser, "live-tile-and-dock", maybeOptions ?? {});
+    }
     const session = await openEvidenceSessionForPreset(browser, presetOrOptions.preset, {
       bootSaveJson: presetOrOptions.savedSnapshotJson,
     });
