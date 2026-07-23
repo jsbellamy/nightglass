@@ -69,12 +69,12 @@ machine-readable slug catalogue.
 | Tile geometry (480×112, status line, combatant fit / no overlap, five-opponent stress, status-line Drop notification clearance) | `evidence: tile-geometry` | `e2e/scenarios/tile.spec.ts` via `npm run test:evidence`; orchestrator reviews harness-emitted PNGs under `e2e-screenshots/` (gitignored; CI uploads the folder — no per-scene paths are checked in) |
 | Cross-webview delivery (`dock-opened` → snapshot → populated Dock; in-UI close without disturbing the tile) | `evidence: cross-webview-delivery` | Same suite: two pages in one context (`/` and `/?window=dock`) sharing `BroadcastChannel` |
 | AA contrast (status, dock toggle, health text) | `evidence: aa-contrast` | Same suite: computed-style contrast ≥ WCAG AA floor |
-| Dock surfaces (Armory → Character → Stage tabs on one row; each surface populated; Character sub-tab scenes Loadout/Talents/Stats; scroll not clip) | `evidence: dock-surfaces` | Same suite; orchestrator reviews harness-emitted `e2e-screenshots/` after `npm run test:evidence` (top-level `04-dock-*` plus `04b-character-*`) |
+| Dock surfaces (Armory → Character → Stage tabs on one row; each surface populated; Character **Build** then **Stats** with simultaneous Loadout + Talent columns on **Build**; full left Character rail; scroll not clip) | `evidence: dock-surfaces` | Same suite; orchestrator reviews harness-emitted `e2e-screenshots/` after `npm run test:evidence` (top-level `04-dock-*` plus Character **Build** / **Stats** review scenes) |
 | Dock navigation ownership (shared left Character rail on Armory + Character; Stage computed `display:none` / zero width / inert; no compact Armory selector; fresh Dock opens on Armory) | `evidence: dock-navigation-ownership` | Same suite: computed-style and bounding-box assertions (not `HTMLElement.hidden` alone) |
-| Character Stats breakdown (Loadout → Talents → Stats order; five totals/source rows; pending marker fit; no fake focus targets) | `evidence: character-stats-breakdown` | Same suite |
-| Character Loadout assignment (unlocked pool + three slots fit; visible drag source/valid targets; pool replace; slot swap; select-then-slot parity) | `evidence: character-loadout-assignment` | Same suite (also retains `evidence: character-loadout-no-scroll` on the shared fit scene) |
-| Character information popovers (Ability + Talent hover ≡ focus text; Dock-bounded; non-interactive; close when anchor loses hover/focus) | `evidence: character-information-popovers` | Same suite |
-| Talent direct actions (tile `+`/`−`; chosen/rank/gate states; atomic Ability Talent replace; tree scroll retained) | `evidence: talent-direct-actions` | Same suite (also retains `evidence: character-talents-tree-scroll` on the shared tree scene) |
+| Character Stats breakdown (**Build** → **Stats** navigation; Vitals / Offense / Defense groups; five totals/source rows; pending marker fit; no fake focus targets) | `evidence: character-stats-breakdown` | Same suite |
+| Character Loadout assignment (four-icon horizontal **Available skills** strip with 10-choice stress; unslotted-only pool; three compact slots without outer-panel scroll; displacement; slot swap; drag and select-then-slot parity) | `evidence: character-loadout-assignment` | Same suite (also retains `evidence: character-loadout-no-scroll` on the shared fit scene) |
+| Character information popovers (Ability + Talent hover ≡ focus text with keyboard access to the same mechanical detail; Dock-bounded right/left placement; non-interactive; clears when anchor loses hover/focus; coordinate and side stability across live pump deliveries) | `evidence: character-information-popovers` | Same suite |
+| Talent direct actions (attached **−** \| rank/max \| **+** stepper on Stat rows; tile face → **−** → **+** keyboard order; direct one-rank actions; chosen/rank/gate states; atomic Ability Talent replace; inner `talent-tree-scroll` retained) | `evidence: talent-direct-actions` | Same suite (also retains `evidence: character-talents-tree-scroll` on the shared tree scene) |
 | Five-opponent presentation concurrency (Stage 3 stress wave) | `evidence: five-actor-pools` | `e2e/stress.spec.ts` via `npm run test:evidence` |
 | Reduced-motion accessibility floor (actor pool visible; lunge/recoil offsets disabled) | `evidence: reduced-motion` | `e2e/reduced-motion.spec.ts` via `npm run test:evidence` |
 | Equipment icon content tier (Armory grid tiles) | `evidence: equipment-icon-content-tier` | `e2e/scenarios/armory.spec.ts` via `npm run test:evidence` (DOM geometry assertions in the shared equipment-icon scenario) |
@@ -89,15 +89,18 @@ machine-readable slug catalogue.
 
 ## Retired worked examples (Tier-3)
 
-These named checks were falsified by the Character workspace wave (#478–#482). They
-are **retired**, not rewritten to today's DOM. Cite the successor slug when a live
-row needs the same intent.
+These named checks were falsified by the Character workspace wave (#478–#482) and the
+successor **Build** / **Stats** harness from #516. They are **retired**, not rewritten
+to today's DOM. Cite the successor slug when a live row needs the same intent.
 
 | Retired intent | Do not cite | Successor |
 | --- | --- | --- |
 | Inline Ability mechanical text on Loadout tiles | Any harness row that required persistent `.ability-description` inside pool/slot tiles | `evidence: character-information-popovers` |
 | Sticky Talent detail panel owning description and allocate/deallocate (`aside.talent-detail` / `[data-talent-detail]`) | Contrast or keyboard samples targeting `.talent-detail` action chrome | `evidence: talent-direct-actions`, `evidence: character-information-popovers` |
 | Compact Armory Character selector chips (`[data-armory-character-selector]` / `.armory-character-selector`) | Dock or Armory evidence that required a second Character chip row on Armory | `evidence: dock-navigation-ownership` |
+| Three separate Character sub-tabs **Loadout** / **Talents** / **Stats** | Worked examples or harness journeys that cycle Loadout → Talents → Stats as distinct Character sub-tabs (instead of **Build** with simultaneous columns, then **Stats**) | `evidence: dock-surfaces`, `evidence: character-stats-breakdown` |
+| Full unlocked Ability pool duplicating slotted Abilities | Rows requiring a complete unlocked pool that still lists Abilities currently in Loadout slots (instead of unslotted-only **Available skills**) | `evidence: character-loadout-assignment`, `evidence: character-loadout-no-scroll` |
+| Large detached Talent **+** / **−** action blocks below rows | Layout or contrast samples targeting standalone action blocks separate from the attached rank stepper beside each Stat row | `evidence: talent-direct-actions`, `evidence: character-talents-tree-scroll` |
 
 ## Three dispositions
 
