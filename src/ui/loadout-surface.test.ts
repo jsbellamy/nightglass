@@ -377,7 +377,7 @@ describe("Loadout surface", () => {
     outside.remove();
   });
 
-  it("dispatches setLoadout from a change on the Ability picker", () => {
+  it("dispatches setLoadout from a change on the Ability picker", async () => {
     const root = document.createElement("div");
     document.body.append(root);
     const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
@@ -390,6 +390,7 @@ describe("Loadout surface", () => {
         commands.push(command);
         if (command.cmd === "setLoadout") {
           engine.setLoadout(command.args[0], command.args[1]);
+          surface.render(engine.snapshot());
         }
       }),
     );
@@ -402,11 +403,16 @@ describe("Loadout surface", () => {
     select.focus();
     select.value = "k-pommel";
     select.dispatchEvent(new Event("change", { bubbles: true }));
+    await Promise.resolve();
 
     expect(commands).toContainEqual({
       cmd: "setLoadout",
       args: ["knight", ["k-pommel", "k-rally", "k-sweep"]],
     });
+    expect(
+      knightSection(root).querySelector('[data-pending-kind="loadout"]')?.textContent,
+    ).toMatch(/next Wave/i);
+    expect(document.activeElement).not.toBe(select);
 
     surface.destroy();
     root.remove();
