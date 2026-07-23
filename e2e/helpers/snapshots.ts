@@ -75,3 +75,21 @@ export function stageThreeStressSnapshot(): Snapshot {
   snapshot.progression.unlockedStage = 3;
   return snapshot;
 }
+
+/** Knight carries Hold the Line for effect-image-loading evidence (#467). */
+export function holdTheLineStatusSnapshot(): Snapshot {
+  const engine = createEngine(buildContent(), undefined, 42);
+  engine.advanceBy(1);
+  const snapshot = cloneSnapshot(engine.snapshot());
+  const knight = snapshot.attempt?.combatants.find(
+    (combatant) => combatant.side === "party" && combatant.defId === "knight",
+  );
+  if (!knight) {
+    throw new Error("holdTheLineStatusSnapshot: missing Knight combatant");
+  }
+  knight.statuses = [
+    { statusId: "hold-the-line", expiresAtMs: snapshot.simNowMs + 6_000 },
+  ];
+  snapshot.savedAtMs = Date.now();
+  return snapshot;
+}

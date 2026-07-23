@@ -16,6 +16,7 @@ export const STATUS_EFFECT_GLYPH_IDS = [
   "braced",
   "exposed",
   "guarded",
+  "hold-the-line",
   "inspired",
   "overdrive",
   "riven",
