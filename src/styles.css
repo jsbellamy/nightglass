@@ -1162,13 +1162,6 @@ html.dock-window body {
   gap: 3px;
 }
 
-.stats-table {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-top: 2px;
-}
-
 .stats-row {
   border: 1px solid rgba(255, 249, 233, 0.12);
   border-radius: 4px;
