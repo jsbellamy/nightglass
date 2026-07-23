@@ -377,7 +377,7 @@ describe("Loadout surface", () => {
     outside.remove();
   });
 
-  it("dispatches setLoadout from a change on the Ability picker while reconcile is enabled", () => {
+  it("dispatches setLoadout from a change on the Ability picker", () => {
     const root = document.createElement("div");
     document.body.append(root);
     const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
