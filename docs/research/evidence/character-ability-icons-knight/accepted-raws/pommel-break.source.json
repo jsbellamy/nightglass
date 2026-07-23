@@ -1,14 +1,14 @@
 {
   "provider": "Cursor GenerateImage",
   "acquisition_tool": "GenerateImage",
-  "raw_sha256": "af4009db40e0dfcd812fcf5785c0a09e93fd4b6bc8d751c6abd54def0b6d70f7",
+  "raw_sha256": "1c2a36bc7e854cac843c14dc0c7c95213702f3a7aa8616ab9868b94b60fb9050",
   "asset_class": "interface",
   "kind": "ability-loadout-icon",
   "color_mode": "source-local",
   "runtime_destination": null,
   "source_key": "pommel-break",
-  "candidate": "pommel-break-r5",
-  "prompt": "TRUE chunky pixel-art ability icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block \u2014 no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered symbolic skill glyph: Pommel Break \u2014 a small brass sword pommel nub hitting a small cracked round helm disc with a tiny pale impact spark (almost no rays). Keep the WHOLE glyph SMALL in the middle of the canvas: long side about 20\u201324 logical pixels only. Leave a very wide flat solid magenta #ff00ff margin \u2014 at least five full magenta cells clear on every edge. Selective one-logical-pixel charcoal-plum outline. Structural members at least 3 logical pixels thick. Colors: steel blue, dark iron, brass, pale cream impact, thin orange-red crack. Upper-left lighting. No hand, character, text, UI frame, scenery, shadow, glow, particles, gradient, anti-aliasing, blur, dithering, watermark, or transparency.",
+  "candidate": "pommel-break-r9",
+  "prompt": "TRUE chunky pixel-art ability icon ONLY. Flat solid #ff00ff magenta fills the entire background to every canvas edge. Pommel Break glyph centered: brass pommel hitting cracked round helm + tiny impact spark. Subject long side about 22\u201325 logical pixels \u2014 medium size, not tiny and not edge-to-edge. At least four full magenta cells clear on every edge. Clean flat square pixels, no anti-aliasing or soft fringing. Members \u22653px thick. Charcoal-plum 1px outline. Upper-left light. Steel blue, dark iron, brass, pale impact, orange-red crack. No hand, character, text, frame, scenery, shadow, glow, particles, gradients, blur, dithering, watermark, transparency.",
   "style_references": [
     {
       "path": "src/assets/icons/preview/verify-ability-canary@8x.png",
@@ -44,90 +44,90 @@
   "ingest": {
     "recovered": {
       "bbox": [
-        321,
-        356,
-        693,
-        675
+        217,
+        226,
+        723,
+        798
       ],
       "pitch_x": {
-        "pitch": 18.71111111111123,
-        "score": 0.5170766981520988
+        "pitch": 18.716666666666704,
+        "score": 0.4855076854713284
       },
       "pitch_y": {
-        "pitch": 18.76111111111123,
-        "score": 0.5436409996289349
+        "pitch": 19.01666666666671,
+        "score": 0.47416146048840047
       },
       "grid": [
-        20,
-        17
+        27,
+        30
       ]
     },
     "mode": "source-local",
     "flat_collapse": {
       "max_colors": 12,
       "merge_dist": 28.0,
-      "unique_before": 190,
+      "unique_before": 269,
       "unique_after": 12,
       "palette_rgb": [
         [
-          37,
-          29,
-          20
+          68,
+          86,
+          96
         ],
         [
-          74,
-          84,
-          88
+          109,
+          125,
+          136
         ],
         [
-          107,
-          118,
-          121
+          36,
+          22,
+          32
         ],
         [
-          149,
-          154,
-          153
+          196,
+          155,
+          33
         ],
         [
-          30,
-          75,
-          133
-        ],
-        [
-          50,
-          110,
-          184
-        ],
-        [
-          110,
-          95,
-          26
-        ],
-        [
-          180,
-          153,
-          56
-        ],
-        [
-          200,
-          186,
-          131
-        ],
-        [
-          233,
-          208,
-          115
-        ],
-        [
-          222,
-          62,
-          29
+          67,
+          138,
+          222
         ],
         [
           254,
-          254,
-          252
+          240,
+          169
+        ],
+        [
+          249,
+          106,
+          48
+        ],
+        [
+          250,
+          206,
+          63
+        ],
+        [
+          46,
+          92,
+          156
+        ],
+        [
+          90,
+          86,
+          24
+        ],
+        [
+          143,
+          115,
+          27
+        ],
+        [
+          212,
+          100,
+          48
         ]
       ]
     }
