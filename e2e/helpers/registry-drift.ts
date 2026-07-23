@@ -23,7 +23,7 @@ const DOCS_EVIDENCE_SLUG_RE = /`evidence:\s*([^`]+)`/g;
 const SCAN_IGNORE = new Set([
   path.join(E2E_ROOT, "helpers/evidence-scenarios.ts"),
   path.join(E2E_ROOT, "helpers/registry-drift.ts"),
-  path.join(E2E_ROOT, "scenario-registry.spec.ts"),
+  path.join(E2E_ROOT, "zz-scenario-registry.spec.ts"),
 ]);
 
 function listE2eSources(): string[] {

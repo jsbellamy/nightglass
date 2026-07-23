@@ -7,7 +7,7 @@ import {
   focusDockTab,
 } from "../helpers/dock-context";
 import { closeEvidenceSession, openEvidenceSession } from "../helpers/evidence-session";
-import { declareEvidenceScenario } from "../helpers/evidence-scenarios";
+import { defineEvidenceScenario } from "../helpers/evidence-scenarios";
 import { readBusSpyTypes, waitForBusMessage } from "../helpers/bus";
 import { captureReviewScene } from "../helpers/review-scenes";
 
@@ -23,7 +23,27 @@ const CHARACTER_SUB_SCENE = {
 } as const;
 
 test.describe("Management Dock evidence scenarios", () => {
-  declareEvidenceScenario("dock-cross-webview-surfaces", async ({ browser }) => {
+  defineEvidenceScenario(
+    {
+      id: "dock-cross-webview-surfaces",
+      slugs: ["cross-webview-delivery", "dock-surfaces"],
+      spec: {
+        id: "rendered-evidence:dock-cross-webview-surfaces",
+        path: "e2e/scenarios/dock.spec.ts",
+      },
+      fixture: "live-tile-and-dock",
+      reviewScenes: [
+        { id: "dock-initial" },
+        { id: "dock-tab-armory" },
+        { id: "dock-tab-character" },
+        { id: "dock-tab-stage" },
+        { id: "character-sub-build" },
+        { id: "character-sub-stats" },
+      ],
+      summary:
+        "Management Dock populates from the Battle Tile over a shared bus; Character opens recovered Variant C Build then XP-only Stats at 800×480 with four-visible/10-reachable tray",
+    },
+    async ({ browser }) => {
     const session = await openEvidenceSession(browser, { preset: "live-tile-and-dock" });
     const { tile, dock } = session;
     if (!dock) {
@@ -240,9 +260,23 @@ test.describe("Management Dock evidence scenarios", () => {
     expect(pumpCountAfter, "no further pump after dock-closed").toBe(pumpCountBefore);
 
     await closeEvidenceSession(session);
-  });
+  },
+  );
 
-  declareEvidenceScenario("dock-navigation-ownership", async ({ browser }) => {
+  defineEvidenceScenario(
+    {
+      id: "dock-navigation-ownership",
+      slugs: ["dock-navigation-ownership"],
+      spec: {
+        id: "rendered-evidence:dock-navigation-ownership",
+        path: "e2e/scenarios/dock.spec.ts",
+      },
+      fixture: "live-tile-and-dock",
+      reviewScenes: [{ id: "dock-navigation-ownership-stage" }],
+      summary:
+        "Armory and Character share one left rail; Stage has zero rail width; no compact Armory selector",
+    },
+    async ({ browser }) => {
     const session = await openEvidenceSession(browser, { preset: "live-tile-and-dock" });
     const { dock } = session;
     if (!dock) {
@@ -303,5 +337,6 @@ test.describe("Management Dock evidence scenarios", () => {
 
     await captureReviewScene(dock, "dock-navigation-ownership", "dock-navigation-ownership-stage");
     await closeEvidenceSession(session);
-  });
+  },
+  );
 });

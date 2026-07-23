@@ -8,7 +8,7 @@ import {
   closeEvidenceSession,
   openEvidenceSession,
 } from "../helpers/evidence-session";
-import { declareEvidenceScenario } from "../helpers/evidence-scenarios";
+import { defineEvidenceScenario } from "../helpers/evidence-scenarios";
 import { captureReviewScene } from "../helpers/review-scenes";
 import { keyboardBootSnapshot } from "../helpers/snapshots";
 
@@ -18,7 +18,20 @@ const CHARACTER_PROGRESSION_SESSION = {
 };
 
 test.describe("Character progression evidence scenarios", () => {
-  declareEvidenceScenario("character-stats-breakdown", async ({ browser }) => {
+  defineEvidenceScenario(
+    {
+      id: "character-stats-breakdown",
+      slugs: ["character-stats-breakdown"],
+      spec: {
+        id: "rendered-evidence:character-stats-breakdown",
+        path: "e2e/scenarios/character-progression.spec.ts",
+      },
+      fixture: "live-tile-and-dock",
+      reviewScenes: [{ id: "character-stats-breakdown" }],
+      summary:
+        "Variant C Stats: Vitals/Offense/Defense groups, five totals/source rows, XP-only overview, pending marker fit, no outer scroll at 800×480",
+    },
+    async ({ browser }) => {
     const session = await openEvidenceSession(browser, CHARACTER_PROGRESSION_SESSION.preset, {
       bootSaveJson: CHARACTER_PROGRESSION_SESSION.bootSaveJson,
     });
@@ -119,9 +132,23 @@ test.describe("Character progression evidence scenarios", () => {
     await captureReviewScene(dock, "character-stats-breakdown", "character-stats-breakdown");
 
     await closeEvidenceSession(session);
-  });
+  },
+  );
 
-  declareEvidenceScenario("character-talents-actions", async ({ browser }) => {
+  defineEvidenceScenario(
+    {
+      id: "character-talents-actions",
+      slugs: ["character-talents-tree-scroll", "talent-direct-actions"],
+      spec: {
+        id: "rendered-evidence:character-talents-actions",
+        path: "e2e/scenarios/character-progression.spec.ts",
+      },
+      fixture: "live-tile-and-dock",
+      reviewScenes: [{ id: "talent-direct-actions" }],
+      summary:
+        "attached stepper geometry and keyboard order, direct rank actions, Ability replace, gate/cascade feedback, inner tree scroll retention",
+    },
+    async ({ browser }) => {
     const session = await openEvidenceSession(browser, CHARACTER_PROGRESSION_SESSION.preset, {
       bootSaveJson: CHARACTER_PROGRESSION_SESSION.bootSaveJson,
     });
@@ -252,5 +279,6 @@ test.describe("Character progression evidence scenarios", () => {
     await captureReviewScene(dock, "character-talents-actions", "talent-direct-actions");
 
     await closeEvidenceSession(session);
-  });
+  },
+  );
 });

@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { NIGHTGLASS_BUS_CHANNEL } from "../../src/ui/bus";
 import { closeEvidenceSession, openEvidenceSession } from "../helpers/evidence-session";
-import { declareEvidenceScenario } from "../helpers/evidence-scenarios";
+import { defineEvidenceScenario } from "../helpers/evidence-scenarios";
 import { captureReviewScene } from "../helpers/review-scenes";
 import { armoryReviewSnapshot } from "../helpers/snapshots";
 
@@ -11,7 +11,20 @@ const ARMORY_SESSION = {
 };
 
 test.describe("Armory evidence scenarios", () => {
-  declareEvidenceScenario("armory-collection-compare", async ({ browser }) => {
+  defineEvidenceScenario(
+    {
+      id: "armory-collection-compare",
+      slugs: ["armory-collection-unequipped", "armory-comparison-popover"],
+      spec: {
+        id: "rendered-evidence:armory-collection-compare",
+        path: "e2e/scenarios/armory.spec.ts",
+      },
+      fixture: "isolated-dock",
+      reviewScenes: [],
+      summary:
+        "unequipped collection grid and transient comparison popover at dock size",
+    },
+    async ({ browser }) => {
     const session = await openEvidenceSession(browser, ARMORY_SESSION.preset, {
       dockSnapshot: ARMORY_SESSION.dockSnapshot,
     });
@@ -73,9 +86,23 @@ test.describe("Armory evidence scenarios", () => {
     expect(popover!.noDuplicateColumns).toBe(true);
 
     await closeEvidenceSession(session);
-  });
+  },
+  );
 
-  declareEvidenceScenario("armory-drag-density", async ({ browser }) => {
+  defineEvidenceScenario(
+    {
+      id: "armory-drag-density",
+      slugs: ["armory-drag-equip-unequip", "armory-density-no-outer-scroll"],
+      spec: {
+        id: "rendered-evidence:armory-drag-density",
+        path: "e2e/scenarios/armory.spec.ts",
+      },
+      fixture: "isolated-dock",
+      reviewScenes: [],
+      summary:
+        "pointer drag equip and unequip with 800×480 layout without outer-panel scroll",
+    },
+    async ({ browser }) => {
     const session = await openEvidenceSession(browser, ARMORY_SESSION.preset, {
       dockSnapshot: ARMORY_SESSION.dockSnapshot,
       seedEngineLegality: true,
@@ -167,9 +194,29 @@ test.describe("Armory evidence scenarios", () => {
     expect(layoutAfterDrag?.bodyScrollable).toBe(false);
 
     await closeEvidenceSession(session);
-  });
+  },
+  );
 
-  declareEvidenceScenario("equipment-icon-tiers", async ({ browser }) => {
+  defineEvidenceScenario(
+    {
+      id: "equipment-icon-tiers",
+      slugs: ["equipment-icon-content-tier", "equipment-icon-chrome-legibility"],
+      spec: {
+        id: "rendered-evidence:equipment-icon-tiers",
+        path: "e2e/scenarios/armory.spec.ts",
+      },
+      fixture: "isolated-dock",
+      reviewScenes: [
+        {
+          id: "armory-worn-strip",
+          durableDestination:
+            "docs/research/evidence/124-equipment-icon-consumers/armory-worn-strip.png",
+        },
+      ],
+      summary:
+        "Armory grid content-tier geometry and density; worn strip carries the chrome-legibility slug (content tier, explicit change)",
+    },
+    async ({ browser }) => {
     const session = await openEvidenceSession(browser, ARMORY_SESSION.preset, {
       dockSnapshot: ARMORY_SESSION.dockSnapshot,
     });
@@ -320,5 +367,6 @@ test.describe("Armory evidence scenarios", () => {
     await captureReviewScene(wornStrip, "equipment-icon-tiers", "armory-worn-strip");
 
     await closeEvidenceSession(session);
-  });
+  },
+  );
 });
