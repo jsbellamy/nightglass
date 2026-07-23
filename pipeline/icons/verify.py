@@ -25,19 +25,24 @@ from icons.ingest import (  # noqa: E402
     ingest_raw_to_text_source,
     recover_icon_grid,
 )
-from icons.paint import validate_recolor_map  # noqa: E402
-from icons.registry import (  # noqa: E402
-    ALL_BUILD_FAMILIES,
-    VERIFY_CANARY_FAMILY,
-    VERIFY_FOWL_CANARY_FAMILY,
-)
+from icons.paint import paint_source_local_icon, validate_recolor_map  # noqa: E402
 from icons.palette import (  # noqa: E402
     DEFAULT_SOURCE_PALETTE_ID,
     PALETTE_PATHS,
+    SOURCE_LOCAL_COLOR_MODE,
+    SOURCE_LOCAL_OUTLINE_RGB,
+    format_opaque_rgb,
     load_runtime_palette,
     outline_swatch_name,
+    swatch_for_local_rgb,
 )
-from icons.text_source import parse_text  # noqa: E402
+from icons.text_source import TextSource, cells_from_source, cells_to_local_source, parse_text, write_text  # noqa: E402
+from icons.registry import (  # noqa: E402
+    ALL_BUILD_FAMILIES,
+    VERIFY_ABILITY_CANARY_FAMILY,
+    VERIFY_CANARY_FAMILY,
+    VERIFY_FOWL_CANARY_FAMILY,
+)
 
 OUT_DIR = ROOT / "src" / "assets" / "icons"
 FAILURES: list[str] = []
@@ -200,8 +205,186 @@ except ValueError as exc:
     check("cross-palette subset name rejected", "mint" in str(exc))
 fowl_bad.unlink()
 
+print("\nsource-local color mode (C1–C3)")
+ability_source_path = (
+    ROOT / "src" / "assets" / "icon-sources" / "verify-ability-canary" / "source.grid"
+)
+ability_source = parse_text(ability_source_path)
+check(
+    "verify-ability-canary selects source-local mode",
+    ability_source.color_mode == SOURCE_LOCAL_COLOR_MODE,
+    ability_source.color_mode,
+)
+check(
+    "source-local outline is the common Ability charcoal-plum ring",
+    ability_source.outline_rgb == SOURCE_LOCAL_OUTLINE_RGB,
+    str(ability_source.outline_rgb),
+)
+
+mixed_mode = HERE / "_mixed_color_mode.grid"
+mixed_mode.write_text(
+    "\n".join(
+        [
+            "source_key: mixed",
+            "color_mode: source-local",
+            "outline: 58,6,20",
+            "palette_subset: mint",
+            "legend",
+            ". .",
+            "A 10,20,30",
+            "grid",
+            ".A",
+        ]
+    )
+    + "\n"
+)
+try:
+    parse_text(mixed_mode)
+    check("palette_subset forbidden in source-local mode", False)
+except ValueError as exc:
+    check("palette_subset forbidden in source-local mode", "forbidden" in str(exc))
+mixed_mode.unlink()
+
+bad_rgb = HERE / "_bad_local_rgb.grid"
+bad_rgb.write_text(
+    "\n".join(
+        [
+            "source_key: bad-rgb",
+            "color_mode: source-local",
+            "outline: 58,6,20",
+            "legend",
+            ". .",
+            "A not-rgb",
+            "grid",
+            ".A",
+        ]
+    )
+    + "\n"
+)
+try:
+    parse_text(bad_rgb)
+    check("malformed source-local legend rgb rejected", False)
+except ValueError as exc:
+    check("malformed source-local legend rgb rejected", "malformed" in str(exc))
+bad_rgb.unlink()
+
+dup_rgb = HERE / "_dup_local_rgb.grid"
+dup_rgb.write_text(
+    "\n".join(
+        [
+            "source_key: dup-rgb",
+            "color_mode: source-local",
+            "outline: 58,6,20",
+            "legend",
+            ". .",
+            "A 10,20,30",
+            "B 10,20,30",
+            "grid",
+            ".AB",
+        ]
+    )
+    + "\n"
+)
+try:
+    parse_text(dup_rgb)
+    check("duplicate source-local legend rgb rejected", False)
+except ValueError as exc:
+    check("duplicate source-local legend rgb rejected", "duplicate" in str(exc))
+dup_rgb.unlink()
+
+oor_rgb = HERE / "_oor_local_rgb.grid"
+oor_rgb.write_text(
+    "\n".join(
+        [
+            "source_key: oor",
+            "color_mode: source-local",
+            "outline: 58,6,20",
+            "legend",
+            ". .",
+            "A 10,20,300",
+            "grid",
+            ".A",
+        ]
+    )
+    + "\n"
+)
+try:
+    parse_text(oor_rgb)
+    check("out-of-range source-local rgb rejected", False)
+except ValueError as exc:
+    check("out-of-range source-local rgb rejected", "out of range" in str(exc))
+oor_rgb.unlink()
+
+with tempfile.TemporaryDirectory() as tmp:
+    tmp_path = pathlib.Path(tmp)
+    canonical = cells_to_local_source(
+        "canonical-local",
+        [[None, (40, 120, 200)], [None, (40, 120, 200)]],
+    )
+    out_path = tmp_path / "roundtrip.grid"
+    write_text(out_path, canonical)
+    emitted = out_path.read_text()
+    check(
+        "source-local write uses canonical rgb serialization",
+        "40,120,200" in emitted and "40, 120, 200" not in emitted,
+    )
+    roundtrip = parse_text(out_path)
+    check(
+        "source-local parse/write roundtrip preserves legend rgb",
+        roundtrip.local_legend == canonical.local_legend,
+        str(roundtrip.local_legend),
+    )
+
+ability_cells = cells_from_source(ability_source)
+ability_outline = swatch_for_local_rgb(SOURCE_LOCAL_OUTLINE_RGB)
+ability_icon = paint_source_local_icon(ability_cells, outline=ability_outline)
+check(
+    "source-local runtime canvas is 34×34",
+    ability_icon.size == (34, 34),
+    str(ability_icon.size),
+)
+corner = ability_icon.getpixel((0, 0))
+check(
+    "source-local runtime keeps transparent alpha outside body",
+    corner[3] == 0,
+    str(corner),
+)
+outline_pixels = [
+    ability_icon.getpixel((x, y))
+    for y in range(34)
+    for x in range(34)
+    if ability_icon.getpixel((x, y))[3] == 255
+    and ability_icon.getpixel((x, y))[:3] == SOURCE_LOCAL_OUTLINE_RGB
+]
+check(
+    "source-local build derives one-cell charcoal-plum outline ring",
+    len(outline_pixels) > 0,
+    str(len(outline_pixels)),
+)
+fill_pixels = [
+    px
+    for px in (
+        ability_icon.getpixel((x, y))
+        for y in range(34)
+        for x in range(34)
+    )
+    if px[3] == 255 and px[:3] == (40, 120, 200)
+]
+check(
+    "source-local build preserves authored opaque fill rgb",
+    len(fill_pixels) > 0,
+    str(len(fill_pixels)),
+)
+
 print("\nregistry palette ids")
 for family in ALL_BUILD_FAMILIES:
+    if family.color_mode == SOURCE_LOCAL_COLOR_MODE:
+        check(
+            f"family {family.source_key} is source-local (no named palette)",
+            family.palette_id == DEFAULT_SOURCE_PALETTE_ID and not family.palette_subset,
+            family.color_mode,
+        )
+        continue
     check(
         f"family {family.source_key} declares known palette id",
         family.palette_id in PALETTE_PATHS,
@@ -336,7 +519,19 @@ if manifest_path.exists():
             hashlib.sha256(rebuilt).hexdigest() == entry["sha256"],
         )
         family_palette = entry.get("palette")
+        family_color_mode = entry.get("color_mode")
         family_outline = entry.get("outline")
+        if family_color_mode == SOURCE_LOCAL_COLOR_MODE:
+            check(
+                f"manifest {key} records source-local color_mode",
+                family_color_mode == SOURCE_LOCAL_COLOR_MODE,
+            )
+            check(
+                f"manifest {key} records common Ability outline rgb",
+                family_outline == list(SOURCE_LOCAL_OUTLINE_RGB),
+                str(family_outline),
+            )
+            continue
         if family_palette == "fowl-harvest-24":
             check(
                 f"manifest {key} records fowl-harvest-24",

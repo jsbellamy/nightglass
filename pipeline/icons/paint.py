@@ -186,6 +186,14 @@ def paint_source_icon(
     return derive_outline_and_paint(recolored, outline)
 
 
+def paint_source_local_icon(
+    cells: list[list[Swatch | None]],
+    *,
+    outline: Swatch,
+) -> Image.Image:
+    return derive_outline_and_paint(cells, outline)
+
+
 def scale_nearest(im: Image.Image, factor: int) -> Image.Image:
     w, h = im.size
     return im.resize((w * factor, h * factor), Image.NEAREST)

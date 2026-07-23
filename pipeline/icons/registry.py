@@ -3,9 +3,16 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Literal
 
 from .paint import validate_recolor_map
-from .palette import DEFAULT_SOURCE_PALETTE_ID, PALETTE_PATHS, load_runtime_palette
+from .palette import (
+    DEFAULT_SOURCE_PALETTE_ID,
+    NAMED_PALETTE_COLOR_MODE,
+    PALETTE_PATHS,
+    SOURCE_LOCAL_COLOR_MODE,
+    load_runtime_palette,
+)
 
 # Tier II maps — targets must NOT appear in the family's palette_subset
 # (flatten guard; see #125 mint→berry-mid merge).
@@ -77,8 +84,27 @@ class IconFamily:
     variants: tuple[IconVariant, ...]
     source_rel: str
     palette_id: str = DEFAULT_SOURCE_PALETTE_ID
+    color_mode: Literal["named-palette", "source-local"] = NAMED_PALETTE_COLOR_MODE
 
     def validate(self) -> None:
+        if self.color_mode == SOURCE_LOCAL_COLOR_MODE:
+            if self.palette_subset:
+                raise ValueError(
+                    f"family {self.source_key!r} source-local mode cannot declare "
+                    f"palette_subset"
+                )
+            if self.palette_id != DEFAULT_SOURCE_PALETTE_ID:
+                raise ValueError(
+                    f"family {self.source_key!r} source-local mode cannot declare "
+                    f"a named palette id"
+                )
+            for variant in self.variants:
+                if variant.recolor:
+                    raise ValueError(
+                        f"family {self.source_key!r} source-local variants cannot "
+                        f"declare recolor maps"
+                    )
+            return
         if self.palette_id not in PALETTE_PATHS:
             raise ValueError(f"unknown palette id {self.palette_id!r}")
         runtime = load_runtime_palette(self.palette_id)
@@ -1109,10 +1135,19 @@ VERIFY_FOWL_CANARY_FAMILY = IconFamily(
     palette_id="fowl-harvest-24",
 )
 
+VERIFY_ABILITY_CANARY_FAMILY = IconFamily(
+    "verify-ability-canary",
+    (),
+    (IconVariant("verify-ability-canary", {}),),
+    "verify-ability-canary/source.grid",
+    color_mode=SOURCE_LOCAL_COLOR_MODE,
+)
+
 ALL_BUILD_FAMILIES: tuple[IconFamily, ...] = (
     *FAMILIES,
     VERIFY_CANARY_FAMILY,
     VERIFY_FOWL_CANARY_FAMILY,
+    VERIFY_ABILITY_CANARY_FAMILY,
 )
 
 
