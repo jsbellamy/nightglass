@@ -1,0 +1,68 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "prompt": "TRUE chunky pixel-art ability icon only, exact 32\u00d732 logical pixel grid rendered large. Snareburst identity MUST show all three: (1) a circular toothed ROPE/CORD trap ring, (2) THREE arrowheads pointing INWARD from the ring toward center, (3) ONE compact pale stun star at center. Keep the whole glyph SMALLER in the middle of the frame \u2014 about 24\u201327 logical pixels \u2014 with at least FIVE full solid #ff00ff magenta cells of clearance on EVERY edge; subject must not touch any canvas edge. Flat square chunky pixels only, no soft shading, structures \u22653 pixels, selective charcoal-plum outline, upper-left lighting. Trap iron, rope gold, forest green, warning orange-red, pale impact. Solid #ff00ff background. No victim, hunter, text, UI border, ground, cast shadow, glow, debris, gradient, anti-aliasing, blur, dithering, watermark, or transparency.",
+  "raw_sha256": "87960ae8a76b2e8eaa8882cfa4ac104fa7ef12bd80e98da085ffebfdecf97be0",
+  "asset_class": "interface",
+  "kind": "ability-loadout-icon",
+  "color_mode": "source-local",
+  "runtime_destination": "src/assets/icon-sources/snareburst/source.grid",
+  "candidate": "snareburst-r7",
+  "style_references": [
+    {
+      "path": "src/assets/icons/preview/verify-ability-canary@8x.png",
+      "sha256": "82a04baf5f96334431bbb23c8b3767055b80379202ede610b964301c26873ea9",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/preview/heartseeker@8x.png",
+      "sha256": "dca30cd6c512f771f726af8784bf395ca5a969766b8540a9ec78ab29e0bee9aa",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/preview/fletchers-eye@8x.png",
+      "sha256": "65f575adc7fba3fe2b709abaccf5e33b955b9a5ad5c69a899ee59192a16337e9",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/preview/draw-weight@8x.png",
+      "sha256": "ee638bb4a2051b5ce14384965c0450286d6c3d062f41978cf958f58972c425db",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/preview/fieldcraft@8x.png",
+      "sha256": "fd5f0cbb351ef0081ac549f89cc9b9d24591d7bde8ae92397786afc10a40f85b",
+      "role": "style_cohort"
+    }
+  ],
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        248,
+        244,
+        774,
+        773
+      ],
+      "pitch_x": {
+        "pitch": 17.42222222222226,
+        "score": 0.3805466648938273
+      },
+      "pitch_y": {
+        "pitch": 17.572222222222262,
+        "score": 0.30962379449115657
+      },
+      "grid": [
+        30,
+        30
+      ]
+    },
+    "mode": "source-local",
+    "acquisition_flatten": {
+      "unique_before": 365,
+      "unique_after": 12,
+      "max_colors": 12,
+      "cluster_dist": 28.0,
+      "note": "Task-local acquisition flatten (knight/wizard pattern); production ingest_raw_to_local_text_source unchanged."
+    }
+  }
+}

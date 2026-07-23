@@ -1,0 +1,152 @@
+{
+  "quickshot": {
+    "recovered": {
+      "bbox": [
+        283,
+        194,
+        821,
+        835
+      ],
+      "pitch_x": {
+        "pitch": 23.43333333333341,
+        "score": 0.38867108460366784
+      },
+      "pitch_y": {
+        "pitch": 23.683333333333415,
+        "score": 0.4445712596237851
+      },
+      "grid": [
+        23,
+        27
+      ]
+    },
+    "mode": "source-local",
+    "acquisition_flatten": {
+      "unique_before": 139,
+      "unique_after": 12,
+      "max_colors": 12,
+      "cluster_dist": 28.0,
+      "note": "Task-local acquisition flatten (knight/wizard pattern); production ingest_raw_to_local_text_source unchanged."
+    }
+  },
+  "pinpoint-shot": {
+    "recovered": {
+      "bbox": [
+        273,
+        285,
+        874,
+        716
+      ],
+      "pitch_x": {
+        "pitch": 23.472222222222317,
+        "score": 0.11571256224522103
+      },
+      "pitch_y": {
+        "pitch": 21.372222222222288,
+        "score": 0.11414021128392596
+      },
+      "grid": [
+        26,
+        20
+      ]
+    },
+    "mode": "source-local",
+    "acquisition_flatten": {
+      "unique_before": 133,
+      "unique_after": 9,
+      "max_colors": 12,
+      "cluster_dist": 28.0,
+      "note": "Task-local acquisition flatten (knight/wizard pattern); production ingest_raw_to_local_text_source unchanged."
+    }
+  },
+  "barbed-arrow": {
+    "recovered": {
+      "bbox": [
+        278,
+        276,
+        763,
+        738
+      ],
+      "pitch_x": {
+        "pitch": 21.100000000000108,
+        "score": 0.23836956663006892
+      },
+      "pitch_y": {
+        "pitch": 21.25000000000011,
+        "score": 0.3065712987960784
+      },
+      "grid": [
+        23,
+        22
+      ]
+    },
+    "mode": "source-local",
+    "acquisition_flatten": {
+      "unique_before": 151,
+      "unique_after": 12,
+      "max_colors": 12,
+      "cluster_dist": 28.0,
+      "note": "Task-local acquisition flatten (knight/wizard pattern); production ingest_raw_to_local_text_source unchanged."
+    }
+  },
+  "split-volley": {
+    "recovered": {
+      "bbox": [
+        201,
+        180,
+        857,
+        824
+      ],
+      "pitch_x": {
+        "pitch": 23.400000000000073,
+        "score": 0.4344278336316623
+      },
+      "pitch_y": {
+        "pitch": 23.050000000000068,
+        "score": 0.417545656957442
+      },
+      "grid": [
+        28,
+        28
+      ]
+    },
+    "mode": "source-local",
+    "acquisition_flatten": {
+      "unique_before": 129,
+      "unique_after": 9,
+      "max_colors": 12,
+      "cluster_dist": 28.0,
+      "note": "Task-local acquisition flatten (knight/wizard pattern); production ingest_raw_to_local_text_source unchanged."
+    }
+  },
+  "snareburst": {
+    "recovered": {
+      "bbox": [
+        248,
+        244,
+        774,
+        773
+      ],
+      "pitch_x": {
+        "pitch": 17.42222222222226,
+        "score": 0.3805466648938273
+      },
+      "pitch_y": {
+        "pitch": 17.572222222222262,
+        "score": 0.30962379449115657
+      },
+      "grid": [
+        30,
+        30
+      ]
+    },
+    "mode": "source-local",
+    "acquisition_flatten": {
+      "unique_before": 365,
+      "unique_after": 12,
+      "max_colors": 12,
+      "cluster_dist": 28.0,
+      "note": "Task-local acquisition flatten (knight/wizard pattern); production ingest_raw_to_local_text_source unchanged."
+    }
+  }
+}

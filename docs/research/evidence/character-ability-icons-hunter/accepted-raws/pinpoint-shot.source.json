@@ -1,0 +1,68 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "prompt": "TRUE chunky pixel-art ability icon only, exact 32\u00d732 logical pixel grid rendered large. Pinpoint Shot: SIMPLE compact glyph \u2014 one horizontal steel-blue arrow through a SMALL red-and-cream bullseye ring (only 2 rings), with one crisp impact notch. The entire subject must fit inside a ~24\u201328 logical-pixel box in the CENTER. Leave a wide empty #ff00ff magenta border \u2014 at least FIVE full magenta cells clear on every edge. Flat square pixels only, structures \u22653 pixels, selective charcoal-plum outline, upper-left light. Source-local steel blue, red rings, cream fletching, deep forest shadow. Solid #ff00ff background. No person, text, UI frame, scenery, shadow, aura, particles, gradients, anti-aliasing, blur, dithering, watermark, or transparency.",
+  "raw_sha256": "1c2dc422ba7c87153fe015235977fc8f0e07050d2b4562bd1183cd901b4e4cc1",
+  "asset_class": "interface",
+  "kind": "ability-loadout-icon",
+  "color_mode": "source-local",
+  "runtime_destination": "src/assets/icon-sources/pinpoint-shot/source.grid",
+  "candidate": "pinpoint-shot-r3",
+  "style_references": [
+    {
+      "path": "src/assets/icons/preview/verify-ability-canary@8x.png",
+      "sha256": "82a04baf5f96334431bbb23c8b3767055b80379202ede610b964301c26873ea9",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/preview/heartseeker@8x.png",
+      "sha256": "dca30cd6c512f771f726af8784bf395ca5a969766b8540a9ec78ab29e0bee9aa",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/preview/fletchers-eye@8x.png",
+      "sha256": "65f575adc7fba3fe2b709abaccf5e33b955b9a5ad5c69a899ee59192a16337e9",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/preview/draw-weight@8x.png",
+      "sha256": "ee638bb4a2051b5ce14384965c0450286d6c3d062f41978cf958f58972c425db",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/preview/fieldcraft@8x.png",
+      "sha256": "fd5f0cbb351ef0081ac549f89cc9b9d24591d7bde8ae92397786afc10a40f85b",
+      "role": "style_cohort"
+    }
+  ],
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        273,
+        285,
+        874,
+        716
+      ],
+      "pitch_x": {
+        "pitch": 23.472222222222317,
+        "score": 0.11571256224522103
+      },
+      "pitch_y": {
+        "pitch": 21.372222222222288,
+        "score": 0.11414021128392596
+      },
+      "grid": [
+        26,
+        20
+      ]
+    },
+    "mode": "source-local",
+    "acquisition_flatten": {
+      "unique_before": 133,
+      "unique_after": 9,
+      "max_colors": 12,
+      "cluster_dist": 28.0,
+      "note": "Task-local acquisition flatten (knight/wizard pattern); production ingest_raw_to_local_text_source unchanged."
+    }
+  }
+}
