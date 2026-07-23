@@ -1,0 +1,147 @@
+{
+  "arc-spark": {
+    "recovered": {
+      "bbox": [
+        110,
+        73,
+        931,
+        907
+      ],
+      "pitch_x": {
+        "pitch": 28.194444444444514,
+        "score": 0.23084498429445732
+      },
+      "pitch_y": {
+        "pitch": 29.044444444444526,
+        "score": 0.14684468230607395
+      },
+      "grid": [
+        29,
+        29
+      ]
+    },
+    "mode": "source-local",
+    "quantize": {
+      "unique_before": 231,
+      "unique_after": 9,
+      "target": 10,
+      "centers": 9
+    }
+  },
+  "cinder-bloom": {
+    "recovered": {
+      "bbox": [
+        80,
+        125,
+        931,
+        939
+      ],
+      "pitch_x": {
+        "pitch": 28.316666666666734,
+        "score": 0.20918641376555747
+      },
+      "pitch_y": {
+        "pitch": 30.666666666666767,
+        "score": 0.20467534775725832
+      },
+      "grid": [
+        30,
+        27
+      ]
+    },
+    "mode": "source-local",
+    "quantize": {
+      "unique_before": 159,
+      "unique_after": 9,
+      "target": 10,
+      "centers": 9
+    }
+  },
+  "frost-lance": {
+    "recovered": {
+      "bbox": [
+        80,
+        44,
+        959,
+        982
+      ],
+      "pitch_x": {
+        "pitch": 31.983333333333416,
+        "score": 0.25311594368454626
+      },
+      "pitch_y": {
+        "pitch": 31.833333333333414,
+        "score": 0.28520777980727546
+      },
+      "grid": [
+        27,
+        29
+      ]
+    },
+    "mode": "source-local",
+    "quantize": {
+      "unique_before": 192,
+      "unique_after": 10,
+      "target": 10,
+      "centers": 10
+    }
+  },
+  "prism-ward": {
+    "recovered": {
+      "bbox": [
+        37,
+        47,
+        964,
+        972
+      ],
+      "pitch_x": {
+        "pitch": 44.27777777777717,
+        "score": 0.25777663052916594
+      },
+      "pitch_y": {
+        "pitch": 44.02777777777718,
+        "score": 0.1841528831381609
+      },
+      "grid": [
+        20,
+        22
+      ]
+    },
+    "mode": "source-local",
+    "quantize": {
+      "unique_before": 131,
+      "unique_after": 10,
+      "target": 10,
+      "centers": 10
+    }
+  },
+  "thunder-ring": {
+    "recovered": {
+      "bbox": [
+        48,
+        49,
+        976,
+        975
+      ],
+      "pitch_x": {
+        "pitch": 32.005555555555645,
+        "score": 0.2366019912288221
+      },
+      "pitch_y": {
+        "pitch": 32.50555555555562,
+        "score": 0.20312109229191452
+      },
+      "grid": [
+        29,
+        28
+      ]
+    },
+    "mode": "source-local",
+    "quantize": {
+      "unique_before": 347,
+      "unique_after": 10,
+      "target": 10,
+      "centers": 10
+    }
+  }
+}

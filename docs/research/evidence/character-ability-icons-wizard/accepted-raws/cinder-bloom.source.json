@@ -1,0 +1,75 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "prompt": "TRUE chunky pixel-art ability icon only, exact 32\u00d732 logical pixel grid rendered large. Cinder Bloom: a symmetrical fire blossom opening from one coal-red ember, with three broad flame petals showing an all-enemies burst. Centered 26\u201330 pixels with two #ff00ff cells clear, flat pixels, parts at least 3 pixels, selective charcoal-plum outline, upper-left lighting. Use ember red, orange, gold, pale-hot center, dark burgundy; source-local colors, no Moonberry/Fowl restriction. Solid #ff00ff background only. No character, flower stem, words, frame, shadow, diffuse glow, loose sparks, gradient, anti-aliasing, blur, dithering, watermark, or transparency.",
+  "raw_sha256": "91ef9fb0ed2fa32638376d6f6ee4cc4765f179214091ae9cc4a807a00c399322",
+  "asset_class": "interface",
+  "kind": "ability-loadout-icon",
+  "color_mode": "source-local",
+  "runtime_destination": "src/assets/icon-sources/cinder-bloom/source.grid (unregistered; runtime PNG deferred to #534)",
+  "candidate": "cinder-bloom-r1",
+  "style_references": [
+    {
+      "path": "src/assets/icons/preview/verify-ability-canary@8x.png",
+      "role": "style_cohort",
+      "sha256": "82a04baf5f96334431bbb23c8b3767055b80379202ede610b964301c26873ea9"
+    },
+    {
+      "path": "src/assets/icon-sources/verify-ability-canary/source.grid",
+      "role": "source_form_reference",
+      "sha256": "07d4d4cb1bdca6b9d80c8a80217533dd050985f1639e96c543a811a3abd97614"
+    },
+    {
+      "path": "src/assets/icons/preview/starfall@8x.png",
+      "role": "style_cohort",
+      "sha256": "5e3c5ea975a02c6226538e0b7dd749c1add4efd0ee5348ece42d11bbc13b6dfd"
+    },
+    {
+      "path": "src/assets/icons/preview/wildfire-sigil@8x.png",
+      "role": "style_cohort",
+      "sha256": "59c557c706d5d31bee1c91283b84a4b8eb6d41bea80f6fe0da87b2118a7673ce"
+    },
+    {
+      "path": "src/assets/icons/preview/leyline-attunement@8x.png",
+      "role": "style_cohort",
+      "sha256": "8175ff3b8aa0b4c1248d28951e6e5e33bd44d3daa389653567393b58eb2bc5c4"
+    },
+    {
+      "path": "src/assets/icons/preview/elemental-practice@8x.png",
+      "role": "style_cohort",
+      "sha256": "f5a70d806871ca0e7eb756f817f1bd9a3419a3cf68098c92c10adb14344a6e5d"
+    }
+  ],
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        80,
+        125,
+        931,
+        939
+      ],
+      "pitch_x": {
+        "pitch": 28.316666666666734,
+        "score": 0.20918641376555747
+      },
+      "pitch_y": {
+        "pitch": 30.666666666666767,
+        "score": 0.20467534775725832
+      },
+      "grid": [
+        30,
+        27
+      ]
+    },
+    "mode": "source-local",
+    "quantize": {
+      "unique_before": 159,
+      "unique_after": 9,
+      "target": 10,
+      "centers": 9
+    }
+  },
+  "evidence_raw": "docs/research/evidence/character-ability-icons-wizard/accepted-raws/cinder-bloom.png",
+  "issue": 533,
+  "acquisition_notes": "Recovered cells flattened to \u226410 source-local RGBs (contract 8\u201312 flat colours) and exterior near-outline charcoal stripped so Stage-2 derived ring owns the contour; provider raw remains immutable evidence."
+}
