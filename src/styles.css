@@ -795,6 +795,80 @@ html.dock-window body {
   gap: 6px;
   min-height: 0;
   flex: 1;
+  overflow: hidden;
+}
+
+.dock-body[data-dock-nav="character"] .dock-panel:not([hidden]) {
+  overflow: hidden;
+}
+
+.character-workspace-header {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.character-workspace-meta {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+  min-width: 0;
+  font-size: 11px;
+  line-height: 1.25;
+  color: var(--dock-text, #fff9e9);
+}
+
+.character-workspace-name {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.character-workspace-level,
+.character-workspace-position,
+.character-workspace-talent-points {
+  color: var(--dock-text-muted, #d8d0bf);
+}
+
+.character-workspace-header-chrome {
+  flex-shrink: 0;
+}
+
+.character-view-panel {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+}
+
+.character-view-panel[hidden] {
+  display: none !important;
+}
+
+.character-build-board {
+  display: flex;
+  flex: 1;
+  gap: 6px;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.character-build-board [data-character-section="loadout"] {
+  flex: 0 0 230px;
+  max-width: 230px;
+  overflow: hidden;
+}
+
+.character-build-board [data-character-section="talents"] {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .character-subtabs {
