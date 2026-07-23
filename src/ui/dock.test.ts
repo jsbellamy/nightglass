@@ -568,7 +568,7 @@ describe("Management Dock active-surface rendering", () => {
     dock.destroy();
   });
 
-  it("does not remount Character chips, focus, or scroll across four equivalent structured-clone legality pumps", () => {
+  it("preserves Character rail rows, chip anchor, focus, and scroll across four equivalent legality pumps", () => {
     const root = document.createElement("main");
     document.body.append(root);
     const dock = mountDock(root);
@@ -619,12 +619,13 @@ describe("Management Dock active-surface rendering", () => {
     }
     expect(document.activeElement).toBe(chip);
     expect(panel!.scrollTop).toBe(44);
+    expect(root.querySelector<HTMLElement>(`[data-character-chip="${selected}"]`)).toBe(chip);
 
     root.remove();
     dock.destroy();
   });
 
-  it("remounts once when serialized Talent legality changes with an unchanged management Snapshot", () => {
+  it("updates Talent allocate disabled state when legality changes but the management Snapshot is unchanged", () => {
     const root = document.createElement("main");
     document.body.append(root);
     const dock = mountDock(root);
@@ -668,6 +669,31 @@ describe("Management Dock active-surface rendering", () => {
         '[data-talent-id="k-fortitude"][data-talent-action="allocate"]',
       ),
     ).toBe(allocateAfter);
+
+    root.remove();
+    dock.destroy();
+  });
+
+  it("skips management remount when the same keyless legality view reference is pumped twice", () => {
+    const root = document.createElement("main");
+    document.body.append(root);
+    const dock = mountDock(root);
+    const engine = createEngine(fixtureContent, undefined, 3);
+    const snapshot = engine.snapshot();
+    const legality = legalityViewFromEngine(engine);
+    dock.render(snapshot, legality);
+    root.querySelector<HTMLButtonElement>('[data-dock-tab="character"]')?.click();
+    const panel = root.querySelector<HTMLElement>('[data-dock-panel="character"]');
+    panel!.scrollTop = 22;
+    const rowsBefore = [...root.querySelectorAll<HTMLElement>("[data-character-row]")];
+
+    dock.render(structuredClone(snapshot), legality);
+
+    const rowsAfter = [...root.querySelectorAll<HTMLElement>("[data-character-row]")];
+    for (let i = 0; i < rowsBefore.length; i += 1) {
+      expect(rowsAfter[i]).toBe(rowsBefore[i]);
+    }
+    expect(panel!.scrollTop).toBe(22);
 
     root.remove();
     dock.destroy();

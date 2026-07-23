@@ -288,7 +288,7 @@ describe("Dock-derived equip legality", () => {
     }
   });
 
-  it("assigns equal non-empty managementKey values to independent structured clones of the same legality", () => {
+  it("treats independently cloned serialized Talent legality as equivalent for management remount gating", () => {
     const engine = createEngine(content, undefined, LOOT_SEED);
     const snapshot = engine.snapshot();
     const serialized = serializeEngineLegality(engine, snapshot, content);
@@ -302,7 +302,7 @@ describe("Dock-derived equip legality", () => {
     expect(viewA).not.toBe(viewB);
   });
 
-  it("changes managementKey when Talent allocate/deallocate legality semantics change", () => {
+  it("changes the stable Talent legality token when allocate permission flips for a Stat Talent", () => {
     const engine = createEngine(content, undefined, LOOT_SEED);
     const snapshot = engine.snapshot();
     const before = serializeEngineLegality(engine, snapshot, content);
@@ -321,12 +321,12 @@ describe("Dock-derived equip legality", () => {
     expect(afterKey).not.toBe(beforeKey);
   });
 
-  it("omits managementKey on live Engine-derived views for identity fallback", () => {
+  it("keeps live Engine legality views without a stable comparison token", () => {
     const engine = createEngine(content, undefined, LOOT_SEED);
     expect(legalityViewFromEngine(engine).managementKey).toBeUndefined();
   });
 
-  it("defines a constant managementKey on EMPTY_ENGINE_LEGALITY", () => {
+  it("exposes a non-empty stable comparison token on empty serialized legality", () => {
     expect(EMPTY_ENGINE_LEGALITY.managementKey).toBeDefined();
     expect(EMPTY_ENGINE_LEGALITY.managementKey).not.toBe("");
   });
