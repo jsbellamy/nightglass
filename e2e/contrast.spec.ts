@@ -42,6 +42,16 @@ const DOCK_PRIMARY_TEXT: { tab: "character" | "armory" | "stage"; selector: stri
   },
   {
     tab: "character",
+    selector:
+      '[data-character-section="loadout"] .loadout-pool-tiles [data-loadout-assign-tile] .ability-name',
+  },
+  {
+    tab: "character",
+    selector:
+      '[data-character-section="loadout"] [data-loadout-ability-popover="true"] [data-ability-description="true"]',
+  },
+  {
+    tab: "character",
     selector: '[data-character-section="talents"] [data-class-id="knight"] [data-talent-points="true"]',
   },
   {
@@ -56,12 +66,22 @@ const DOCK_PRIMARY_TEXT: { tab: "character" | "armory" | "stage"; selector: stri
   },
   {
     tab: "character",
+    selector:
+      '[data-character-section="talents"] [data-talent-id="fortitude"][data-talent-action="deallocate"]',
+  },
+  {
+    tab: "character",
     selector: '[data-character-section="stats"] [data-stats-xp="true"]',
   },
   {
     tab: "character",
     selector:
       '[data-character-section="stats"] [data-stat-key="physical"] .stats-total',
+  },
+  {
+    tab: "character",
+    selector:
+      '[data-character-section="stats"] [data-stat-key="physical"] [data-stat-sources="true"]',
   },
   { tab: "armory", selector: ".armory-worn-strip .armory-worn-slot-label" },
   { tab: "armory", selector: '.armory-worn-strip [data-slot-filled="false"] .armory-worn-slot-empty' },
@@ -104,17 +124,33 @@ test.describe("accessibility contrast floor", () => {
     await tile.close();
     await postBusSnapshot(dock, armoryColourSnapshot());
 
-    let talentDetailPrepared = false;
+    let loadoutPopoverPrepared = false;
+    let talentPopoverPrepared = false;
     for (const { tab, selector } of DOCK_PRIMARY_TEXT) {
       await focusDockTab(dock, tab);
       if (tab === "character") {
         if (selector.includes('[data-character-section="loadout"]')) {
           await focusCharacterSubTab(dock, "loadout");
+          if (
+            selector.includes('[data-loadout-ability-popover="true"]') &&
+            !loadoutPopoverPrepared
+          ) {
+            const poolTile = dock.locator(
+              '[data-character-section="loadout"] .loadout-pool-tiles [data-loadout-assign-tile]',
+            ).first();
+            await poolTile.hover();
+            await expect(
+              dock.locator(
+                '[data-character-section="loadout"] [data-loadout-ability-popover="true"] [data-ability-description="true"]',
+              ),
+            ).toBeVisible();
+            loadoutPopoverPrepared = true;
+          }
         } else if (selector.includes('[data-character-section="stats"]')) {
           await focusCharacterSubTab(dock, "stats");
         } else if (selector.includes('[data-character-section="talents"]')) {
           await focusCharacterSubTab(dock, "talents");
-          if (!talentDetailPrepared) {
+          if (!talentPopoverPrepared) {
             const fortitudeCell = dock.locator(
               '[data-character-section="talents"] [data-class-id="knight"] .talent-cell[data-talent-id="fortitude"]',
             );
@@ -124,7 +160,7 @@ test.describe("accessibility contrast floor", () => {
                 '[data-character-section="talents"] [data-talent-popover="true"] .talent-popover-name',
               ),
             ).toBeVisible();
-            talentDetailPrepared = true;
+            talentPopoverPrepared = true;
           }
         }
       }

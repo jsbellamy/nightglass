@@ -61,7 +61,12 @@ here.
 | Tile geometry (480×112, status line, combatant fit / no overlap, five-opponent stress, status-line Drop notification clearance) | `evidence: tile-geometry` | `e2e/rendered-evidence.spec.ts` via `npm run test:evidence`; orchestrator reviews harness-emitted PNGs under `e2e-screenshots/` (gitignored; CI uploads the folder — no per-scene paths are checked in) |
 | Cross-webview delivery (`dock-opened` → snapshot → populated Dock; in-UI close without disturbing the tile) | `evidence: cross-webview-delivery` | Same suite: two pages in one context (`/` and `/?window=dock`) sharing `BroadcastChannel` |
 | AA contrast (status, dock toggle, health text) | `evidence: aa-contrast` | Same suite: computed-style contrast ≥ WCAG AA floor |
-| Dock surfaces (three tabs, one row, scroll not clip, each surface populated) | `evidence: dock-surfaces` | Same suite; orchestrator reviews harness-emitted `e2e-screenshots/` after `npm run test:evidence` |
+| Dock surfaces (Armory → Character → Stage tabs on one row; each surface populated; Character sub-tab scenes Loadout/Talents/Stats; scroll not clip) | `evidence: dock-surfaces` | Same suite; orchestrator reviews harness-emitted `e2e-screenshots/` after `npm run test:evidence` (top-level `04-dock-*` plus `04b-character-*`) |
+| Dock navigation ownership (shared left Character rail on Armory + Character; Stage computed `display:none` / zero width / inert; no compact Armory selector; fresh Dock opens on Armory) | `evidence: dock-navigation-ownership` | Same suite: computed-style and bounding-box assertions (not `HTMLElement.hidden` alone) |
+| Character Stats breakdown (Loadout → Talents → Stats order; five totals/source rows; pending marker fit; no fake focus targets) | `evidence: character-stats-breakdown` | Same suite |
+| Character Loadout assignment (unlocked pool + three slots fit; visible drag source/valid targets; pool replace; slot swap; select-then-slot parity) | `evidence: character-loadout-assignment` | Same suite (also retains `evidence: character-loadout-no-scroll` on the shared fit scene) |
+| Character information popovers (Ability + Talent hover ≡ focus text; Dock-bounded; non-interactive; close when anchor loses hover/focus) | `evidence: character-information-popovers` | Same suite |
+| Talent direct actions (tile `+`/`−`; chosen/rank/gate states; atomic Ability Talent replace; tree scroll retained) | `evidence: talent-direct-actions` | Same suite (also retains `evidence: character-talents-tree-scroll` on the shared tree scene) |
 | Five-opponent presentation concurrency (Stage 3 stress wave) | `evidence: five-actor-pools` | `e2e/stress.spec.ts` via `npm run test:evidence` |
 | Reduced-motion accessibility floor (actor pool visible; lunge/recoil offsets disabled) | `evidence: reduced-motion` | `e2e/reduced-motion.spec.ts` via `npm run test:evidence` |
 | Equipment icon content tier (Armory grid tiles) | `evidence: equipment-icon-content-tier` | `e2e/rendered-evidence.spec.ts` via `npm run test:evidence` (DOM geometry assertions in the shared equipment-icon scenario) |
@@ -73,6 +78,18 @@ here.
 | Native dock lifecycle / OS close / positioning / child-window attachment | checklist items in `docs/agents/native-observation.md` | Manual `npm run tauri dev` when `src-tauri/**`, `app.windows`, capabilities, or Dock child-window attachment (`parent: "tile"` in `src/ui/dock-window.ts`) change |
 | Presentation effect images (Ability frames and Status Effect glyphs load under Vite) | `evidence: effect-image-loading` | `e2e/rendered-evidence.spec.ts` via `npm run test:evidence`: visible `img.effect-frame` and `img.status-icon` with `complete` and non-zero natural dimensions; no page errors |
 | Native effect-image loading (packaged Tauri webview) | `Native effect-image loading` in `docs/agents/native-observation.md` | Manual `npm run tauri dev` when packaged presentation-effect URL resolution changes (`src/ui/effect-images.ts` or its wiring); committed observation under `docs/research/evidence/native-effect-images/` |
+
+## Retired worked examples (Tier-3)
+
+These named checks were falsified by the Character workspace wave (#478–#482). They
+are **retired**, not rewritten to today's DOM. Cite the successor slug when a live
+row needs the same intent.
+
+| Retired intent | Do not cite | Successor |
+| --- | --- | --- |
+| Inline Ability mechanical text on Loadout tiles | Any harness row that required persistent `.ability-description` inside pool/slot tiles | `evidence: character-information-popovers` |
+| Sticky Talent detail panel owning description and allocate/deallocate (`aside.talent-detail` / `[data-talent-detail]`) | Contrast or keyboard samples targeting `.talent-detail` action chrome | `evidence: talent-direct-actions`, `evidence: character-information-popovers` |
+| Compact Armory Character selector chips (`[data-armory-character-selector]` / `.armory-character-selector`) | Dock or Armory evidence that required a second Character chip row on Armory | `evidence: dock-navigation-ownership` |
 
 ## Three dispositions
 
