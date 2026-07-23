@@ -34,6 +34,7 @@ STATUS_GLYPH_IDS = (
     "braced",
     "exposed",
     "guarded",
+    "hold-the-line",
     "inspired",
     "overdrive",
     "riven",

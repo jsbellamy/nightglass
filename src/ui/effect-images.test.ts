@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import effectManifest from "../assets/effects/manifest.json";
+import { buildClassKitSlice } from "../data";
 import {
   STATUS_EFFECT_GLYPH_IDS,
   effectImageUrl,
@@ -35,8 +36,11 @@ describe("effect image registry", () => {
     }
   });
 
-  it("resolves all twelve Status Effect glyph paths to a non-empty bundled URL", () => {
-    expect(STATUS_EFFECT_GLYPH_IDS).toHaveLength(12);
+  it("glyph coverage equals assembled Status Effect ids and every URL resolves", () => {
+    const assembledIds = buildClassKitSlice()
+      .statuses.map((status) => status.id)
+      .sort();
+    expect([...STATUS_EFFECT_GLYPH_IDS].sort()).toEqual(assembledIds);
     for (const statusId of STATUS_EFFECT_GLYPH_IDS) {
       const url = statusEffectGlyphUrl(statusId);
       expect(url, statusId).toBeTruthy();

@@ -115,11 +115,12 @@ describe("effect recipes", () => {
 describe("status glyphs", () => {
   const statusDir = join(dirname(fileURLToPath(import.meta.url)), "../assets/effects/status");
 
-  it("ships twelve shape-distinct 7×7 glyphs", () => {
+  it("ships thirteen shape-distinct 7×7 glyphs", () => {
     const expected = [
       "braced",
       "exposed",
       "guarded",
+      "hold-the-line",
       "inspired",
       "overdrive",
       "riven",

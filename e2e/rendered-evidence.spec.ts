@@ -16,7 +16,8 @@ import {
 import { postBusCommand, postBusSnapshot } from "./helpers/bus";
 import { advanceUntil, advanceUntilVisible } from "./helpers/advance";
 import { contrastRatio, parseRGB } from "./helpers/contrast";
-import { focusDockTab, openTileAndDock } from "./helpers/dock-context";
+import { focusDockTab, openTileAndDock, openTilePage } from "./helpers/dock-context";
+import { holdTheLineStatusSnapshot } from "./helpers/snapshots";
 
 const SCREENSHOTS = "e2e-screenshots";
 /** Committed review artifact for the knockout-readability judgement (#103). */
@@ -353,6 +354,36 @@ test.describe("rendered-output evidence seam", () => {
       ko!.spriteFilter !== "none" || ko!.stackTransform !== "none",
       "knockout non-colour signal on the nodes CSS targets",
     ).toBe(true);
+
+    expect(pageErrors, "tile page errors").toEqual([]);
+    await context.close();
+  });
+
+  test("evidence: effect-image-loading — Hold the Line status glyph loads from a seeded Snapshot without page error", async ({
+    browser,
+  }) => {
+    const snapshot = holdTheLineStatusSnapshot();
+    const pageErrors: string[] = [];
+    const { context, tile } = await openTilePage(browser, JSON.stringify(snapshot));
+    tile.on("pageerror", (e) => pageErrors.push(String(e)));
+
+    await postBusSnapshot(tile, snapshot);
+
+    await expect
+      .poll(async () => {
+        return tile.evaluate(() => {
+          const icon = document.querySelector<HTMLImageElement>(
+            'img.status-icon[data-status-key$=":hold-the-line"]',
+          );
+          return (
+            icon !== null &&
+            icon.complete &&
+            icon.naturalWidth > 0 &&
+            icon.naturalHeight > 0
+          );
+        });
+      })
+      .toBe(true);
 
     expect(pageErrors, "tile page errors").toEqual([]);
     await context.close();
