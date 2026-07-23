@@ -1,16 +1,27 @@
 import { expect, test } from "@playwright/test";
-import { declareEvidenceScenario } from "./helpers/evidence-scenarios";
-import { focusDockTab, openTileAndDock } from "./helpers/dock-context";
-import { keyboardBootSnapshot } from "./helpers/snapshots";
+import { focusDockTab } from "../helpers/dock-context";
+import {
+  closeEvidenceSession,
+  openEvidenceSession,
+} from "../helpers/evidence-session";
+import { declareEvidenceScenario } from "../helpers/evidence-scenarios";
+import { captureReviewScene } from "../helpers/review-scenes";
+import { keyboardBootSnapshot } from "../helpers/snapshots";
 
-const SCREENSHOTS = "e2e-screenshots";
+const CHARACTER_PROGRESSION_SESSION = {
+  preset: "live-tile-and-dock" as const,
+  bootSaveJson: JSON.stringify(keyboardBootSnapshot()),
+};
 
-test.describe("rendered-output evidence seam", () => {
+test.describe("Character progression evidence scenarios", () => {
   declareEvidenceScenario("character-stats-breakdown", async ({ browser }) => {
-    const { context, dock } = await openTileAndDock(
-      browser,
-      JSON.stringify(keyboardBootSnapshot()),
-    );
+    const session = await openEvidenceSession(browser, CHARACTER_PROGRESSION_SESSION.preset, {
+      bootSaveJson: CHARACTER_PROGRESSION_SESSION.bootSaveJson,
+    });
+    const dock = session.dock;
+    if (!dock) {
+      throw new Error("live-tile-and-dock session must include a Dock page");
+    }
     await focusDockTab(dock, "character");
 
     const subTabOrder = await dock.evaluate(() =>
@@ -95,15 +106,19 @@ test.describe("rendered-output evidence seam", () => {
     });
     expect(pendingFit).toBe(true);
 
-    await dock.screenshot({ path: `${SCREENSHOTS}/07-character-stats-breakdown.png` });
-    await context.close();
+    await captureReviewScene(dock, "character-stats-breakdown", "character-stats-breakdown");
+
+    await closeEvidenceSession(session);
   });
 
   declareEvidenceScenario("character-talents-actions", async ({ browser }) => {
-    const { context, dock } = await openTileAndDock(
-      browser,
-      JSON.stringify(keyboardBootSnapshot()),
-    );
+    const session = await openEvidenceSession(browser, CHARACTER_PROGRESSION_SESSION.preset, {
+      bootSaveJson: CHARACTER_PROGRESSION_SESSION.bootSaveJson,
+    });
+    const dock = session.dock;
+    if (!dock) {
+      throw new Error("live-tile-and-dock session must include a Dock page");
+    }
     await focusDockTab(dock, "character");
     await dock.click('[data-character-sub-tab="talents"]');
 
@@ -191,7 +206,8 @@ test.describe("rendered-output evidence seam", () => {
     );
     await expect(gateNote.first()).toBeVisible();
 
-    await dock.screenshot({ path: `${SCREENSHOTS}/08-talent-direct-actions.png` });
-    await context.close();
+    await captureReviewScene(dock, "character-talents-actions", "talent-direct-actions");
+
+    await closeEvidenceSession(session);
   });
 });

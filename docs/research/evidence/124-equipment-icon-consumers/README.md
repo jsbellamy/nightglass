@@ -20,7 +20,7 @@ beside Weapon / Armor / Charm labels across all four Class Kits.
 
 This file must match the harness frame written during
 `evidence: equipment-icon-content-tier / evidence: equipment-icon-chrome-legibility`
-in `e2e/rendered-evidence.spec.ts`, not an ad-hoc manual capture.
+in `e2e/scenarios/armory.spec.ts`, not an ad-hoc manual capture.
 
 The prior `character-equipment-rows.png` artifact is superseded; leave the
 old file untracked/removed once the harness regenerates `armory-worn-strip.png`.

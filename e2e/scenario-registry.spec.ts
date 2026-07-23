@@ -3,7 +3,6 @@ import {
   EVIDENCE_SCENARIOS,
   EVIDENCE_SLUG_CATALOG,
   evidenceScenarioTitle,
-  type EvidenceScenario,
 } from "./helpers/evidence-scenarios";
 import { assertSafeReviewOutputPath, reviewSceneOutputPath, reviewSceneRoot } from "./helpers/review-scenes";
 
@@ -77,21 +76,14 @@ test.describe("evidence scenario registry", () => {
     }
   });
 
-  test("lists two monolith scenarios on rendered-evidence with generated titles", () => {
-    const monolith: EvidenceScenario[] = EVIDENCE_SCENARIOS.filter(
+  test("has no scenarios on the retired rendered-evidence monolith", () => {
+    const monolith = EVIDENCE_SCENARIOS.filter(
       (s) => s.spec.path === "e2e/rendered-evidence.spec.ts",
     );
-    expect(monolith).toHaveLength(2);
-    for (const scenario of monolith) {
-      const title = evidenceScenarioTitle(scenario);
-      for (const slug of scenario.slugs) {
-        expect(title).toContain(`evidence: ${slug}`);
-      }
-      expect(title).toContain(" — ");
-    }
+    expect(monolith).toHaveLength(0);
   });
 
-  test("catalogues fifteen supplemental scenarios on dedicated spec files", () => {
+  test("catalogues seventeen supplemental scenarios on dedicated spec files", () => {
     const supplementalPaths = [
       "e2e/contrast.spec.ts",
       "e2e/keyboard.spec.ts",
@@ -101,9 +93,10 @@ test.describe("evidence scenario registry", () => {
       "e2e/scenarios/dock.spec.ts",
       "e2e/scenarios/armory.spec.ts",
       "e2e/scenarios/character-loadout.spec.ts",
+      "e2e/scenarios/character-progression.spec.ts",
     ];
     const supplemental = EVIDENCE_SCENARIOS.filter((s) => supplementalPaths.includes(s.spec.path));
-    expect(supplemental).toHaveLength(15);
+    expect(supplemental).toHaveLength(17);
     const tileScenarios = EVIDENCE_SCENARIOS.filter((s) => s.spec.path === "e2e/scenarios/tile.spec.ts");
     expect(tileScenarios).toHaveLength(3);
     const dockScenarios = EVIDENCE_SCENARIOS.filter((s) => s.spec.path === "e2e/scenarios/dock.spec.ts");
@@ -114,7 +107,16 @@ test.describe("evidence scenario registry", () => {
       (s) => s.spec.path === "e2e/scenarios/character-loadout.spec.ts",
     );
     expect(characterLoadoutScenarios).toHaveLength(2);
-    for (const scenario of [...tileScenarios, ...armoryScenarios, ...characterLoadoutScenarios]) {
+    const characterProgressionScenarios = EVIDENCE_SCENARIOS.filter(
+      (s) => s.spec.path === "e2e/scenarios/character-progression.spec.ts",
+    );
+    expect(characterProgressionScenarios).toHaveLength(2);
+    for (const scenario of [
+      ...tileScenarios,
+      ...armoryScenarios,
+      ...characterLoadoutScenarios,
+      ...characterProgressionScenarios,
+    ]) {
       const title = evidenceScenarioTitle(scenario);
       for (const slug of scenario.slugs) {
         expect(title).toContain(`evidence: ${slug}`);
