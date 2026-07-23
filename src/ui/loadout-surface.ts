@@ -142,6 +142,11 @@ export function mountLoadoutSurface(
     text: "Select a skill, then a slot",
   });
 
+  const loadoutHeading = el("h2", {
+    class: "dock-surface-title",
+    text: "Loadout",
+  });
+
   function syncAvailableStripHeading(): void {
     if (!availableStripHeading) {
       return;
@@ -612,10 +617,11 @@ export function mountLoadoutSurface(
 
   const shell = mountSurfaceShell(root, "loadout-surface", {
     reconcile: true,
+    showTitle: false,
     title: "Loadout",
     body(snapshot) {
       rebuildLoadoutBody(snapshot);
-      return [assignmentHint, loadoutHost];
+      return [assignmentHint, loadoutHeading, loadoutHost];
     },
   });
 

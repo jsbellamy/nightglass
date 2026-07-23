@@ -312,4 +312,25 @@ describe("Character surface", () => {
       /\.character-build-board\s+\[data-character-section="loadout"\][\s\S]*?flex:\s*0\s+0\s+230px/,
     );
   });
+
+  it("shows explicit visible Loadout and Talents headings on the Build board", () => {
+    const root = document.createElement("div");
+    document.body.append(root);
+    const selected = { current: "knight" as ClassId };
+    const surface = mountCharacterSurface(root, mountOptions(selected));
+    const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
+    surface.render(engine.snapshot(), EMPTY_ENGINE_LEGALITY);
+
+    for (const [selector, label] of [
+      [".loadout-surface .dock-surface-title", "Loadout"],
+      [".talents-surface .dock-surface-title", "Talents"],
+    ] as const) {
+      const title = root.querySelector<HTMLElement>(selector);
+      expect(title?.textContent).toBe(label);
+      expect(getComputedStyle(title!).display).not.toBe("none");
+    }
+
+    root.remove();
+    surface.destroy();
+  });
 });
