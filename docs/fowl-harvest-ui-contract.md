@@ -25,7 +25,9 @@ wireframe (illustrative)** show one acceptable layout; spacing, typography, and
 chrome may change if the rules and evidence hooks are preserved.
 
 Do **not** introduce domain synonyms such as Campaign, **World**, or Biome, or use
-**Skill** for **Ability**. **Moonberry** and **Fowl Harvest** in this document name
+**Skill** for **Ability**. The **Available skills** strip heading is approved **UI copy**
+for unlocked, non-Basic **Abilities** not in the Loadout; it does not introduce **Skill** as
+a domain term. **Moonberry** and **Fowl Harvest** in this document name
 **Visual Theme** families used only as **editorial group labels** in the Stage list.
 **Visual Theme remains independent of Stage progression** (`CONTEXT.md`).
 
