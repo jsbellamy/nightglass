@@ -20,6 +20,7 @@ import {
   type TierTalentState,
 } from "./snapshot-view";
 import { el, mountSurfaceShell, pendingMarker } from "./surface-shell";
+import { mountMechanicalPopoverController } from "./mechanical-popover";
 
 export interface TalentsSurface {
   render(snapshot: ReadonlySnapshot | null, legality?: EngineLegalityView): void;
@@ -93,6 +94,7 @@ export function mountTalentsSurface(
   const { content } = options;
   let shell!: ReturnType<typeof mountSurfaceShell>;
   let openPopoverTalentId: string | null = null;
+  let openPopoverFill: (() => string) | null = null;
 
   const detailPopover = el("div", {
     class: "talent-detail-popover",
@@ -100,6 +102,12 @@ export function mountTalentsSurface(
     props: { hidden: true },
   });
   detailPopover.style.pointerEvents = "none";
+  detailPopover.tabIndex = -1;
+
+  const popoverController = mountMechanicalPopoverController({
+    popover: detailPopover,
+    bounds: root,
+  });
 
   const treeHost = el("div", {
     class: "talent-tree-host",
@@ -108,41 +116,21 @@ export function mountTalentsSurface(
   treeHost.append(detailPopover);
 
   function hideDetailPopover(): void {
-    detailPopover.hidden = true;
+    popoverController.hide();
     detailPopover.replaceChildren();
     delete detailPopover.dataset["talentId"];
     openPopoverTalentId = null;
+    openPopoverFill = null;
     for (const node of root.querySelectorAll<HTMLElement>("[aria-describedby^='talent-desc-']")) {
       node.removeAttribute("aria-describedby");
     }
   }
 
-  function popoverHost(): HTMLElement | null {
-    return root.querySelector<HTMLElement>(".talent-tree-host");
-  }
-
-  function positionDetailPopover(anchor: HTMLElement, host: HTMLElement): void {
-    detailPopover.hidden = false;
-    detailPopover.style.visibility = "hidden";
-    const margin = 6;
-    const hostRect = host.getBoundingClientRect();
-    const anchorRect = anchor.getBoundingClientRect();
-    const popW = detailPopover.offsetWidth;
-    const popH = detailPopover.offsetHeight;
-    let top = anchorRect.bottom + margin;
-    if (top + popH > hostRect.bottom && anchorRect.top - margin - popH >= hostRect.top) {
-      top = anchorRect.top - margin - popH;
-    }
-    top = Math.min(Math.max(top, hostRect.top + margin), hostRect.bottom - popH - margin);
-    let left = anchorRect.right + margin;
-    if (left + popW > hostRect.right) {
-      left = anchorRect.left - margin - popW;
-    }
-    left = Math.min(Math.max(left, hostRect.left + margin), hostRect.right - popW - margin);
-    detailPopover.style.position = "fixed";
-    detailPopover.style.left = `${left}px`;
-    detailPopover.style.top = `${top}px`;
-    detailPopover.style.visibility = "";
+  function popoverDescribedByTarget(group: HTMLElement): HTMLElement | null {
+    return (
+      group.querySelector<HTMLElement>(".talent-cell") ??
+      group.querySelector<HTMLElement>("[data-talent-action]")
+    );
   }
 
   function fillStatPopover(statTalent: StatTalentDef, rank: number): string {
@@ -218,18 +206,13 @@ export function mountTalentsSurface(
     fill: () => string,
     talentId: string,
   ): void {
-    const host = popoverHost();
-    if (!host) {
-      return;
-    }
     detailPopover.dataset["talentId"] = talentId;
     openPopoverTalentId = talentId;
+    openPopoverFill = fill;
     const descId = fill();
-    const focusTarget =
-      group.querySelector<HTMLElement>(".talent-cell") ??
-      group.querySelector<HTMLElement>("[data-talent-action]");
+    const focusTarget = popoverDescribedByTarget(group);
     focusTarget?.setAttribute("aria-describedby", descId);
-    positionDetailPopover(group, host);
+    popoverController.show(group);
   }
 
   function bindTalentPopover(
@@ -252,6 +235,9 @@ export function mountTalentsSurface(
     group.addEventListener("mouseleave", maybeClose);
     group.addEventListener("focusin", open);
     group.addEventListener("focusout", maybeClose);
+    if (openPopoverTalentId === talentId) {
+      openPopoverFill = fill;
+    }
   }
 
   function appendTalentCellIcon(cell: HTMLElement, iconKey: string, name: string): void {
@@ -591,24 +577,6 @@ export function mountTalentsSurface(
         treeHost.replaceChildren(detailPopover, scroll);
       }
 
-      if (
-        openPopoverTalentId &&
-        detailPopover.dataset["talentId"] === openPopoverTalentId
-      ) {
-        const group = root.querySelector<HTMLElement>(
-          `[data-talent-group="true"][data-talent-id="${openPopoverTalentId}"]`,
-        );
-        if (group) {
-          detailPopover.hidden = false;
-          const host = popoverHost();
-          if (host) {
-            positionDetailPopover(group, host);
-          }
-        } else {
-          hideDetailPopover();
-        }
-      }
-
       const sectionChildren: (HTMLElement | null)[] = [
         el("h3", {
           class: "surface-section-title",
@@ -638,18 +606,26 @@ export function mountTalentsSurface(
   return {
     render(snapshot, legality = EMPTY_ENGINE_LEGALITY) {
       shell.render(snapshot, legality);
-      if (openPopoverTalentId && snapshot) {
-        const group = root.querySelector<HTMLElement>(
-          `[data-talent-group="true"][data-talent-id="${openPopoverTalentId}"]`,
-        );
-        const host = popoverHost();
-        if (group && host) {
-          group.dispatchEvent(new Event("mouseenter"));
-          positionDetailPopover(group, host);
-        }
+      if (!openPopoverTalentId || !snapshot || !openPopoverFill) {
+        return;
       }
+      const group = root.querySelector<HTMLElement>(
+        `[data-talent-group="true"][data-talent-id="${openPopoverTalentId}"]`,
+      );
+      if (!group) {
+        hideDetailPopover();
+        return;
+      }
+      detailPopover.dataset["talentId"] = openPopoverTalentId;
+      const descId = openPopoverFill();
+      popoverDescribedByTarget(group)?.setAttribute("aria-describedby", descId);
+      popoverController.show(group);
     },
-    destroy: () => shell.destroy(),
+    destroy: () => {
+      hideDetailPopover();
+      popoverController.destroy();
+      shell.destroy();
+    },
   };
 }
 

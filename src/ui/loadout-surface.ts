@@ -17,6 +17,7 @@ import {
   effectiveTalentState,
   unlockableAbilityIds,
 } from "./snapshot-view";
+import { mountMechanicalPopoverController } from "./mechanical-popover";
 import { el, mountSurfaceShell, pendingMarker } from "./surface-shell";
 
 export type LoadoutSlotIndex = 0 | 1 | 2;
@@ -117,6 +118,12 @@ export function mountLoadoutSurface(
     props: { hidden: true },
   });
   detailPopover.style.pointerEvents = "none";
+  detailPopover.tabIndex = -1;
+
+  const popoverController = mountMechanicalPopoverController({
+    popover: detailPopover,
+    bounds: root,
+  });
 
   const orderNote = el("p", {
     class: "loadout-order-note",
@@ -134,7 +141,7 @@ export function mountLoadoutSurface(
   }
 
   function hideDetailPopover(): void {
-    detailPopover.hidden = true;
+    popoverController.hide();
     detailPopover.replaceChildren();
     delete detailPopover.dataset["abilityId"];
     openPopoverAbilityId = null;
@@ -233,30 +240,6 @@ export function mountLoadoutSurface(
     publishLoadout(classId, loadout, next);
   }
 
-  function positionDetailPopover(anchor: HTMLElement, host: HTMLElement): void {
-    detailPopover.hidden = false;
-    detailPopover.style.visibility = "hidden";
-    const margin = 6;
-    const hostRect = host.getBoundingClientRect();
-    const anchorRect = anchor.getBoundingClientRect();
-    const popW = detailPopover.offsetWidth;
-    const popH = detailPopover.offsetHeight;
-    let top = anchorRect.bottom + margin;
-    if (top + popH > hostRect.bottom && anchorRect.top - margin - popH >= hostRect.top) {
-      top = anchorRect.top - margin - popH;
-    }
-    top = Math.min(Math.max(top, hostRect.top + margin), hostRect.bottom - popH - margin);
-    let left = anchorRect.right + margin;
-    if (left + popW > hostRect.right) {
-      left = anchorRect.left - margin - popW;
-    }
-    left = Math.min(Math.max(left, hostRect.left + margin), hostRect.right - popW - margin);
-    detailPopover.style.position = "fixed";
-    detailPopover.style.left = `${left}px`;
-    detailPopover.style.top = `${top}px`;
-    detailPopover.style.visibility = "";
-  }
-
   function fillDetailPopover(
     ability: AbilityDef,
     stats: BaseStats,
@@ -294,21 +277,19 @@ export function mountLoadoutSurface(
     stats: BaseStats,
     statuses: readonly StatusEffectDef[],
     anchor: HTMLElement,
-    host: HTMLElement,
     activationDelayPending: boolean,
   ): void {
     detailPopover.dataset["abilityId"] = ability.id;
     openPopoverAbilityId = ability.id;
     const descId = fillDetailPopover(ability, stats, statuses, activationDelayPending);
     anchor.setAttribute("aria-describedby", descId);
-    positionDetailPopover(anchor, host);
+    popoverController.show(anchor);
   }
 
   function bindDetailPopover(
     ability: AbilityDef,
     statuses: readonly StatusEffectDef[],
     tile: HTMLElement,
-    host: HTMLElement,
   ): void {
     const open = () => {
       const snapshot = lastSnapshot;
@@ -324,7 +305,7 @@ export function mountLoadoutSurface(
       );
       const inserted = hasPending ? newlyInsertedAbilities(applied, loadout) : new Set<string>();
       const delay = loadout.includes(ability.id) ? inserted.has(ability.id) : false;
-      showDetailPopover(ability, freshStats, statuses, tile, host, delay);
+      showDetailPopover(ability, freshStats, statuses, tile, delay);
     };
     const maybeClose = () => {
       if (tile.matches(":hover") || tile.contains(document.activeElement)) {
@@ -452,13 +433,12 @@ export function mountLoadoutSurface(
         ? { kind: "pool", abilityId: ability.id }
         : { kind: "slot", abilityId: ability.id, slotIndex: context.slotIndex };
     bindAbilityDrag(dragSource, tile);
-    bindDetailPopover(ability, content.statuses, tile, host);
+    bindDetailPopover(ability, content.statuses, tile);
     return tile;
   }
 
   function renderBasicAttackTile(
     ability: AbilityDef,
-    host: HTMLElement,
   ): HTMLElement {
     const tile = el("div", {
       class: "loadout-basic-tile ability-card focus-ring",
@@ -467,7 +447,7 @@ export function mountLoadoutSurface(
       aria: { label: `${ability.name} (basic attack fallback)` },
     }, [el("span", { class: "ability-name", text: ability.name })]);
     appendAbilityIcon(tile, ability);
-    bindDetailPopover(ability, content.statuses, tile, host);
+    bindDetailPopover(ability, content.statuses, tile);
     return tile;
   }
 
@@ -506,7 +486,7 @@ export function mountLoadoutSurface(
       sectionChildren.push(
         el("div", { class: "basic-attack", aria: { label: "Basic attack fallback" } }, [
           el("p", { class: "slot-label", text: "Basic attack (fallback)" }),
-          renderBasicAttackTile(basicAbility, host),
+          renderBasicAttackTile(basicAbility),
         ]),
       );
     }
@@ -631,7 +611,7 @@ export function mountLoadoutSurface(
         : false;
       const descId = fillDetailPopover(ability, stats, content.statuses, delay);
       anchor.setAttribute("aria-describedby", descId);
-      positionDetailPopover(anchor, host);
+      popoverController.show(anchor);
     }
     syncAssignmentSelection(loadoutHost);
   }
@@ -647,6 +627,7 @@ export function mountLoadoutSurface(
         activeDrag = null;
       }
       hideDetailPopover();
+      popoverController.destroy();
       shell.destroy();
     },
   };

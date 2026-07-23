@@ -3,7 +3,7 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { createEngine } from "../core/engine";
 import { fixtureContent } from "../core/testing/fixture-content";
 import type { ClassId } from "../core/types";
@@ -293,6 +293,30 @@ describe("Talents surface", () => {
         ?.textContent,
     ).toBe("1/5");
 
+    surface.destroy();
+    root.remove();
+  });
+
+  it("does not dispatch synthetic mouseenter when refreshing an open popover on pump", () => {
+    const root = document.createElement("div");
+    document.body.append(root);
+    const engine = leveledKnightEngine();
+    const selected = { current: "knight" as ClassId };
+    const surface = mountTalentsSurface(root, mountOptions(selected));
+
+    renderTalents(surface, engine);
+    openTalentPopover(root, "k-fortitude");
+    const mouseenterSpy = vi.spyOn(EventTarget.prototype, "dispatchEvent");
+
+    engine.allocateTalent("knight", "k-fortitude");
+    renderTalents(surface, engine);
+
+    const syntheticMouseenters = mouseenterSpy.mock.calls.filter(
+      ([event]) => event instanceof Event && event.type === "mouseenter",
+    );
+    expect(syntheticMouseenters).toHaveLength(0);
+
+    mouseenterSpy.mockRestore();
     surface.destroy();
     root.remove();
   });
