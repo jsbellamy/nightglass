@@ -1,0 +1,136 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "1c2a36bc7e854cac843c14dc0c7c95213702f3a7aa8616ab9868b94b60fb9050",
+  "asset_class": "interface",
+  "kind": "ability-loadout-icon",
+  "color_mode": "source-local",
+  "runtime_destination": null,
+  "source_key": "pommel-break",
+  "candidate": "pommel-break-r9",
+  "prompt": "TRUE chunky pixel-art ability icon ONLY. Flat solid #ff00ff magenta fills the entire background to every canvas edge. Pommel Break glyph centered: brass pommel hitting cracked round helm + tiny impact spark. Subject long side about 22\u201325 logical pixels \u2014 medium size, not tiny and not edge-to-edge. At least four full magenta cells clear on every edge. Clean flat square pixels, no anti-aliasing or soft fringing. Members \u22653px thick. Charcoal-plum 1px outline. Upper-left light. Steel blue, dark iron, brass, pale impact, orange-red crack. No hand, character, text, frame, scenery, shadow, glow, particles, gradients, blur, dithering, watermark, transparency.",
+  "style_references": [
+    {
+      "path": "src/assets/icons/preview/verify-ability-canary@8x.png",
+      "sha256": "82a04baf5f96334431bbb23c8b3767055b80379202ede610b964301c26873ea9",
+      "role": "style_reference"
+    },
+    {
+      "path": "src/assets/icon-sources/verify-ability-canary/source.grid",
+      "sha256": "07d4d4cb1bdca6b9d80c8a80217533dd050985f1639e96c543a811a3abd97614",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/preview/hold-the-line@8x.png",
+      "sha256": "5cabcf87ac295551d3ede65c147b3a7db88c6a1e4dc487dbdfb9c0d9f109447d",
+      "role": "style_reference"
+    },
+    {
+      "path": "src/assets/icons/preview/vanguard@8x.png",
+      "sha256": "30f9208820a70520a80b99974148cf0d51eb5b372ebfd06464e57419ad28567f",
+      "role": "style_reference"
+    },
+    {
+      "path": "src/assets/icons/preview/sundering-charge@8x.png",
+      "sha256": "5881a58c700585977aae2c74d401d165e246ffdadd0266459e545505a943aa47",
+      "role": "style_reference"
+    },
+    {
+      "path": "src/assets/icons/preview/iron-discipline@8x.png",
+      "sha256": "3277a2b4089b9943b0b2a188fa934d98ae465ec26ca22bc4747849986a191238",
+      "role": "style_reference"
+    }
+  ],
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        217,
+        226,
+        723,
+        798
+      ],
+      "pitch_x": {
+        "pitch": 18.716666666666704,
+        "score": 0.4855076854713284
+      },
+      "pitch_y": {
+        "pitch": 19.01666666666671,
+        "score": 0.47416146048840047
+      },
+      "grid": [
+        27,
+        30
+      ]
+    },
+    "mode": "source-local",
+    "flat_collapse": {
+      "max_colors": 12,
+      "merge_dist": 28.0,
+      "unique_before": 269,
+      "unique_after": 12,
+      "palette_rgb": [
+        [
+          68,
+          86,
+          96
+        ],
+        [
+          109,
+          125,
+          136
+        ],
+        [
+          36,
+          22,
+          32
+        ],
+        [
+          196,
+          155,
+          33
+        ],
+        [
+          67,
+          138,
+          222
+        ],
+        [
+          254,
+          240,
+          169
+        ],
+        [
+          249,
+          106,
+          48
+        ],
+        [
+          250,
+          206,
+          63
+        ],
+        [
+          46,
+          92,
+          156
+        ],
+        [
+          90,
+          86,
+          24
+        ],
+        [
+          143,
+          115,
+          27
+        ],
+        [
+          212,
+          100,
+          48
+        ]
+      ]
+    }
+  },
+  "evidence_raw": "docs/research/evidence/character-ability-icons-knight/accepted-raws/pommel-break.png"
+}

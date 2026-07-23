@@ -1,0 +1,136 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "406a06bbb107476ff860cef01c9cde825ec91fb8befa4548c0efa8d174bbe9cd",
+  "asset_class": "interface",
+  "kind": "ability-loadout-icon",
+  "color_mode": "source-local",
+  "runtime_destination": null,
+  "source_key": "shield-brace",
+  "candidate": "shield-brace-r5",
+  "prompt": "TRUE chunky pixel-art ability icon only, exact 32\u00d732 logical pixel grid rendered large; every logical pixel one clean flat square block. Shield Brace identity MUST read clearly: a planted kite shield with a BOLD horizontal brace bar across the middle of the shield face (a thick crossbeam, not a heraldic stripe), plus TWO short ground-stop wedge marks touching the shield base where it meets the ground. Silhouette long side about 26\u201328 logical pixels \u2014 large enough to fill most of the drawable, with exactly two to three full #ff00ff magenta cells clearance on every edge. Flat pixels, parts \u22653 pixels thick, selective one-pixel charcoal-plum outline, upper-left light. Deep navy, steel, teal reinforcement, pale highlight. Solid #ff00ff background. No person, weapon, words, frame, shadow, bloom, particles, gradients, anti-aliasing, blur, dithering, watermark, or transparency.",
+  "style_references": [
+    {
+      "path": "src/assets/icons/preview/verify-ability-canary@8x.png",
+      "sha256": "82a04baf5f96334431bbb23c8b3767055b80379202ede610b964301c26873ea9",
+      "role": "style_reference"
+    },
+    {
+      "path": "src/assets/icon-sources/verify-ability-canary/source.grid",
+      "sha256": "07d4d4cb1bdca6b9d80c8a80217533dd050985f1639e96c543a811a3abd97614",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/preview/hold-the-line@8x.png",
+      "sha256": "5cabcf87ac295551d3ede65c147b3a7db88c6a1e4dc487dbdfb9c0d9f109447d",
+      "role": "style_reference"
+    },
+    {
+      "path": "src/assets/icons/preview/vanguard@8x.png",
+      "sha256": "30f9208820a70520a80b99974148cf0d51eb5b372ebfd06464e57419ad28567f",
+      "role": "style_reference"
+    },
+    {
+      "path": "src/assets/icons/preview/sundering-charge@8x.png",
+      "sha256": "5881a58c700585977aae2c74d401d165e246ffdadd0266459e545505a943aa47",
+      "role": "style_reference"
+    },
+    {
+      "path": "src/assets/icons/preview/iron-discipline@8x.png",
+      "sha256": "3277a2b4089b9943b0b2a188fa934d98ae465ec26ca22bc4747849986a191238",
+      "role": "style_reference"
+    }
+  ],
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        170,
+        63,
+        852,
+        960
+      ],
+      "pitch_x": {
+        "pitch": 42.594444444443944,
+        "score": 0.26553753855043605
+      },
+      "pitch_y": {
+        "pitch": 42.594444444443944,
+        "score": 0.2429116712542857
+      },
+      "grid": [
+        16,
+        22
+      ]
+    },
+    "mode": "source-local",
+    "flat_collapse": {
+      "max_colors": 12,
+      "merge_dist": 28.0,
+      "unique_before": 190,
+      "unique_after": 12,
+      "palette_rgb": [
+        [
+          210,
+          215,
+          211
+        ],
+        [
+          46,
+          10,
+          41
+        ],
+        [
+          146,
+          160,
+          166
+        ],
+        [
+          59,
+          108,
+          146
+        ],
+        [
+          79,
+          140,
+          139
+        ],
+        [
+          31,
+          60,
+          93
+        ],
+        [
+          48,
+          87,
+          114
+        ],
+        [
+          83,
+          136,
+          181
+        ],
+        [
+          42,
+          36,
+          61
+        ],
+        [
+          105,
+          163,
+          162
+        ],
+        [
+          122,
+          144,
+          144
+        ],
+        [
+          246,
+          243,
+          220
+        ]
+      ]
+    }
+  },
+  "evidence_raw": "docs/research/evidence/character-ability-icons-knight/accepted-raws/shield-brace.png"
+}

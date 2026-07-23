@@ -1,0 +1,136 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "4eaff0f9ad1bdeee4570cb076f5b865d2b739a0d3f4235563a6c4b6efda06737",
+  "asset_class": "interface",
+  "kind": "ability-loadout-icon",
+  "color_mode": "source-local",
+  "runtime_destination": null,
+  "source_key": "rallying-guard",
+  "candidate": "rallying-guard-r1",
+  "prompt": "TRUE chunky pixel-art ability icon only, exact 32\u00d732 logical pixel grid rendered large. Rallying Guard: three overlapping small shields rising behind one central banner-shaped guard emblem, clearly a party-wide defense. One centered 26\u201330-pixel group, two #ff00ff cells clear on all edges, flat pixels, 3-pixel minimum members, selective charcoal-plum one-pixel outline, upper-left lighting. Use steel blue, protective teal, warm gold banner, and cream highlights; source-local colors allowed without Moonberry/Fowl palette limits. Solid #ff00ff background only. No people, letters, UI border, landscape, shadow, diffuse glow, confetti, gradient, anti-aliasing, blur, dithering, watermark, or transparency.",
+  "style_references": [
+    {
+      "path": "src/assets/icons/preview/verify-ability-canary@8x.png",
+      "sha256": "82a04baf5f96334431bbb23c8b3767055b80379202ede610b964301c26873ea9",
+      "role": "style_reference"
+    },
+    {
+      "path": "src/assets/icon-sources/verify-ability-canary/source.grid",
+      "sha256": "07d4d4cb1bdca6b9d80c8a80217533dd050985f1639e96c543a811a3abd97614",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/preview/hold-the-line@8x.png",
+      "sha256": "5cabcf87ac295551d3ede65c147b3a7db88c6a1e4dc487dbdfb9c0d9f109447d",
+      "role": "style_reference"
+    },
+    {
+      "path": "src/assets/icons/preview/vanguard@8x.png",
+      "sha256": "30f9208820a70520a80b99974148cf0d51eb5b372ebfd06464e57419ad28567f",
+      "role": "style_reference"
+    },
+    {
+      "path": "src/assets/icons/preview/sundering-charge@8x.png",
+      "sha256": "5881a58c700585977aae2c74d401d165e246ffdadd0266459e545505a943aa47",
+      "role": "style_reference"
+    },
+    {
+      "path": "src/assets/icons/preview/iron-discipline@8x.png",
+      "sha256": "3277a2b4089b9943b0b2a188fa934d98ae465ec26ca22bc4747849986a191238",
+      "role": "style_reference"
+    }
+  ],
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        57,
+        60,
+        973,
+        947
+      ],
+      "pitch_x": {
+        "pitch": 37.37222222222201,
+        "score": 0.1297455789852229
+      },
+      "pitch_y": {
+        "pitch": 39.57222222222188,
+        "score": 0.08865955555919504
+      },
+      "grid": [
+        25,
+        22
+      ]
+    },
+    "mode": "source-local",
+    "flat_collapse": {
+      "max_colors": 12,
+      "merge_dist": 28.0,
+      "unique_before": 222,
+      "unique_after": 12,
+      "palette_rgb": [
+        [
+          44,
+          89,
+          132
+        ],
+        [
+          77,
+          135,
+          193
+        ],
+        [
+          248,
+          197,
+          80
+        ],
+        [
+          121,
+          189,
+          174
+        ],
+        [
+          52,
+          8,
+          28
+        ],
+        [
+          134,
+          189,
+          234
+        ],
+        [
+          35,
+          75,
+          77
+        ],
+        [
+          72,
+          137,
+          131
+        ],
+        [
+          190,
+          139,
+          47
+        ],
+        [
+          253,
+          242,
+          204
+        ],
+        [
+          99,
+          77,
+          77
+        ],
+        [
+          183,
+          171,
+          148
+        ]
+      ]
+    }
+  },
+  "evidence_raw": "docs/research/evidence/character-ability-icons-knight/accepted-raws/rallying-guard.png"
+}

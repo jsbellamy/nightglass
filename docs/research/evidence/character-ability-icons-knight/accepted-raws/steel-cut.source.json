@@ -1,0 +1,131 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "fff677f6f2ec55c58dd4acc8aedcead17e871483641b7e3295bba7b2a86adf03",
+  "asset_class": "interface",
+  "kind": "ability-loadout-icon",
+  "color_mode": "source-local",
+  "runtime_destination": null,
+  "source_key": "steel-cut",
+  "candidate": "steel-cut-r2",
+  "prompt": "TRUE chunky pixel-art ability icon only, drawn on an exact 32\u00d732 logical pixel grid rendered large. Steel Cut: one broad steel sword making a short decisive diagonal cut, with a single sharp cut-notch accent behind the blade. Center the silhouette; long side about 26\u201328 logical pixels (keep compact \u2014 do not fill the full canvas); at least three full #ff00ff cells clear on every edge. Clean flat square pixels, structural parts at least 3 pixels thick, selective one-pixel charcoal-plum outline, consistent upper-left lighting. Use mechanic-appropriate steel blue, cool gray, pale edge highlight, and restrained red impact accent; source-local colors are allowed and no named game palette is required. Flat solid #ff00ff acquisition background only. No character, hand, scenery, text, UI frame, shadow, glow cloud, particles, gradient, anti-aliasing, blur, dithering, watermark, or transparency.",
+  "style_references": [
+    {
+      "path": "src/assets/icons/preview/verify-ability-canary@8x.png",
+      "sha256": "82a04baf5f96334431bbb23c8b3767055b80379202ede610b964301c26873ea9",
+      "role": "style_reference"
+    },
+    {
+      "path": "src/assets/icon-sources/verify-ability-canary/source.grid",
+      "sha256": "07d4d4cb1bdca6b9d80c8a80217533dd050985f1639e96c543a811a3abd97614",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/preview/hold-the-line@8x.png",
+      "sha256": "5cabcf87ac295551d3ede65c147b3a7db88c6a1e4dc487dbdfb9c0d9f109447d",
+      "role": "style_reference"
+    },
+    {
+      "path": "src/assets/icons/preview/vanguard@8x.png",
+      "sha256": "30f9208820a70520a80b99974148cf0d51eb5b372ebfd06464e57419ad28567f",
+      "role": "style_reference"
+    },
+    {
+      "path": "src/assets/icons/preview/sundering-charge@8x.png",
+      "sha256": "5881a58c700585977aae2c74d401d165e246ffdadd0266459e545505a943aa47",
+      "role": "style_reference"
+    },
+    {
+      "path": "src/assets/icons/preview/iron-discipline@8x.png",
+      "sha256": "3277a2b4089b9943b0b2a188fa934d98ae465ec26ca22bc4747849986a191238",
+      "role": "style_reference"
+    }
+  ],
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        157,
+        169,
+        848,
+        820
+      ],
+      "pitch_x": {
+        "pitch": 27.922222222222345,
+        "score": 0.3228633916367813
+      },
+      "pitch_y": {
+        "pitch": 28.22222222222235,
+        "score": 0.4776061181228971
+      },
+      "grid": [
+        25,
+        23
+      ]
+    },
+    "mode": "source-local",
+    "flat_collapse": {
+      "max_colors": 12,
+      "merge_dist": 28.0,
+      "unique_before": 157,
+      "unique_after": 11,
+      "palette_rgb": [
+        [
+          179,
+          182,
+          184
+        ],
+        [
+          249,
+          247,
+          231
+        ],
+        [
+          64,
+          12,
+          33
+        ],
+        [
+          111,
+          130,
+          152
+        ],
+        [
+          171,
+          63,
+          92
+        ],
+        [
+          80,
+          129,
+          191
+        ],
+        [
+          64,
+          91,
+          134
+        ],
+        [
+          239,
+          89,
+          95
+        ],
+        [
+          41,
+          70,
+          115
+        ],
+        [
+          51,
+          100,
+          175
+        ],
+        [
+          67,
+          50,
+          58
+        ]
+      ]
+    }
+  },
+  "evidence_raw": "docs/research/evidence/character-ability-icons-knight/accepted-raws/steel-cut.png"
+}

@@ -1,0 +1,482 @@
+[
+  {
+    "name": "steel-cut",
+    "candidate": "steel-cut-r2",
+    "raw_sha256": "fff677f6f2ec55c58dd4acc8aedcead17e871483641b7e3295bba7b2a86adf03",
+    "color_mode": "source-local",
+    "recovered": {
+      "bbox": [
+        157,
+        169,
+        848,
+        820
+      ],
+      "pitch_x": {
+        "pitch": 27.922222222222345,
+        "score": 0.3228633916367813
+      },
+      "pitch_y": {
+        "pitch": 28.22222222222235,
+        "score": 0.4776061181228971
+      },
+      "grid": [
+        25,
+        23
+      ]
+    },
+    "flat_collapse": {
+      "max_colors": 12,
+      "merge_dist": 28.0,
+      "unique_before": 157,
+      "unique_after": 11,
+      "palette_rgb": [
+        [
+          179,
+          182,
+          184
+        ],
+        [
+          249,
+          247,
+          231
+        ],
+        [
+          64,
+          12,
+          33
+        ],
+        [
+          111,
+          130,
+          152
+        ],
+        [
+          171,
+          63,
+          92
+        ],
+        [
+          80,
+          129,
+          191
+        ],
+        [
+          64,
+          91,
+          134
+        ],
+        [
+          239,
+          89,
+          95
+        ],
+        [
+          41,
+          70,
+          115
+        ],
+        [
+          51,
+          100,
+          175
+        ],
+        [
+          67,
+          50,
+          58
+        ]
+      ]
+    },
+    "source_grid": "src/assets/icon-sources/steel-cut/source.grid",
+    "evidence_raw": "docs/research/evidence/character-ability-icons-knight/accepted-raws/steel-cut.png",
+    "sidecar": "docs/research/evidence/character-ability-icons-knight/accepted-raws/steel-cut.source.json"
+  },
+  {
+    "name": "sweeping-arc",
+    "candidate": "sweeping-arc-r2",
+    "raw_sha256": "900ddfeafc120c60df0af0a34bffb3c5f35cbe0f427f8508db7ea000926ca794",
+    "color_mode": "source-local",
+    "recovered": {
+      "bbox": [
+        97,
+        63,
+        911,
+        959
+      ],
+      "pitch_x": {
+        "pitch": 31.916666666666767,
+        "score": 0.28688437050903903
+      },
+      "pitch_y": {
+        "pitch": 31.966666666666768,
+        "score": 0.28063142449895984
+      },
+      "grid": [
+        25,
+        28
+      ]
+    },
+    "flat_collapse": {
+      "max_colors": 12,
+      "merge_dist": 28.0,
+      "unique_before": 249,
+      "unique_after": 12,
+      "palette_rgb": [
+        [
+          253,
+          247,
+          220
+        ],
+        [
+          240,
+          224,
+          173
+        ],
+        [
+          53,
+          10,
+          51
+        ],
+        [
+          179,
+          195,
+          194
+        ],
+        [
+          65,
+          97,
+          151
+        ],
+        [
+          129,
+          159,
+          183
+        ],
+        [
+          110,
+          23,
+          59
+        ],
+        [
+          178,
+          151,
+          143
+        ],
+        [
+          212,
+          44,
+          58
+        ],
+        [
+          224,
+          89,
+          84
+        ],
+        [
+          225,
+          123,
+          117
+        ],
+        [
+          228,
+          172,
+          156
+        ]
+      ]
+    },
+    "source_grid": "src/assets/icon-sources/sweeping-arc/source.grid",
+    "evidence_raw": "docs/research/evidence/character-ability-icons-knight/accepted-raws/sweeping-arc.png",
+    "sidecar": "docs/research/evidence/character-ability-icons-knight/accepted-raws/sweeping-arc.source.json"
+  },
+  {
+    "name": "shield-brace",
+    "candidate": "shield-brace-r5",
+    "raw_sha256": "406a06bbb107476ff860cef01c9cde825ec91fb8befa4548c0efa8d174bbe9cd",
+    "color_mode": "source-local",
+    "recovered": {
+      "bbox": [
+        170,
+        63,
+        852,
+        960
+      ],
+      "pitch_x": {
+        "pitch": 42.594444444443944,
+        "score": 0.26553753855043605
+      },
+      "pitch_y": {
+        "pitch": 42.594444444443944,
+        "score": 0.2429116712542857
+      },
+      "grid": [
+        16,
+        22
+      ]
+    },
+    "flat_collapse": {
+      "max_colors": 12,
+      "merge_dist": 28.0,
+      "unique_before": 190,
+      "unique_after": 12,
+      "palette_rgb": [
+        [
+          210,
+          215,
+          211
+        ],
+        [
+          46,
+          10,
+          41
+        ],
+        [
+          146,
+          160,
+          166
+        ],
+        [
+          59,
+          108,
+          146
+        ],
+        [
+          79,
+          140,
+          139
+        ],
+        [
+          31,
+          60,
+          93
+        ],
+        [
+          48,
+          87,
+          114
+        ],
+        [
+          83,
+          136,
+          181
+        ],
+        [
+          42,
+          36,
+          61
+        ],
+        [
+          105,
+          163,
+          162
+        ],
+        [
+          122,
+          144,
+          144
+        ],
+        [
+          246,
+          243,
+          220
+        ]
+      ]
+    },
+    "source_grid": "src/assets/icon-sources/shield-brace/source.grid",
+    "evidence_raw": "docs/research/evidence/character-ability-icons-knight/accepted-raws/shield-brace.png",
+    "sidecar": "docs/research/evidence/character-ability-icons-knight/accepted-raws/shield-brace.source.json"
+  },
+  {
+    "name": "rallying-guard",
+    "candidate": "rallying-guard-r1",
+    "raw_sha256": "4eaff0f9ad1bdeee4570cb076f5b865d2b739a0d3f4235563a6c4b6efda06737",
+    "color_mode": "source-local",
+    "recovered": {
+      "bbox": [
+        57,
+        60,
+        973,
+        947
+      ],
+      "pitch_x": {
+        "pitch": 37.37222222222201,
+        "score": 0.1297455789852229
+      },
+      "pitch_y": {
+        "pitch": 39.57222222222188,
+        "score": 0.08865955555919504
+      },
+      "grid": [
+        25,
+        22
+      ]
+    },
+    "flat_collapse": {
+      "max_colors": 12,
+      "merge_dist": 28.0,
+      "unique_before": 222,
+      "unique_after": 12,
+      "palette_rgb": [
+        [
+          44,
+          89,
+          132
+        ],
+        [
+          77,
+          135,
+          193
+        ],
+        [
+          248,
+          197,
+          80
+        ],
+        [
+          121,
+          189,
+          174
+        ],
+        [
+          52,
+          8,
+          28
+        ],
+        [
+          134,
+          189,
+          234
+        ],
+        [
+          35,
+          75,
+          77
+        ],
+        [
+          72,
+          137,
+          131
+        ],
+        [
+          190,
+          139,
+          47
+        ],
+        [
+          253,
+          242,
+          204
+        ],
+        [
+          99,
+          77,
+          77
+        ],
+        [
+          183,
+          171,
+          148
+        ]
+      ]
+    },
+    "source_grid": "src/assets/icon-sources/rallying-guard/source.grid",
+    "evidence_raw": "docs/research/evidence/character-ability-icons-knight/accepted-raws/rallying-guard.png",
+    "sidecar": "docs/research/evidence/character-ability-icons-knight/accepted-raws/rallying-guard.source.json"
+  },
+  {
+    "name": "pommel-break",
+    "candidate": "pommel-break-r9",
+    "raw_sha256": "1c2a36bc7e854cac843c14dc0c7c95213702f3a7aa8616ab9868b94b60fb9050",
+    "color_mode": "source-local",
+    "recovered": {
+      "bbox": [
+        217,
+        226,
+        723,
+        798
+      ],
+      "pitch_x": {
+        "pitch": 18.716666666666704,
+        "score": 0.4855076854713284
+      },
+      "pitch_y": {
+        "pitch": 19.01666666666671,
+        "score": 0.47416146048840047
+      },
+      "grid": [
+        27,
+        30
+      ]
+    },
+    "flat_collapse": {
+      "max_colors": 12,
+      "merge_dist": 28.0,
+      "unique_before": 269,
+      "unique_after": 12,
+      "palette_rgb": [
+        [
+          68,
+          86,
+          96
+        ],
+        [
+          109,
+          125,
+          136
+        ],
+        [
+          36,
+          22,
+          32
+        ],
+        [
+          196,
+          155,
+          33
+        ],
+        [
+          67,
+          138,
+          222
+        ],
+        [
+          254,
+          240,
+          169
+        ],
+        [
+          249,
+          106,
+          48
+        ],
+        [
+          250,
+          206,
+          63
+        ],
+        [
+          46,
+          92,
+          156
+        ],
+        [
+          90,
+          86,
+          24
+        ],
+        [
+          143,
+          115,
+          27
+        ],
+        [
+          212,
+          100,
+          48
+        ]
+      ]
+    },
+    "source_grid": "src/assets/icon-sources/pommel-break/source.grid",
+    "evidence_raw": "docs/research/evidence/character-ability-icons-knight/accepted-raws/pommel-break.png",
+    "sidecar": "docs/research/evidence/character-ability-icons-knight/accepted-raws/pommel-break.source.json"
+  }
+]
