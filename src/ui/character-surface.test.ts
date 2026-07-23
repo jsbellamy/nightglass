@@ -21,9 +21,6 @@ function mountOptions(
     content: fixtureContent,
     onCommand: (extras.onCommand as DockSurfaceMountOptions["onCommand"]) ?? (() => undefined),
     getSelectedClassId: () => selected.current,
-    selectClassId: (classId) => {
-      selected.current = classId;
-    },
   };
 }
 

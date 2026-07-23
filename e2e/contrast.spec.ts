@@ -38,7 +38,7 @@ const DOCK_PRIMARY_TEXT: { tab: "character" | "armory" | "stage"; selector: stri
   },
   { tab: "armory", selector: ".armory-worn-strip .armory-worn-slot-label" },
   { tab: "armory", selector: '.armory-worn-strip [data-slot-filled="false"] .armory-worn-slot-empty' },
-  { tab: "armory", selector: ".armory-character-selector .character-chip-name" },
+  { tab: "armory", selector: ".character-picker .character-chip-name" },
   { tab: "armory", selector: ".armory-compare-popover .armory-compare-name" },
   { tab: "armory", selector: ".armory-compare-popover .armory-compare-stat-table th" },
   { tab: "armory", selector: ".armory-slot-segment" },
@@ -93,8 +93,8 @@ test.describe("accessibility contrast floor", () => {
           }
         }
       }
-      if (tab === "armory" && selector === ".armory-character-selector .character-chip-name") {
-        await expect(dock.locator(".armory-character-selector .character-chip-name").first()).toBeVisible({
+      if (tab === "armory" && selector === ".character-picker .character-chip-name") {
+        await expect(dock.locator(".character-picker .character-chip-name").first()).toBeVisible({
           timeout: 15_000,
         });
       }

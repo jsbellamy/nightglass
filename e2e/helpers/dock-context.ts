@@ -108,5 +108,5 @@ export function characterPickerChipLocator(page: Page, classId: string) {
 }
 
 export function armoryCharacterChipLocator(page: Page, classId: string) {
-  return page.locator(`.armory-character-selector [data-character-chip="${classId}"]`);
+  return characterPickerChipLocator(page, classId);
 }

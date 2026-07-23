@@ -21,10 +21,10 @@ function mountDock(root: HTMLElement, options: Parameters<typeof mountManagement
 }
 
 describe("Management Dock shell", () => {
-  it("registers Character, Armory, and Stage in DOCK_TABS and DOCK_SURFACES one-for-one", () => {
+  it("registers Armory, Character, and Stage in DOCK_TABS and DOCK_SURFACES one-for-one", () => {
     expect(DOCK_TABS).toEqual([
-      { id: "character", label: "Character" },
       { id: "armory", label: "Armory" },
+      { id: "character", label: "Character" },
       { id: "stage", label: "Stage" },
     ]);
     const tabIds = DOCK_TABS.map((tab) => tab.id);
@@ -33,13 +33,24 @@ describe("Management Dock shell", () => {
     expect(new Set(surfaceIds).size).toBe(surfaceIds.length);
   });
 
-  it("renders tabs in Character, Armory, Stage order", () => {
+  it("renders tabs in Armory, Character, Stage order", () => {
     const root = document.createElement("main");
     mountDock(root);
     const labels = [...root.querySelectorAll<HTMLButtonElement>(".dock-tab")].map(
       (button) => button.textContent?.replace(/\s+/g, " ").trim(),
     );
-    expect(labels).toEqual(["Character", "Armory", "Stage"]);
+    expect(labels).toEqual(["Armory", "Character", "Stage"]);
+  });
+
+  it("opens on Armory by default unless initialTab is supplied", () => {
+    const root = document.createElement("main");
+    mountDock(root);
+    expect(root.querySelector<HTMLElement>('[data-dock-panel="armory"]')?.hidden).toBe(false);
+    expect(root.querySelector<HTMLElement>('[data-dock-panel="character"]')?.hidden).toBe(true);
+
+    const custom = document.createElement("main");
+    mountDock(custom, { initialTab: "stage" });
+    expect(custom.querySelector<HTMLElement>('[data-dock-panel="stage"]')?.hidden).toBe(false);
   });
 
   it("shows one surface at a time across the three tabs", () => {
@@ -52,12 +63,12 @@ describe("Management Dock shell", () => {
     expect(panels()).toHaveLength(3);
     expect(panels().filter((panel) => !panel.hidden)).toHaveLength(1);
     expect(root.querySelectorAll(".dock-tab")).toHaveLength(3);
-    expect(root.querySelector<HTMLElement>('[data-dock-panel="character"]')?.hidden).toBe(false);
-
-    root.querySelector<HTMLButtonElement>('[data-dock-tab="armory"]')?.click();
-    dock.render(engine.snapshot());
-    expect(root.querySelector<HTMLElement>('[data-dock-panel="character"]')?.hidden).toBe(true);
     expect(root.querySelector<HTMLElement>('[data-dock-panel="armory"]')?.hidden).toBe(false);
+
+    root.querySelector<HTMLButtonElement>('[data-dock-tab="character"]')?.click();
+    dock.render(engine.snapshot());
+    expect(root.querySelector<HTMLElement>('[data-dock-panel="armory"]')?.hidden).toBe(true);
+    expect(root.querySelector<HTMLElement>('[data-dock-panel="character"]')?.hidden).toBe(false);
 
     dock.destroy();
   });
@@ -94,6 +105,7 @@ describe("Management Dock shell", () => {
     const snapshot = engine.snapshot();
 
     dock.render(snapshot, EMPTY_ENGINE_LEGALITY);
+    root.querySelector<HTMLButtonElement>('[data-dock-tab="character"]')?.click();
     root
       .querySelector<HTMLElement>('.talent-cell[data-talent-id="k-fortitude"]')
       ?.click();
@@ -175,6 +187,7 @@ describe("Management Dock shell", () => {
       };
 
       dock.render(snapshot, legality);
+      root.querySelector<HTMLButtonElement>('[data-dock-tab="character"]')?.click();
       root
         .querySelector<HTMLElement>('.talent-cell[data-talent-id="k-fortitude"]')
         ?.click();
@@ -227,6 +240,7 @@ describe("Management Dock shell", () => {
     );
 
     dock.render(snapshot, legality);
+    root.querySelector<HTMLButtonElement>('[data-dock-tab="character"]')?.click();
     root
       .querySelector<HTMLElement>('.talent-cell[data-talent-id="k-fortitude"]')
       ?.click();
@@ -273,7 +287,7 @@ describe("Management Dock shell", () => {
     const onClose = vi.fn();
     const dock = mountDock(root, { onClose });
 
-    root.querySelector<HTMLButtonElement>('[data-dock-tab="character"]')?.click();
+    root.querySelector<HTMLButtonElement>('[data-dock-tab="armory"]')?.click();
     expect(onClose).toHaveBeenCalledTimes(1);
 
     onClose.mockClear();
@@ -296,14 +310,14 @@ describe("Management Dock shell", () => {
     const root = document.createElement("main");
     mountDock(root);
 
-    root.querySelector<HTMLButtonElement>('[data-dock-tab="armory"]')?.click();
-    expect(root.querySelector<HTMLElement>('[data-dock-panel="armory"]')?.hidden).toBe(false);
-    expect(root.querySelector<HTMLElement>('[data-dock-panel="character"]')?.hidden).toBe(true);
+    root.querySelector<HTMLButtonElement>('[data-dock-tab="character"]')?.click();
+    expect(root.querySelector<HTMLElement>('[data-dock-panel="character"]')?.hidden).toBe(false);
+    expect(root.querySelector<HTMLElement>('[data-dock-panel="armory"]')?.hidden).toBe(true);
 
     const stageTab = root.querySelector<HTMLButtonElement>('[data-dock-tab="stage"]');
     stageTab?.focus();
     stageTab?.dispatchEvent(new KeyboardEvent("keydown", { key: "Home", bubbles: true }));
-    expect(root.querySelector<HTMLElement>('[data-dock-panel="character"]')?.hidden).toBe(false);
+    expect(root.querySelector<HTMLElement>('[data-dock-panel="armory"]')?.hidden).toBe(false);
   });
 
   it("renders each management surface without interim placeholders when its tab is active", () => {
@@ -392,12 +406,12 @@ describe("Management Dock active-surface rendering", () => {
 
     dock.render(engine.snapshot());
 
-    expect(root.querySelector(".character-surface")?.childElementCount).toBeGreaterThan(0);
+    expect(root.querySelector(".armory-surface")?.childElementCount).toBeGreaterThan(0);
+    expect(root.querySelector(".character-surface")?.childElementCount).toBe(3);
     expect(root.querySelector(".party-surface")).toBeNull();
     expect(root.querySelector(".character-picker [data-character-chip]")).not.toBeNull();
-    expect(root.querySelector(".loadout-surface")?.childElementCount).toBeGreaterThan(0);
-    expect(root.querySelector(".talents-surface")?.childElementCount).toBeGreaterThan(0);
-    expect(root.querySelector(".armory-surface")?.childElementCount).toBe(0);
+    expect(root.querySelector(".loadout-surface")?.childElementCount).toBe(0);
+    expect(root.querySelector(".talents-surface")?.childElementCount).toBe(0);
     expect(root.querySelector(".stage-surface")?.childElementCount).toBe(0);
 
     dock.destroy();
@@ -723,7 +737,15 @@ describe("Management Dock active-surface rendering", () => {
 });
 
 describe("Management Dock Character picker", () => {
-  it("mounts the picker beside .dock-surface and shows the full rail only on Character", () => {
+  it("defines cascade-safe hidden styling for the Character rail", () => {
+    const css = readFileSync(
+      join(dirname(fileURLToPath(import.meta.url)), "../styles.css"),
+      "utf8",
+    );
+    expect(css).toMatch(/\.character-picker\[hidden\]\s*\{[^}]*display:\s*none/);
+  });
+
+  it("mounts the picker beside .dock-surface and shows the full rail on Armory and Character only", () => {
     const root = document.createElement("main");
     const dock = mountDock(root);
     const engine = createEngine(fixtureContent, undefined, 3);
@@ -740,18 +762,21 @@ describe("Management Dock Character picker", () => {
     expect(picker?.getAttribute("aria-hidden")).toBe("false");
     expect(picker?.inert).toBe(false);
     expect(root.querySelector(".character-picker [data-picker-position]")).not.toBeNull();
+    expect(root.querySelector('[data-armory-character-selector="true"]')).toBeNull();
 
-    root.querySelector<HTMLButtonElement>('[data-dock-tab="armory"]')?.click();
+    root.querySelector<HTMLButtonElement>('[data-dock-tab="character"]')?.click();
     expect(root.querySelector(".character-picker")).toBe(picker);
-    expect(picker?.hidden).toBe(true);
-    expect(picker?.getAttribute("aria-hidden")).toBe("true");
-    expect(picker?.inert).toBe(true);
+    expect(picker?.hidden).toBe(false);
+    expect(picker?.getAttribute("aria-hidden")).toBe("false");
+    expect(picker?.inert).toBe(false);
 
     root.querySelector<HTMLButtonElement>('[data-dock-tab="stage"]')?.click();
     expect(picker?.hidden).toBe(true);
+    expect(picker?.getAttribute("aria-hidden")).toBe("true");
+    expect(picker?.inert).toBe(true);
     expect(root.querySelector(".stage-surface .character-picker")).toBeNull();
 
-    root.querySelector<HTMLButtonElement>('[data-dock-tab="character"]')?.click();
+    root.querySelector<HTMLButtonElement>('[data-dock-tab="armory"]')?.click();
     expect(picker?.hidden).toBe(false);
 
     dock.destroy();
@@ -791,9 +816,12 @@ describe("Management Dock Character picker", () => {
         .querySelector(`[data-character-chip="${partyFront}"]`)
         ?.getAttribute("aria-selected"),
     ).toBe("false");
-    expect(root.querySelector(".character-surface")?.childElementCount).toBeGreaterThan(0);
+    expect(root.querySelector(".armory-surface")?.childElementCount).toBeGreaterThan(0);
     expect(root.querySelector(".party-surface")).toBeNull();
     expect(onCommand).not.toHaveBeenCalled();
+
+    root.querySelector<HTMLButtonElement>('[data-dock-tab="character"]')?.click();
+    expect(root.querySelector(".character-surface")?.childElementCount).toBeGreaterThan(0);
 
     const third = snapshot.progression.party[2]!;
     const thirdChip = root.querySelector<HTMLElement>(`[data-character-chip="${third}"]`);
@@ -824,7 +852,7 @@ describe("Management Dock Character picker", () => {
 
     dock.render(snapshot);
     root.querySelector<HTMLButtonElement>('[data-dock-tab="armory"]')?.click();
-    root.querySelector<HTMLElement>(`.armory-character-selector [data-character-chip="${target}"]`)?.click();
+    root.querySelector<HTMLElement>(`.character-picker [data-character-chip="${target}"]`)?.click();
     dock.render(snapshot);
 
     root.querySelector<HTMLButtonElement>('[data-dock-tab="character"]')?.click();
@@ -837,10 +865,60 @@ describe("Management Dock Character picker", () => {
     root.querySelector<HTMLButtonElement>('[data-dock-tab="armory"]')?.click();
     expect(
       root
-        .querySelector(`.armory-character-selector [data-character-chip="${target}"]`)
+        .querySelector(`.character-picker [data-character-chip="${target}"]`)
         ?.getAttribute("aria-selected"),
     ).toBe("true");
+    expect(root.querySelector('[data-armory-character-selector="true"]')).toBeNull();
 
+    dock.destroy();
+  });
+
+  it("retargets Armory worn strip and comparison when the shared rail selects another Class", () => {
+    const root = document.createElement("main");
+    document.body.append(root);
+    const dock = mountDock(root);
+    const engine = createEngine(fixtureContent, undefined, 3);
+    const snapshot = structuredClone(engine.snapshot());
+    snapshot.progression.armory = [
+      {
+        dropId: 1,
+        baseId: "fixture-blade",
+        itemLevel: 1,
+        rarity: "common",
+        affixes: [],
+        awardedAtMs: 100,
+        seen: true,
+        locked: false,
+        assignedTo: { classId: "knight", slot: "weapon" },
+      },
+      {
+        dropId: 2,
+        baseId: "fixture-focus",
+        itemLevel: 1,
+        rarity: "common",
+        affixes: [],
+        awardedAtMs: 200,
+        seen: true,
+        locked: false,
+        assignedTo: { classId: "wizard", slot: "weapon" },
+      },
+    ];
+    const legality = legalityViewFromEngine(createEngine(fixtureContent, snapshot, 3));
+    dock.render(snapshot, legality);
+
+    expect(
+      root.querySelector('[data-worn-slot="weapon"]')?.getAttribute("aria-label"),
+    ).toMatch(/Fixture Blade/);
+
+    const wizard = snapshot.progression.party.find((id) => id === "wizard") ?? "wizard";
+    root.querySelector<HTMLElement>(`.character-picker [data-character-chip="${wizard}"]`)?.click();
+    dock.render(snapshot, legality);
+
+    expect(
+      root.querySelector('[data-worn-slot="weapon"]')?.getAttribute("aria-label"),
+    ).toMatch(/Fixture Focus/);
+
+    root.remove();
     dock.destroy();
   });
 

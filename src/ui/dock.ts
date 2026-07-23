@@ -13,15 +13,13 @@ import {
 } from "./surface-shell";
 import { mountTabStrip } from "./tab-strip";
 
-export type DockTabId = "character" | "armory" | "stage";
+export type DockTabId = "armory" | "character" | "stage";
 
 export interface DockSurfaceMountOptions {
   content: Content;
   onCommand(command: TileCommand): void;
   /** The Character the picker has selected. Read at render time, not mount time. */
   getSelectedClassId(): ClassId | null;
-  /** Session-local Character selection owned by the Management Dock shell. */
-  selectClassId(classId: ClassId): void;
 }
 
 export interface DockSurfaceEntry {
@@ -34,16 +32,8 @@ export interface DockSurfaceEntry {
 }
 
 export const DOCK_SURFACES: DockSurfaceEntry[] = [
-  {
-    id: "character",
-    label: "Character",
-    mount: mountCharacterSurface,
-  },
-  {
-    id: "armory",
-    label: "Armory",
-    mount: mountArmorySurface,
-  },
+  { id: "armory", label: "Armory", mount: mountArmorySurface },
+  { id: "character", label: "Character", mount: mountCharacterSurface },
   { id: "stage", label: "Stage", mount: mountStageSurface },
 ];
 
@@ -96,7 +86,7 @@ export function mountManagementDock(
   root: HTMLElement,
   options: ManagementDockOptions = {},
 ): ManagementDock {
-  let activeTab: DockTabId = options.initialTab ?? "character";
+  let activeTab: DockTabId = options.initialTab ?? "armory";
   let heldSnapshot: ReadonlySnapshot | null = null;
   let heldLegality: EngineLegalityView = EMPTY_ENGINE_LEGALITY;
   let hasHeldState = false;
@@ -137,23 +127,24 @@ export function mountManagementDock(
     throw new Error("Management Dock requires content for Loadout and Talents surfaces");
   }
 
+  function selectClassId(classId: ClassId): void {
+    if (selectedClassId === classId) {
+      return;
+    }
+    selectedClassId = classId;
+    remountPickerAndSurface();
+  }
+
   const mountOptions: DockSurfaceMountOptions = {
     content: options.content,
     onCommand: (command) => options.onCommand?.(command),
     getSelectedClassId: () => selectedClassId ?? null,
-    selectClassId(classId) {
-      if (selectedClassId === classId) {
-        return;
-      }
-      selectedClassId = classId;
-      remountPickerAndSurface();
-    },
   };
 
   const characterPicker = mountCharacterPicker(body, {
     content: options.content,
     onSelect(classId) {
-      mountOptions.selectClassId(classId);
+      selectClassId(classId);
     },
     onCommand: (command) => options.onCommand?.(command),
   });
@@ -217,7 +208,7 @@ export function mountManagementDock(
   }
 
   function syncCharacterRailVisibility(): void {
-    const showRail = activeTab === "character";
+    const showRail = activeTab === "armory" || activeTab === "character";
     characterPickerEl.hidden = !showRail;
     characterPickerEl.setAttribute("aria-hidden", showRail ? "false" : "true");
     characterPickerEl.inert = !showRail;
