@@ -131,18 +131,3 @@ export async function attachBusCommandReplayerListener(page: Page): Promise<void
     { channelName: NIGHTGLASS_BUS_CHANNEL, bridge: BUS_COMMAND_BRIDGE },
   );
 }
-
-/**
- * Third-peer command loop for isolated Dock sessions: applies commands with the real
- * Engine in Node and republishes snapshot + legality (no live Tile pump peer).
- *
- * `bindBusCommandReplayerEngine` must run before the page navigates; call
- * `attachBusCommandReplayerListener` after the Dock shell is mounted.
- */
-export async function installBusCommandReplayer(
-  page: Page,
-  seededSnapshot: Snapshot,
-): Promise<void> {
-  await bindBusCommandReplayerEngine(page, seededSnapshot);
-  await attachBusCommandReplayerListener(page);
-}
