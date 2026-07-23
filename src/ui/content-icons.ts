@@ -3,6 +3,7 @@ import {
   canonicalEquipmentIconKey,
   collectContentEquipmentIconKeys,
   collectContentTalentIconKeys,
+  collectSelectableAbilityIconKeys,
   isRegisteredIconKey,
   registeredIconKeys,
 } from "./icons";
@@ -35,6 +36,14 @@ export function assertRegisteredContentIcons(
 
   for (const key of collectContentTalentIconKeys(content as Content)) {
     assertKey(key, "talent");
+  }
+
+  for (const { abilityId, iconKey } of collectSelectableAbilityIconKeys(content)) {
+    if (!iconKey) {
+      violations.push(`ability "${abilityId}" lacks iconKey`);
+      continue;
+    }
+    assertKey(iconKey, `ability "${abilityId}"`);
   }
 
   for (const key of registered) {

@@ -52,7 +52,7 @@ describe("assembled Class Kit content", () => {
     expect(validateContent(content)).toEqual([]);
   });
 
-  it("authored Stat Talents and Ability Talents use iconKey equal to id", () => {
+  it("authored selectable Abilities and Stat Talents use iconKey equal to id", () => {
     for (const classKit of content.classes) {
       for (const tier of talentTierDefs(classKit)) {
         for (const statTalent of tier.statRow) {
@@ -63,12 +63,12 @@ describe("assembled Class Kit content", () => {
           expect(ability.iconKey).toBe(ability.id);
         }
       }
-    }
-    const nonTalentAbilities = content.abilities.filter(
-      (ability) => ability.slot !== "talent",
-    );
-    for (const ability of nonTalentAbilities) {
-      expect(ability.iconKey).toBeUndefined();
+      const basic = abilityById(classKit.basicAbilityId);
+      expect(basic.iconKey).toBe(basic.id);
+      for (const coreId of classKit.coreAbilityIds) {
+        const core = abilityById(coreId);
+        expect(core.iconKey).toBe(core.id);
+      }
     }
   });
 
