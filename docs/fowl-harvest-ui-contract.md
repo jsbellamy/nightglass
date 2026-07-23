@@ -1,10 +1,11 @@
 # Fowl Harvest Management Dock UI contract
 
 Approved interaction contract for the Management Dock workspace: **Armory**, **Character**
-(Loadout, Talents, Stats), and **Stage** surfaces at 800×480, including six Stages and
+(**Build**, **Stats**), and **Stage** surfaces at 800×480, including six Stages and
 two Talent Tiers per Character. Frozen by [#383](https://github.com/jsbellamy/nightglass/issues/383);
 revised for the settled Character workspace by
-[#478](https://github.com/jsbellamy/nightglass/issues/478). Downstream content, Engine,
+[#478](https://github.com/jsbellamy/nightglass/issues/478) and the compact **Build** board by
+[#509](https://github.com/jsbellamy/nightglass/issues/509). Downstream content, Engine,
 and asset slices may land before UI work; until a UI slice explicitly cites this document,
 shipped tab order, rail visibility, inline Ability copy, sticky Talent detail, and Armory
 duplicate Character selector remain **interim** behavior.
@@ -12,7 +13,7 @@ duplicate Character selector remain **interim** behavior.
 | Field | Value |
 | --- | --- |
 | Workspace | 800×480 logical pixels (`docs/adr/0005-dock-workspace-geometry.md`) |
-| Surfaces in scope | **Armory** → **Character** (Loadout → Talents → Stats) → **Stage** |
+| Surfaces in scope | **Armory** → **Character** (**Build** → **Stats**) → **Stage** |
 | Vocabulary | `CONTEXT.md` — Ability, Ability Loadout, Stage, Talent, Equipment, Pending Edit, Management Dock |
 | Out of scope for this contract | Battle Tile combat layout beyond shared Pending Edit semantics |
 
@@ -55,15 +56,18 @@ behavior remain authoritative unless a later issue changes them.
 
 2. **Default surface.** A newly mounted or opened Dock activates **Armory** first (not Character).
 
-3. **Left Character rail.** The full vertical Character picker rail (Roster portraits,
-   Formation controls, and Party / Reserve assignment) is **visible** on **Armory** and
-   **Character**. It is **absent** on **Stage** (hidden and inert, matching today’s
-   `syncCharacterRailVisibility` intent extended to Armory).
+3. **Left Character rail.** The full **150px** vertical Character picker rail (Roster
+   portraits, Formation up/down controls, **Swap with Reserve**, and Party / Reserve
+   assignment) is **visible** on **Armory** and **Character**. It is **absent** on
+   **Stage** (hidden and inert, matching today’s `syncCharacterRailVisibility` intent
+   extended to Armory). This contract does **not** replace the rail with a compact
+   picker; Build and Stats use the same rail as today.
 
 4. **Rail selection scope.** The rail-selected Character is the scope for:
    - **Armory** — worn **Equipment** strip, compatibility filtering, comparison values,
      and collection browse.
-   - **Character** — Loadout, Talents, and Stats for that Character.
+   - **Character** — **Build** (Ability Loadout + Talent Tree together) and **Stats** for
+     that Character.
 
 5. **No duplicate Armory selector.** Armory must **not** render a second compact
    horizontal Character chip row; rail selection is the sole Character scope control on
@@ -75,7 +79,7 @@ behavior remain authoritative unless a later issue changes them.
 ┌─ Management Dock ──────────────────────────────────────────────────────┐
 │ [ Armory | Character | Stage ]                                    [✕] │
 ├──────────┬───────────────────────────────────────────────────────────┤
-│ Character│  (active surface: Armory grid, Character sub-tab, or     │
+│ Character│  (active surface: Armory grid, Character Build/Stats, or   │
 │ rail +   │   Stage list)                                             │
 │ Formation│                                                           │
 │ (hidden  │                                                           │
@@ -89,11 +93,19 @@ behavior remain authoritative unless a later issue changes them.
 
 ### Interaction rules
 
-1. **Placement.** Generated mechanical information for **Ability** tiles (Loadout pool
-   and slots, Basic Attack row) and **Talent** tiles moves out of persistent inline or
-   sticky panels into a **bounded, non-interactive popover** anchored to the hovered or
-   keyboard-focused tile. The popover must stay clipped within the Management Dock
+1. **Placement.** Generated mechanical information for **Ability** tiles (Loadout **Available
+   skills** strip and slots, Basic Attack row) and **Talent** tiles moves out of persistent
+   inline or sticky panels into a **bounded, non-interactive popover** anchored to the hovered
+   or keyboard-focused tile. The popover must stay clipped within the Management Dock
    workspace (800×480), not the OS window or Battle Tile.
+
+   **Side preference and session lock.** For each anchor, prefer opening on the anchor’s
+   **right**; if there is insufficient room inside the Dock, open on the **left**. Vertically
+   **center** on the anchor, then **clamp** the popover box so it stays fully inside the
+   entire Management Dock (all surfaces share the same clamp region). Once a side is chosen
+   for an active hover or keyboard-focus session on that anchor, **lock** that horizontal side
+   until the anchor loses hover and focus — repositioning must not alternate left/right or
+   flip above/below while the user pumps pointer or focus within the same tile.
 
 2. **Parity.** **Hover** and **keyboard focus** on the same tile reveal the **same**
    generated text (Ability: `formatAbilityInlineMechanics` / timings; Talent: equivalent
@@ -114,7 +126,7 @@ behavior remain authoritative unless a later issue changes them.
 ### Text wireframe (illustrative)
 
 ```text
-┌─ Character › Loadout ─────────────────────────────────────────────────┐
+┌─ Character › Build (Loadout tile anchor) ───────────────────────────────┐
 │  [Basic Attack tile]     ┌─ popover (non-interactive) ─────────────┐ │
 │  [Pool ability]  [Slot1] │  Frost Lance — raw damage, coefficients…   │ │
 │         ▲ anchor         └──────────────────────────────────────────┘ │
@@ -127,83 +139,138 @@ behavior remain authoritative unless a later issue changes them.
 
 ### Interaction rules
 
-1. **Sub-tab order.** Inside **Character**, sub-tabs are **Loadout → Talents → Stats**
-   (left-to-right).
+1. **Header controls.** Inside **Character**, the surface header exposes two controls (not
+   three sub-tabs): **Build** and **Stats** (left-to-right). **Build** is one activation from
+   the default Character view; **Stats** is one activation from **Build**.
 
-2. **Default sub-tab.** A newly mounted Character surface opens on **Loadout**.
+2. **Default view.** A newly mounted Character surface opens on **Build** (not Stats).
 
-3. **Picker scope.** Sub-tabs always reflect the Character selected on the left rail.
+3. **Picker scope.** **Build** and **Stats** always reflect the Character selected on the
+   left rail.
+
+4. **No outer Character scroll.** The Character surface (header + active view) must fit the
+   fixed **800×480** Management Dock with the **150px** left Character rail subtracted for
+   content. The Character surface itself must **not** introduce horizontal scrolling or an
+   outer vertical scroll container around the whole surface; internal regions may scroll only
+   where this contract explicitly allows (for example the Talent tree column and the
+   **Available skills** strip).
 
 ### Text wireframe (illustrative)
 
 ```text
 ┌─ Character ────────────────────────────────────────────────────────────┐
-│ [ Loadout | Talents | Stats ]                                        │
-│  (one sub-surface visible)                                           │
-└──────────────────────────────────────────────────────────────────────┘
+│ [ Build | Stats ]                                                      │
+│  Build: simultaneous Loadout + Talent columns (see Build board)        │
+│  Stats: grouped five-stat breakdown (one view)                         │
+└──────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Ability Loadout (Character → Loadout)
+## Build board (Character → Build)
+
+### Interaction rules
+
+1. **Simultaneous columns.** **Build** shows **Ability Loadout** and the **Talent Tree**
+   at the same time: a **compact Loadout column** on the left and a **wider Talents column**
+   on the right, sharing the content width to the right of the left Character rail inside
+   800×480.
+
+2. **Column ownership.** Loadout rules below apply to the left column; Talent Tree rules
+   below apply to the right column. Pending Edit markers for Loadout and Talents may appear
+   in their respective columns.
+
+3. **Stats access.** **Stats** is not a third column on Build; it replaces the Build body
+   when the user activates **Stats** in the Character header.
+
+### Text wireframe (illustrative)
+
+```text
+┌─ Character › Build ──────────────────────────────────────────────────────┐
+│ [ Build | Stats ]                                                        │
+├─ Loadout (compact) ─┬─ Talents (wider) ─────────────────────────────────┤
+│ Basic Attack        │ Knight · Level 12 · N Talent Points available      │
+│ Available skills ►  │ ┌ talent-tree-scroll ────────────────────────────┐ │
+│ [■][■][■][■] scroll │ │ TIER 1 … attached − | rank/max | + steppers   │ │
+│ Slots [1][2][3]     │ └──────────────────────────────────────────────┘ │
+└─────────────────────┴──────────────────────────────────────────────────┘
+```
+
+---
+
+## Ability Loadout (Character → Build › Loadout column)
 
 ### Interaction rules
 
 1. **Basic Attack.** Show the Class Kit **Basic Attack** as its own row or tile. It is
-   **not** one of the three **Ability Loadout** slots, **not** draggable, and **not**
-   slottable from the pool.
+   **not** one of the three **Ability Loadout** slots, **not** selectable for
+   select-then-slot, **not** draggable, and **not** slottable from **Available skills**.
 
-2. **Pool and slots.** Below Basic Attack, show a **pool** of currently **unlocked**
-   Abilities (Core Abilities plus Ability Talents) and **three ordered Ability Loadout
-   slots**.
+2. **Slots and Available skills.** Below Basic Attack, show **three ordered Ability Loadout
+   slots** and an **Available skills** strip (not a duplicate full unlocked pool).
 
-3. **Pool → slot.** Assigning a pool Ability to a slot **replaces** whatever Ability
-   occupied that slot (if any). Empty slot + assignment fills the slot.
+   **Available skills** lists every **unlocked** Ability that is **not** the Class Kit
+   **Basic Attack** and is **not** currently equipped in a Loadout slot. Core Abilities and
+   Ability Talents qualify when unlocked and unslotted. The strip shows **four** Ability icon
+   buttons at once; additional choices scroll **horizontally** inside the strip (the accepted
+   stress case is **ten** unlocked, non-Basic, unslotted Abilities). There is **no**
+   speculative reset or “default loadout” control.
 
-4. **Slot ↔ slot.** Dragging or otherwise moving an Ability from one slot to another
-   **swaps** positions when both slots hold Abilities; reassignment of an already slotted
-   Ability follows the same swap semantics.
+3. **Strip heading disclosure.** The strip heading names the pool (for example “Available
+   skills”). On **hover** or **keyboard focus** of a strip icon, write that Ability’s **name**
+   into the heading. Accessible names on strip icons **always** include the Ability name (not
+   only while focused).
 
-5. **Input parity.** **Drag-and-drop** is supplemented by **select-then-slot** activation
-   so mouse, touch, and keyboard can perform the same replacements and swaps: select a
-   pool or slotted Ability, then activate a target slot (or equivalent command) to apply
-   the same rules as drag.
+4. **Available → slot.** Assigning an Available Ability to a slot **replaces** whatever Ability
+   occupied that slot (if any). The **displaced** Ability returns to **Available skills**. Empty
+   slot + assignment fills the slot.
 
-6. **Pending Edit.** Ability Loadout edits during a Stage Attempt follow Engine **Pending
+5. **Slot ↔ slot.** Dragging or otherwise moving an Ability from one slot to another
+   **swaps** priority positions when both slots hold Abilities; reassignment of an already
+   slotted Ability follows the same swap semantics.
+
+6. **Input parity.** **Drag-and-drop** is supplemented by **select-then-slot** activation
+   so mouse, touch, and keyboard can perform the same replacements and swaps: select an
+   **Available** or slotted Ability, then activate a target slot (or equivalent command) to
+   apply the same rules as drag.
+
+7. **Pending Edit.** Ability Loadout edits during a Stage Attempt follow Engine **Pending
    Edit** rules. When pending, show `pendingMarker()` with `[data-pending-kind="loadout"]`
    and class `pending-marker pending-wave` (“Applies at next Wave”). Surface **effective**
    Loadout in the UI; combat uses committed state until the Wave or Boss boundary.
 
-7. **Mechanical copy.** Ability tiles show name and icon in the layout; full mechanical
+8. **Mechanical copy.** Ability tiles show name and icon in the layout; full mechanical
    text appears only in the **Mechanical detail popover** (not inline sticky paragraphs).
 
 ### Text wireframe (illustrative)
 
 ```text
-┌─ Character › Loadout ─────────────────────────────────────────────────┐
-│ Basic Attack   [════ always available ════]                           │
-│ Unlocked pool  [A] [B] [C] [D] …                                      │
-│ Slots          [ 1 ] [ 2 ] [ 3 ]   ← ordered Ability Loadout          │
-│ ┌ Applies at next Wave ──────────────────────────────────────────┐   │  ← pending only
-└──────────────────────────────────────────────────────────────────────┘
+┌─ Character › Build › Loadout column ────────────────────────────────────┐
+│ Basic Attack   [════ always available ════]                               │
+│ Available skills — Frost Lance (on hover/focus of icon)                   │
+│                [A][B][C][D] ◄ horizontal scroll when >4 choices           │
+│ Slots          [ 1 ] [ 2 ] [ 3 ]   ← ordered Ability Loadout              │
+│ ┌ Applies at next Wave ──────────────────────────────────────────────┐   │  ← pending only
+└──────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### Keyboard and focus (Loadout)
 
-1. Tab order: Basic Attack tile (informational focus) → pool Abilities left-to-right →
-   slots 1→3 → any warning or pending marker region.
-2. **Select-then-slot:** **Enter** / **Space** on a focused pool or slotted Ability
-   selects it; a second activation on a slot applies pool→slot or swap per rules above.
+1. Tab order: Basic Attack tile (informational focus) → **Available skills** strip icons
+   left-to-right (scroll region) → slots 1→3 → any warning or pending marker region.
+2. **Select-then-slot:** **Enter** / **Space** on a focused Available or slotted Ability
+   selects it; a second activation on a slot applies Available→slot, displacement back to the
+   strip, or slot swap per rules above.
 3. Extend `e2e/keyboard.spec.ts` or a registered `evidence:` slug for select-then-slot parity.
 
 ---
 
-## Talent Tree (Character → Talents)
+## Talent Tree (Character → Build › Talents column)
 
 ### Interaction rules
 
-1. **One tree, two Tiers.** The Talents sub-surface renders every authored **Talent Tier**
-   for the rail-selected Character in a **single vertically scrollable** column
+1. **One tree, two Tiers.** The Talents column renders every authored **Talent Tier** for
+   the rail-selected Character in a **single vertically scrollable** column
    (`talent-tree-scroll`). Tier 1 appears above Tier 2 in content order. There is **no**
    sticky detail column; mechanical text uses the **Mechanical detail popover**.
 
@@ -219,43 +286,46 @@ behavior remain authoritative unless a later issue changes them.
 4. **Talent tiles.** Cells remain pressable (`.talent-cell`, `[data-talent-id]`).
    **Chosen** Ability Talents keep `.talent-cell--chosen` / check mark behavior.
 
-5. **Direct rank actions on tiles.**
-   - **Stat Talents:** each tile exposes **`+`** and **`−`** controls that change **one
-     rank** per activation (subject to Engine legality and available Talent Points).
-   - **Ability Talents:** choosing the **other** mutually exclusive Ability in the same
-     Ability Row **atomically replaces** the current choice. If the replaced Ability was
-     slotted in the **Ability Loadout**, the newly chosen Ability **keeps the same slot
-     index** (slot contents update without reordering other slots).
+5. **Attached rank steppers.** Stat Talent rows use **one** compact control group attached
+   beside the icon, name, and effect text: **`−` | current rank / max rank | `+`** (not
+   separate large action blocks below the row). **`−`** and **`+`** remain separate
+   accessible actions (tab stops and activations). Each control changes **one rank** per
+   activation (subject to Engine legality and available Talent Points).
 
-6. **Cascade-safe respec feedback.** Engine rules (#401): Tier 1 cannot be reduced while
+6. **Ability Talent rows.** Choosing the **other** mutually exclusive Ability in the same
+   Ability Row **atomically replaces** the current choice. If the replaced Ability was
+   slotted in the **Ability Loadout**, the newly chosen Ability **keeps the same slot
+   index** (slot contents update without reordering other slots).
+
+7. **Cascade-safe respec feedback.** Engine rules (#401): Tier 1 cannot be reduced while
    Tier 2 holds any point; a Tier Stat Row cannot drop below five while that Tier’s Ability
    point remains. When **−** is blocked, show explicit feedback (same severity as Loadout
    warnings), e.g. “Clear all Talent Tier 2 points before reducing Talent Tier 1.” Disabled
    buttons alone are not sufficient. Use `[data-talent-cascade-blocked="true"]` on the
    message element for tests.
 
-7. **Pending Edit versus combat.** The tree reflects **effective** Talent state (pending
+8. **Pending Edit versus combat.** The tree reflects **effective** Talent state (pending
    edits applied in the Snapshot view). When a pending Talent edit exists, show
    `pendingMarker()` with `[data-pending-kind="talent"]` and class
    `pending-marker pending-wave` (“Applies at next Wave”).
 
-8. **Points header.** Keep level and available Talent Point count
-   (`[data-talent-points="true"]`) above the tree.
+9. **Points header.** Keep level and available Talent Point count
+   (`[data-talent-points="true"]`) above the tree in the Talents column (visible on **Build**).
 
 ### Text wireframe (illustrative)
 
 ```text
-┌─ Character › Talents ──────────────────────────────────────────────────┐
-│ Knight · Level 12          2 Talent Points available                 │
-│ ┌ Applies at next Wave ──────────────────────────────────────────┐ │
-│ ┌─ talent-tree-scroll ───────────────────────────────────────────┐ │
-│ │ TALENT TIER 1                                                  │ │
-│ │ Stat Row    [3/5  − +] [2/5  − +]                              │ │
-│ │ Ability Row [✓ pick A] [  pick B ]                              │ │
-│ │           ║  gate connector                                    │ │
-│ │ TALENT TIER 2 — LOCKED …                                       │ │
-│ └────────────────────────────────────────────────────────────────┘ │
-└──────────────────────────────────────────────────────────────────────┘
+┌─ Character › Build › Talents column ───────────────────────────────────┐
+│ Knight · Level 12          2 Talent Points available                     │
+│ ┌ Applies at next Wave ──────────────────────────────────────────────┐ │
+│ ┌─ talent-tree-scroll ───────────────────────────────────────────────┐ │
+│ │ TALENT TIER 1                                                       │ │
+│ │ Stat Row  [icon Name effect  − | 3/5 | +]  [icon …  − | 2/5 | +]   │ │
+│ │ Ability Row [✓ pick A] [  pick B ]                                 │ │
+│ │           ║  gate connector                                         │ │
+│ │ TALENT TIER 2 — LOCKED …                                            │ │
+│ └─────────────────────────────────────────────────────────────────────┘ │
+└──────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### Keyboard and focus (Talent Tree)
@@ -273,14 +343,14 @@ behavior remain authoritative unless a later issue changes them.
 ### Interaction rules
 
 1. **Header progression.** Show **Level**, **Character XP** progress toward the next Level,
-   and available **Talent Points** when relevant to the Stats view.
+   and available **Talent Points** at the top of the Stats view.
 
-2. **Combat statistics.** For the rail-selected Character, show totals for:
-   - **Max Health**
-   - **Physical Power** (formula per `CONTEXT.md`)
-   - **Elemental Power** (formula per `CONTEXT.md`)
-   - **Armor**
-   - **Elemental Resistance**
+2. **Grouped combat statistics.** For the rail-selected Character, present the five canonical
+   totals in a **compact** layout with non-interactive group headings:
+   - **Vitals** — **Max Health**
+   - **Offense** — **Physical Power** (formula per `CONTEXT.md`), **Elemental Power**
+     (formula per `CONTEXT.md`)
+   - **Defense** — **Armor**, **Elemental Resistance**
 
 3. **Source breakdown.** Each total breaks out contributions from **Base**, **Equipment**, and
    **Talent**, distinguishing **flat** modifiers from **percentage** modifiers (labels or
@@ -297,9 +367,15 @@ behavior remain authoritative unless a later issue changes them.
 
 ```text
 ┌─ Character › Stats ────────────────────────────────────────────────────┐
-│ Level 12 · XP ████████░░ → 13                                        │
-│ Physical Power  142   Base 40 · Equip +22 flat · Talent +10%         │
-│ Max Health      980   Base … · Equip … · Talent …                    │
+│ [ Build | Stats ]                                                      │
+│ Level 12 · XP ████████░░ → 13 · 2 Talent Points available              │
+│ VITALS                                                                 │
+│ Max Health      980   Base … · Equip … · Talent …                      │
+│ OFFENSE                                                                │
+│ Physical Power  142   Base 40 · Equip +22 flat · Talent +10%           │
+│ Elemental Power …                                                      │
+│ DEFENSE                                                                │
+│ Armor … · Elemental Resistance …                                       │
 │ ┌ Applies at next Wave ──────────────────────────────────────────┐   │
 └──────────────────────────────────────────────────────────────────────┘
 ```
@@ -437,7 +513,7 @@ no compact Armory-only Character chip row.
 | State | Loadout | Talent Tree | Stats | Stage list | Armory |
 | --- | --- | --- | --- | --- | --- |
 | **Locked** | — | Tier 2 until 6× Tier 1 points; per-tier Ability Row until 5 stat points | — | `stageId > unlockedStage` | Locked drop badge; lock toggle on tile |
-| **Selected** | Pool/slot selection for select-then-slot | `.talent-cell--chosen` on Ability Talents | — | N/A (rows activate confirm) | Worn slot browse / filter segment `aria-pressed` |
+| **Selected** | Available/slot selection for select-then-slot | `.talent-cell--chosen` on Ability Talents | — | N/A (rows activate confirm) | Worn slot browse / filter segment `aria-pressed` |
 | **Pending edit** | `pending-wave` + `[data-pending-kind="loadout"]` | `pending-wave` + `[data-pending-kind="talent"]` | Wave marker when stats differ from combat | — (Attempt abandon via confirm) | `[data-pending-kind="equipment"]` when surfaced |
 
 ---
@@ -452,11 +528,11 @@ This contract does not add harness tests; it routes them.
 | Dock tab order Armory → Character → Stage; default Armory | `src/ui/dock.test.ts` + `evidence: dock-surfaces` | Tab labels and `initialTab` / first-open surface |
 | Character rail on Armory + Character; hidden on Stage | `src/ui/dock.test.ts` + `evidence: dock-surfaces` | `[data-dock-nav]` / picker `hidden` + `inert` |
 | No Armory compact Character selector | `src/ui/armory-surface.test.ts` | Absence of `armory-character-selector` chips |
-| Character sub-tabs Loadout → Talents → Stats; default Loadout | `src/ui/character-surface.test.ts` | Sub-tab order and initial panel |
-| Ability/Talent mechanical popover hover ≡ focus | New `evidence:` slug or `e2e/keyboard.spec.ts` | Bounded non-interactive popover; not sole keyboard path |
-| Loadout pool/slot replace, swap, Basic Attack excluded | `src/ui/loadout-surface.test.ts` + drag/select evidence | Select-then-slot parity slug when registered |
-| Talent tile +/−; Ability Talent same-slot preservation | `src/ui/talents-surface.test.ts` | Cascade message `[data-talent-cascade-blocked="true"]` |
-| Stats totals + Base/Equip/Talent flat vs % | `src/ui/` Stats surface tests + rendered evidence | Pending wave marker when effective ≠ combat |
+| Character header Build/Stats; default Build; simultaneous Build board | `src/ui/character-surface.test.ts` + `evidence: dock-surfaces` (successor scenes per #511) | Build column fit; no outer Character scroll |
+| Ability/Talent mechanical popover hover ≡ focus; side lock + Dock clamp | `evidence: character-information-popovers` (extend per #512) | Right-prefer / left-fallback; session side lock |
+| Available skills strip (4 visible, 10 stress), replace/displace, swap, Basic Attack excluded | `src/ui/loadout-surface.test.ts` + `evidence: character-loadout-assignment` | No reset control; strip heading name disclosure |
+| Talent attached steppers `−`/`+`; Ability Talent same-slot preservation | `src/ui/talents-surface.test.ts` + `evidence: talent-direct-actions` | Cascade message `[data-talent-cascade-blocked="true"]` |
+| Stats grouped Vitals/Offense/Defense + Base/Equip/Talent flat vs % | `src/ui/stats-surface.test.ts` + `evidence: character-stats-breakdown` | Pending wave marker when effective ≠ combat |
 | Two-Tier tree scroll inside 800×480 | `evidence: character-talents-tree-scroll` | Supersedes single-tier `evidence: character-talents-no-scroll` for two-Tier Content |
 | Tier 2 gate + connector + lock copy | `src/ui/talents-surface.test.ts` + `evidence: character-talents-tree-scroll` | Happy-dom for DOM hooks; rendered scene for connector visibility |
 | Talent icons (both Tiers) | `evidence: talent-icon-content-tier` | `src/ui/talents-surface.test.ts` + review artifact path in acceptance doc |
@@ -481,7 +557,8 @@ totals may persist. Evidence rows follow disposition **2** in
 
 | Issue | Relationship |
 | --- | --- |
-| #478 | This contract revision (Character workspace interaction) |
+| #478 | Prior Character workspace interaction revision |
+| #509 | Compact **Build** board (Build/Stats header, Available skills strip, attached Talent steppers) |
 | #468 | Superseded Ability inline-description placement (text generation retained) |
 | #381, #400, #416, #417 | Stage count and Content |
 | #401, #406–#409, #411 | Talent Tier 2 data and activation |
