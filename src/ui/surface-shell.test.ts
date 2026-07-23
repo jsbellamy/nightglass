@@ -400,3 +400,202 @@ describe("Management surface shell mount", () => {
     surface.destroy();
   });
 });
+
+describe("Management surface shell reconcile mode", () => {
+  function pooledIcon(poolKey: string, ariaLabel?: string): HTMLImageElement {
+    const img = document.createElement("img");
+    img.dataset["iconPoolKey"] = poolKey;
+    if (ariaLabel !== undefined) {
+      img.setAttribute("aria-label", ariaLabel);
+    }
+    return img;
+  }
+
+  function changedSnapshot(base: ReturnType<ReturnType<typeof createEngine>["snapshot"]>) {
+    const next = structuredClone(base);
+    next.progression.unlockedStage = 2;
+    return next;
+  }
+
+  it("rebuilds a pooled icon node on each render when reconcile is unset", () => {
+    const root = document.createElement("div");
+    document.body.append(root);
+    const engine = createEngine(content, undefined, LOOT_SEED);
+    const first = engine.snapshot();
+    const surface = mountSurfaceShell(root, "armory-surface", {
+      title: "Armory",
+      showTitle: false,
+      body() {
+        return [pooledIcon("thornquill-blade:content", "Blade")];
+      },
+    });
+
+    surface.render(first);
+    const before = root.querySelector<HTMLElement>("[data-icon-pool-key]");
+    expect(before).not.toBeNull();
+
+    surface.render(changedSnapshot(first));
+    const after = root.querySelector<HTMLElement>("[data-icon-pool-key]");
+    expect(after).not.toBeNull();
+    expect(after).not.toBe(before);
+
+    surface.destroy();
+    root.remove();
+  });
+
+  it("reuses the same pooled icon node across renders and updates its aria-label", () => {
+    const root = document.createElement("div");
+    document.body.append(root);
+    const engine = createEngine(content, undefined, LOOT_SEED);
+    const first = engine.snapshot();
+    let label = "first";
+    const surface = mountSurfaceShell(root, "armory-surface", {
+      title: "Armory",
+      showTitle: false,
+      reconcile: true,
+      body() {
+        return [pooledIcon("thornquill-blade:content", label)];
+      },
+    });
+
+    surface.render(first);
+    const before = root.querySelector<HTMLElement>("[data-icon-pool-key]");
+    expect(before?.getAttribute("aria-label")).toBe("first");
+
+    label = "second";
+    surface.render(changedSnapshot(first));
+    const after = root.querySelector<HTMLElement>("[data-icon-pool-key]");
+    expect(after).toBe(before);
+    expect(after?.getAttribute("aria-label")).toBe("second");
+
+    surface.destroy();
+    root.remove();
+  });
+
+  it("pauses rebuild while a select inside the root is focused", () => {
+    const root = document.createElement("div");
+    document.body.append(root);
+    const engine = createEngine(content, undefined, LOOT_SEED);
+    const first = engine.snapshot();
+    let stageText = "stage-1";
+    const surface = mountSurfaceShell(root, "loadout-surface", {
+      title: "Loadout",
+      showTitle: false,
+      reconcile: true,
+      body() {
+        return [
+          el("p", { class: "probe-stage", text: stageText }),
+          el("select", { class: "ability-slot", props: { name: "slot" } }, [
+            el("option", { props: { value: "a" }, text: "A" }),
+          ]),
+        ];
+      },
+    });
+
+    surface.render(first);
+    const select = root.querySelector<HTMLSelectElement>("select.ability-slot");
+    const probe = root.querySelector<HTMLElement>(".probe-stage");
+    expect(select).not.toBeNull();
+    expect(probe).not.toBeNull();
+    select!.focus();
+    expect(document.activeElement).toBe(select);
+
+    stageText = "stage-2";
+    surface.render(changedSnapshot(first));
+
+    expect(root.querySelector(".probe-stage")).toBe(probe);
+    expect(probe!.textContent).toBe("stage-1");
+    expect(document.activeElement).toBe(select);
+
+    surface.destroy();
+    root.remove();
+  });
+
+  it("flushes the paused Snapshot on a microtask after the select blurs", async () => {
+    const root = document.createElement("div");
+    document.body.append(root);
+    const outside = document.createElement("button");
+    outside.type = "button";
+    outside.textContent = "outside";
+    document.body.append(outside);
+    const engine = createEngine(content, undefined, LOOT_SEED);
+    const first = engine.snapshot();
+    let stageText = "stage-1";
+    const surface = mountSurfaceShell(root, "loadout-surface", {
+      title: "Loadout",
+      showTitle: false,
+      reconcile: true,
+      body() {
+        return [
+          el("p", { class: "probe-stage", text: stageText }),
+          el("select", { class: "ability-slot", props: { name: "slot" } }, [
+            el("option", { props: { value: "a" }, text: "A" }),
+          ]),
+        ];
+      },
+    });
+
+    surface.render(first);
+    const select = root.querySelector<HTMLSelectElement>("select.ability-slot")!;
+    select.focus();
+    stageText = "stage-2";
+    surface.render(changedSnapshot(first));
+    expect(root.querySelector(".probe-stage")?.textContent).toBe("stage-1");
+
+    outside.focus();
+    select.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
+    await Promise.resolve();
+
+    expect(root.querySelector(".probe-stage")?.textContent).toBe("stage-2");
+    expect(document.activeElement).toBe(outside);
+
+    surface.destroy();
+    root.remove();
+    outside.remove();
+  });
+
+  it("pauses rebuild while a preserve-live node is present and flushes on dragend", async () => {
+    const root = document.createElement("div");
+    document.body.append(root);
+    const engine = createEngine(content, undefined, LOOT_SEED);
+    const first = engine.snapshot();
+    let stageText = "stage-1";
+    const surface = mountSurfaceShell(root, "armory-surface", {
+      title: "Armory",
+      showTitle: false,
+      reconcile: true,
+      body() {
+        return [
+          el("p", { class: "probe-stage", text: stageText }),
+          el("div", {
+            class: "armory-tile",
+            data: { surfacePreserveLive: "true" },
+            text: "dragging",
+          }),
+        ];
+      },
+    });
+
+    surface.render(first);
+    const probe = root.querySelector<HTMLElement>(".probe-stage");
+    expect(probe?.textContent).toBe("stage-1");
+
+    stageText = "stage-2";
+    surface.render(changedSnapshot(first));
+    expect(root.querySelector(".probe-stage")).toBe(probe);
+    expect(probe!.textContent).toBe("stage-1");
+
+    // Model a bubble-phase dragend teardown (future Armory producer) that clears
+    // the live marker after capture has already queued the shell flush.
+    root.addEventListener("dragend", () => {
+      root.querySelector("[data-surface-preserve-live]")?.removeAttribute("data-surface-preserve-live");
+    });
+    root.dispatchEvent(new Event("dragend", { bubbles: true }));
+    await Promise.resolve();
+
+    expect(root.querySelector(".probe-stage")?.textContent).toBe("stage-2");
+
+    surface.destroy();
+    root.remove();
+  });
+});

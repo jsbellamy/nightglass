@@ -52,4 +52,13 @@ describe("equipment icon registry", () => {
     expect(chrome.width).toBe(CHROME_ICON_SIZE);
     expect(chrome.height).toBe(CHROME_ICON_SIZE);
   });
+
+  it("tags each Equipment icon with a tier-scoped pool identity", () => {
+    const content = createEquipmentIconElement("thornquill-blade", "content");
+    expect(content.dataset["iconPoolKey"]).toBe("thornquill-blade:content");
+    expect(content.dataset["iconKey"]).toBe("thornquill-blade");
+
+    const chrome = createEquipmentIconElement("thornquill-blade", "chrome");
+    expect(chrome.dataset["iconPoolKey"]).toBe("thornquill-blade:chrome");
+  });
 });

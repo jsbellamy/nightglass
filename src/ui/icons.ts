@@ -241,6 +241,7 @@ export function createEquipmentIconElement(
   img.height = size;
   img.decoding = "async";
   img.dataset["iconKey"] = iconKey;
+  img.dataset["iconPoolKey"] = `${iconKey}:${tier}`;
   if (options?.ariaLabel) {
     img.setAttribute("aria-label", options.ariaLabel);
   }

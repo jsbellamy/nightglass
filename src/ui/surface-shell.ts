@@ -77,6 +77,15 @@ export interface SurfaceShellOptions {
    * a Snapshot is held.
    */
   selection?: boolean;
+  /**
+   * When true, rebuilds are non-destructive:
+   *  - decoded icon <img> nodes are reused across rebuilds (no re-decode flash), and
+   *  - the rebuild is paused while the surface hosts a live interaction (a focused
+   *    <select> or a node marked data-surface-preserve-live, e.g. an armory drag
+   *    source), flushing the latest Snapshot when the interaction ends.
+   * Default false keeps the destructive rebuild used by Stage and unmigrated surfaces.
+   */
+  reconcile?: boolean;
 }
 
 export interface MountedSurface {
@@ -169,6 +178,36 @@ export function mountSurfaceShell(
   let lastSnapshot: ReadonlySnapshot | null = null;
   let lastLegality: EngineLegalityView = EMPTY_ENGINE_LEGALITY;
   let rendering = false;
+  let pending: {
+    snapshot: ReadonlySnapshot | null;
+    legality: EngineLegalityView;
+  } | null = null;
+
+  function hasLiveInteraction(): boolean {
+    const active = document.activeElement;
+    if (active instanceof HTMLSelectElement && root.contains(active)) {
+      return true;
+    }
+    return root.querySelector("[data-surface-preserve-live]") !== null;
+  }
+
+  function flushPending(): void {
+    if (!pending) {
+      return;
+    }
+    const next = pending;
+    pending = null;
+    render(next.snapshot, next.legality);
+  }
+
+  if (options.reconcile) {
+    // focusout: the new activeElement settles after this event, so re-check on a microtask.
+    root.addEventListener("focusout", () => queueMicrotask(flushPending));
+    // Capture phase so the flush is queued before per-node dragend handlers tear down
+    // state; microtask so hasLiveInteraction observes the post-teardown DOM.
+    root.addEventListener("dragend", () => queueMicrotask(flushPending), true);
+    root.addEventListener("drop", () => queueMicrotask(flushPending), true);
+  }
 
   function getSelection(): string | null {
     if (!options.selection) {
@@ -194,12 +233,29 @@ export function mountSurfaceShell(
     snapshot: ReadonlySnapshot | null,
     legality: EngineLegalityView = EMPTY_ENGINE_LEGALITY,
   ): void {
+    if (options.reconcile && hasLiveInteraction()) {
+      pending = { snapshot, legality };
+      lastSnapshot = snapshot;
+      lastLegality = legality;
+      return;
+    }
+
     lastSnapshot = snapshot;
     lastLegality = legality;
 
     const scrolls = captureScrollPositions(root);
     const focusKey = captureFocusIdentity(root);
     const retained = [...root.querySelectorAll<HTMLElement>("[data-surface-retain]")];
+
+    const iconPool = new Map<string, HTMLElement[]>();
+    if (options.reconcile) {
+      for (const img of root.querySelectorAll<HTMLElement>("[data-icon-pool-key]")) {
+        const key = img.dataset["iconPoolKey"]!;
+        const bucket = iconPool.get(key) ?? [];
+        bucket.push(img);
+        iconPool.set(key, bucket);
+      }
+    }
 
     rendering = true;
     try {
@@ -228,6 +284,22 @@ export function mountSurfaceShell(
           root.append(node);
         }
       }
+
+      if (options.reconcile) {
+        for (const fresh of root.querySelectorAll<HTMLElement>("[data-icon-pool-key]")) {
+          const key = fresh.dataset["iconPoolKey"]!;
+          const reused = iconPool.get(key)?.shift();
+          if (reused && reused !== fresh) {
+            const aria = fresh.getAttribute("aria-label");
+            if (aria !== null) {
+              reused.setAttribute("aria-label", aria);
+            } else {
+              reused.removeAttribute("aria-label");
+            }
+            fresh.replaceWith(reused);
+          }
+        }
+      }
     } finally {
       rendering = false;
     }
@@ -241,6 +313,7 @@ export function mountSurfaceShell(
     root.classList.remove(className);
     lastSnapshot = null;
     selectionKey = null;
+    pending = null;
   }
 
   return { render, destroy, getSelection, setSelection };
