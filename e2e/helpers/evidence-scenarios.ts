@@ -76,6 +76,7 @@ export type EvidenceSpecId =
 export type EvidenceFixtureId =
   | "live-tile"
   | "live-tile-and-dock"
+  | "character-loadout-evidence"
   | "isolated-dock"
   | "live-tile-seeded-snapshot"
   | "reduced-motion-live-tile";
@@ -231,10 +232,13 @@ export const EVIDENCE_SCENARIOS: readonly EvidenceScenario[] = [
       id: "rendered-evidence:character-loadout",
       path: "e2e/scenarios/character-loadout.spec.ts",
     },
-    fixture: "live-tile-and-dock",
-    reviewScenes: [],
+    fixture: "character-loadout-evidence",
+    reviewScenes: [
+      { id: "character-sub-build" },
+      { id: "character-sub-stats" },
+    ],
     summary:
-      "four visible strip icons, 10-choice horizontal pool, compact slots, drag/select parity, displacement and swap without reset",
+      "10-choice evidence fixture with distinct Ability icons; four visible tray and horizontal reach to choices 5–10; Variant C Build/Stats at 800×480; focus order, displacement, swap, and drag/select parity without reset",
   },
   {
     id: "character-information-popovers",

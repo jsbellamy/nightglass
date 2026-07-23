@@ -104,6 +104,12 @@ test.describe("evidence scenario registry", () => {
       (s) => s.spec.path === "e2e/scenarios/character-loadout.spec.ts",
     );
     expect(characterLoadoutScenarios).toHaveLength(2);
+    const characterLoadout = characterLoadoutScenarios.find((s) => s.id === "character-loadout");
+    expect(characterLoadout?.fixture).toBe("character-loadout-evidence");
+    expect(characterLoadout?.reviewScenes.map((scene) => scene.id)).toEqual([
+      "character-sub-build",
+      "character-sub-stats",
+    ]);
     const characterProgressionScenarios = EVIDENCE_SCENARIOS.filter(
       (s) => s.spec.path === "e2e/scenarios/character-progression.spec.ts",
     );

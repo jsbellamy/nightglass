@@ -1,16 +1,30 @@
 import { expect, test } from "@playwright/test";
 import { NIGHTGLASS_BUS_CHANNEL } from "../../src/ui/bus";
 import { PUMP_INTERVAL_MS } from "../../src/ui/pump";
-import { focusCharacterSection, focusCharacterView, focusDockTab } from "../helpers/dock-context";
+import {
+  CHARACTER_LOADOUT_EVIDENCE_ASSIGNMENT_ID,
+  characterLoadoutEvidenceBootSnapshot,
+} from "../../src/data/fixtures/character-loadout-evidence";
+import {
+  focusCharacterSection,
+  focusCharacterView,
+  focusDockTab,
+} from "../helpers/dock-context";
 import {
   closeEvidenceSession,
   openEvidenceSession,
   reconcileLoadoutSurfaceAfterSyntheticAssignment,
 } from "../helpers/evidence-session";
 import { declareEvidenceScenario } from "../helpers/evidence-scenarios";
+import { captureReviewScene } from "../helpers/review-scenes";
 import { keyboardBootSnapshot } from "../helpers/snapshots";
 
 const CHARACTER_LOADOUT_SESSION = {
+  preset: "character-loadout-evidence" as const,
+  bootSaveJson: JSON.stringify(characterLoadoutEvidenceBootSnapshot()),
+};
+
+const CHARACTER_POPOVERS_SESSION = {
   preset: "live-tile-and-dock" as const,
   bootSaveJson: JSON.stringify(keyboardBootSnapshot()),
 };
@@ -22,7 +36,7 @@ test.describe("Character Loadout evidence scenarios", () => {
     });
     const dock = session.dock;
     if (!dock) {
-      throw new Error("live-tile-and-dock session must include a Dock page");
+      throw new Error("character-loadout-evidence session must include a Dock page");
     }
     await focusDockTab(dock, "character");
 
@@ -91,10 +105,8 @@ test.describe("Character Loadout evidence scenarios", () => {
     expect(loadoutFit, "Character panel metrics").not.toBeNull();
     expect(loadoutFit!.loadoutVisible).toBe(true);
     expect(loadoutFit!.slots).toBe(3);
-    expect(loadoutFit!.poolCount).toBeGreaterThan(0);
-    expect(loadoutFit!.fullyVisibleStripIcons).toBeGreaterThan(0);
-    expect(loadoutFit!.fullyVisibleStripIcons).toBeLessThanOrEqual(4);
-    expect(loadoutFit!.fullyVisibleStripIcons).toBeLessThanOrEqual(loadoutFit!.poolCount);
+    expect(loadoutFit!.poolCount).toBe(10);
+    expect(loadoutFit!.fullyVisibleStripIcons).toBe(4);
     expect(loadoutFit!.hasReset, "no reset control on Loadout").toBe(false);
     expect(loadoutFit!.panelScrollable, "loadout fits without panel scroll").toBe(false);
     expect(loadoutFit!.buildScrollable, "Build board fits without outer scroll").toBe(false);
@@ -103,6 +115,9 @@ test.describe("Character Loadout evidence scenarios", () => {
     expect(loadoutFit!.inlineAbilityCopy, "no inline Ability copy on tiles").toBe(0);
     expect(loadoutFit!.loadoutHeadingVisible, "Loadout heading visible on Build").toBe(true);
     expect(loadoutFit!.talentsHeadingVisible, "Talents heading visible on Build").toBe(true);
+    expect(loadoutFit!.stripScrollable, "horizontal strip scrolls for ten choices").toBe(true);
+
+    await captureReviewScene(dock, "character-loadout", "character-sub-build");
 
     const stripViewportCapacity = await dock.evaluate(() => {
       const strip = document.querySelector<HTMLElement>(
@@ -120,8 +135,67 @@ test.describe("Character Loadout evidence scenarios", () => {
     });
     expect(stripViewportCapacity, "strip viewport fits four icons").toBeGreaterThanOrEqual(4);
 
+    const stripIconEvidence = await dock.evaluate(() => {
+      const strip = document.querySelector<HTMLElement>(
+        '[data-class-id="knight"] .loadout-pool-strip .loadout-pool-tiles',
+      );
+      const tiles = strip
+        ? [...strip.querySelectorAll<HTMLElement>("[data-loadout-assign-tile]")]
+        : [];
+      return tiles.map((tile) => {
+        const icon = tile.querySelector<HTMLImageElement>("img[data-icon-key]");
+        return {
+          abilityId: tile.dataset["abilityId"] ?? "",
+          ariaLabel: tile.getAttribute("aria-label") ?? "",
+          iconKey: icon?.dataset["iconKey"] ?? null,
+          iconLoaded: Boolean(icon && icon.complete && icon.naturalWidth > 0),
+        };
+      });
+    });
+    expect(stripIconEvidence).toHaveLength(10);
+    const iconKeys = stripIconEvidence.map((entry) => entry.iconKey);
+    expect(new Set(iconKeys).size, "ten distinct registered iconKeys").toBe(10);
+    for (const entry of stripIconEvidence) {
+      expect(entry.ariaLabel.length, `${entry.abilityId} accessible name`).toBeGreaterThan(0);
+      expect(entry.iconLoaded, `${entry.abilityId} icon image`).toBe(true);
+    }
+
+    const focusOrder = await dock.evaluate(() => {
+      const section = document.querySelector<HTMLElement>('[data-class-id="knight"]');
+      const strip = section?.querySelector<HTMLElement>(".loadout-pool-tiles");
+      if (strip) {
+        strip.scrollLeft = 0;
+      }
+      if (!section) {
+        return null;
+      }
+      const nodes = [
+        section.querySelector<HTMLElement>("[data-loadout-basic]"),
+        ...[...section.querySelectorAll<HTMLElement>("[data-loadout-slot-drop]")].sort(
+          (left, right) =>
+            Number.parseInt(left.dataset["slot"] ?? "0", 10) -
+            Number.parseInt(right.dataset["slot"] ?? "0", 10),
+        ),
+        ...[...section.querySelectorAll<HTMLElement>(
+          ".loadout-pool-tiles [data-loadout-assign-tile]",
+        )],
+      ].filter((node): node is HTMLElement => node !== null);
+      return nodes.map((node) => {
+        if (node.matches("[data-loadout-basic]")) {
+          return "basic";
+        }
+        if (node.matches("[data-loadout-slot-drop]")) {
+          return `slot-${node.dataset["slot"]}`;
+        }
+        return `pool-${node.dataset["abilityId"]}`;
+      });
+    });
+    expect(focusOrder?.[0]).toBe("basic");
+    expect(focusOrder?.slice(1, 4)).toEqual(["slot-0", "slot-1", "slot-2"]);
+    expect(focusOrder?.slice(4)).toHaveLength(10);
+
     const stripTile = dock.locator(
-      '[data-class-id="knight"] .loadout-pool-strip .loadout-pool-tiles [data-ability-id="pommel-break"]',
+      `[data-class-id="knight"] .loadout-pool-strip .loadout-pool-tiles [data-ability-id="${CHARACTER_LOADOUT_EVIDENCE_ASSIGNMENT_ID}"]`,
     );
     await stripTile.hover();
     await expect(dock.locator('[data-loadout-available-heading="true"]')).not.toHaveText(
@@ -143,6 +217,7 @@ test.describe("Character Loadout evidence scenarios", () => {
       if (!strip || tiles.length === 0) {
         return null;
       }
+      const stripHeightBefore = strip.getBoundingClientRect().height;
       const last = tiles.at(-1)!;
       strip.scrollLeft = strip.scrollWidth;
       const box = last.getBoundingClientRect();
@@ -153,13 +228,13 @@ test.describe("Character Loadout evidence scenarios", () => {
           box.left >= stripBox.left - 1 &&
           box.right <= stripBox.right + 1 &&
           box.width > 0,
+        heightUnchanged: Math.abs(strip.getBoundingClientRect().height - stripHeightBefore) < 1,
       };
     });
     expect(stripAccess).not.toBeNull();
-    expect(stripAccess!.tileCount).toBe(loadoutFit!.poolCount);
-    if (stripAccess!.tileCount > 4) {
-      expect(stripAccess!.lastVisible, "horizontal strip reaches last choice").toBe(true);
-    }
+    expect(stripAccess!.tileCount).toBe(10);
+    expect(stripAccess!.lastVisible, "horizontal strip reaches choice 10").toBe(true);
+    expect(stripAccess!.heightUnchanged, "strip height stable while scrolling").toBe(true);
 
     await dock.evaluate((channelName) => {
       const w = window as unknown as { __ngCmdLog?: unknown[]; __ngCmdSpy?: BroadcastChannel };
@@ -174,9 +249,11 @@ test.describe("Character Loadout evidence scenarios", () => {
       w.__ngCmdSpy = channel;
     }, NIGHTGLASS_BUS_CHANNEL);
 
-    const dragHighlights = await dock.evaluate(() => {
+    const assignmentId = CHARACTER_LOADOUT_EVIDENCE_ASSIGNMENT_ID;
+
+    const dragHighlights = await dock.evaluate((abilityId) => {
       const source = document.querySelector<HTMLElement>(
-        '[data-class-id="knight"] .loadout-pool-tiles [data-ability-id="pommel-break"]',
+        `[data-class-id="knight"] .loadout-pool-tiles [data-ability-id="${abilityId}"]`,
       );
       if (!source) {
         return null;
@@ -193,14 +270,14 @@ test.describe("Character Loadout evidence scenarios", () => {
         new DragEvent("dragend", { bubbles: true, cancelable: true, dataTransfer }),
       );
       return result;
-    });
+    }, assignmentId);
     expect(dragHighlights).not.toBeNull();
     expect(dragHighlights!.source).toBe(true);
     expect(dragHighlights!.validTargets).toBe(3);
 
-    const replaced = await dock.evaluate(() => {
+    const replaced = await dock.evaluate((abilityId) => {
       const source = document.querySelector<HTMLElement>(
-        '[data-class-id="knight"] .loadout-pool-tiles [data-ability-id="pommel-break"]',
+        `[data-class-id="knight"] .loadout-pool-tiles [data-ability-id="${abilityId}"]`,
       );
       const target = document.querySelector<HTMLElement>(
         '[data-class-id="knight"] [data-loadout-slot-drop][data-slot="0"]',
@@ -222,7 +299,7 @@ test.describe("Character Loadout evidence scenarios", () => {
         new DragEvent("dragend", { bubbles: true, cancelable: true, dataTransfer }),
       );
       return true;
-    });
+    }, assignmentId);
     expect(replaced).toBe(true);
     await expect
       .poll(async () =>
@@ -235,16 +312,16 @@ test.describe("Character Loadout evidence scenarios", () => {
     await reconcileLoadoutSurfaceAfterSyntheticAssignment(dock);
     await expect(
       dock.locator(
-        '[data-class-id="knight"] [data-loadout-slot-drop][data-slot="0"] [data-ability-id="pommel-break"]',
+        `[data-class-id="knight"] [data-loadout-slot-drop][data-slot="0"] [data-ability-id="${CHARACTER_LOADOUT_EVIDENCE_ASSIGNMENT_ID}"]`,
       ),
     ).toBeVisible({ timeout: 10_000 });
 
     const slot1AbilityBefore = await dock
       .locator('[data-class-id="knight"] [data-loadout-slot-drop][data-slot="1"] [data-loadout-assign-tile]')
       .getAttribute("data-ability-id");
-    const swapped = await dock.evaluate(() => {
+    const swapped = await dock.evaluate((abilityId) => {
       const source = document.querySelector<HTMLElement>(
-        '[data-class-id="knight"] [data-loadout-slot-drop][data-slot="0"] [data-ability-id="pommel-break"]',
+        `[data-class-id="knight"] [data-loadout-slot-drop][data-slot="0"] [data-ability-id="${abilityId}"]`,
       );
       const target = document.querySelector<HTMLElement>(
         '[data-class-id="knight"] [data-loadout-slot-drop][data-slot="1"]',
@@ -266,12 +343,12 @@ test.describe("Character Loadout evidence scenarios", () => {
         new DragEvent("dragend", { bubbles: true, cancelable: true, dataTransfer }),
       );
       return true;
-    });
+    }, assignmentId);
     expect(swapped).toBe(true);
     await reconcileLoadoutSurfaceAfterSyntheticAssignment(dock);
     await expect(
       dock.locator(
-        '[data-class-id="knight"] [data-loadout-slot-drop][data-slot="1"] [data-ability-id="pommel-break"]',
+        `[data-class-id="knight"] [data-loadout-slot-drop][data-slot="1"] [data-ability-id="${CHARACTER_LOADOUT_EVIDENCE_ASSIGNMENT_ID}"]`,
       ),
     ).toBeVisible({ timeout: 10_000 });
     if (slot1AbilityBefore) {
@@ -282,11 +359,11 @@ test.describe("Character Loadout evidence scenarios", () => {
       ).toBeVisible();
     }
 
-    const pommelInSlot = dock.locator(
-      '[data-class-id="knight"] [data-loadout-slot-drop] [data-ability-id="pommel-break"]',
+    const assignmentInSlot = dock.locator(
+      `[data-class-id="knight"] [data-loadout-slot-drop] [data-ability-id="${CHARACTER_LOADOUT_EVIDENCE_ASSIGNMENT_ID}"]`,
     );
-    await pommelInSlot.click();
-    await expect(pommelInSlot).toHaveClass(/loadout-tile--selected-source/);
+    await assignmentInSlot.click();
+    await expect(assignmentInSlot).toHaveClass(/loadout-tile--selected-source/);
     await expect(dock.locator(".loadout-slot--valid-target")).toHaveCount(3);
     const slot2Tile = dock.locator(
       '[data-class-id="knight"] [data-loadout-slot-drop][data-slot="2"] [data-loadout-assign-tile]',
@@ -296,7 +373,7 @@ test.describe("Character Loadout evidence scenarios", () => {
     await reconcileLoadoutSurfaceAfterSyntheticAssignment(dock);
     await expect(
       dock.locator(
-        '[data-class-id="knight"] [data-loadout-slot-drop][data-slot="2"] [data-ability-id="pommel-break"]',
+        `[data-class-id="knight"] [data-loadout-slot-drop][data-slot="2"] [data-ability-id="${CHARACTER_LOADOUT_EVIDENCE_ASSIGNMENT_ID}"]`,
       ),
     ).toBeVisible({ timeout: 10_000 });
     if (slot2Before) {
@@ -307,12 +384,44 @@ test.describe("Character Loadout evidence scenarios", () => {
       ).toBeVisible();
     }
 
+    await focusCharacterSection(dock, "stats");
+    const statsFit = await dock.evaluate(() => {
+      const panel = document.querySelector<HTMLElement>('[data-dock-panel="character"]');
+      const section = panel?.querySelector<HTMLElement>('[data-character-section="stats"]');
+      if (!panel || !section || section.hidden) {
+        return null;
+      }
+      const overview = section.querySelector<HTMLElement>('[data-stats-overview="true"]');
+      return {
+        keys: [...section.querySelectorAll<HTMLElement>("[data-stat-key]")].map(
+          (row) => row.dataset["statKey"],
+        ),
+        panelScrollable: panel.scrollHeight > panel.clientHeight + 1,
+        xpVisible: (section.querySelector("[data-stats-xp='true']")?.textContent?.length ?? 0) > 0,
+        levelInOverview: overview?.querySelector("[data-stats-level='true']") !== null,
+        talentPointsInOverview: overview?.querySelector("[data-stats-talent-points='true']") !== null,
+      };
+    });
+    expect(statsFit).not.toBeNull();
+    expect(statsFit!.keys).toEqual([
+      "maxHealth",
+      "physical",
+      "elemental",
+      "armor",
+      "elementalResistance",
+    ]);
+    expect(statsFit!.panelScrollable, "Stats fits without outer Character scroll").toBe(false);
+    expect(statsFit!.xpVisible, "Stats overview shows XP progress").toBe(true);
+    expect(statsFit!.levelInOverview, "Stats overview omits Level").toBe(false);
+    expect(statsFit!.talentPointsInOverview, "Stats overview omits Talent Points").toBe(false);
+    await captureReviewScene(dock, "character-loadout", "character-sub-stats");
+
     await closeEvidenceSession(session);
   });
 
   declareEvidenceScenario("character-information-popovers", async ({ browser }) => {
-    const session = await openEvidenceSession(browser, CHARACTER_LOADOUT_SESSION.preset, {
-      bootSaveJson: CHARACTER_LOADOUT_SESSION.bootSaveJson,
+    const session = await openEvidenceSession(browser, CHARACTER_POPOVERS_SESSION.preset, {
+      bootSaveJson: CHARACTER_POPOVERS_SESSION.bootSaveJson,
     });
     const tile = session.tile;
     const dock = session.dock;

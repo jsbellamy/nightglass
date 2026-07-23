@@ -1,6 +1,7 @@
 import { expect, type Browser, type BrowserContext, type Page } from "@playwright/test";
 import { mkdirSync } from "node:fs";
 import type { Snapshot } from "../../src/core/snapshot";
+import { CHARACTER_LOADOUT_EVIDENCE_SESSION_KEY } from "../../src/data/fixtures/character-loadout-evidence";
 import { DOCK_HEIGHT, DOCK_WIDTH } from "../../src/ui/dock-geometry";
 import { TILE_HEIGHT, TILE_WIDTH } from "../../src/ui/battle-tile-layout";
 import {
@@ -27,9 +28,14 @@ export type LiveTileAndDockEvidenceSessionOptions = {
   preset: "live-tile-and-dock";
 };
 
+export type CharacterLoadoutEvidenceSessionOptions = {
+  preset: "character-loadout-evidence";
+};
+
 export type EvidenceSessionObjectOptions =
   | LiveTileEvidenceSessionOptions
-  | LiveTileAndDockEvidenceSessionOptions;
+  | LiveTileAndDockEvidenceSessionOptions
+  | CharacterLoadoutEvidenceSessionOptions;
 
 export type EvidenceSessionOptions = {
   bootSaveJson?: string;
@@ -68,6 +74,20 @@ function trackPageErrors(page: Page, pageErrors: string[]): void {
   page.on("pageerror", (error) => pageErrors.push(String(error)));
 }
 
+async function installCharacterLoadoutEvidenceFixture(
+  context: BrowserContext,
+): Promise<void> {
+  await context.addInitScript(
+    ({ sessionKey, fixtureId }: { sessionKey: string; fixtureId: string }) => {
+      sessionStorage.setItem(sessionKey, fixtureId);
+    },
+    {
+      sessionKey: CHARACTER_LOADOUT_EVIDENCE_SESSION_KEY,
+      fixtureId: "character-loadout-evidence",
+    },
+  );
+}
+
 function sessionHandle(
   context: BrowserContext,
   tile: Page | null,
@@ -92,9 +112,24 @@ function sessionHandle(
 async function openLiveTileAndDockSession(
   browser: Browser,
   bootSaveJson?: string,
+  options: { characterLoadoutEvidence?: boolean } = {},
 ): Promise<EvidenceSession> {
   const pageErrors: string[] = [];
-  const { context, tile } = await openTilePage(browser, bootSaveJson);
+  const context = await browser.newContext({
+    viewport: { width: TILE_WIDTH, height: TILE_HEIGHT },
+    deviceScaleFactor: 1,
+  });
+  if (options.characterLoadoutEvidence) {
+    await installCharacterLoadoutEvidenceFixture(context);
+  }
+  if (bootSaveJson) {
+    await context.addInitScript((raw) => {
+      localStorage.setItem("nightglass-save-v1", raw);
+    }, bootSaveJson);
+  }
+  const tile = await context.newPage();
+  await tile.goto("/", { waitUntil: "networkidle" });
+  await tile.waitForSelector(".battle-tile .status-line");
   trackPageErrors(tile, pageErrors);
   await installBusSpy(tile);
   const dock = await context.newPage();
@@ -129,6 +164,11 @@ async function openEvidenceSessionForPreset(
     }
     case "live-tile-and-dock": {
       return openLiveTileAndDockSession(browser, bootSaveJson);
+    }
+    case "character-loadout-evidence": {
+      return openLiveTileAndDockSession(browser, bootSaveJson, {
+        characterLoadoutEvidence: true,
+      });
     }
     case "isolated-dock": {
       const context = await browser.newContext({
@@ -199,8 +239,11 @@ export async function openEvidenceSession(
   maybeOptions?: EvidenceSessionOptions,
 ): Promise<EvidenceSession> {
   if (typeof presetOrOptions === "object") {
-    if (presetOrOptions.preset === "live-tile-and-dock") {
-      return openEvidenceSessionForPreset(browser, "live-tile-and-dock", maybeOptions ?? {});
+    if (
+      presetOrOptions.preset === "live-tile-and-dock" ||
+      presetOrOptions.preset === "character-loadout-evidence"
+    ) {
+      return openEvidenceSessionForPreset(browser, presetOrOptions.preset, maybeOptions ?? {});
     }
     const session = await openEvidenceSessionForPreset(browser, presetOrOptions.preset, {
       bootSaveJson: presetOrOptions.savedSnapshotJson,
