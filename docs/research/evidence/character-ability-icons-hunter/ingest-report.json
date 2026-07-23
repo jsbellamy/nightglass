@@ -21,11 +21,12 @@
       ]
     },
     "mode": "source-local",
-    "color_reduce": {
+    "acquisition_flatten": {
       "unique_before": 139,
       "unique_after": 12,
       "max_colors": 12,
-      "cluster_dist": 28.0
+      "cluster_dist": 28.0,
+      "note": "Task-local acquisition flatten (knight/wizard pattern); production ingest_raw_to_local_text_source unchanged."
     }
   },
   "pinpoint-shot": {
@@ -50,11 +51,12 @@
       ]
     },
     "mode": "source-local",
-    "color_reduce": {
+    "acquisition_flatten": {
       "unique_before": 133,
       "unique_after": 9,
       "max_colors": 12,
-      "cluster_dist": 28.0
+      "cluster_dist": 28.0,
+      "note": "Task-local acquisition flatten (knight/wizard pattern); production ingest_raw_to_local_text_source unchanged."
     }
   },
   "barbed-arrow": {
@@ -79,11 +81,12 @@
       ]
     },
     "mode": "source-local",
-    "color_reduce": {
+    "acquisition_flatten": {
       "unique_before": 151,
       "unique_after": 12,
       "max_colors": 12,
-      "cluster_dist": 28.0
+      "cluster_dist": 28.0,
+      "note": "Task-local acquisition flatten (knight/wizard pattern); production ingest_raw_to_local_text_source unchanged."
     }
   },
   "split-volley": {
@@ -108,11 +111,12 @@
       ]
     },
     "mode": "source-local",
-    "color_reduce": {
+    "acquisition_flatten": {
       "unique_before": 129,
       "unique_after": 9,
       "max_colors": 12,
-      "cluster_dist": 28.0
+      "cluster_dist": 28.0,
+      "note": "Task-local acquisition flatten (knight/wizard pattern); production ingest_raw_to_local_text_source unchanged."
     }
   },
   "snareburst": {
@@ -137,11 +141,12 @@
       ]
     },
     "mode": "source-local",
-    "color_reduce": {
+    "acquisition_flatten": {
       "unique_before": 365,
       "unique_after": 12,
       "max_colors": 12,
-      "cluster_dist": 28.0
+      "cluster_dist": 28.0,
+      "note": "Task-local acquisition flatten (knight/wizard pattern); production ingest_raw_to_local_text_source unchanged."
     }
   }
 }

@@ -24,8 +24,6 @@ from .constants import (  # noqa: E402
     OFF_RAMP_REJECT,
     PITCH_MAX_DIVISOR,
     PITCH_MIN_DIVISOR,
-    SOURCE_LOCAL_CLUSTER_DIST,
-    SOURCE_LOCAL_MAX_COLORS,
 )
 from .palette import DEFAULT_SOURCE_PALETTE_ID, SOURCE_LOCAL_OUTLINE_RGB, Swatch, load_runtime_palette  # noqa: E402
 from .paint import nearest  # noqa: E402
@@ -143,47 +141,6 @@ def ingest_raw_to_text_source(
     return {"recovered": meta, "ramp": ramp_stats}
 
 
-def _rgb_dist(a: tuple[int, int, int], b: tuple[int, int, int]) -> float:
-    return sum((x - y) ** 2 for x, y in zip(a, b)) ** 0.5
-
-
-def cluster_source_local_cells(
-    cells: list[list[tuple[int, int, int] | None]],
-    *,
-    max_colors: int = SOURCE_LOCAL_MAX_COLORS,
-    threshold: float = SOURCE_LOCAL_CLUSTER_DIST,
-) -> tuple[list[list[tuple[int, int, int] | None]], dict]:
-    """Greedy-cluster opaque cell RGBs into ≤max_colors flat fills."""
-    counts: dict[tuple[int, int, int], int] = {}
-    for row in cells:
-        for rgb in row:
-            if rgb is not None:
-                counts[rgb] = counts.get(rgb, 0) + 1
-    ordered = sorted(counts.items(), key=lambda kv: (-kv[1], kv[0]))
-    centroids: list[tuple[int, int, int]] = []
-    for rgb, _ in ordered:
-        if any(_rgb_dist(rgb, c) <= threshold for c in centroids):
-            continue
-        centroids.append(rgb)
-        if len(centroids) >= max_colors:
-            break
-    if not centroids:
-        return cells, {
-            "unique_before": 0,
-            "unique_after": 0,
-            "max_colors": max_colors,
-            "cluster_dist": threshold,
-        }
-    mapping = {rgb: min(centroids, key=lambda c: _rgb_dist(rgb, c)) for rgb in counts}
-    flat = [[None if c is None else mapping[c] for c in row] for row in cells]
-    return flat, {
-        "unique_before": len(counts),
-        "unique_after": len({c for row in flat for c in row if c is not None}),
-        "max_colors": max_colors,
-        "cluster_dist": threshold,
-    }
-
-
 def ingest_raw_to_local_text_source(
     raw_path: pathlib.Path,
     *,
@@ -192,11 +149,10 @@ def ingest_raw_to_local_text_source(
     outline_rgb: tuple[int, int, int] | None = None,
 ) -> dict:
     rgb_cells, meta = recover_icon_grid(raw_path)
-    flat_cells, color_reduce = cluster_source_local_cells(rgb_cells)
     outline = outline_rgb or SOURCE_LOCAL_OUTLINE_RGB
-    source = cells_to_local_source(source_key, flat_cells, outline_rgb=outline)
+    source = cells_to_local_source(source_key, rgb_cells, outline_rgb=outline)
     write_text(out_path, source)
-    return {"recovered": meta, "mode": "source-local", "color_reduce": color_reduce}
+    return {"recovered": meta, "mode": "source-local"}
 
 
 def write_provenance_sidecar(raw_path: pathlib.Path, *, provider: str = "synthetic-fixture") -> None:

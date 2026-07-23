@@ -24,8 +24,3 @@ MIN_GRID_SCORE = A.MIN_GRID_SCORE
 # Icon pitch bounds: ~18–36 logical cells across the keyed subject bbox.
 PITCH_MAX_DIVISOR = 18.0
 PITCH_MIN_DIVISOR = 36.0
-
-# Source-local Ability ingest: cluster soft provider samples into flat fills so the
-# text-grid legend stays inside the [.A-Za-z0-9] alphabet (8–12 colours per prompt).
-SOURCE_LOCAL_MAX_COLORS = 12
-SOURCE_LOCAL_CLUSTER_DIST = 28.0

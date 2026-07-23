@@ -2,7 +2,7 @@
 
 Acquire and ingest five Hunter Basic/Core Ability sources as **unregistered**
 source-local grids with evidence and a five-icon review sheet. No registry,
-Content, runtime PNG, manifest, or UI change (issue C4).
+Content, runtime PNG, manifest, UI, or pipeline change (issue C4).
 
 ## Contract declaration
 
@@ -12,10 +12,10 @@ Content, runtime PNG, manifest, or UI change (issue C4).
 | Status | candidate for shipping (sources only; registration is #534) |
 | Runtime destination | `src/assets/icon-sources/<key>/source.grid` (unregistered) |
 | Runtime shape | Logical 32×32 drawable; source-local rgb legend; outline `58,6,20` |
-| Visual vocabulary | Source-local mechanic colours (physical / trap); no `moonberry-16` / `fowl-harvest-24` |
+| Visual vocabulary | Source-local mechanic colours (physical / trap); no `moonberry-16` / `fowl-harvest-24`; ≤12 flat RGBs after acquisition flatten (contract 8–12) |
 | Geometry | Icon grid shell; long-side preference 26–30; gates in `pipeline/icons/constants.py` |
 | Review context | `hunter-ability-sheet@8x.png` and evidence `previews/<key>@8x.png` |
-| Validator | `python3 pipeline/icons/verify.py` (source-local + cluster gates); production `ingest_raw_to_local_text_source`; CI `assets` job |
+| Validator | Targeted `recover_icon_grid` + acquisition flatten + source-local parse/write roundtrip; CI `assets` job for catalog (sources unregistered → no runtime rebuild for these keys yet) |
 
 ## Style cohort (shared)
 
@@ -41,12 +41,14 @@ peers are geometry/outline cohort only — not a palette target.
 | `split-volley` | r2 | 28×28 | 129→9 | r1 clip-fail on all sides |
 | `snareburst` | r7 | 30×30 | 365→12 | r1–r6 failed (overshoot/clip/identity); cord+inward heads+stun |
 
-Provider soft samples explode unique RGBs. Production
-`ingest_raw_to_local_text_source` clusters to ≤12 flat fills
-(`SOURCE_LOCAL_MAX_COLORS` / `SOURCE_LOCAL_CLUSTER_DIST` in
-`pipeline/icons/constants.py`) before writing the text grid. Re-ingest of each
-accepted raw is byte-identical to the committed `source.grid`. Sidecars record
-the **exact prompt that produced the accepted candidate** (including retry
+Provider soft sampling produces many near-duplicate cell RGBs. **Acquisition
+flatten** (same knight/wizard Ability pattern): recovered cells are collapsed
+with merge distance 28 and cap 12 colours before `cells_to_local_source`, so
+legends stay printable and match the Ability “flat 8–12 colours” prompt
+contract. Provider raws stay byte-immutable evidence. Production
+`ingest_raw_to_local_text_source` is **unchanged**. Collapse parameters and
+before/after counts are in each sidecar and `ingest-report.json`. Sidecars
+record the exact prompt that produced the accepted candidate (including retry
 clauses).
 
 ## Candidate table
@@ -102,13 +104,10 @@ stun star (re-acquired after Spec identity fail on r2).
 
 ## Validator
 
-```text
-python3 pipeline/icons/verify.py
-```
-
-Recorded in this PR after the source-local cluster gate was added. Full-catalog
-byte-identity remains the CI `assets` job (pipeline change also exercised
-locally before push).
+Targeted acquisition path: `recover_icon_grid` → acquisition flatten →
+`cells_to_local_source` / parse-write roundtrip (byte-identical on re-run).
+Full-catalog CI `assets` job is the offline catalog proof; these families are
+unregistered so they do not enter runtime rebuild yet.
 
 ## Artifacts
 
@@ -117,4 +116,3 @@ locally before push).
 - Hunter Ability review sheet: [`hunter-ability-sheet@8x.png`](./hunter-ability-sheet@8x.png)
 - Per-icon @8× evidence previews: [`previews/`](./previews/)
 - Unregistered sources: `src/assets/icon-sources/{quickshot,pinpoint-shot,barbed-arrow,split-volley,snareburst}/source.grid`
-- Pipeline: `cluster_source_local_cells` inside `ingest_raw_to_local_text_source`
