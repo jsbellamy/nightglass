@@ -2,6 +2,12 @@ import { test } from "@playwright/test";
 
 type EvidenceTestBody = NonNullable<Parameters<typeof test>[1]>;
 
+/** Review-artifact-only citations: valid in the acceptance guide, not Playwright titles. */
+export const EVIDENCE_REVIEW_ARTIFACT_ONLY_SLUGS = ["knockout-readability"] as const;
+
+/** Slugs owned by non-Playwright seams but still machine-catalogued for citations. */
+export const EVIDENCE_CITATION_ONLY_SLUGS = ["talent-icon-content-tier"] as const;
+
 export const EVIDENCE_SLUG_CATALOG = [
   "tile-geometry",
   "native-1x-scaling",
@@ -24,9 +30,15 @@ export const EVIDENCE_SLUG_CATALOG = [
   "talent-direct-actions",
   "five-actor-pools",
   "reduced-motion",
+  ...EVIDENCE_CITATION_ONLY_SLUGS,
 ] as const;
 
 export type EvidenceSlug = (typeof EVIDENCE_SLUG_CATALOG)[number];
+
+/** Slugs that must appear on a registered Playwright scenario title. */
+export const EVIDENCE_SCENARIO_SLUGS = EVIDENCE_SLUG_CATALOG.filter(
+  (slug) => !(EVIDENCE_CITATION_ONLY_SLUGS as readonly string[]).includes(slug),
+);
 
 export type ScenarioId =
   | "tile-baseline-combat"

@@ -33,6 +33,13 @@ test file. The slug must appear in the test title (or `describe` title) that
 proves it, so the row is addressable without opening the suite. (Closes the
 named-scenario blind spot from the acceptance-evidence seams audit.)
 
+The **complete machine-readable catalogue** of `evidence:` slugs is
+`EVIDENCE_SLUG_CATALOG` in `e2e/helpers/evidence-scenarios.ts`, enforced by
+`e2e/scenario-registry.spec.ts`. `EVIDENCE_CITATION_ONLY_SLUGS` lists slugs
+proved outside Playwright titles; `EVIDENCE_REVIEW_ARTIFACT_ONLY_SLUGS` lists
+guide citations that intentionally never bind to a harness title (knockout
+readability). Authoring steps live in `docs/agents/e2e-authoring.md`.
+
 | Prefix | Seam | Runner |
 | --- | --- | --- |
 | `evidence: <slug>` | The rendered-evidence seam — Playwright under `e2e/`, or a pure test that can see the same fact | `npm run test:evidence` (Playwright) or `npm test` (pure) |
@@ -54,7 +61,8 @@ Known scenarios and the narrowest evidence that proves them. Cite the **Named
 check** column (or its `evidence:` / `manual-check:` slug) from an acceptance
 row. The table is worked examples of the rule above, not a closed checklist:
 a hundred-and-first row still follows the rule even when it is not listed
-here.
+here, and the registry in `e2e/helpers/evidence-scenarios.ts` is the complete
+machine-readable slug catalogue.
 
 | Named check | Cite as | Automated / review evidence |
 | --- | --- | --- |
