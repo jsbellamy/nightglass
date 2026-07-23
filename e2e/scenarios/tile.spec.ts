@@ -8,7 +8,7 @@ import { advanceUntil, advanceUntilVisible } from "../helpers/advance";
 import { postBusCommand, postBusSnapshot } from "../helpers/bus";
 import { contrastRatio, parseRGB } from "../helpers/contrast";
 import { closeEvidenceSession, openEvidenceSession } from "../helpers/evidence-session";
-import { declareEvidenceScenario } from "../helpers/evidence-scenarios";
+import { defineEvidenceScenario } from "../helpers/evidence-scenarios";
 import { captureReviewScene } from "../helpers/review-scenes";
 import { holdTheLineStatusSnapshot } from "../helpers/snapshots";
 
@@ -76,7 +76,25 @@ function effectImagesReady(state: EffectImageLoadingState): boolean {
 }
 
 test.describe("Battle Tile evidence scenarios", () => {
-  declareEvidenceScenario("tile-baseline-combat", async ({ browser }) => {
+  defineEvidenceScenario(
+    {
+      id: "tile-baseline-combat",
+      slugs: ["tile-geometry", "native-1x-scaling", "aa-contrast", "effect-image-loading"],
+      spec: {
+        id: "rendered-evidence:tile-baseline-combat",
+        path: "e2e/scenarios/tile.spec.ts",
+      },
+      fixture: "live-tile",
+      reviewScenes: [
+        {
+          id: "tile-combat",
+          durableDestination: "docs/research/evidence/knockout-readability/tile-combat.png",
+        },
+      ],
+      summary:
+        "Battle Tile geometry, sprites, contrast, effect frames, status glyphs, and combat feedback at native 1×",
+    },
+    async ({ browser }) => {
     const session = await openEvidenceSession(browser, { preset: "live-tile" });
     const { tile } = session;
 
@@ -200,9 +218,22 @@ test.describe("Battle Tile evidence scenarios", () => {
     ).toBe(true);
 
     await closeEvidenceSession(session);
-  });
+  },
+  );
 
-  declareEvidenceScenario("hold-the-line-status-glyph", async ({ browser }) => {
+  defineEvidenceScenario(
+    {
+      id: "hold-the-line-status-glyph",
+      slugs: ["effect-image-loading"],
+      spec: {
+        id: "rendered-evidence:hold-the-line-status-glyph",
+        path: "e2e/scenarios/tile.spec.ts",
+      },
+      fixture: "live-tile-seeded-snapshot",
+      reviewScenes: [],
+      summary: "Hold the Line status glyph loads from a seeded Snapshot without page error",
+    },
+    async ({ browser }) => {
     const snapshot = holdTheLineStatusSnapshot();
     const session = await openEvidenceSession(browser, {
       preset: "live-tile",
@@ -229,9 +260,22 @@ test.describe("Battle Tile evidence scenarios", () => {
       .toBe(true);
 
     await closeEvidenceSession(session);
-  });
+  },
+  );
 
-  declareEvidenceScenario("tile-five-opponents-drop-clearance", async ({ browser }) => {
+  defineEvidenceScenario(
+    {
+      id: "tile-five-opponents-drop-clearance",
+      slugs: ["tile-geometry"],
+      spec: {
+        id: "rendered-evidence:tile-five-opponents-drop-clearance",
+        path: "e2e/scenarios/tile.spec.ts",
+      },
+      fixture: "live-tile",
+      reviewScenes: [],
+      summary: "five Opponents fit the Battle Tile at 1× on a Stage 2 Wave without overlap",
+    },
+    async ({ browser }) => {
     test.setTimeout(60_000);
     const session = await openEvidenceSession(browser, { preset: "live-tile" });
     const { tile } = session;
@@ -364,5 +408,6 @@ test.describe("Battle Tile evidence scenarios", () => {
     await tile.screenshot({ path: `${SCREENSHOTS}/05-tile-five-opponents.png` });
     await tile.screenshot({ path: `${SCREENSHOTS}/06-tile-drop-notification.png` });
     await closeEvidenceSession(session);
-  });
+  },
+  );
 });

@@ -27,14 +27,17 @@ function collect<T>(items: readonly T[], key: (item: T) => string): Map<string, 
 }
 
 test.describe("evidence scenario registry", () => {
-  test("registeredEvidenceScenarios matches the static catalogue when nothing is self-registered", () => {
-    expect(registeredEvidenceScenarios()).toEqual(EVIDENCE_SCENARIOS);
+  test("registeredEvidenceScenarios unions static catalogue with self-registered rows", () => {
+    expect(registeredEvidenceScenarios()).toHaveLength(17);
+    for (const row of EVIDENCE_SCENARIOS) {
+      expect(registeredEvidenceScenarios().find((scenario) => scenario.id === row.id)).toEqual(row);
+    }
   });
 
   test("defineEvidenceScenario throws when scenario id is already in the static catalogue", () => {
     const row = EVIDENCE_SCENARIOS[0]!;
     expect(() => defineEvidenceScenario(row, async () => {})).toThrow(
-      /duplicate evidence scenario id: tile-baseline-combat/,
+      /duplicate evidence scenario id: five-actor-pools/,
     );
   });
 

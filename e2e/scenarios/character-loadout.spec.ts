@@ -15,7 +15,7 @@ import {
   openEvidenceSession,
   reconcileLoadoutSurfaceAfterSyntheticAssignment,
 } from "../helpers/evidence-session";
-import { declareEvidenceScenario } from "../helpers/evidence-scenarios";
+import { defineEvidenceScenario } from "../helpers/evidence-scenarios";
 import { captureReviewScene } from "../helpers/review-scenes";
 import { keyboardBootSnapshot } from "../helpers/snapshots";
 
@@ -30,7 +30,23 @@ const CHARACTER_POPOVERS_SESSION = {
 };
 
 test.describe("Character Loadout evidence scenarios", () => {
-  declareEvidenceScenario("character-loadout", async ({ browser }) => {
+  defineEvidenceScenario(
+    {
+      id: "character-loadout",
+      slugs: ["character-loadout-no-scroll", "character-loadout-assignment"],
+      spec: {
+        id: "rendered-evidence:character-loadout",
+        path: "e2e/scenarios/character-loadout.spec.ts",
+      },
+      fixture: "character-loadout-evidence",
+      reviewScenes: [
+        { id: "character-sub-build" },
+        { id: "character-sub-stats" },
+      ],
+      summary:
+        "10-choice evidence fixture with distinct Ability icons; four visible tray and horizontal reach to choices 5–10; Variant C Build/Stats at 800×480; focus order, displacement, swap, and drag/select parity without reset",
+    },
+    async ({ browser }) => {
     const session = await openEvidenceSession(browser, CHARACTER_LOADOUT_SESSION.preset, {
       bootSaveJson: CHARACTER_LOADOUT_SESSION.bootSaveJson,
     });
@@ -417,9 +433,23 @@ test.describe("Character Loadout evidence scenarios", () => {
     await captureReviewScene(dock, "character-loadout", "character-sub-stats");
 
     await closeEvidenceSession(session);
-  });
+  },
+  );
 
-  declareEvidenceScenario("character-information-popovers", async ({ browser }) => {
+  defineEvidenceScenario(
+    {
+      id: "character-information-popovers",
+      slugs: ["character-information-popovers"],
+      spec: {
+        id: "rendered-evidence:character-information-popovers",
+        path: "e2e/scenarios/character-loadout.spec.ts",
+      },
+      fixture: "live-tile-and-dock",
+      reviewScenes: [],
+      summary:
+        "Ability and Talent popovers share hover/focus text, stay in Dock bounds, and hold coordinates across four live pump deliveries",
+    },
+    async ({ browser }) => {
     const session = await openEvidenceSession(browser, CHARACTER_POPOVERS_SESSION.preset, {
       bootSaveJson: CHARACTER_POPOVERS_SESSION.bootSaveJson,
     });
@@ -556,5 +586,6 @@ test.describe("Character Loadout evidence scenarios", () => {
     await expect(dock.locator('[data-talent-popover="true"]')).toBeHidden();
 
     await closeEvidenceSession(session);
-  });
+  },
+  );
 });
