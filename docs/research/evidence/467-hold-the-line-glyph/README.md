@@ -26,7 +26,7 @@ Procedural 7×7 Status Effect glyph authored as a point set in
 ## Style cohort
 
 Existing procedural status glyphs (moonberry-glow binary-alpha): `braced`,
-`guarded`, `warded`, `sheltered`, `stun` (plus the full twelve on the sheet).
+`guarded`, `warded`, `sheltered`, `stun` (plus the full thirteen on the sheet).
 
 ## Evidence
 
