@@ -32,13 +32,15 @@ Content, runtime PNG, manifest, or UI change in this slice (activation → #534)
 
 | iconKey | Original sample (SUBJECT) | Accepted | Recovered |
 | --- | --- | --- | --- |
-| `sun-mote` | compact golden sun orb, four broad rays, forward light wedge | **r3** after overshoot on r1; preference enlarge from r2 | **22×22** |
+| `sun-mote` | compact golden sun orb, four broad rays, forward light wedge | **r8b** (C2 scale rework; prior r3 was 22×22) | **28×26** |
 | `mending-light` | healing cross of light shards around repaired heart seam | **r3** after clip (r1) and overshoot (r2) | **23×23** |
-| `dawn-recall` | broken halo rejoining above upward soul flame | **r2** after pitch-fail on r1 | **17×24** |
-| `war-hymn` | ceremonial bell, rising musical strokes, party-chevron base | **r1** (gate pass); later enlarge attempts did not improve fill | **20×23** |
+| `dawn-recall` | broken halo rejoining above upward soul flame | **r10c** (C2 scale rework; prior r2 was 17×24) | **27×29** |
+| `war-hymn` | ceremonial bell, rising musical strokes, party-chevron base | **r8b** (C2 scale rework; prior r1 was 20×23) | **25×29** |
 | `judgment` | descending radiant hammer-beam striking dark cracked seal | **r3** after raw-gate (r1) and clip (r2); safety-safe prompt retained identity | **21×26** |
 
 Issue exact prompts were submitted as each family's **r1** (judgment r1 used a safety-safe paraphrase of the issue gavel/beam identity). Accepted provenance records the prompt that produced the accepted raw; `issue_prompt` preserves the verbatim issue text.
+
+**C2 scale rework (PR #543):** `sun-mote`, `war-hymn`, and `dawn-recall` were re-acquired after Spec flagged preference underfill (long axis &lt; 26). New accepted candidates land long axis in **26–30**. `mending-light` (23×23) and `judgment` (long 26) were left unchanged per rework scope.
 
 Provider cell samples can explode unique RGB counts past legend capacity. Promotion clusters opaque cells to ≤12 flat fills (threshold 28) and peels exterior near-outline ink before `cells_to_local_source`, matching the Ability prompt's 8–12 flat-colour intent. Cluster steps are recorded under `ingest.cluster` in each sidecar.
 
@@ -48,16 +50,19 @@ Provider cell samples can explode unique RGB counts past legend capacity. Promot
 | --- | --- | --- | --- | --- | --- | --- |
 | sun-mote-r1 | icon | fail | none | 32×30 | overshoot | shrink |
 | sun-mote-r2 | icon | pass | none | 20×18 | advance (preference thin) | enlarge |
-| sun-mote-r3 | icon | pass | none | 22×22 | advance | accept |
+| sun-mote-r3 | icon | pass | none | 22×22 | advance (superseded by C2 rework) | enlarge |
+| sun-mote-r4..r8a | icon | mix | mix | overshoot / clip / thin | preference / overshoot | parallel enlarge |
+| sun-mote-r8b | icon | pass | none | 28×26 | advance | accept (C2 rework) |
 | mending-light-r1 | icon | fail | bottom/left | — | clip-fail | add clearance |
 | mending-light-r2 | icon | fail | none | 33×33 | overshoot | shrink |
 | mending-light-r3 | icon | pass | none | 23×23 | advance | accept |
 | dawn-recall-r1 | icon | fail | none | pitch y=0.039 | pitch-fail | strengthen grid shell |
-| dawn-recall-r2 | icon | pass | none | 17×24 | advance | accept |
-| dawn-recall-r3 | icon | pass | none | 15×24 | advance (no better than r2) | keep r2 |
-| war-hymn-r1 | icon | pass | none | 20×23 | advance | accept |
-| war-hymn-r2 | icon | pass | none | 17×24 | advance (no better width) | keep r1 |
-| war-hymn-r3 | icon | pass | none | 19×21 | advance (smaller) | keep r1 |
+| dawn-recall-r2 | icon | pass | none | 17×24 | advance (superseded by C2 rework) | enlarge |
+| dawn-recall-r3..r10b | icon | mix | mix | thin / clip / overshoot | preference / clip / overshoot | parallel enlarge |
+| dawn-recall-r10c | icon | pass | none | 27×29 | advance | accept (C2 rework) |
+| war-hymn-r1 | icon | pass | none | 20×23 | advance (superseded by C2 rework) | enlarge |
+| war-hymn-r2..r8a | icon | mix | mix | thin / underfill / overshoot | preference / overshoot | parallel enlarge |
+| war-hymn-r8b | icon | pass | none | 25×29 | advance | accept (C2 rework) |
 | judgment-r1 | icon | fail | — | border not flat magenta | raw-gate-fail | restate #ff00ff |
 | judgment-r2 | icon | fail | bottom/left | — | clip-fail | add clearance + shrink |
 | judgment-r3 | icon | pass | none | 21×26 | advance | accept |
@@ -67,13 +72,20 @@ Provider cell samples can explode unique RGB counts past legend capacity. Promot
 | Candidate | Primary failure | Recovered / signal |
 | --- | --- | --- |
 | sun-mote-r1 | overshoot | 32×30 |
-| sun-mote-r2 | preference underfill (gate-pass) | 20×18; superseded by r3 |
+| sun-mote-r2 | preference underfill (gate-pass) | 20×18 |
+| sun-mote-r3 | preference underfill (gate-pass; C2 rework) | 22×22; superseded by r8b |
+| sun-mote-r4 | clip-fail | all sides |
+| sun-mote-r5 | clip-fail | bottom/left |
+| sun-mote-r6 | overshoot | 35×34 |
+| sun-mote-r7 | overshoot | 18×34 |
+| sun-mote-r8a | overshoot | 33×31 |
 | mending-light-r1 | clip-fail | bottom/left of raw canvas |
 | mending-light-r2 | overshoot | 33×33 |
 | dawn-recall-r1 | pitch-fail | y score 0.039 < 0.04 |
-| dawn-recall-r3 | preference underfill (gate-pass) | 15×24; superseded by r2 |
-| war-hymn-r2 | preference underfill (gate-pass) | 17×24; kept r1 for width |
-| war-hymn-r3 | preference underfill (gate-pass) | 19×21; kept r1 |
+| dawn-recall-r2 | preference underfill (gate-pass; C2 rework) | 17×24; superseded by r10c |
+| dawn-recall-r3..r9d / r10a/b/d | preference / clip / overshoot / underfill | durable rows in candidate table |
+| war-hymn-r1 | preference underfill (gate-pass; C2 rework) | 20×23; superseded by r8b |
+| war-hymn-r2..r8a | preference / underfill / overshoot | durable rows in candidate table |
 | judgment-r1 | raw-gate-fail | border not flat `#ff00ff` |
 | judgment-r2 | clip-fail | bottom/left of raw canvas |
 
@@ -84,10 +96,12 @@ Rejected provider raws were pruned from `scratch/` after promotion; durable reco
 Composite: [`priest-ability-sheet@8x.png`](./priest-ability-sheet@8x.png)
 (left→right: sun-mote | mending-light | dawn-recall | war-hymn | judgment).
 
-Subagent verdict: **accept**. All five identities read correctly and stay silhouette-distinct
-(sun wedge vs cross+heart vs halo-flame vs bell+chevron vs hammer-beam+seal). Style
-cohort notes: chunky blocks, selective charcoal-plum outline, upper-left light, source-local
-mechanic colours. No blocking defects (no characters, text, UI frames, soft bloom).
+Initial acquisition subagent verdict: **accept** (identities + cohort).
+
+C2 scale-rework subagent verdict: **accept**. Reworked `sun-mote` / `dawn-recall` /
+`war-hymn` keep correct identities; fill aligns with the ~26–30 long-side cohort
+alongside `judgment` (long 26). `mending-light` remains the intentional smaller
+unchanged tile. No blocking defects.
 
 ## Artifacts
 

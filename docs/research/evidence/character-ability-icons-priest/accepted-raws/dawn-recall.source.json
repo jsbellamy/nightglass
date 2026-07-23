@@ -1,7 +1,7 @@
 {
   "provider": "Cursor GenerateImage",
   "acquisition_tool": "GenerateImage",
-  "raw_sha256": "12e95db14c6154fd17ab631ad8e8dc4a85407ddac683a75e3d51ac12913676c8",
+  "raw_sha256": "50b93a6c7d9435e107d78dc3531928e7cb0a91066f22b24acee15c87f01eb65c",
   "asset_class": "interface",
   "kind": "ability-loadout-icon",
   "color_mode": "source-local",
@@ -11,7 +11,7 @@
     20
   ],
   "runtime_destination": "deferred \u2014 unregistered interim; later activation slice (#534)",
-  "candidate": "dawn-recall-r2",
+  "candidate": "dawn-recall-r10c",
   "issue_prompt": "TRUE chunky pixel-art ability icon only, exact 32\u00d732 logical pixel grid rendered large. Dawn Recall: a small broken halo rejoining above an upward-rising soul flame, unmistakably revival rather than ordinary healing. Centered 26\u201330 pixels, two-cell #ff00ff clearance, flat square pixels, members at least 3 pixels, selective one-pixel charcoal-plum outline, upper-left light. Use dawn orange, gold, pale cream, spiritual cyan, deep violet shadow; source-local colors, no named palette. Solid #ff00ff background. No body, grave scene, text, border, cast shadow, haze, floating particle field, gradients, anti-aliasing, blur, dithering, watermark, or transparency.",
   "style_references": [
     {
@@ -45,95 +45,75 @@
       "role": "style_cohort"
     }
   ],
-  "prompt": "TRUE chunky pixel-art ability icon only. Drawn on an EXACT 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat UNIFORM square block \u2014 no smaller detail, no anti-aliasing, no blur, no dithering, no soft edges. Dawn Recall: a small broken halo rejoining above an upward-rising soul flame, unmistakably revival rather than ordinary healing. Centered 26\u201330 pixels, two-cell #ff00ff clearance, members at least 3 pixels thick, selective one-pixel charcoal-plum outline, upper-left light. Use dawn orange, gold, pale cream, spiritual cyan, deep violet shadow; source-local colors, no named palette. Solid #ff00ff background. Match the hard chunky grid of the style reference icons. No body, grave scene, text, border, cast shadow, haze, floating particle field, gradients, anti-aliasing, blur, dithering, watermark, or transparency.",
+  "prompt": "TRUE chunky pixel-art ability icon only on exact 32\u00d732 logical pixel grid rendered large. Hard flat square pixels only \u2014 no AA, blur, glow, dither. Dawn Recall: broken gold halo rejoining above thick upward cyan-gold soul flame. Long side MUST be 26\u201329 logical pixels \u2014 compact but large. At least THREE #ff00ff magenta cells clearance on every edge. Flat poster colors: dawn orange, gold, cream, spiritual cyan, deep violet. Charcoal-plum outline, upper-left light. Solid #ff00ff background. No body, grave, text, shadow, particles, gradient, watermark, transparency.",
   "ingest": {
     "recovered": {
       "bbox": [
-        201,
-        64,
-        822,
-        947
+        163,
+        93,
+        862,
+        938
       ],
       "pitch_x": {
-        "pitch": 37.25555555555536,
-        "score": 0.13829933075284478
+        "pitch": 26.050000000000036,
+        "score": 0.11178446408142055
       },
       "pitch_y": {
-        "pitch": 37.705555555555335,
-        "score": 0.11584033732492766
+        "pitch": 28.850000000000076,
+        "score": 0.18511457536230053
       },
       "grid": [
-        17,
-        24
+        27,
+        29
       ]
     },
     "mode": "source-local",
     "cluster": {
-      "unique_before": 185,
-      "unique_after_peel_cluster": 12,
+      "unique_before": 222,
+      "unique_after_peel_cluster": 8,
       "palette_rgb": [
         [
-          43,
-          14,
-          64
+          253,
+          248,
+          197
         ],
         [
-          65,
-          24,
-          114
+          3,
+          149,
+          253
         ],
         [
-          252,
-          236,
-          166
+          44,
+          7,
+          61
         ],
         [
           253,
-          215,
-          81
+          185,
+          12
         ],
         [
-          252,
-          196,
-          44
+          17,
+          239,
+          252
         ],
         [
-          207,
-          216,
-          178
+          254,
+          240,
+          153
         ],
         [
-          249,
-          160,
-          17
+          27,
+          18,
+          252
         ],
         [
-          182,
-          84,
-          22
-        ],
-        [
-          218,
-          120,
-          16
-        ],
-        [
-          75,
-          194,
-          180
-        ],
-        [
-          164,
-          217,
-          179
-        ],
-        [
-          233,
-          151,
-          59
+          248,
+          89,
+          25
         ]
       ]
     }
   },
-  "note": "#530 Priest Basic/Core Ability unregistered source-local icon; activation deferred to #534"
+  "note": "#530 Priest Ability C2 scale rework \u2014 unregistered source-local icon; activation deferred to #534"
 }

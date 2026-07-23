@@ -1,7 +1,7 @@
 {
   "provider": "Cursor GenerateImage",
   "acquisition_tool": "GenerateImage",
-  "raw_sha256": "a935f09af7d69b8854c9158f4342b0b67631ef91e6f8787586de5aa4694d5883",
+  "raw_sha256": "c2cb7bf9b26b7db30dabf10b7513d5072220aaeb672057ab6c658cfc4d7d2e6e",
   "asset_class": "interface",
   "kind": "ability-loadout-icon",
   "color_mode": "source-local",
@@ -11,7 +11,7 @@
     20
   ],
   "runtime_destination": "deferred \u2014 unregistered interim; later activation slice (#534)",
-  "candidate": "war-hymn-r1",
+  "candidate": "war-hymn-r8b",
   "issue_prompt": "TRUE chunky pixel-art ability icon only, exact 32\u00d732 logical pixel grid rendered large. War Hymn: a stout ceremonial bell crossed by two rising musical strokes and a small party-chevron base, clearly an inspiring group buff. Centered 26\u201330 pixels, two #ff00ff cells clear, flat pixels, structures at least 3 pixels, selective charcoal-plum outline, upper-left light. Use brass gold, crimson cloth accent, cream highlight, deep blue-violet shadow; source-local colors without themed palette restriction. Solid #ff00ff background only. No singer, written notes or letters, UI frame, room, shadow, soft aura, confetti, gradient, anti-aliasing, blur, dithering, watermark, or transparency.",
   "style_references": [
     {
@@ -45,26 +45,26 @@
       "role": "style_cohort"
     }
   ],
-  "prompt": "TRUE chunky pixel-art ability icon only, exact 32\u00d732 logical pixel grid rendered large. War Hymn: a stout ceremonial bell crossed by two rising musical strokes and a small party-chevron base, clearly an inspiring group buff. Centered 26\u201330 pixels, two #ff00ff cells clear, flat pixels, structures at least 3 pixels, selective charcoal-plum outline, upper-left light. Use brass gold, crimson cloth accent, cream highlight, deep blue-violet shadow; source-local colors without themed palette restriction. Solid #ff00ff background only. No singer, written notes or letters, UI frame, room, shadow, soft aura, confetti, gradient, anti-aliasing, blur, dithering, watermark, or transparency.",
+  "prompt": "TRUE chunky pixel-art ability icon only on exact 32\u00d732 logical pixel grid rendered large. Hard flat square pixels only \u2014 no AA, blur, glow, dither. War Hymn: stout ceremonial brass bell, two rising musical strokes, party-chevron base. IMPORTANT SIZE: opaque silhouette about 28 logical pixels tall/wide (same fill as large lightning ability reference), thin continuous magenta #ff00ff margin of two cells \u2014 do not touch image border. Brass gold, crimson, cream, deep blue-violet. Charcoal-plum outline, upper-left light. Solid #ff00ff background. No singer, letters, UI, shadow, aura, confetti, gradient, watermark, transparency.",
   "ingest": {
     "recovered": {
       "bbox": [
-        112,
-        96,
-        921,
-        952
+        160,
+        51,
+        927,
+        975
       ],
       "pitch_x": {
-        "pitch": 40.405555555555196,
-        "score": 0.07036284032966612
+        "pitch": 31.89444444444453,
+        "score": 0.2617912775954731
       },
       "pitch_y": {
-        "pitch": 37.805555555555344,
-        "score": 0.08697999584358194
+        "pitch": 31.94444444444453,
+        "score": 0.23677540013251927
       },
       "grid": [
-        20,
-        23
+        25,
+        29
       ]
     },
     "mode": "source-local",
@@ -73,67 +73,67 @@
       "unique_after_peel_cluster": 12,
       "palette_rgb": [
         [
-          36,
-          15,
-          71
+          50,
+          11,
+          56
         ],
         [
-          249,
-          203,
+          63,
+          11,
+          171
+        ],
+        [
+          253,
+          250,
+          209
+        ],
+        [
+          197,
+          8,
+          57
+        ],
+        [
+          250,
+          208,
+          61
+        ],
+        [
+          102,
+          30,
+          34
+        ],
+        [
+          96,
+          61,
           64
         ],
         [
-          201,
-          139,
-          30
-        ],
-        [
-          251,
+          253,
           242,
-          177
+          155
         ],
         [
-          151,
-          56,
-          28
+          252,
+          226,
+          97
         ],
         [
-          232,
+          161,
+          134,
+          103
+        ],
+        [
           172,
-          31
+          103,
+          26
         ],
         [
-          100,
-          44,
-          28
-        ],
-        [
-          205,
-          186,
-          158
-        ],
-        [
-          181,
-          109,
-          28
-        ],
-        [
-          249,
-          216,
-          115
-        ],
-        [
-          123,
-          105,
-          63
-        ],
-        [
-          33,
-          14,
-          47
+          224,
+          157,
+          33
         ]
       ]
     }
   },
-  "note": "#530 Priest Basic/Core Ability unregistered source-local icon; activation deferred to #534"
+  "note": "#530 Priest Ability C2 scale rework \u2014 unregistered source-local icon; activation deferred to #534"
 }

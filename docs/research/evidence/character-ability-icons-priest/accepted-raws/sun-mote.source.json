@@ -1,7 +1,7 @@
 {
   "provider": "Cursor GenerateImage",
   "acquisition_tool": "GenerateImage",
-  "raw_sha256": "1a18abf3dcee61acfa4e84e4b6fa862434e8b6147b38df483e77a90bd803e3f5",
+  "raw_sha256": "850743bb02b70e0dd8536bf2a1aded62312040deda85ac00ba0f57ba5efb5d05",
   "asset_class": "interface",
   "kind": "ability-loadout-icon",
   "color_mode": "source-local",
@@ -11,7 +11,7 @@
     20
   ],
   "runtime_destination": "deferred \u2014 unregistered interim; later activation slice (#534)",
-  "candidate": "sun-mote-r3",
+  "candidate": "sun-mote-r8b",
   "issue_prompt": "TRUE chunky pixel-art ability icon only, exact 32\u00d732 logical pixel grid rendered large. Sun Mote: one compact golden sun orb with four broad rays and a forward-pointing light wedge, a simple single-target light attack. Centered 26\u201330 pixels, two full #ff00ff cells clear, flat pixels, structures at least 3 pixels, selective one-pixel charcoal-plum outline, upper-left light. Use solar gold, amber, cream-white center, warm coral accent; source-local colors, no named palette. Solid #ff00ff background. No character, face, words, UI frame, sky scene, cast shadow, soft bloom, loose particles, gradient, anti-aliasing, blur, dithering, watermark, or transparency.",
   "style_references": [
     {
@@ -45,65 +45,80 @@
       "role": "style_cohort"
     }
   ],
-  "prompt": "TRUE chunky pixel-art ability icon only, exact 32\u00d732 logical pixel grid rendered large. Sun Mote: one compact golden sun orb with four broad rays and a forward-pointing light wedge, a simple single-target light attack. Make the subject LARGER \u2014 long side about 26\u201329 logical pixels. Keep at least TWO full #ff00ff magenta cells of clearance on every edge. Flat pixels, structures at least 3 pixels, selective one-pixel charcoal-plum outline, upper-left light. Use solar gold, amber, cream-white center, warm coral accent; source-local colors. Solid #ff00ff background. No character, face, words, UI frame, sky scene, cast shadow, soft bloom, loose particles, gradient, anti-aliasing, blur, dithering, watermark, or transparency.",
+  "prompt": "TRUE chunky pixel-art ability icon only on exact 32\u00d732 logical pixel grid rendered large. Hard flat square pixels only \u2014 no AA, blur, glow, dither. Sun Mote: golden sun orb with four broad rays and forward light wedge. IMPORTANT SIZE: make the opaque silhouette about 28 logical pixels across (same fill as a large ability icon reference), with a thin continuous magenta #ff00ff margin of about two cells on all sides \u2014 do not touch the image border. Colors: solar gold, amber, cream, coral. Charcoal-plum selective outline, upper-left light. Solid #ff00ff background. No character, text, UI, particles, gradient, watermark, transparency.",
   "ingest": {
     "recovered": {
       "bbox": [
-        143,
-        121,
-        914,
-        844
+        51,
+        90,
+        963,
+        933
       ],
       "pitch_x": {
-        "pitch": 34.54444444444445,
-        "score": 0.08516106251464785
+        "pitch": 32.41111111111118,
+        "score": 0.1268690154107642
       },
       "pitch_y": {
-        "pitch": 32.94444444444454,
-        "score": 0.2284842924321715
+        "pitch": 32.76111111111116,
+        "score": 0.2591217920656411
       },
       "grid": [
-        22,
-        22
+        28,
+        26
       ]
     },
     "mode": "source-local",
     "cluster": {
-      "unique_before": 83,
-      "unique_after_peel_cluster": 6,
+      "unique_before": 137,
+      "unique_after_peel_cluster": 9,
       "palette_rgb": [
         [
-          254,
-          252,
-          230
-        ],
-        [
-          254,
-          246,
-          141
-        ],
-        [
-          253,
-          211,
-          32
-        ],
-        [
-          249,
-          172,
-          2
-        ],
-        [
-          253,
-          223,
-          81
-        ],
-        [
           250,
-          108,
-          85
+          93,
+          49
+        ],
+        [
+          59,
+          12,
+          63
+        ],
+        [
+          253,
+          198,
+          31
+        ],
+        [
+          254,
+          253,
+          238
+        ],
+        [
+          254,
+          249,
+          200
+        ],
+        [
+          253,
+          229,
+          95
+        ],
+        [
+          253,
+          215,
+          51
+        ],
+        [
+          253,
+          239,
+          138
+        ],
+        [
+          254,
+          244,
+          171
         ]
       ]
     }
   },
-  "note": "#530 Priest Basic/Core Ability unregistered source-local icon; activation deferred to #534"
+  "note": "#530 Priest Ability C2 scale rework \u2014 unregistered source-local icon; activation deferred to #534"
 }
