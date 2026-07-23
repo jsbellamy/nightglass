@@ -7,6 +7,8 @@ import { describe, expect, it } from "vitest";
 import { createEngine } from "../core/engine";
 import { fixtureContent } from "../core/testing/fixture-content";
 import type { ClassId } from "../core/types";
+import { formatAbilityDescription } from "./ability-format";
+import { characterStatsFor } from "./snapshot-view";
 import { mountTalentsSurface } from "./talents-surface";
 import { legalityViewFromEngine } from "./engine-legality";
 
@@ -91,6 +93,32 @@ describe("Talents surface", () => {
     expect(knight.querySelector('[data-talent-detail="true"] .surface-empty')?.textContent).toBe(
       "Select a Talent",
     );
+
+    surface.destroy();
+  });
+
+  it("renders a full ability description in Ability Talent detail before actions", () => {
+    const root = document.createElement("div");
+    const engine = leveledKnightEngine();
+    const selected = { current: "knight" as ClassId };
+    const surface = mountTalentsSurface(root, mountOptions(selected));
+
+    renderTalents(surface, engine);
+    selectTalentCell(root, "k-hold-line");
+    const detail = knightSection(root).querySelector('[data-talent-detail="true"]');
+    const description = detail?.querySelector('[data-ability-description="true"]');
+    const holdLine = fixtureContent.abilities.find((entry) => entry.id === "k-hold-line")!;
+    expect(description?.textContent).toBe(
+      formatAbilityDescription(
+        holdLine,
+        characterStatsFor(engine.snapshot(), fixtureContent, "knight"),
+        fixtureContent.statuses,
+      ),
+    );
+    const actions = detail?.querySelector(".talent-detail-actions");
+    expect(
+      description!.compareDocumentPosition(actions!) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
 
     surface.destroy();
   });

@@ -1,17 +1,19 @@
 import type { ReadonlySnapshot } from "../core/snapshot";
-import type { AbilityDef, BaseStats, ClassId, Content } from "../core/types";
-import { formatAbilityTimings } from "./ability-format";
+import type { AbilityDef, BaseStats, ClassId, Content, StatusEffectDef } from "../core/types";
+import {
+  formatAbilityChoiceLabel,
+  formatAbilityInlineMechanics,
+  formatAbilityTimings,
+} from "./ability-format";
 import type { TileCommand } from "./bus";
 import type { EngineLegalityView } from "./engine-legality";
 import {
-  abilityRawDisplay,
   appliedLoadout,
   CLASS_LABELS,
   characterStatsFor,
   classKitFor,
   effectiveLoadout,
   effectiveTalentState,
-  formatAbilityRawLine,
   unlockableAbilityIds,
 } from "./snapshot-view";
 import { el, mountSurfaceShell, pendingMarker } from "./surface-shell";
@@ -43,17 +45,19 @@ function newlyInsertedAbilities(
 function renderAbilityCard(
   ability: AbilityDef,
   stats: BaseStats,
+  statuses: readonly StatusEffectDef[],
   slotIndex: number | "basic",
   activationDelayPending: boolean,
 ): HTMLElement {
   const cardChildren = [el("p", { class: "ability-name", text: ability.name })];
 
-  const raw = formatAbilityRawLine(abilityRawDisplay(ability, stats));
-  if (raw) {
-    cardChildren.push(
-      el("p", { class: "ability-raw", data: { rawResult: "true" }, text: raw }),
-    );
-  }
+  cardChildren.push(
+    el("p", {
+      class: "ability-description",
+      data: { abilityDescription: "true" },
+      text: formatAbilityInlineMechanics(ability, stats, statuses),
+    }),
+  );
 
   cardChildren.push(
     el("p", { class: "ability-timings", text: formatAbilityTimings(ability) }),
@@ -123,7 +127,7 @@ export function mountLoadoutSurface(
             { class: "basic-attack", aria: { label: "Basic attack fallback" } },
             [
               el("p", { class: "slot-label", text: "Basic attack (fallback)" }),
-              renderAbilityCard(basicAbility, stats, "basic", false),
+              renderAbilityCard(basicAbility, stats, content.statuses, "basic", false),
             ],
           ),
         );
@@ -140,7 +144,7 @@ export function mountLoadoutSurface(
         const optionElements = [
           el("option", {
             props: { value: abilityId, selected: true },
-            text: ability.name,
+            text: formatAbilityChoiceLabel(ability, stats, content.statuses),
           }),
         ];
 
@@ -155,6 +159,11 @@ export function mountLoadoutSurface(
           }
           const duplicateIndex = loadout.indexOf(candidateId);
           const disabled = duplicateIndex !== -1 && duplicateIndex !== slotIndex;
+          const candidateLabel = formatAbilityChoiceLabel(
+            candidate,
+            stats,
+            content.statuses,
+          );
           optionElements.push(
             el("option", {
               props: {
@@ -162,8 +171,8 @@ export function mountLoadoutSurface(
                 disabled,
               },
               text: disabled
-                ? `${candidate.name} (already slotted)`
-                : candidate.name,
+                ? `${candidateLabel} (already slotted)`
+                : candidateLabel,
             }),
           );
         }
@@ -202,6 +211,7 @@ export function mountLoadoutSurface(
             renderAbilityCard(
               ability,
               stats,
+              content.statuses,
               slotIndex,
               inserted.has(abilityId),
             ),
