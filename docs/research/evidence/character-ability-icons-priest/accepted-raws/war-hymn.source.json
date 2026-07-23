@@ -1,0 +1,139 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "a935f09af7d69b8854c9158f4342b0b67631ef91e6f8787586de5aa4694d5883",
+  "asset_class": "interface",
+  "kind": "ability-loadout-icon",
+  "color_mode": "source-local",
+  "outline": [
+    58,
+    6,
+    20
+  ],
+  "runtime_destination": "deferred \u2014 unregistered interim; later activation slice (#534)",
+  "candidate": "war-hymn-r1",
+  "issue_prompt": "TRUE chunky pixel-art ability icon only, exact 32\u00d732 logical pixel grid rendered large. War Hymn: a stout ceremonial bell crossed by two rising musical strokes and a small party-chevron base, clearly an inspiring group buff. Centered 26\u201330 pixels, two #ff00ff cells clear, flat pixels, structures at least 3 pixels, selective charcoal-plum outline, upper-left light. Use brass gold, crimson cloth accent, cream highlight, deep blue-violet shadow; source-local colors without themed palette restriction. Solid #ff00ff background only. No singer, written notes or letters, UI frame, room, shadow, soft aura, confetti, gradient, anti-aliasing, blur, dithering, watermark, or transparency.",
+  "style_references": [
+    {
+      "path": "src/assets/icons/preview/verify-ability-canary@8x.png",
+      "sha256": "82a04baf5f96334431bbb23c8b3767055b80379202ede610b964301c26873ea9",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icon-sources/verify-ability-canary/source.grid",
+      "sha256": "07d4d4cb1bdca6b9d80c8a80217533dd050985f1639e96c543a811a3abd97614",
+      "role": "pipeline_ability_reference"
+    },
+    {
+      "path": "src/assets/icons/preview/sunlance@8x.png",
+      "sha256": "6bfe904acb6f3a3fb68153d8edcf0cdd6fd7bdbf51daf44c96fdf274fac573fb",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/preview/battle-liturgy@8x.png",
+      "sha256": "9d253e343fe3eb65f8796a05f79cc34d87190676f6a8155423ff17f084a0df43",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/preview/benediction@8x.png",
+      "sha256": "7a34c357faa80d6f1a0f0d529fac7d123a6bee361a7e541b77b7905e0aa852b9",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/preview/devotion@8x.png",
+      "sha256": "d4d4bba239c4490b3998434615f690a48371f8b806362b85dd305670c91db8c2",
+      "role": "style_cohort"
+    }
+  ],
+  "prompt": "TRUE chunky pixel-art ability icon only, exact 32\u00d732 logical pixel grid rendered large. War Hymn: a stout ceremonial bell crossed by two rising musical strokes and a small party-chevron base, clearly an inspiring group buff. Centered 26\u201330 pixels, two #ff00ff cells clear, flat pixels, structures at least 3 pixels, selective charcoal-plum outline, upper-left light. Use brass gold, crimson cloth accent, cream highlight, deep blue-violet shadow; source-local colors without themed palette restriction. Solid #ff00ff background only. No singer, written notes or letters, UI frame, room, shadow, soft aura, confetti, gradient, anti-aliasing, blur, dithering, watermark, or transparency.",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        112,
+        96,
+        921,
+        952
+      ],
+      "pitch_x": {
+        "pitch": 40.405555555555196,
+        "score": 0.07036284032966612
+      },
+      "pitch_y": {
+        "pitch": 37.805555555555344,
+        "score": 0.08697999584358194
+      },
+      "grid": [
+        20,
+        23
+      ]
+    },
+    "mode": "source-local",
+    "cluster": {
+      "unique_before": 318,
+      "unique_after_peel_cluster": 12,
+      "palette_rgb": [
+        [
+          36,
+          15,
+          71
+        ],
+        [
+          249,
+          203,
+          64
+        ],
+        [
+          201,
+          139,
+          30
+        ],
+        [
+          251,
+          242,
+          177
+        ],
+        [
+          151,
+          56,
+          28
+        ],
+        [
+          232,
+          172,
+          31
+        ],
+        [
+          100,
+          44,
+          28
+        ],
+        [
+          205,
+          186,
+          158
+        ],
+        [
+          181,
+          109,
+          28
+        ],
+        [
+          249,
+          216,
+          115
+        ],
+        [
+          123,
+          105,
+          63
+        ],
+        [
+          33,
+          14,
+          47
+        ]
+      ]
+    }
+  },
+  "note": "#530 Priest Basic/Core Ability unregistered source-local icon; activation deferred to #534"
+}

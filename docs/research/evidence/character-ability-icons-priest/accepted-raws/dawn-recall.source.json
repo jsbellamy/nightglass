@@ -1,0 +1,139 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "12e95db14c6154fd17ab631ad8e8dc4a85407ddac683a75e3d51ac12913676c8",
+  "asset_class": "interface",
+  "kind": "ability-loadout-icon",
+  "color_mode": "source-local",
+  "outline": [
+    58,
+    6,
+    20
+  ],
+  "runtime_destination": "deferred \u2014 unregistered interim; later activation slice (#534)",
+  "candidate": "dawn-recall-r2",
+  "issue_prompt": "TRUE chunky pixel-art ability icon only, exact 32\u00d732 logical pixel grid rendered large. Dawn Recall: a small broken halo rejoining above an upward-rising soul flame, unmistakably revival rather than ordinary healing. Centered 26\u201330 pixels, two-cell #ff00ff clearance, flat square pixels, members at least 3 pixels, selective one-pixel charcoal-plum outline, upper-left light. Use dawn orange, gold, pale cream, spiritual cyan, deep violet shadow; source-local colors, no named palette. Solid #ff00ff background. No body, grave scene, text, border, cast shadow, haze, floating particle field, gradients, anti-aliasing, blur, dithering, watermark, or transparency.",
+  "style_references": [
+    {
+      "path": "src/assets/icons/preview/verify-ability-canary@8x.png",
+      "sha256": "82a04baf5f96334431bbb23c8b3767055b80379202ede610b964301c26873ea9",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icon-sources/verify-ability-canary/source.grid",
+      "sha256": "07d4d4cb1bdca6b9d80c8a80217533dd050985f1639e96c543a811a3abd97614",
+      "role": "pipeline_ability_reference"
+    },
+    {
+      "path": "src/assets/icons/preview/sunlance@8x.png",
+      "sha256": "6bfe904acb6f3a3fb68153d8edcf0cdd6fd7bdbf51daf44c96fdf274fac573fb",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/preview/battle-liturgy@8x.png",
+      "sha256": "9d253e343fe3eb65f8796a05f79cc34d87190676f6a8155423ff17f084a0df43",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/preview/benediction@8x.png",
+      "sha256": "7a34c357faa80d6f1a0f0d529fac7d123a6bee361a7e541b77b7905e0aa852b9",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/preview/devotion@8x.png",
+      "sha256": "d4d4bba239c4490b3998434615f690a48371f8b806362b85dd305670c91db8c2",
+      "role": "style_cohort"
+    }
+  ],
+  "prompt": "TRUE chunky pixel-art ability icon only. Drawn on an EXACT 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat UNIFORM square block \u2014 no smaller detail, no anti-aliasing, no blur, no dithering, no soft edges. Dawn Recall: a small broken halo rejoining above an upward-rising soul flame, unmistakably revival rather than ordinary healing. Centered 26\u201330 pixels, two-cell #ff00ff clearance, members at least 3 pixels thick, selective one-pixel charcoal-plum outline, upper-left light. Use dawn orange, gold, pale cream, spiritual cyan, deep violet shadow; source-local colors, no named palette. Solid #ff00ff background. Match the hard chunky grid of the style reference icons. No body, grave scene, text, border, cast shadow, haze, floating particle field, gradients, anti-aliasing, blur, dithering, watermark, or transparency.",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        201,
+        64,
+        822,
+        947
+      ],
+      "pitch_x": {
+        "pitch": 37.25555555555536,
+        "score": 0.13829933075284478
+      },
+      "pitch_y": {
+        "pitch": 37.705555555555335,
+        "score": 0.11584033732492766
+      },
+      "grid": [
+        17,
+        24
+      ]
+    },
+    "mode": "source-local",
+    "cluster": {
+      "unique_before": 185,
+      "unique_after_peel_cluster": 12,
+      "palette_rgb": [
+        [
+          43,
+          14,
+          64
+        ],
+        [
+          65,
+          24,
+          114
+        ],
+        [
+          252,
+          236,
+          166
+        ],
+        [
+          253,
+          215,
+          81
+        ],
+        [
+          252,
+          196,
+          44
+        ],
+        [
+          207,
+          216,
+          178
+        ],
+        [
+          249,
+          160,
+          17
+        ],
+        [
+          182,
+          84,
+          22
+        ],
+        [
+          218,
+          120,
+          16
+        ],
+        [
+          75,
+          194,
+          180
+        ],
+        [
+          164,
+          217,
+          179
+        ],
+        [
+          233,
+          151,
+          59
+        ]
+      ]
+    }
+  },
+  "note": "#530 Priest Basic/Core Ability unregistered source-local icon; activation deferred to #534"
+}
