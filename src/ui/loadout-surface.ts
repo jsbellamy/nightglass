@@ -10,7 +10,6 @@ import { bindPressable } from "./keyboard";
 import { createEquipmentIconElement } from "./icons";
 import {
   appliedLoadout,
-  CLASS_LABELS,
   characterStatsFor,
   classKitFor,
   effectiveLoadout,
@@ -54,6 +53,17 @@ export function computeLoadoutAssignment(
   }
   return next;
 }
+
+export function availableAbilityIdsForLoadout(
+  unlocked: readonly string[],
+  basicAbilityId: string,
+  loadout: readonly [string, string, string],
+): string[] {
+  const slotted = new Set(loadout);
+  return unlocked.filter((id) => id !== basicAbilityId && !slotted.has(id));
+}
+
+const LOADOUT_SLOT_ROMAN = ["I", "II", "III"] as const;
 
 export interface LoadoutSurface {
   render(snapshot: ReadonlySnapshot | null, legality?: EngineLegalityView): void;
@@ -109,8 +119,10 @@ export function mountLoadoutSurface(
   const { content } = options;
   let activeDrag: AbilityDragSource | null = null;
   let selectedAbilityId: string | null = null;
+  let stripInspectAbilityName: string | null = null;
   let openPopoverAbilityId: string | null = null;
   let lastSnapshot: ReadonlySnapshot | null = null;
+  let availableStripHeading: HTMLElement | null = null;
 
   const detailPopover = el("div", {
     class: "loadout-ability-popover",
@@ -125,10 +137,45 @@ export function mountLoadoutSurface(
     bounds: root,
   });
 
-  const orderNote = el("p", {
-    class: "loadout-order-note",
-    text: "Slot 1 is checked first for the first valid Ability.",
+  const assignmentHint = el("p", {
+    class: "loadout-assignment-hint",
+    text: "Select a skill, then a slot",
   });
+
+  function syncAvailableStripHeading(): void {
+    if (!availableStripHeading) {
+      return;
+    }
+    if (selectedAbilityId !== null) {
+      availableStripHeading.textContent = "Selected · choose a target slot";
+      return;
+    }
+    if (stripInspectAbilityName) {
+      availableStripHeading.textContent = stripInspectAbilityName;
+      return;
+    }
+    availableStripHeading.textContent = "Available skills";
+  }
+
+  function bindAvailableStripHeadingDisclosure(ability: AbilityDef, tile: HTMLElement): void {
+    const showName = () => {
+      stripInspectAbilityName = ability.name;
+      syncAvailableStripHeading();
+    };
+    const maybeClearName = () => {
+      if (tile.matches(":hover") || tile.contains(document.activeElement)) {
+        return;
+      }
+      if (stripInspectAbilityName === ability.name) {
+        stripInspectAbilityName = null;
+        syncAvailableStripHeading();
+      }
+    };
+    tile.addEventListener("mouseenter", showName);
+    tile.addEventListener("mouseleave", maybeClearName);
+    tile.addEventListener("focusin", showName);
+    tile.addEventListener("focusout", maybeClearName);
+  }
 
   const loadoutHost = el("div", {
     class: "loadout-body loadout-body--detail-host",
@@ -190,6 +237,7 @@ export function mountLoadoutSurface(
 
   function clearAssignmentSelection(host: HTMLElement): void {
     selectedAbilityId = null;
+    syncAvailableStripHeading();
     for (const node of host.querySelectorAll<HTMLElement>(".loadout-tile--selected-source")) {
       node.classList.remove("loadout-tile--selected-source");
       node.removeAttribute("aria-pressed");
@@ -211,6 +259,7 @@ export function mountLoadoutSurface(
     for (const node of host.querySelectorAll<HTMLElement>("[data-loadout-slot-drop]")) {
       node.classList.toggle("loadout-slot--valid-target", selectedAbilityId !== null);
     }
+    syncAvailableStripHeading();
   }
 
   function publishLoadout(classId: ClassId, loadout: [string, string, string], next: [string, string, string]): void {
@@ -392,18 +441,26 @@ export function mountLoadoutSurface(
     host: HTMLElement,
     activationDelayPending = false,
   ): HTMLElement {
-    const tile = el("button", {
-      class: "loadout-assign-tile ability-card focus-ring",
-      data: {
-        abilityId: ability.id,
-        loadoutAssignTile: "true",
-        ...(context.kind === "slot" ? { loadoutSlot: String(context.slotIndex) } : { loadoutPool: "true" }),
-        ...(context.kind === "slot" && activationDelayPending ? { activationDelay: "true" } : {}),
+    const isStripIcon = context.kind === "pool";
+    const tile = el(
+      "button",
+      {
+        class: `loadout-assign-tile ability-card focus-ring${isStripIcon ? " loadout-assign-tile--strip-icon" : ""}`,
+        data: {
+          abilityId: ability.id,
+          loadoutAssignTile: "true",
+          ...(context.kind === "slot" ? { loadoutSlot: String(context.slotIndex) } : { loadoutPool: "true" }),
+          ...(context.kind === "slot" && activationDelayPending ? { activationDelay: "true" } : {}),
+        },
+        props: { type: "button" },
+        aria: { label: ability.name, pressed: "false" },
       },
-      props: { type: "button" },
-      aria: { label: ability.name, pressed: "false" },
-    }, [el("span", { class: "ability-name", text: ability.name })]);
+      isStripIcon ? [] : [el("span", { class: "ability-name", text: ability.name })],
+    );
     appendAbilityIcon(tile, ability);
+    if (isStripIcon) {
+      bindAvailableStripHeadingDisclosure(ability, tile);
+    }
 
     bindPressable(tile, () => {
       if (selectedAbilityId !== null) {
@@ -470,10 +527,9 @@ export function mountLoadoutSurface(
     const inserted = hasPending ? newlyInsertedAbilities(appliedLoadout(snapshot, classId), loadout) : new Set<string>();
 
     const unlocked = unlockableAbilityIds(classKit, talentState);
+    const availableIds = availableAbilityIdsForLoadout(unlocked, classKit.basicAbilityId, loadout);
 
-    const sectionChildren: (HTMLElement | false)[] = [
-      el("h3", { class: "surface-section-title", text: CLASS_LABELS[classId] }),
-    ];
+    const sectionChildren: (HTMLElement | false)[] = [];
 
     if (hasPending) {
       const marker = pendingMarker();
@@ -485,38 +541,11 @@ export function mountLoadoutSurface(
     if (basicAbility) {
       sectionChildren.push(
         el("div", { class: "basic-attack", aria: { label: "Basic attack fallback" } }, [
-          el("p", { class: "slot-label", text: "Basic attack (fallback)" }),
+          el("p", { class: "slot-label", text: "Basic Attack" }),
           renderBasicAttackTile(basicAbility),
         ]),
       );
     }
-
-    const poolTiles: HTMLElement[] = [];
-    for (const abilityId of unlocked) {
-      if (abilityId === classKit.basicAbilityId) {
-        continue;
-      }
-      const ability = abilityById(content, abilityId);
-      if (!ability) {
-        continue;
-      }
-      poolTiles.push(
-        renderAssignTile(
-          ability,
-          classId,
-          loadout,
-          { kind: "pool" },
-          host,
-        ),
-      );
-    }
-
-    sectionChildren.push(
-      el("div", { class: "loadout-pool" }, [
-        el("p", { class: "slot-label", text: "Unlocked Abilities" }),
-        el("div", { class: "loadout-pool-tiles", data: { loadoutPool: "true" } }, poolTiles),
-      ]),
-    );
 
     const slotElements: HTMLElement[] = [];
     loadout.forEach((abilityId, slotIndex) => {
@@ -531,7 +560,7 @@ export function mountLoadoutSurface(
           loadoutSlotDrop: "true",
         },
       }, [
-        el("p", { class: "slot-label", text: `Slot ${slotIndex + 1}` }),
+        el("p", { class: "slot-label", text: `Slot ${LOADOUT_SLOT_ROMAN[slotIndex]}` }),
         renderAssignTile(
           ability,
           classId,
@@ -547,6 +576,36 @@ export function mountLoadoutSurface(
 
     sectionChildren.push(el("div", { class: "loadout-slots" }, slotElements));
 
+    const poolTiles: HTMLElement[] = [];
+    for (const abilityId of availableIds) {
+      const ability = abilityById(content, abilityId);
+      if (!ability) {
+        continue;
+      }
+      poolTiles.push(
+        renderAssignTile(
+          ability,
+          classId,
+          loadout,
+          { kind: "pool" },
+          host,
+        ),
+      );
+    }
+
+    availableStripHeading = el("p", {
+      class: "loadout-available-heading slot-label",
+      data: { loadoutAvailableHeading: "true" },
+      text: "Available skills",
+    });
+    sectionChildren.push(
+      el("div", { class: "loadout-pool loadout-pool-strip" }, [
+        availableStripHeading,
+        el("div", { class: "loadout-pool-tiles", data: { loadoutPool: "true" } }, poolTiles),
+      ]),
+    );
+    syncAvailableStripHeading();
+
     host.append(
       el("section", { class: "loadout-character", data: { classId } }, sectionChildren),
     );
@@ -558,7 +617,7 @@ export function mountLoadoutSurface(
     title: "Loadout",
     body(snapshot) {
       rebuildLoadoutBody(snapshot);
-      return [orderNote, loadoutHost];
+      return [assignmentHint, loadoutHost];
     },
   });
 
