@@ -77,11 +77,11 @@ test.describe("evidence scenario registry", () => {
     }
   });
 
-  test("lists twelve monolith scenarios on rendered-evidence with generated titles", () => {
+  test("lists nine monolith scenarios on rendered-evidence with generated titles", () => {
     const monolith: EvidenceScenario[] = EVIDENCE_SCENARIOS.filter(
       (s) => s.spec.path === "e2e/rendered-evidence.spec.ts",
     );
-    expect(monolith).toHaveLength(12);
+    expect(monolith).toHaveLength(9);
     for (const scenario of monolith) {
       const title = evidenceScenarioTitle(scenario);
       for (const slug of scenario.slugs) {
@@ -91,15 +91,25 @@ test.describe("evidence scenario registry", () => {
     }
   });
 
-  test("catalogues five supplemental scenarios without adopting declarations yet", () => {
+  test("catalogues eight supplemental scenarios on dedicated spec files", () => {
     const supplementalPaths = [
       "e2e/contrast.spec.ts",
       "e2e/keyboard.spec.ts",
       "e2e/reduced-motion.spec.ts",
       "e2e/stress.spec.ts",
+      "e2e/scenarios/tile.spec.ts",
     ];
     const supplemental = EVIDENCE_SCENARIOS.filter((s) => supplementalPaths.includes(s.spec.path));
-    expect(supplemental).toHaveLength(5);
+    expect(supplemental).toHaveLength(8);
+    const tileScenarios = EVIDENCE_SCENARIOS.filter((s) => s.spec.path === "e2e/scenarios/tile.spec.ts");
+    expect(tileScenarios).toHaveLength(3);
+    for (const scenario of tileScenarios) {
+      const title = evidenceScenarioTitle(scenario);
+      for (const slug of scenario.slugs) {
+        expect(title).toContain(`evidence: ${slug}`);
+      }
+      expect(title).toContain(" — ");
+    }
   });
 
   test("rejects unsafe review output paths", () => {

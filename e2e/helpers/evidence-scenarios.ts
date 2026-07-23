@@ -101,7 +101,7 @@ export const EVIDENCE_SCENARIOS: readonly EvidenceScenario[] = [
     slugs: ["tile-geometry", "native-1x-scaling", "aa-contrast", "effect-image-loading"],
     spec: {
       id: "rendered-evidence:tile-baseline-combat",
-      path: "e2e/rendered-evidence.spec.ts",
+      path: "e2e/scenarios/tile.spec.ts",
     },
     fixture: "live-tile",
     reviewScenes: [
@@ -118,7 +118,7 @@ export const EVIDENCE_SCENARIOS: readonly EvidenceScenario[] = [
     slugs: ["effect-image-loading"],
     spec: {
       id: "rendered-evidence:hold-the-line-status-glyph",
-      path: "e2e/rendered-evidence.spec.ts",
+      path: "e2e/scenarios/tile.spec.ts",
     },
     fixture: "live-tile-seeded-snapshot",
     reviewScenes: [],
@@ -129,7 +129,7 @@ export const EVIDENCE_SCENARIOS: readonly EvidenceScenario[] = [
     slugs: ["tile-geometry"],
     spec: {
       id: "rendered-evidence:tile-five-opponents-drop-clearance",
-      path: "e2e/rendered-evidence.spec.ts",
+      path: "e2e/scenarios/tile.spec.ts",
     },
     fixture: "live-tile",
     reviewScenes: [],
