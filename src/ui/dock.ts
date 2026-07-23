@@ -11,6 +11,7 @@ import {
   bindScrollOverflowAffordance,
   type MountedSurface,
 } from "./surface-shell";
+import { managementRelevanceKey } from "./management-relevance";
 import { mountTabStrip } from "./tab-strip";
 
 export type DockTabId = "armory" | "character" | "stage";
@@ -50,36 +51,6 @@ export interface ManagementDockOptions {
   initialTab?: DockTabId;
   onClose?: () => void;
   onCommand?: (command: TileCommand) => void;
-}
-
-/**
- * Stable key for Snapshot fields that affect Management Dock surfaces.
- * Combat HP / cooldown / sim clock churn is excluded so pumps do not remount.
- */
-function managementRelevantKey(snapshot: ReadonlySnapshot | null): string {
-  if (!snapshot) {
-    return "null";
-  }
-  const { progression, pendingEdits, attempt } = snapshot;
-  return JSON.stringify({
-    unlockedStage: progression.unlockedStage,
-    party: progression.party,
-    reserve: progression.reserve,
-    pendingParty: progression.pendingParty,
-    armory: progression.armory,
-    characterXp: progression.characterXp,
-    talents: progression.talents,
-    loadouts: progression.loadouts,
-    pendingEdits,
-    attempt: attempt
-      ? {
-          id: attempt.id,
-          stage: attempt.stage,
-          encounter: attempt.encounter,
-          equipmentLoadouts: attempt.equipmentLoadouts,
-        }
-      : null,
-  });
 }
 
 export function mountManagementDock(
@@ -203,7 +174,7 @@ export function mountManagementDock(
     if (hasHeldState) {
       renderSurface(activeTab);
     }
-    lastManagementKey = managementRelevantKey(heldSnapshot);
+    lastManagementKey = managementRelevanceKey(heldSnapshot);
     lastLegalityToken = heldLegality.managementKey ?? heldLegality;
   }
 
@@ -279,7 +250,7 @@ export function mountManagementDock(
       syncStageLabel();
       syncSelectedClassId(snapshot);
 
-      const nextKey = managementRelevantKey(snapshot);
+      const nextKey = managementRelevanceKey(snapshot);
       const nextLegalityToken = legality.managementKey ?? legality;
       const managementUnchanged =
         lastManagementKey !== undefined &&
