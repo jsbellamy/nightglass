@@ -27,15 +27,9 @@ test.describe("Character progression evidence scenarios", () => {
       throw new Error("live-tile-and-dock session must include a Dock page");
     }
     await focusDockTab(dock, "character");
-
-    // Interim — Expand Character evidence helpers for the Build/Stats migration (#511).
-    const navModel = await expectApprovedCharacterNavigationOrder(dock);
-    if (navModel === "legacy") {
-      await expect(dock.locator('[data-character-sub-tab="loadout"][aria-selected="true"]')).toBeVisible();
-    } else {
-      await expect(dock.locator('[data-character-sub-tab="build"][aria-selected="true"]')).toBeVisible();
-      await expect(dock.locator('[data-character-section="loadout"]:not([hidden])')).toBeVisible();
-    }
+    await expectApprovedCharacterNavigationOrder(dock);
+    await expect(dock.locator('[data-character-section="loadout"]:not([hidden])')).toBeVisible();
+    await expect(dock.locator('[data-character-section="talents"]:not([hidden])')).toBeVisible();
 
     await focusCharacterSection(dock, "stats");
     const statsFit = await dock.evaluate(() => {
@@ -57,6 +51,9 @@ test.describe("Character progression evidence scenarios", () => {
       });
       const last = rows.at(-1)?.getBoundingClientRect();
       return {
+        groups: [...section.querySelectorAll<HTMLElement>("[data-stats-group]")].map(
+          (group) => group.dataset["statsGroup"],
+        ),
         keys: rows.map((row) => row.dataset["statKey"]),
         sourceRows: section.querySelectorAll("[data-stat-sources]").length,
         totals: section.querySelectorAll("[data-stat-total]").length,
@@ -69,6 +66,7 @@ test.describe("Character progression evidence scenarios", () => {
       };
     });
     expect(statsFit).not.toBeNull();
+    expect(statsFit!.groups).toEqual(["vitals", "offense", "defense"]);
     expect(statsFit!.keys).toEqual([
       "maxHealth",
       "physical",
@@ -129,20 +127,43 @@ test.describe("Character progression evidence scenarios", () => {
 
     const talentsFit = await dock.evaluate(() => {
       const panel = document.querySelector<HTMLElement>('[data-dock-panel="character"]');
-      if (!panel) {
+      const buildBoard = panel?.querySelector<HTMLElement>(".character-build-board");
+      if (!panel || !buildBoard) {
         return null;
       }
-      const talentsSection = panel.querySelector<HTMLElement>('[data-character-section="talents"]');
-      const treeScroll = panel.querySelector<HTMLElement>(".talent-tree-scroll");
+      const talentsSection = buildBoard.querySelector<HTMLElement>('[data-character-section="talents"]');
+      const treeScroll = buildBoard.querySelector<HTMLElement>(".talent-tree-scroll");
+      const stepper = buildBoard.querySelector<HTMLElement>(".talent-rank-stepper");
+      const minus = buildBoard.querySelector<HTMLElement>(
+        '[data-talent-action="deallocate"]',
+      );
+      const plus = buildBoard.querySelector<HTMLElement>(
+        '[data-talent-action="allocate"]',
+      );
+      const stepperBox = stepper?.getBoundingClientRect();
+      const faceBox = buildBoard
+        .querySelector<HTMLElement>(".talent-cell--stat-face, .talent-ability-compact-row .talent-cell")
+        ?.getBoundingClientRect();
+      const attachedStepper =
+        stepperBox !== undefined &&
+        faceBox !== undefined &&
+        Math.abs(stepperBox.top - faceBox.top) < 6 &&
+        stepperBox.left >= faceBox.left - 2;
       return {
         panelScrollable: panel.scrollHeight > panel.clientHeight + 1,
+        buildScrollable: buildBoard.scrollHeight > buildBoard.clientHeight + 1,
         treeScrollable: Boolean(
           treeScroll && treeScroll.scrollHeight > treeScroll.clientHeight + 1,
         ),
         talentsVisible: Boolean(talentsSection && !talentsSection.hidden),
-        tierSections: panel.querySelectorAll("[data-talent-tier]").length,
-        tierRows: panel.querySelectorAll(".talent-tree-scroll .talent-cell").length,
-        stickyDetail: panel.querySelector('[data-talent-detail="true"], aside.talent-detail') !== null,
+        tierSections: buildBoard.querySelectorAll("[data-talent-tier]").length,
+        tierRows: buildBoard.querySelectorAll(".talent-tree-scroll .talent-cell").length,
+        stickyDetail: buildBoard.querySelector('[data-talent-detail="true"], aside.talent-detail') !== null,
+        attachedStepper,
+        minusBeforePlus:
+          minus !== null &&
+          plus !== null &&
+          (minus.compareDocumentPosition(plus) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0,
         overflowY: getComputedStyle(panel).overflowY,
         treeOverflowY: treeScroll ? getComputedStyle(treeScroll).overflowY : "",
       };
@@ -153,8 +174,11 @@ test.describe("Character progression evidence scenarios", () => {
     expect(talentsFit!.tierSections).toBe(2);
     expect(talentsFit!.tierRows).toBeGreaterThanOrEqual(8);
     expect(talentsFit!.panelScrollable, "Character panel does not outer-scroll").toBe(false);
+    expect(talentsFit!.buildScrollable, "Build board does not outer-scroll").toBe(false);
     expect(talentsFit!.treeScrollable, "two-tier tree scrolls inside the column").toBe(true);
     expect(talentsFit!.stickyDetail, "sticky Talent detail retired").toBe(false);
+    expect(talentsFit!.attachedStepper, "rank stepper attached to Talent face").toBe(true);
+    expect(talentsFit!.minusBeforePlus, "minus precedes plus in tab order DOM").toBe(true);
     expect(talentsFit!.overflowY).toMatch(/auto|scroll/);
     expect(talentsFit!.treeOverflowY).toMatch(/auto|scroll/);
 

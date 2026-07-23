@@ -18,8 +18,7 @@ const DOCK_TAB_SCENE = {
 } as const;
 
 const CHARACTER_SUB_SCENE = {
-  loadout: "character-sub-loadout",
-  talents: "character-sub-talents",
+  build: "character-sub-build",
   stats: "character-sub-stats",
 } as const;
 
@@ -140,64 +139,66 @@ test.describe("Management Dock evidence scenarios", () => {
 
     await focusDockTab(dock, "character");
     await expectApprovedCharacterNavigationOrder(dock);
-    const characterSections = ["loadout", "talents", "stats"] as const;
-    for (const section of characterSections) {
-      await focusCharacterSection(dock, section);
-      const clipState = await dock.evaluate((activeSubTab) => {
-        const shell = document.querySelector(".dock-shell");
-        const panel = document.querySelector(".dock-panel:not([hidden])");
-        if (!shell || !panel) {
-          return { clipped: ["missing-shell"] };
-        }
-        const shellBox = shell.getBoundingClientRect();
-        const tolerance = 2;
-        const sectionRoot =
-          activeSubTab === "loadout"
-            ? panel.querySelector<HTMLElement>('[data-character-section="loadout"]')
-            : activeSubTab === "stats"
-              ? panel.querySelector<HTMLElement>('[data-character-section="stats"]')
-              : panel.querySelector<HTMLElement>('[data-character-section="talents"]');
-        const clipRoot = sectionRoot ?? panel;
-        const candidates =
-          activeSubTab === "talents"
-            ? [
-                ...panel.querySelectorAll<HTMLElement>(
-                  "[data-character-sub-tab], [data-talent-points]",
-                ),
-              ]
-            : [...clipRoot.querySelectorAll<HTMLElement>("button, [tabindex='0']")];
-        if (activeSubTab === "talents") {
-          const scroll = panel.querySelector<HTMLElement>(".talent-tree-scroll");
-          if (scroll) {
-            const box = scroll.getBoundingClientRect();
-            if (box.left < shellBox.left - tolerance || box.right > shellBox.right + tolerance) {
-              candidates.push(scroll);
-            }
+
+    const buildOverflow = await dock.evaluate(() => {
+      const shell = document.querySelector<HTMLElement>(".dock-shell");
+      const panel = document.querySelector<HTMLElement>('[data-dock-panel="character"]');
+      const buildBoard = panel?.querySelector<HTMLElement>(".character-build-board");
+      if (!shell || !panel || !buildBoard) {
+        return null;
+      }
+      const shellBox = shell.getBoundingClientRect();
+      const boardBox = buildBoard.getBoundingClientRect();
+      const tolerance = 2;
+      return {
+        panelScrollable: panel.scrollHeight > panel.clientHeight + 1,
+        buildScrollable: buildBoard.scrollHeight > buildBoard.clientHeight + 1,
+        boardFitsShell:
+          boardBox.left >= shellBox.left - tolerance &&
+          boardBox.right <= shellBox.right + tolerance &&
+          boardBox.top >= shellBox.top - tolerance &&
+          boardBox.bottom <= shellBox.bottom + tolerance,
+      };
+    });
+    expect(buildOverflow, "Character build metrics").not.toBeNull();
+    expect(buildOverflow!.panelScrollable, "Character panel does not outer-scroll on Build").toBe(
+      false,
+    );
+    expect(buildOverflow!.buildScrollable, "Build board does not outer-scroll").toBe(false);
+    expect(buildOverflow!.boardFitsShell, "Build board fits inside dock shell").toBe(true);
+    await captureReviewScene(dock, "dock-cross-webview-surfaces", CHARACTER_SUB_SCENE.build);
+
+    await focusCharacterSection(dock, "stats");
+    const statsClip = await dock.evaluate(() => {
+      const shell = document.querySelector<HTMLElement>(".dock-shell");
+      const panel = document.querySelector<HTMLElement>('[data-dock-panel="character"]');
+      const section = panel?.querySelector<HTMLElement>('[data-character-section="stats"]');
+      if (!shell || !panel || !section || section.hidden) {
+        return { clipped: ["missing-stats"] };
+      }
+      const shellBox = shell.getBoundingClientRect();
+      const tolerance = 2;
+      const panelScrollable = panel.scrollHeight > panel.clientHeight + 1;
+      const candidates = [...section.querySelectorAll<HTMLElement>("button, [tabindex='0']")];
+      const clipped = candidates
+        .filter((control) => {
+          const box = control.getBoundingClientRect();
+          if (box.width < 1 || box.height < 1) {
+            return false;
           }
-        }
-        const clipped = candidates
-          .filter((control) => {
-            const box = control.getBoundingClientRect();
-            if (box.width < 1 || box.height < 1) {
-              return false;
-            }
-            return (
-              box.right > shellBox.right + tolerance ||
-              box.bottom > shellBox.bottom + tolerance ||
-              box.left < shellBox.left - tolerance ||
-              box.top < shellBox.top - tolerance
-            );
-          })
-          .map((control) => control.getAttribute("aria-label") ?? control.className);
-        return { clipped };
-      }, section);
-      expect(clipState.clipped, `no clipped live controls on Character/${section}`).toEqual([]);
-      await captureReviewScene(
-        dock,
-        "dock-cross-webview-surfaces",
-        CHARACTER_SUB_SCENE[section],
-      );
-    }
+          return (
+            box.right > shellBox.right + tolerance ||
+            box.bottom > shellBox.bottom + tolerance ||
+            box.left < shellBox.left - tolerance ||
+            box.top < shellBox.top - tolerance
+          );
+        })
+        .map((control) => control.getAttribute("aria-label") ?? control.className);
+      return { clipped, panelScrollable };
+    });
+    expect(statsClip.panelScrollable, "Character panel does not outer-scroll on Stats").toBe(false);
+    expect(statsClip.clipped, "no clipped live controls on Character/Stats").toEqual([]);
+    await captureReviewScene(dock, "dock-cross-webview-surfaces", CHARACTER_SUB_SCENE.stats);
 
     const firstTab = tabs[0]!;
     expect(firstTab).toBe("armory");

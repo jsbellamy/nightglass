@@ -88,8 +88,7 @@ export type ReviewSceneId =
   | "dock-tab-armory"
   | "dock-tab-character"
   | "dock-tab-stage"
-  | "character-sub-loadout"
-  | "character-sub-talents"
+  | "character-sub-build"
   | "character-sub-stats"
   | "character-stats-breakdown"
   | "talent-direct-actions"
@@ -165,12 +164,11 @@ export const EVIDENCE_SCENARIOS: readonly EvidenceScenario[] = [
       { id: "dock-tab-armory" },
       { id: "dock-tab-character" },
       { id: "dock-tab-stage" },
-      { id: "character-sub-loadout" },
-      { id: "character-sub-talents" },
+      { id: "character-sub-build" },
       { id: "character-sub-stats" },
     ],
     summary:
-      "Management Dock populates from the Battle Tile over a shared bus and cycles Armory, Character, and Stage with Character sub-tab scenes",
+      "Management Dock populates from the Battle Tile over a shared bus; Character opens Build then Stats with simultaneous Build-board scenes",
   },
   {
     id: "dock-navigation-ownership",
@@ -236,7 +234,7 @@ export const EVIDENCE_SCENARIOS: readonly EvidenceScenario[] = [
     fixture: "live-tile-and-dock",
     reviewScenes: [],
     summary:
-      "unlocked pool and three slots fit; drag shows valid targets and replace/swap",
+      "four visible strip icons, 10-choice horizontal pool, compact slots, drag/select parity, displacement and swap without reset",
   },
   {
     id: "character-information-popovers",
@@ -248,7 +246,7 @@ export const EVIDENCE_SCENARIOS: readonly EvidenceScenario[] = [
     fixture: "live-tile-and-dock",
     reviewScenes: [],
     summary:
-      "Ability and Talent popovers share hover/focus text, stay in Dock bounds, and stay non-interactive",
+      "Ability and Talent popovers share hover/focus text, stay in Dock bounds, and hold coordinates across four live pump deliveries",
   },
   {
     id: "character-stats-breakdown",
@@ -260,7 +258,7 @@ export const EVIDENCE_SCENARIOS: readonly EvidenceScenario[] = [
     fixture: "live-tile-and-dock",
     reviewScenes: [{ id: "character-stats-breakdown" }],
     summary:
-      "Stats sub-tab order, five totals/source rows, and pending marker fit at 800×480",
+      "Stats Vitals/Offense/Defense groups, five totals/source rows, and pending marker fit at 800×480",
   },
   {
     id: "character-talents-actions",
@@ -272,7 +270,7 @@ export const EVIDENCE_SCENARIOS: readonly EvidenceScenario[] = [
     fixture: "live-tile-and-dock",
     reviewScenes: [{ id: "talent-direct-actions" }],
     summary:
-      "tile +/−, chosen/rank/gate states, Ability Talent replace, and tree scroll retention",
+      "attached stepper geometry and keyboard order, direct rank actions, Ability replace, gate/cascade feedback, inner tree scroll retention",
   },
   {
     id: "five-actor-pools",
@@ -299,7 +297,7 @@ export const EVIDENCE_SCENARIOS: readonly EvidenceScenario[] = [
     fixture: "live-tile-and-dock",
     reviewScenes: [],
     summary:
-      "Armory → Character → Stage journeys with Loadout assign/swap, Talent +/−, and popover disclosure without pointer",
+      "Armory → Character Build/Stats journeys with strip assign/swap, Talent −/+, and popover disclosure without pointer",
   },
   {
     id: "contrast-aa-dock-surfaces",

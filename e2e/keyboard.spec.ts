@@ -4,6 +4,7 @@ import {
   characterPickerChipLocator,
   expectApprovedCharacterNavigationOrder,
   focusCharacterSection,
+  focusCharacterView,
   focusDockTab,
   openDockFromTileKeyboard,
 } from "./helpers/dock-context";
@@ -108,14 +109,9 @@ test.describe("accessibility keyboard floor", () => {
     await dock.keyboard.press("ArrowLeft");
     await expect(dock.locator('[data-dock-tab="character"][aria-selected="true"]')).toBeVisible();
 
-    // Interim — Expand Character evidence helpers for the Build/Stats migration (#511).
-    const characterNavModel = await expectApprovedCharacterNavigationOrder(dock);
-    if (characterNavModel === "legacy") {
-      await expect(dock.locator('[data-character-sub-tab="loadout"][aria-selected="true"]')).toBeVisible();
-    } else {
-      await expect(dock.locator('[data-character-sub-tab="build"][aria-selected="true"]')).toBeVisible();
-      await expect(dock.locator('[data-character-section="loadout"]:not([hidden])')).toBeVisible();
-    }
+    await expectApprovedCharacterNavigationOrder(dock);
+    await expect(dock.locator('[data-character-section="loadout"]:not([hidden])')).toBeVisible();
+    await expect(dock.locator('[data-character-section="talents"]:not([hidden])')).toBeVisible();
     await characterPickerChipLocator(dock, "knight").focus();
     await dock.keyboard.press("Enter");
 
@@ -150,7 +146,7 @@ test.describe("accessibility keyboard floor", () => {
     );
     await loadoutSlot0.focus();
     await pressEnterKeydown(loadoutSlot0);
-    await focusCharacterSection(dock, "loadout", { focusTabChrome: true });
+    await focusCharacterView(dock, "build", { focusTabChrome: true });
     await expect(dock.locator('[data-class-id="knight"] [data-pending-kind="loadout"]')).toContainText(
       /next Wave/i,
     );
@@ -169,7 +165,7 @@ test.describe("accessibility keyboard floor", () => {
     const slot1AbilityBefore = await loadoutSlot1.getAttribute("data-ability-id");
     await loadoutSlot1.focus();
     await pressEnterKeydown(loadoutSlot1);
-    await focusCharacterSection(dock, "loadout", { focusTabChrome: true });
+    await focusCharacterView(dock, "build", { focusTabChrome: true });
     await expect(
       dock.locator(
         '[data-class-id="knight"] [data-loadout-slot-drop][data-slot="1"] [data-ability-id="pommel-break"]',
@@ -183,23 +179,11 @@ test.describe("accessibility keyboard floor", () => {
       ).toBeVisible();
     }
 
-    // Character header tabs: legacy Loadout → Talents → Stats, or successor Build → Stats.
-    // Interim — Expand Character evidence helpers for the Build/Stats migration (#511).
-    if (characterNavModel === "legacy") {
-      await dock.locator('[data-character-sub-tab="loadout"]').focus();
-      await dock.keyboard.press("ArrowRight");
-      await expect(dock.locator('[data-character-sub-tab="talents"][aria-selected="true"]')).toBeVisible();
-      await dock.keyboard.press("ArrowRight");
-      await expect(dock.locator('[data-character-sub-tab="stats"][aria-selected="true"]')).toBeVisible();
-      await dock.keyboard.press("ArrowLeft");
-      await expect(dock.locator('[data-character-sub-tab="talents"][aria-selected="true"]')).toBeVisible();
-    } else {
-      await dock.locator('[data-character-sub-tab="build"]').focus();
-      await dock.keyboard.press("ArrowRight");
-      await expect(dock.locator('[data-character-sub-tab="stats"][aria-selected="true"]')).toBeVisible();
-      await dock.keyboard.press("ArrowLeft");
-      await expect(dock.locator('[data-character-sub-tab="build"][aria-selected="true"]')).toBeVisible();
-    }
+    await dock.locator('[data-character-sub-tab="build"]').focus();
+    await dock.keyboard.press("ArrowRight");
+    await expect(dock.locator('[data-character-sub-tab="stats"][aria-selected="true"]')).toBeVisible();
+    await dock.keyboard.press("ArrowLeft");
+    await expect(dock.locator('[data-character-sub-tab="build"][aria-selected="true"]')).toBeVisible();
 
     await focusCharacterSection(dock, "talents");
     const fortitudeCell = dock.locator(

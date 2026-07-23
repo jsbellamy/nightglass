@@ -11,7 +11,7 @@ import {
   waitForDockOpenedSnapshotHandshake,
 } from "./bus";
 import { engineLegalityForSnapshot } from "./snapshots";
-import { focusCharacterSection, openTilePage } from "./dock-context";
+import { focusCharacterView, openTilePage } from "./dock-context";
 import type { EvidenceFixtureId } from "./evidence-scenarios";
 import { reviewSceneRoot } from "./review-scenes";
 
@@ -228,5 +228,5 @@ export async function reconcileLoadoutSurfaceAfterSyntheticAssignment(dock: Page
       delete node.dataset["surfacePreserveLive"];
     }
   });
-  await focusCharacterSection(dock, "loadout", { focusTabChrome: true });
+  await focusCharacterView(dock, "build", { focusTabChrome: true });
 }
