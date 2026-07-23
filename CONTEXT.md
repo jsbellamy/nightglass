@@ -49,7 +49,7 @@ The fixed 480×112 logical-pixel, always-on-top surface that contains the live B
 _Avoid_: main window, taskbar, combat window
 
 **Management Dock**:
-The single 800×480 logical-pixel tabbed panel, docked flush above the tile (below it when top-parked). It shows one management surface at a time — Character, Armory, or Stage — and opening or switching it never resizes or implicitly pauses the Battle Tile. It may translate the tile horizontally only to preserve center-on-dock after monitor clamping.
+The single 800×480 logical-pixel tabbed panel, docked flush above the tile (below it when top-parked). It shows one management surface at a time — Armory, Character, or Stage — and opening or switching it never resizes or implicitly pauses the Battle Tile. It may translate the tile horizontally only to preserve center-on-dock after monitor clamping.
 _Avoid_: management windows, card fan, settings panel
 
 **Party Member**:
@@ -185,7 +185,7 @@ Damage reduced by the target's Armor.
 _Avoid_: weapon damage (as the general term)
 
 **Physical Power**:
-A hidden derived statistic used to calculate an Ability's raw Physical Damage: `floor((base Physical + flat bonuses) × (1 + summed percentage bonuses))`. The interface shows current Ability results rather than the consolidated Physical Power total.
+A derived statistic used to calculate an Ability's raw Physical Damage: `floor((base Physical + flat bonuses) × (1 + summed percentage bonuses))`. The dedicated **Character → Stats** surface exposes the consolidated Physical Power total with Base, Equipment, and Talent breakdowns. Ability and Talent tiles elsewhere show per-Ability results and generated mechanical text in a hover/focus popover rather than inline consolidated totals.
 _Avoid_: attack, weapon power
 
 **Armor**:
@@ -197,7 +197,7 @@ Damage carrying an Element identity and reduced by the target's Elemental Resist
 _Avoid_: magic damage, spell damage (as general terms)
 
 **Elemental Power**:
-A hidden derived statistic used to calculate an Ability's raw Elemental Damage and Healing: `floor((base Elemental + flat bonuses) × (1 + summed percentage bonuses))`. The interface shows current Ability results rather than the consolidated Elemental Power total.
+A derived statistic used to calculate an Ability's raw Elemental Damage and Healing: `floor((base Elemental + flat bonuses) × (1 + summed percentage bonuses))`. The dedicated **Character → Stats** surface exposes the consolidated Elemental Power total with Base, Equipment, and Talent breakdowns. Ability and Talent tiles elsewhere show per-Ability results and generated mechanical text in a hover/focus popover rather than inline consolidated totals.
 _Avoid_: magic power, spell power
 
 **Elemental Resistance**:
