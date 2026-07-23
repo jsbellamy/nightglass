@@ -559,6 +559,286 @@
     "source_family": "threshertooth-blade",
     "sha256": "f33b41d0e383b1be7e1ce9b300253052974ac1ed484f903406b5092f7f86f509"
   },
+  "steel-cut": {
+    "canvas": [
+      34,
+      34
+    ],
+    "color_mode": "source-local",
+    "outline": [
+      58,
+      6,
+      20
+    ],
+    "source_family": "steel-cut",
+    "sha256": "03fa284ee01d19068d887368641912417365097e34bd04c3a91ce7cd487c5916"
+  },
+  "sweeping-arc": {
+    "canvas": [
+      34,
+      34
+    ],
+    "color_mode": "source-local",
+    "outline": [
+      58,
+      6,
+      20
+    ],
+    "source_family": "sweeping-arc",
+    "sha256": "88b10fa7d6bcd79fcdf102cfc7299940a2fce88ee062b0ac9a4ffb5564d11370"
+  },
+  "shield-brace": {
+    "canvas": [
+      34,
+      34
+    ],
+    "color_mode": "source-local",
+    "outline": [
+      58,
+      6,
+      20
+    ],
+    "source_family": "shield-brace",
+    "sha256": "657d94307ac9160195158add9af156bcc6c83efd7de02cca90b69fcfca8a3365"
+  },
+  "rallying-guard": {
+    "canvas": [
+      34,
+      34
+    ],
+    "color_mode": "source-local",
+    "outline": [
+      58,
+      6,
+      20
+    ],
+    "source_family": "rallying-guard",
+    "sha256": "e084e0314242d842ac67169a5cbd2e87131b9c6bc47d7722edc2dcc355b3daeb"
+  },
+  "pommel-break": {
+    "canvas": [
+      34,
+      34
+    ],
+    "color_mode": "source-local",
+    "outline": [
+      58,
+      6,
+      20
+    ],
+    "source_family": "pommel-break",
+    "sha256": "2e0fe6013657cce120a0edc5c08d63301df56d3dd66a34e11f5727eaced8bfd8"
+  },
+  "arc-spark": {
+    "canvas": [
+      34,
+      34
+    ],
+    "color_mode": "source-local",
+    "outline": [
+      58,
+      6,
+      20
+    ],
+    "source_family": "arc-spark",
+    "sha256": "fb029e06b02fa37c46a5ff2db65b2df206f1087d6fe1abeaffd7b8502e5cef5a"
+  },
+  "cinder-bloom": {
+    "canvas": [
+      34,
+      34
+    ],
+    "color_mode": "source-local",
+    "outline": [
+      58,
+      6,
+      20
+    ],
+    "source_family": "cinder-bloom",
+    "sha256": "fb801a6fce3155cdca2388e50cda4a6293a72c789be4da480dd7e0b9e5b72b6a"
+  },
+  "frost-lance": {
+    "canvas": [
+      34,
+      34
+    ],
+    "color_mode": "source-local",
+    "outline": [
+      58,
+      6,
+      20
+    ],
+    "source_family": "frost-lance",
+    "sha256": "ba64d20a87507365b4532e829f7b61cddbfbeb9d16a6fb356410980d0d1dedd3"
+  },
+  "prism-ward": {
+    "canvas": [
+      34,
+      34
+    ],
+    "color_mode": "source-local",
+    "outline": [
+      58,
+      6,
+      20
+    ],
+    "source_family": "prism-ward",
+    "sha256": "f1ec4a610a577a92da40dfa5c971b067cee0dda05c36b83e9b2f392077206b2b"
+  },
+  "thunder-ring": {
+    "canvas": [
+      34,
+      34
+    ],
+    "color_mode": "source-local",
+    "outline": [
+      58,
+      6,
+      20
+    ],
+    "source_family": "thunder-ring",
+    "sha256": "e838456ce4d115475d688ec4e6b237a09bf58104d740079727c1211fa52d12fb"
+  },
+  "sun-mote": {
+    "canvas": [
+      34,
+      34
+    ],
+    "color_mode": "source-local",
+    "outline": [
+      58,
+      6,
+      20
+    ],
+    "source_family": "sun-mote",
+    "sha256": "202f018db848e424a0ab29eb1df540298f0afafa490b3e9bfe34bfb16e64b498"
+  },
+  "mending-light": {
+    "canvas": [
+      34,
+      34
+    ],
+    "color_mode": "source-local",
+    "outline": [
+      58,
+      6,
+      20
+    ],
+    "source_family": "mending-light",
+    "sha256": "f573f2130cd0ea8b185921fd8fb536b2b621b242c329ce2cce8c98cdd60b3831"
+  },
+  "dawn-recall": {
+    "canvas": [
+      34,
+      34
+    ],
+    "color_mode": "source-local",
+    "outline": [
+      58,
+      6,
+      20
+    ],
+    "source_family": "dawn-recall",
+    "sha256": "30cedd93acaebcabf4bad74d80af73ca3fd20e0d60cbdc546162292fd82fdd5a"
+  },
+  "war-hymn": {
+    "canvas": [
+      34,
+      34
+    ],
+    "color_mode": "source-local",
+    "outline": [
+      58,
+      6,
+      20
+    ],
+    "source_family": "war-hymn",
+    "sha256": "e2283134c9d638cb3084c09bc4d3d224010ad9db4689743ca6f8ca680d3b26c7"
+  },
+  "judgment": {
+    "canvas": [
+      34,
+      34
+    ],
+    "color_mode": "source-local",
+    "outline": [
+      58,
+      6,
+      20
+    ],
+    "source_family": "judgment",
+    "sha256": "992f6cb4649ca459be31c5385efda14b1e0f582122556747d935cfd47b214610"
+  },
+  "quickshot": {
+    "canvas": [
+      34,
+      34
+    ],
+    "color_mode": "source-local",
+    "outline": [
+      58,
+      6,
+      20
+    ],
+    "source_family": "quickshot",
+    "sha256": "3082d276786ee9ed4c02f94ba85160c92a4c62f893edd12aa57b90e7eaf0cd71"
+  },
+  "pinpoint-shot": {
+    "canvas": [
+      34,
+      34
+    ],
+    "color_mode": "source-local",
+    "outline": [
+      58,
+      6,
+      20
+    ],
+    "source_family": "pinpoint-shot",
+    "sha256": "2d5597242be1632cdb42bac9fca855463f51b44d63bf17fbde2e4d47fd03d4aa"
+  },
+  "barbed-arrow": {
+    "canvas": [
+      34,
+      34
+    ],
+    "color_mode": "source-local",
+    "outline": [
+      58,
+      6,
+      20
+    ],
+    "source_family": "barbed-arrow",
+    "sha256": "a070e03ac84116d11f9f87993cf485a90bc1e231dd7f370714ec078ce6e80453"
+  },
+  "split-volley": {
+    "canvas": [
+      34,
+      34
+    ],
+    "color_mode": "source-local",
+    "outline": [
+      58,
+      6,
+      20
+    ],
+    "source_family": "split-volley",
+    "sha256": "e85716d185f873f09253f85cd53e1386b8bd6599d9195621145839f9419a73fb"
+  },
+  "snareburst": {
+    "canvas": [
+      34,
+      34
+    ],
+    "color_mode": "source-local",
+    "outline": [
+      58,
+      6,
+      20
+    ],
+    "source_family": "snareburst",
+    "sha256": "be246b89723b2590e70eda505560bec399ccc0a5e6e585cf0f0bbc6522617c83"
+  },
   "verify-canary-a": {
     "canvas": [
       34,

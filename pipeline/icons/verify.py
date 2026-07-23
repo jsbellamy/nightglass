@@ -39,6 +39,8 @@ from icons.palette import (  # noqa: E402
 from icons.text_source import TextSource, cells_from_source, cells_to_local_source, parse_text, write_text  # noqa: E402
 from icons.registry import (  # noqa: E402
     ALL_BUILD_FAMILIES,
+    BASIC_CORE_ABILITY_KEYS,
+    FAMILIES,
     VERIFY_ABILITY_CANARY_FAMILY,
     VERIFY_CANARY_FAMILY,
     VERIFY_FOWL_CANARY_FAMILY,
@@ -445,6 +447,22 @@ check(
     len(fill_pixels) > 0,
     str(len(fill_pixels)),
 )
+
+print("\nbasic/core ability icon registration (#534)")
+families_by_key = {family.source_key: family for family in FAMILIES}
+for key in BASIC_CORE_ABILITY_KEYS:
+    family = families_by_key.get(key)
+    check(f"ability family {key} is registered", family is not None)
+    if family is None:
+        continue
+    check(
+        f"ability family {key} is source-local one-variant",
+        family.color_mode == SOURCE_LOCAL_COLOR_MODE
+        and len(family.variants) == 1
+        and family.variants[0].icon_key == key
+        and family.source_key == key,
+        family.color_mode,
+    )
 
 print("\nregistry palette ids")
 for family in ALL_BUILD_FAMILIES:
