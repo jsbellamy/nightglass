@@ -212,6 +212,27 @@ test.describe("accessibility keyboard floor", () => {
       ),
     ).toHaveText("5/5");
 
+    const deallocate = dock.locator(
+      '[data-class-id="knight"] [data-talent-id="fortitude"][data-talent-action="deallocate"]',
+    );
+    await deallocate.focus();
+    await assertFocusRingVisible(
+      dock,
+      '[data-class-id="knight"] [data-talent-id="fortitude"][data-talent-action="deallocate"]',
+    );
+    await pressEnterKeydown(deallocate);
+    await expect(
+      dock.locator(
+        '[data-class-id="knight"] .talent-cell[data-talent-id="fortitude"] .talent-rank-badge',
+      ),
+    ).toHaveText("4/5");
+    await pressEnterKeydown(allocate);
+    await expect(
+      dock.locator(
+        '[data-class-id="knight"] .talent-cell[data-talent-id="fortitude"] .talent-rank-badge',
+      ),
+    ).toHaveText("5/5");
+
     const holdLineAllocate = dock.locator(
       '[data-class-id="knight"] [data-talent-id="hold-the-line"][data-talent-action="allocate"]',
     );
@@ -268,20 +289,42 @@ test.describe("accessibility keyboard floor", () => {
 
     await focusDockTab(dock, "stage");
     await expect(dock.locator(".character-picker")).toBeHidden();
-    const stageFirst = await dock.evaluate(() => {
-      const pickerFocusable = document.querySelector<HTMLElement>(
-        '.character-picker [data-character-chip], .character-picker [data-formation-action]',
-      );
+    const stageRail = await dock.evaluate(() => {
+      const picker = document.querySelector<HTMLElement>(".character-picker");
       const firstStage = document.querySelector<HTMLElement>('[data-stage-id="1"]');
       return {
-        pickerTabIndex: pickerFocusable?.tabIndex ?? null,
-        pickerInert: document.querySelector<HTMLElement>(".character-picker")?.inert === true,
+        pickerInert: picker?.inert === true,
+        pickerDisplay: picker ? getComputedStyle(picker).display : null,
         stageDisabled: (firstStage as HTMLButtonElement | null)?.disabled ?? null,
       };
     });
-    expect(stageFirst.pickerInert).toBe(true);
-    expect(stageFirst.stageDisabled).toBe(false);
-    await dock.locator('[data-stage-id="1"]').focus();
+    expect(stageRail.pickerInert).toBe(true);
+    expect(stageRail.pickerDisplay).toBe("none");
+    expect(stageRail.stageDisabled).toBe(false);
+
+    await dock.locator('[data-dock-tab="stage"]').focus();
+    let focusedStage = false;
+    let hitRail = false;
+    for (let i = 0; i < 12; i++) {
+      await dock.keyboard.press("Tab");
+      const focused = await dock.evaluate(() => {
+        const el = document.activeElement as HTMLElement | null;
+        return {
+          stageId: el?.getAttribute("data-stage-id"),
+          inRail: Boolean(el?.closest(".character-picker")),
+        };
+      });
+      if (focused.inRail) {
+        hitRail = true;
+        break;
+      }
+      if (focused.stageId === "1") {
+        focusedStage = true;
+        break;
+      }
+    }
+    expect(hitRail, "no Character rail target before Stage rows").toBe(false);
+    expect(focusedStage, "first unlocked Stage row reachable by Tab").toBe(true);
     await assertFocusRingVisible(dock, '[data-stage-id="1"]');
     await dock.keyboard.press("Enter");
     await expect(dock.locator(".stage-confirm")).toBeVisible();

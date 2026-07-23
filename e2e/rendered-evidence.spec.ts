@@ -1409,16 +1409,13 @@ test.describe("rendered-output evidence seam", () => {
     );
     await fortitude.hover();
     await expect(dock.locator('[data-talent-popover="true"]:not([hidden])')).toBeVisible();
-    const hoverTalentText = await dock
-      .locator('[data-talent-popover="true"] .talent-popover-name')
-      .innerText();
+    const hoverTalentText = await dock.locator('[data-talent-popover="true"]').innerText();
 
     await fortitude.focus();
     await expect(dock.locator('[data-talent-popover="true"]:not([hidden])')).toBeVisible();
-    const focusTalentText = await dock
-      .locator('[data-talent-popover="true"] .talent-popover-name')
-      .innerText();
+    const focusTalentText = await dock.locator('[data-talent-popover="true"]').innerText();
     expect(focusTalentText).toBe(hoverTalentText);
+    await expect(fortitude).toHaveAttribute("aria-describedby", /talent-desc-fortitude/);
 
     const talentPopover = await dock.evaluate(() => {
       const shell = document.querySelector<HTMLElement>(".dock-shell");
