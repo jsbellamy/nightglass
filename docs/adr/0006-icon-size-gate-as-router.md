@@ -55,4 +55,6 @@ within `MAX_BODY` rebuild byte-identical.
 - `docs/icon-contract.md` marks `MAX_BODY` as a fit target and `MIN_LONG_AXIS`
   as a review-annotation threshold.
 - Fixture coverage: overshoot-fit paints after fit; thin advances with
-  annotation; raw/clip/pitch/off-ramp still reject.
+  annotation; pitch and off-ramp fail fixtures still reject. Raw-gate and
+  clip continue to raise in `recover_icon_grid` (unchanged call sites; no
+  new icon fixtures for those paths).
