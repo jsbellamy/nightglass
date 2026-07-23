@@ -11,6 +11,20 @@ import {
 } from "./helpers/dock-context";
 import { keyboardBootSnapshot } from "./helpers/snapshots";
 
+/**
+ * Activate a bindPressable control with a keydown only. Playwright's
+ * keyboard.press("Enter") also synthesizes a click, which would run the
+ * bindPressable action twice — fine for idempotent selects, but it leaves a
+ * dangling assignment selection after a slot assign.
+ */
+async function pressEnterKeydown(
+  locator: import("@playwright/test").Locator,
+): Promise<void> {
+  await locator.evaluate((element) => {
+    element.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+  });
+}
+
 test.describe("accessibility keyboard floor", () => {
   test("keyboard — boot, open dock, reach every surface, and complete one real flow per surface with visible focus rings and no pointer", async ({
     browser,
@@ -60,18 +74,26 @@ test.describe("accessibility keyboard floor", () => {
     await characterPickerChipLocator(dock, "knight").focus();
     await dock.keyboard.press("Enter");
     await focusCharacterSubTab(dock, "loadout");
-    const loadoutSelect = dock.locator('[data-class-id="knight"] [data-loadout-assign="0"]');
-    await loadoutSelect.focus();
-    await assertFocusRingVisible(dock, '[data-class-id="knight"] [data-loadout-assign="0"]');
-    await loadoutSelect.focus();
-    await loadoutSelect.evaluate((select) => {
-      const el = select as HTMLSelectElement;
-      if (el.options.length < 2) {
-        throw new Error("loadout select missing alternate ability");
-      }
-      el.selectedIndex = 1;
-      el.dispatchEvent(new Event("change", { bubbles: true }));
-    });
+    const loadoutPoolTile = dock.locator(
+      '[data-class-id="knight"] .loadout-pool-tiles [data-ability-id="pommel-break"]',
+    );
+    await loadoutPoolTile.focus();
+    await assertFocusRingVisible(
+      dock,
+      '[data-class-id="knight"] .loadout-pool-tiles [data-ability-id="pommel-break"]',
+    );
+    // Keyboard select-then-slot: Enter selects the pooled Ability, then Enter on a
+    // slot tile assigns it. This is the pointer-free path through the drag surface.
+    await pressEnterKeydown(loadoutPoolTile);
+    const loadoutSlotTile = dock.locator(
+      '[data-class-id="knight"] [data-loadout-slot-drop][data-slot="0"] [data-loadout-assign-tile]',
+    );
+    await loadoutSlotTile.focus();
+    await pressEnterKeydown(loadoutSlotTile);
+    // The reconcile shell pauses rebuilds while a loadout tile holds focus (it is
+    // marked data-surface-preserve-live). Return focus to the sub-tab — outside the
+    // Loadout surface — so the pending Snapshot flushes and the marker renders.
+    await dock.locator('[data-character-sub-tab="loadout"]').focus();
     await expect(dock.locator('[data-class-id="knight"] [data-pending-kind="loadout"]')).toContainText(
       /next Wave/i,
     );
@@ -106,7 +128,10 @@ test.describe("accessibility keyboard floor", () => {
     await characterPickerChipLocator(dock, "knight").focus();
     await dock.keyboard.press("Enter");
     await focusCharacterSubTab(dock, "loadout");
-    await assertFocusRingVisible(dock, '[data-class-id="knight"] [data-loadout-assign="0"]');
+    await assertFocusRingVisible(
+      dock,
+      '[data-class-id="knight"] [data-loadout-slot-drop][data-slot="0"] [data-loadout-assign-tile]',
+    );
 
     await focusDockTab(dock, "armory");
     await armoryCharacterChipLocator(dock, "knight").focus();
