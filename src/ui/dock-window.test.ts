@@ -1067,6 +1067,19 @@ describe("createDockWindowWithOptionalParent", () => {
     expect(other.childAttached).toBe(false);
   });
 
+  it("disables Tauri drag-drop interception so the Armory's HTML5 drag-to-equip works", async () => {
+    const created: Array<Record<string, unknown>> = [];
+    await createDockWindowWithOptionalParent("http://test/?window=dock", {
+      isMacOS: () => true,
+      LogicalPosition: FakeLogicalPosition,
+      createWebviewWindow: (_label, opts) => {
+        created.push(opts);
+        return fakeHandle({ emit: "created", createdOptions: opts });
+      },
+    });
+    expect(created[0]).toMatchObject({ dragDropEnabled: false });
+  });
+
   it("recreates without parent when creation with parent rejects, and reports unattached", async () => {
     const created: Array<Record<string, unknown>> = [];
     let attempts = 0;

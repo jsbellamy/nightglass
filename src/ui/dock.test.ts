@@ -606,7 +606,7 @@ describe("Management Dock active-surface rendering", () => {
     dock.destroy();
   });
 
-  it("restores Armory grid scrollTop after a management-relevant remount", () => {
+  it("keeps Armory grid scrollTop when a management-relevant change updates it in place", () => {
     const root = document.createElement("main");
     document.body.append(root);
     const dock = mountDock(root);
@@ -673,9 +673,17 @@ describe("Management Dock active-surface rendering", () => {
     ];
     dock.render(managed, legality);
 
+    // Under reconcile the grid node persists in place across a management-relevant
+    // change — the new drop is inserted without tearing down the grid — so scrollTop is
+    // preserved directly rather than captured and restored across a remount.
     const gridAfter = root.querySelector<HTMLElement>(".armory-grid");
-    expect(gridAfter).not.toBe(grid);
+    expect(gridAfter).toBe(grid);
     expect(gridAfter!.scrollTop).toBe(48);
+    expect(
+      [...gridAfter!.querySelectorAll<HTMLElement>(".equipment-card")].map(
+        (card) => card.dataset["dropId"],
+      ),
+    ).toContain("4");
 
     root.remove();
     dock.destroy();

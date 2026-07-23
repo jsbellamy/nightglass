@@ -1211,6 +1211,90 @@ describe("Armory surface", () => {
     root.remove();
     outside.remove();
   });
+
+  it("reuses the whole collection tile node across a combat pump so hover controls do not flash", () => {
+    const root = document.createElement("div");
+    document.body.append(root);
+    const selected = { current: "knight" as ClassId };
+    const first = armorySnapshot([drop({ dropId: 1, baseId: "fixture-blade" })]);
+    const surface = mountWithSelection(root, selected);
+    renderArmory(surface, first);
+
+    const tile = root.querySelector<HTMLElement>('.equipment-card[data-drop-id="1"]')!;
+    const lockButton = tile.querySelector<HTMLElement>(".armory-tile-lock");
+    expect(lockButton).not.toBeNull();
+
+    // Combat-only churn: the sim clock and a combatant's HP move; the armory is untouched.
+    const changed = cloneSnapshot(first);
+    changed.simNowMs += 250;
+    const partyCombatant = changed.attempt?.combatants.find((c) => c.side === "party");
+    if (partyCombatant) {
+      partyCombatant.health = Math.max(1, partyCombatant.health - 5);
+    }
+    renderArmory(surface, changed);
+
+    const tileAfter = root.querySelector<HTMLElement>('.equipment-card[data-drop-id="1"]');
+    // Same node instance -> never detached -> native :hover (and the lock button it
+    // reveals) is preserved, so nothing flashes.
+    expect(tileAfter).toBe(tile);
+    expect(tileAfter!.querySelector(".armory-tile-lock")).toBe(lockButton);
+
+    surface.destroy();
+    root.remove();
+  });
+
+  it("rebuilds only the tile whose state changed and leaves the others in place", () => {
+    const root = document.createElement("div");
+    document.body.append(root);
+    const selected = { current: "knight" as ClassId };
+    const first = armorySnapshot([
+      drop({ dropId: 1, baseId: "fixture-blade" }),
+      drop({ dropId: 2, baseId: "fixture-armor" }),
+    ]);
+    const surface = mountWithSelection(root, selected);
+    renderArmory(surface, first);
+
+    const tile1 = root.querySelector<HTMLElement>('.equipment-card[data-drop-id="1"]')!;
+    const tile2 = root.querySelector<HTMLElement>('.equipment-card[data-drop-id="2"]')!;
+
+    const changed = cloneSnapshot(first);
+    changed.progression.armory[1] = { ...changed.progression.armory[1]!, locked: true };
+    renderArmory(surface, changed);
+
+    // Tile 1 is untouched; tile 2 changed state (now Locked) so it is rebuilt in place.
+    expect(root.querySelector('.equipment-card[data-drop-id="1"]')).toBe(tile1);
+    const tile2After = root.querySelector<HTMLElement>('.equipment-card[data-drop-id="2"]')!;
+    expect(tile2After).not.toBe(tile2);
+    expect(tile2After.classList.contains("locked-tile")).toBe(true);
+
+    surface.destroy();
+    root.remove();
+  });
+
+  it("inserts a newly dropped tile without detaching the existing tiles", () => {
+    const root = document.createElement("div");
+    document.body.append(root);
+    const selected = { current: "knight" as ClassId };
+    const first = armorySnapshot([drop({ dropId: 1, baseId: "fixture-blade" })]);
+    const surface = mountWithSelection(root, selected);
+    renderArmory(surface, first);
+
+    const tile1 = root.querySelector<HTMLElement>('.equipment-card[data-drop-id="1"]')!;
+
+    const changed = cloneSnapshot(first);
+    changed.progression.armory = [
+      ...changed.progression.armory,
+      drop({ dropId: 2, baseId: "fixture-armor" }),
+    ];
+    renderArmory(surface, changed);
+
+    expect(root.querySelector('.equipment-card[data-drop-id="1"]')).toBe(tile1);
+    expect(tile1.isConnected).toBe(true);
+    expect(root.querySelector('.equipment-card[data-drop-id="2"]')).not.toBeNull();
+
+    surface.destroy();
+    root.remove();
+  });
 });
 
 describe("Armory surface source boundary", () => {

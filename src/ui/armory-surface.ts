@@ -119,6 +119,37 @@ export function mountArmorySurface(
   });
   comparePopover.style.pointerEvents = "none";
 
+  // The Armory body is a single persistent node the shell reconciles in place. Its
+  // collection grid never leaves the DOM across a rebuild, so a hovered tile keeps its
+  // native :hover (the lock button / discard checkbox stay put) and a tile grabbed for
+  // drag is never torn out from under the pointer. Only the parts that actually change
+  // — the toolbar, Character selector, worn strip, and the keyed grid tiles — update.
+  const gridEl = el("div", {
+    class: "armory-grid",
+    data: { armoryCollection: "true" },
+    props: { role: "list" },
+    aria: { label: "Armory collection" },
+  });
+  const armoryPanes = el("div", { class: "armory-panes armory-panes--full" }, [gridEl]);
+  const bodyEl = el("div", {
+    class: "armory-body armory-body--compare-host",
+    data: { surfaceRetain: "true" },
+  });
+  bodyEl.append(armoryPanes, comparePopover);
+  let currentToolbar: HTMLElement | null = null;
+  let currentSelector: HTMLElement | null = null;
+  let currentWornStrip: HTMLElement | null = null;
+
+  /** Swap a persistent-body section in place, keeping the grid attached and unmoved. */
+  function swapBodySection(current: HTMLElement | null, next: HTMLElement): HTMLElement {
+    if (current && current.parentNode === bodyEl) {
+      bodyEl.replaceChild(next, current);
+    } else {
+      bodyEl.insertBefore(next, armoryPanes);
+    }
+    return next;
+  }
+
   function publish(command: TileCommand): void {
     options.onCommand?.(command);
   }
@@ -225,11 +256,7 @@ export function mountArmorySurface(
     }
   }
 
-  function bindCollectionDrag(
-    snapshot: ReadonlySnapshot,
-    drop: DropInstance,
-    tile: HTMLElement,
-  ): void {
+  function bindCollectionDrag(drop: DropInstance, tile: HTMLElement): void {
     tile.draggable = true;
     tile.addEventListener("dragstart", (event) => {
       hideComparePopover();
@@ -242,7 +269,9 @@ export function mountArmorySurface(
       host.classList.add("armory-body--collection-drag");
       tile.classList.add("armory-drag-source");
       tile.dataset["surfacePreserveLive"] = "true";
-      highlightCollectionDragTargets(snapshot, drop.dropId);
+      if (lastSnapshot) {
+        highlightCollectionDragTargets(lastSnapshot, drop.dropId);
+      }
       event.dataTransfer?.setData(ARMORY_DRAG_MIME, JSON.stringify(source));
       if (event.dataTransfer) {
         event.dataTransfer.effectAllowed = "move";
@@ -353,7 +382,7 @@ export function mountArmorySurface(
     });
   }
 
-  function bindCollectionDropTarget(snapshot: ReadonlySnapshot, grid: HTMLElement): void {
+  function bindCollectionDropTarget(grid: HTMLElement): void {
     grid.addEventListener("dragover", (event) => {
       if (activeDrag?.kind !== "worn") {
         return;
@@ -371,7 +400,9 @@ export function mountArmorySurface(
         endArmoryDrag(armoryDragHost() ?? root);
         return;
       }
-      const worn = dropById(snapshot.progression.armory, source.dropId);
+      const worn = lastSnapshot
+        ? dropById(lastSnapshot.progression.armory, source.dropId)
+        : undefined;
       if (!worn?.assignedTo) {
         endArmoryDrag(armoryDragHost() ?? root);
         return;
@@ -507,13 +538,20 @@ export function mountArmorySurface(
   }
 
   function bindComparePopover(
-    snapshot: ReadonlySnapshot,
     drop: DropInstance,
     tile: HTMLElement,
     host: HTMLElement,
   ): void {
     const open = () => {
-      showComparePopover(snapshot, drop, tile, host);
+      // Re-read the drop from the current Snapshot: this tile node can be reused across
+      // renders while the Character's stats (and so the preview deltas) have moved on.
+      const snapshot = lastSnapshot;
+      const current = snapshot
+        ? dropById(snapshot.progression.armory, drop.dropId)
+        : undefined;
+      if (snapshot && current) {
+        showComparePopover(snapshot, current, tile, host);
+      }
     };
     const maybeClose = () => {
       if (tile.matches(":hover") || tile.contains(document.activeElement)) {
@@ -550,10 +588,7 @@ export function mountArmorySurface(
     browseCompatibility = { classId, slot };
   }
 
-  function renderArmoryCharacterSelector(
-    snapshot: ReadonlySnapshot,
-    container: HTMLElement,
-  ): void {
+  function renderArmoryCharacterSelector(snapshot: ReadonlySnapshot): HTMLElement {
     const roster = rosterClassIds(snapshot);
     const selected = options.getSelectedClassId();
     const selector = el("div", {
@@ -625,10 +660,10 @@ export function mountArmorySurface(
       selector.append(chip);
     }
 
-    container.append(selector);
+    return selector;
   }
 
-  function renderWornStrip(snapshot: ReadonlySnapshot, container: HTMLElement): void {
+  function renderWornStrip(snapshot: ReadonlySnapshot): HTMLElement {
     const classId = options.getSelectedClassId();
     const strip = el("div", {
       class: "armory-worn-strip",
@@ -689,7 +724,7 @@ export function mountArmorySurface(
       strip.append(button);
     }
 
-    container.append(strip);
+    return strip;
   }
 
   function renderTileFace(card: HTMLElement, drop: DropInstance): void {
@@ -732,7 +767,7 @@ export function mountArmorySurface(
     return sortArmoryDrops(drops, sort, content);
   }
 
-  function renderToolbar(snapshot: ReadonlySnapshot, container: HTMLElement): void {
+  function renderToolbar(snapshot: ReadonlySnapshot): HTMLElement {
     const toolbar = el("div", { class: "armory-toolbar" });
 
     const slotControl = el("div", {
@@ -884,95 +919,152 @@ export function mountArmorySurface(
       );
     }
 
-    container.append(toolbar);
+    return toolbar;
   }
 
-  function renderGrid(snapshot: ReadonlySnapshot, container: HTMLElement, host: HTMLElement): void {
-    const grid = el("div", {
-      class: "armory-grid",
-      data: { armoryCollection: "true" },
-      props: { role: "list" },
-      aria: { label: "Armory collection" },
+  /**
+   * Everything about a collection tile's rendered DOM, folded into one string. A tile is
+   * reused across renders only when this key is unchanged, so combat churn (which never
+   * touches these fields) reuses every tile — no teardown, no flash — while a genuine
+   * change (lock, seen, discard selection) rebuilds just the one tile that changed.
+   */
+  function tileStateKey(drop: DropInstance): string {
+    const base = equipmentBaseForDrop(drop, content);
+    return [
+      drop.dropId,
+      drop.rarity,
+      base.iconKey,
+      base.name,
+      drop.locked ? "L" : "",
+      isDropSeen(drop) ? "S" : "",
+      discardableDrop(drop) ? "d" : "",
+      selectedDiscard.has(drop.dropId) ? "D" : "",
+    ].join("|");
+  }
+
+  function buildTile(drop: DropInstance, host: HTMLElement): HTMLElement {
+    const tile = el("article", {
+      class: `equipment-card focus-ring${drop.locked ? " locked-tile" : ""}`,
+      data: {
+        dropId: String(drop.dropId),
+        tileStateKey: tileStateKey(drop),
+      },
+      props: { tabIndex: 0, role: "listitem" },
+      aria: {
+        label: equipmentBaseForDrop(drop, content).name,
+      },
     });
+    renderTileFace(tile, drop);
 
-    const drops = filteredDrops(snapshot);
-    for (const drop of drops) {
-      const tile = el("article", {
-        class: `equipment-card focus-ring${drop.locked ? " locked-tile" : ""}`,
-        data: {
-          dropId: String(drop.dropId),
+    if (discardableDrop(drop)) {
+      const checkbox = el("input", {
+        class: "armory-discard-checkbox focus-ring",
+        data: { discardSelect: String(drop.dropId) },
+        props: {
+          type: "checkbox",
+          checked: selectedDiscard.has(drop.dropId),
         },
-        props: { tabIndex: 0, role: "listitem" },
         aria: {
-          label: equipmentBaseForDrop(drop, content).name,
+          label: `Select ${equipmentBaseForDrop(drop, content).name} for discard`,
         },
       });
-      renderTileFace(tile, drop);
-
-      if (discardableDrop(drop)) {
-        const checkbox = el("input", {
-          class: "armory-discard-checkbox focus-ring",
-          data: { discardSelect: String(drop.dropId) },
-          props: {
-            type: "checkbox",
-            checked: selectedDiscard.has(drop.dropId),
-          },
-          aria: {
-            label: `Select ${equipmentBaseForDrop(drop, content).name} for discard`,
-          },
-        });
-        checkbox.addEventListener("click", (event) => {
-          event.stopPropagation();
-        });
-        checkbox.addEventListener("change", () => {
-          if (checkbox.checked) {
-            selectedDiscard.add(drop.dropId);
-          } else {
-            selectedDiscard.delete(drop.dropId);
-          }
-          render(snapshot);
-        });
-        tile.append(checkbox);
-      }
-
-      const lockButton = el("button", {
-        class: "armory-tile-lock focus-ring",
-        data: { tileLock: String(drop.dropId) },
-        props: { type: "button" },
-        aria: {
-          label: drop.locked
-            ? `Unlock ${equipmentBaseForDrop(drop, content).name}`
-            : `Lock ${equipmentBaseForDrop(drop, content).name}`,
-        },
-        text: drop.locked ? "Unlock" : "Lock",
-      });
-      lockButton.addEventListener("click", (event) => {
+      checkbox.addEventListener("click", (event) => {
         event.stopPropagation();
       });
-      bindPressable(lockButton, () => {
-        publish({ cmd: "setLocked", args: [drop.dropId, !drop.locked] });
+      checkbox.addEventListener("change", () => {
+        if (checkbox.checked) {
+          selectedDiscard.add(drop.dropId);
+        } else {
+          selectedDiscard.delete(drop.dropId);
+        }
+        if (lastSnapshot) {
+          render(lastSnapshot);
+        }
       });
-      tile.append(lockButton);
-
-      bindComparePopover(snapshot, drop, tile, host);
-
-      bindCollectionDrag(snapshot, drop, tile);
-      grid.append(tile);
+      tile.append(checkbox);
     }
 
-    if (drops.length === 0) {
-      grid.append(
+    const lockButton = el("button", {
+      class: "armory-tile-lock focus-ring",
+      data: { tileLock: String(drop.dropId) },
+      props: { type: "button" },
+      aria: {
+        label: drop.locked
+          ? `Unlock ${equipmentBaseForDrop(drop, content).name}`
+          : `Lock ${equipmentBaseForDrop(drop, content).name}`,
+      },
+      text: drop.locked ? "Unlock" : "Lock",
+    });
+    lockButton.addEventListener("click", (event) => {
+      event.stopPropagation();
+    });
+    bindPressable(lockButton, () => {
+      const current = lastSnapshot
+        ? dropById(lastSnapshot.progression.armory, drop.dropId)
+        : undefined;
+      publish({ cmd: "setLocked", args: [drop.dropId, !(current?.locked ?? drop.locked)] });
+    });
+    tile.append(lockButton);
+
+    bindComparePopover(drop, tile, host);
+    bindCollectionDrag(drop, tile);
+    return tile;
+  }
+
+  /**
+   * Reconcile the persistent grid's tiles in place, keyed by dropId. Unchanged tiles
+   * keep their exact node (and their :hover, focus, and any active grab); changed tiles
+   * are rebuilt one at a time; gone tiles are removed; new drops are inserted. A tile
+   * already sitting in its target slot is never touched, so the common combat case —
+   * identical tile set — mutates nothing.
+   */
+  function reconcileGrid(snapshot: ReadonlySnapshot, host: HTMLElement): void {
+    const drops = filteredDrops(snapshot);
+
+    const existing = new Map<number, HTMLElement>();
+    for (const child of [...gridEl.children]) {
+      const raw = (child as HTMLElement).dataset["dropId"];
+      if (raw !== undefined) {
+        existing.set(Number(raw), child as HTMLElement);
+      }
+    }
+
+    const desired: HTMLElement[] = [];
+    for (const drop of drops) {
+      const prev = existing.get(drop.dropId);
+      if (prev) {
+        existing.delete(drop.dropId);
+      }
+      if (prev && prev.dataset["tileStateKey"] === tileStateKey(drop)) {
+        desired.push(prev);
+      } else {
+        desired.push(buildTile(drop, host));
+      }
+    }
+
+    const keep = new Set<Node>(desired);
+    for (const child of [...gridEl.childNodes]) {
+      if (!keep.has(child)) {
+        gridEl.removeChild(child);
+      }
+    }
+    let cursor = gridEl.firstChild;
+    for (const node of desired) {
+      if (node === cursor) {
+        cursor = cursor.nextSibling;
+        continue;
+      }
+      gridEl.insertBefore(node, cursor);
+    }
+
+    if (desired.length === 0) {
+      gridEl.append(
         el("p", {
           class: "surface-empty",
           text: "No equipment matches the current filters.",
         }),
       );
     }
-
-    container.append(grid);
-    bindCollectionDropTarget(snapshot, grid);
-    unbindGridOverflow?.();
-    unbindGridOverflow = bindScrollOverflowAffordance(grid);
   }
 
   const shell = mountSurfaceShell(root, "armory-surface", {
@@ -980,17 +1072,21 @@ export function mountArmorySurface(
     title: "Armory",
     showTitle: false,
     body(snapshot) {
-      const body = el("div", { class: "armory-body armory-body--compare-host" });
-      renderToolbar(snapshot, body);
-      renderArmoryCharacterSelector(snapshot, body);
-      renderWornStrip(snapshot, body);
-      const panes = el("div", { class: "armory-panes armory-panes--full" });
-      renderGrid(snapshot, panes, body);
-      body.append(panes);
-      body.append(comparePopover);
-      return [body];
+      currentToolbar = swapBodySection(currentToolbar, renderToolbar(snapshot));
+      currentSelector = swapBodySection(
+        currentSelector,
+        renderArmoryCharacterSelector(snapshot),
+      );
+      currentWornStrip = swapBodySection(currentWornStrip, renderWornStrip(snapshot));
+      reconcileGrid(snapshot, bodyEl);
+      return [bodyEl];
     },
   });
+
+  // The grid node persists, so its drop-target and overflow affordance bind exactly once
+  // rather than on every render.
+  bindCollectionDropTarget(gridEl);
+  unbindGridOverflow = bindScrollOverflowAffordance(gridEl);
 
   function render(
     snapshot: ReadonlySnapshot | null,

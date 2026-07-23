@@ -598,4 +598,70 @@ describe("Management surface shell reconcile mode", () => {
     surface.destroy();
     root.remove();
   });
+
+  it("pauses rebuild while a pointer is pressed inside the surface and flushes on release", async () => {
+    const root = document.createElement("div");
+    document.body.append(root);
+    const engine = createEngine(content, undefined, LOOT_SEED);
+    const first = engine.snapshot();
+    let stageText = "stage-1";
+    const surface = mountSurfaceShell(root, "armory-surface", {
+      title: "Armory",
+      showTitle: false,
+      reconcile: true,
+      body() {
+        return [el("p", { class: "probe-stage", text: stageText })];
+      },
+    });
+
+    surface.render(first);
+    const probe = root.querySelector<HTMLElement>(".probe-stage");
+    expect(probe?.textContent).toBe("stage-1");
+
+    // Press begins (mousedown -> pointerdown, before any HTML5 dragstart fires): a pump
+    // that arrives now must not tear the grabbed node out from under the gesture.
+    root.dispatchEvent(new Event("pointerdown", { bubbles: true }));
+    stageText = "stage-2";
+    surface.render(changedSnapshot(first));
+    expect(root.querySelector(".probe-stage")).toBe(probe);
+    expect(probe!.textContent).toBe("stage-1");
+
+    // Release (pointerup can land anywhere) flushes the latest Snapshot on a microtask.
+    document.dispatchEvent(new Event("pointerup", { bubbles: true }));
+    await Promise.resolve();
+
+    expect(root.querySelector(".probe-stage")?.textContent).toBe("stage-2");
+
+    surface.destroy();
+    root.remove();
+  });
+
+  it("removes its document pointer listeners on destroy", async () => {
+    const root = document.createElement("div");
+    document.body.append(root);
+    const engine = createEngine(content, undefined, LOOT_SEED);
+    const first = engine.snapshot();
+    let renders = 0;
+    const surface = mountSurfaceShell(root, "armory-surface", {
+      title: "Armory",
+      showTitle: false,
+      reconcile: true,
+      body() {
+        renders += 1;
+        return [el("p", { class: "probe-stage", text: "body" })];
+      },
+    });
+
+    surface.render(first);
+    const rendersAtDestroy = renders;
+    surface.destroy();
+
+    // A stray pointerdown+pointerup after destroy must not resurrect a flush.
+    root.dispatchEvent(new Event("pointerdown", { bubbles: true }));
+    document.dispatchEvent(new Event("pointerup", { bubbles: true }));
+    await Promise.resolve();
+    expect(renders).toBe(rendersAtDestroy);
+
+    root.remove();
+  });
 });
