@@ -282,6 +282,28 @@ describe("Loadout surface", () => {
     surface.destroy();
   });
 
+  it("places the mechanical popover using the Management Dock as clamp bounds", () => {
+    const dock = document.createElement("div");
+    dock.className = "management-dock";
+    const root = document.createElement("div");
+    dock.append(root);
+    document.body.append(dock);
+
+    const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
+    const selected = { current: "knight" as ClassId };
+    const surface = mountLoadoutSurface(root, mountOptions(fixtureContent, selected));
+
+    surface.render(engine.snapshot());
+    const tile = poolTile(root, "k-sweep");
+    tile.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
+
+    const popover = root.querySelector<HTMLElement>('[data-loadout-ability-popover="true"]');
+    expect(popover?.dataset["mechanicalPopoverSide"]).toBeTruthy();
+
+    surface.destroy();
+    dock.remove();
+  });
+
   it("keeps the popover open across a Snapshot pump", () => {
     const root = document.createElement("div");
     const boot = createEngine(fixtureContent, undefined, LOOT_SEED);
