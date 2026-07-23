@@ -92,7 +92,7 @@ export function mountManagementDock(
   let hasHeldState = false;
   let selectedClassId: ClassId | undefined;
   let lastManagementKey: string | undefined;
-  let lastRenderedLegality: EngineLegalityView | undefined;
+  let lastLegalityToken: string | EngineLegalityView | undefined;
 
   root.classList.add("dock-shell", "management-dock");
   root.setAttribute("role", "dialog");
@@ -204,7 +204,7 @@ export function mountManagementDock(
       renderSurface(activeTab);
     }
     lastManagementKey = managementRelevantKey(heldSnapshot);
-    lastRenderedLegality = heldLegality;
+    lastLegalityToken = heldLegality.managementKey ?? heldLegality;
   }
 
   function syncCharacterRailVisibility(): void {
@@ -280,10 +280,11 @@ export function mountManagementDock(
       syncSelectedClassId(snapshot);
 
       const nextKey = managementRelevantKey(snapshot);
+      const nextLegalityToken = legality.managementKey ?? legality;
       const managementUnchanged =
         lastManagementKey !== undefined &&
         nextKey === lastManagementKey &&
-        lastRenderedLegality === legality;
+        nextLegalityToken === lastLegalityToken;
       if (managementUnchanged) {
         return;
       }

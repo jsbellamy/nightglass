@@ -5,7 +5,9 @@ import { talentTierDefs } from "./snapshot-view";
 import type { ClassId, EquipmentSlotId } from "../core/types";
 import { buildContent } from "../data";
 import {
+  EMPTY_ENGINE_LEGALITY,
   invalidatesLegality,
+  legalityViewFromEngine,
   legalityViewFromSerialized,
   serializeEngineLegality,
 } from "./engine-legality";
@@ -284,6 +286,49 @@ describe("Dock-derived equip legality", () => {
         }
       }
     }
+  });
+
+  it("assigns equal non-empty managementKey values to independent structured clones of the same legality", () => {
+    const engine = createEngine(content, undefined, LOOT_SEED);
+    const snapshot = engine.snapshot();
+    const serialized = serializeEngineLegality(engine, snapshot, content);
+    const cloneA = structuredClone(serialized);
+    const cloneB = structuredClone(serialized);
+    const viewA = legalityViewFromSerialized(cloneA, structuredClone(snapshot), content);
+    const viewB = legalityViewFromSerialized(cloneB, structuredClone(snapshot), content);
+    expect(viewA.managementKey).toBeDefined();
+    expect(viewA.managementKey).not.toBe("");
+    expect(viewB.managementKey).toBe(viewA.managementKey);
+    expect(viewA).not.toBe(viewB);
+  });
+
+  it("changes managementKey when Talent allocate/deallocate legality semantics change", () => {
+    const engine = createEngine(content, undefined, LOOT_SEED);
+    const snapshot = engine.snapshot();
+    const before = serializeEngineLegality(engine, snapshot, content);
+    const beforeKey = legalityViewFromSerialized(
+      structuredClone(before),
+      snapshot,
+      content,
+    ).managementKey;
+    const after = structuredClone(before);
+    const sampleKey = Object.keys(after.talentAllocate)[0];
+    if (!sampleKey) {
+      throw new Error("expected at least one talent legality entry");
+    }
+    after.talentAllocate[sampleKey] = !after.talentAllocate[sampleKey];
+    const afterKey = legalityViewFromSerialized(after, snapshot, content).managementKey;
+    expect(afterKey).not.toBe(beforeKey);
+  });
+
+  it("omits managementKey on live Engine-derived views for identity fallback", () => {
+    const engine = createEngine(content, undefined, LOOT_SEED);
+    expect(legalityViewFromEngine(engine).managementKey).toBeUndefined();
+  });
+
+  it("defines a constant managementKey on EMPTY_ENGINE_LEGALITY", () => {
+    expect(EMPTY_ENGINE_LEGALITY.managementKey).toBeDefined();
+    expect(EMPTY_ENGINE_LEGALITY.managementKey).not.toBe("");
   });
 
   it("keeps the serialized legality key count independent of Armory size", () => {
