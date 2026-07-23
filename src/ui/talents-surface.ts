@@ -583,8 +583,13 @@ export function mountTalentsSurface(
         ),
       );
 
-      const scroll = el("div", { class: "talent-tree-scroll" }, tierSections);
-      treeHost.replaceChildren(detailPopover, scroll);
+      const scroll =
+        treeHost.querySelector<HTMLElement>(".talent-tree-scroll") ??
+        el("div", { class: "talent-tree-scroll" });
+      scroll.replaceChildren(...tierSections);
+      if (!scroll.parentElement) {
+        treeHost.replaceChildren(detailPopover, scroll);
+      }
 
       if (
         openPopoverTalentId &&

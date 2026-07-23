@@ -167,7 +167,31 @@ describe("Talents surface", () => {
     surface.destroy();
   });
 
-  it("reuses the same talent icon node across renders with a changed Snapshot", () => {
+  it("keeps talent-tree scroll position across an unrelated Snapshot pump", () => {
+    const root = document.createElement("div");
+    document.body.append(root);
+    const engine = leveledKnightEngine();
+    const selected = { current: "knight" as ClassId };
+    const surface = mountTalentsSurface(root, mountOptions(selected));
+
+    renderTalents(surface, engine);
+    const scroll = knightSection(root).querySelector<HTMLElement>(".talent-tree-scroll");
+    if (!scroll) {
+      throw new Error("missing talent tree scroll");
+    }
+    scroll.scrollTop = 48;
+
+    const next = structuredClone(engine.snapshot());
+    next.simNowMs += 1;
+    surface.render(next, legalityViewFromEngine(engine));
+
+    expect(scroll.scrollTop).toBe(48);
+
+    surface.destroy();
+    root.remove();
+  });
+
+  it("preserves fortitude icon metadata across renders with a changed Snapshot", () => {
     const root = document.createElement("div");
     document.body.append(root);
     const engine = leveledKnightEngine();
