@@ -1,15 +1,18 @@
 import type { ReadonlySnapshot } from "../core/snapshot";
-import {
-  characterStatBreakdown,
-  statsDifferFromCommittedCombat,
-  type CharacterStatBreakdownLine,
-  type ModifierContribution,
-} from "../core/stat-breakdown";
-import { levelFromXp } from "../core/xp";
 import type { ClassId, Content } from "../core/types";
 import type { EngineLegalityView } from "./engine-legality";
 import { EMPTY_ENGINE_LEGALITY } from "./engine-legality";
-import { CLASS_LABELS, effectiveTalentState, levelFor, spentTalentPoints } from "./snapshot-view";
+import {
+  characterStatBreakdown,
+  characterXpProgressLabel,
+  CLASS_LABELS,
+  effectiveTalentState,
+  levelFor,
+  spentTalentPoints,
+  statsDifferFromCommittedCombat,
+  type CharacterStatBreakdownLine,
+  type ModifierContribution,
+} from "./snapshot-view";
 import { el, mountSurfaceShell, pendingMarker } from "./surface-shell";
 
 export interface StatsSurface {
@@ -67,21 +70,6 @@ export function formatStatSourceLine(line: CharacterStatBreakdownLine): string {
   return segments.join(" · ");
 }
 
-function characterXpLabel(
-  snapshot: ReadonlySnapshot,
-  content: Content,
-  classId: ClassId,
-): string {
-  const xp = snapshot.progression.characterXp[classId] ?? 0;
-  const thresholds = content.xpThresholds;
-  const level = levelFromXp(xp, thresholds);
-  if (level >= thresholds.length) {
-    return "Max Level";
-  }
-  const ceiling = thresholds[level]!;
-  return `${xp} / ${ceiling} XP toward Level ${level + 1}`;
-}
-
 function renderStatRow(line: CharacterStatBreakdownLine): HTMLElement {
   return el(
     "div",
@@ -125,7 +113,7 @@ export function mountStatsSurface(root: HTMLElement, options: StatsSurfaceOption
         el("p", {
           class: "stats-xp",
           data: { statsXp: "true" },
-          text: characterXpLabel(snapshot, content, classId),
+          text: characterXpProgressLabel(snapshot, content, classId),
         }),
         el("p", {
           class: "stats-talent-points",
