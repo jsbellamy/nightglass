@@ -65,15 +65,20 @@ gate passes; do not mirror a generated raw as a substitute for reacquisition.
   rebuild, and the legacy adapter promise for existing sprites. The retired
   small/medium/large tier contracts are historical pointers only — do not use
   their grid shells or fixed canvas sizes.
-- For **Equipment Base icons**, read [`../icon-contract.md`](../icon-contract.md).
-  It owns the 34×34 runtime, text-grid sources under `src/assets/icon-sources/`,
-  palette scoping, ingest gates, `src/assets/icons/` manifest layout, and the
-  deliberate divergence that icon provider raws are evidence under
-  `docs/research/evidence/` rather than `assets-raw/`. Stage-2 build, 8× previews,
-  and family contact sheets are produced by `pipeline/icons/` via
+- For **Equipment Base icons** and **Talent / Ability Talent** glyphs, read
+  [`../icon-contract.md`](../icon-contract.md). It owns the 34×34 runtime, text-grid sources
+  under `src/assets/icon-sources/`, **named-palette** scoping, ingest gates,
+  `src/assets/icons/` manifest layout, and the deliberate divergence that icon provider raws
+  are evidence under `docs/research/evidence/` rather than `assets-raw/`. Stage-2 build, 8×
+  previews, and family contact sheets are produced by `pipeline/icons/` via
   `npm run assets:build`. Prompting lessons from
   [`../research/evidence/125-equipment-icons-34/`](../research/evidence/125-equipment-icons-34/)
   still apply; do **not** resume the unmerged `issue-58-equipment-icons` 16×16 premise.
+- For **Ability (Loadout) icons** — Basic Attack and Core Abilities on the Character Build
+  Loadout — read the **Ability icons** section of [`../icon-contract.md`](../icon-contract.md).
+  Use the same 32×32 logical grid shell and magenta clearance as Equipment, but **source-local
+  mechanic colours**, not `moonberry-16` or `fowl-harvest-24` material sentences. Named-palette
+  off-ramp gates in the Equipment failure table apply only to Equipment and Talent sources.
 - For Character presentation and Ability effects, also read
   [`../animation-contract.md`](../animation-contract.md). It owns layer separation,
   `moonberry-glow`, effect anchors, deterministic derivation, and runtime
@@ -111,7 +116,7 @@ flat-colour pixel art, role-correct facing from the Battlefield facing rule
 above, and **no** exact logical grid, canvas dimensions, block dimensions, or
 safe-box measurements in the prompt.
 
-For Equipment Base icons, use this **icon grid shell**
+For Equipment Base icons and Talent / Ability Talent glyphs, use this **icon grid shell**
 around a concrete subject noun — same discipline as the Character shell, resized
 for icons. Attach Knight / Wizard / Priest stills as style references:
 
@@ -133,6 +138,11 @@ grid recovery, then **silently recolor** at quantize. Generate **one Tier I
 family source** per silhouette; derive Tier II with a deterministic `recolor`
 map rather than a second generation unless the silhouette itself must change for
 identification.
+
+For **Ability (Loadout) icons**, reuse the same **32×32 logical grid** and magenta clearance
+shell, but describe **mechanic-appropriate source-local flat colours** (see
+`docs/icon-contract.md` → **Ability icons**). Do **not** paste the Moonberry or Fowl Harvest
+material sentence from the Equipment shell.
 
 This step is complete when (a) the prompt names every identity-bearing feature
 and every geometric constraint, including the literal role-correct facing,
@@ -213,9 +223,10 @@ is also present; then **clip-fail**, **overshoot**, then **off-ramp**. A body
 candidate advances only when every raw-level gate passes and opaque bounds fit the
 role ceiling.
 
-### Equipment icons (logical grid)
+### Equipment icons (logical grid, named palette)
 
-For Equipment icons, read `ingest-report.json` beside the provider raws;
+For **Equipment Base** and **Talent / Ability Talent** icons, read `ingest-report.json` beside
+the provider raws;
 each entry matches the structure `pipeline/icons/ingest.py` returns from ingest
 (`recovered`, `ramp`) and carries the measurement the failure table below is keyed on:
 

@@ -1,10 +1,22 @@
-# Equipment icon contract
+# Management Dock icon contract
 
 Sibling of [`acquisition-contract.md`](acquisition-contract.md). Character stills and
-Equipment icons share the same offline Python toolchain and named body palettes
-(`moonberry-16`, `fowl-harvest-24`), but they **deliberately disagree** on acquisition
-gates, the committed boundary, and where provider raws live. One combined document would
-need exceptions on nearly every rule; this file owns the 34×34 icon path only.
+Management Dock raster icons share the same offline Python toolchain where applicable, but
+**icon classes deliberately disagree** on acquisition gates, palette rules, the committed
+boundary, and where provider raws live. One combined document would need exceptions on nearly
+every rule; this file owns the 34×34 Management Dock icon paths.
+
+## Icon classes
+
+| Class | Examples | Palette rule | This document |
+| --- | --- | --- | --- |
+| **Equipment Base** | Armory inventory tiles, worn strip | **Strict** named palette (`moonberry-16` or `fowl-harvest-24`) with `palette_subset` parse gates | Sections below through **Families** |
+| **Talent / Ability Talent** | Talent Tree skill glyphs | **Strict** `moonberry-16` subset (same geometry and ingest as Equipment) | **Families** — Talent batches |
+| **Ability (Loadout)** | Class Kit **Basic Attack**, Core Abilities in Loadout slots and **Available skills** | **Not** `moonberry-16` / `fowl-harvest-24`; mechanic-appropriate **source-local** colours | **Ability icons** |
+| **Verify canary** | `verify-canary` fixture family | `moonberry-16` | CI byte-identity only |
+
+Equipment and Talent icons **must** keep named-palette validation mandatory. Ability icons
+**must not** be forced through Equipment or Visual Theme battlefield palettes.
 
 ## Committed boundary
 
@@ -13,6 +25,10 @@ need exceptions on nearly every rule; this file owns the 34×34 icon path only.
 | Source | Text grid under `src/assets/icon-sources/<family>/source.grid` | Legend chars → named swatches from the family's declared palette (`moonberry-16` for committed Moonberry Equipment and Talent icons; `fowl-harvest-24` for Fowl Equipment once acquired); **generated output, never hand-edited** |
 | Runtime | `src/assets/icons/<iconKey>.png` + `manifest.json` | 34×34 inventory icons consumed by the UI; manifest records the family's selected `palette` id and palette-specific `outline` swatch name |
 | Review | `src/assets/icons/preview/<iconKey>@8x.png`, `family-sheet@8x.png` | PR-review approval targets (binary PNG diff) |
+
+**Ability (Loadout)** icons use the same runtime path and preview discipline when their
+families land; manifest entries for source-local Ability icons will record geometry and
+rebuild digests without requiring a named `palette` id (pipeline follow-on).
 
 Provider raws are **evidence, not build inputs**. Archive them under
 `docs/research/evidence/` with a `.source.json` sidecar (`provider`, `prompt`,
@@ -44,6 +60,37 @@ or ingest with no fallback palette.
 
 Regeneration is the only repair path for a bad source — edit the ingest inputs and
 re-run ingest, never pixels in the grid file.
+
+**Named-palette icons only.** The `palette`, `palette_subset`, and off-palette parse rules
+in this section apply to **Equipment Base** and **Talent / Ability Talent** sources. **Ability
+(Loadout)** sources follow **Ability icons** below and do not use `moonberry-16` or
+`fowl-harvest-24` scoping.
+
+## Ability icons (Loadout Basic / Core Abilities)
+
+**Ability icons** are a distinct icon class for **Basic Attack** and slottable **Core
+Abilities** shown on the Character **Build** Loadout (Basic row, Slots I–III, and the
+**Available skills** strip). They share the **same canvas geometry, outline discipline,
+lighting read, scale, and legibility targets** as Equipment and Talent glyphs, but they are
+**not** Equipment Bases and **not** Talent Tree symbols.
+
+| Requirement | Value |
+| --- | --- |
+| Runtime PNG | **34×34** canvas, **transparent** alpha (no opaque knockout fill in the shipped PNG) |
+| Logical source geometry | **32×32** drawable grid centered in the canvas (same `DRAWABLE` / `RING` / `MAX_BODY` as Equipment) |
+| Colour | **Source-local** flat fills chosen for the Ability’s mechanic and identity — frost blues for a lance, ember oranges for a cleave, and so on. **Do not** quantize Ability icons into `moonberry-16` or `fowl-harvest-24` solely to reuse Equipment ingest. |
+| Rebuild | Deterministic offline rebuild from committed text sources (or an equivalent declared encoder) must be **byte-identical** in CI, matching the Equipment/Talent icon pipeline promise. |
+| Visual parity | Chunky pixel blocks, derived outline ring, and Management Dock legibility at native scale — aligned with `docs/fowl-harvest-ui-contract.md` Loadout chrome. |
+
+Provider prompts for Ability icons use the **32×32 logical grid shell** and magenta clearance
+discipline from `docs/agents/asset-generation.md`, but replace Moonberry/Fowl material
+sentences with **mechanic-appropriate source-local colour names** (still flat, 8–12 colours
+max, no gradients). Archive provider raws under `docs/research/evidence/` with the same
+sidecar discipline as Equipment; do not route Ability raws through `assets-raw/grid_raw/`.
+
+When an Ability icon shares a content id with a Talent Tree glyph, treat them as **separate
+asset identities**: the Talent Tree ships under **Talent / Ability Talent** (named
+`moonberry-16`); the Loadout tile ships under **Ability icons** (source-local).
 
 ## Geometry
 
@@ -145,10 +192,11 @@ in `pipeline/icons/registry.py`. Family text-grid sources live under
 A synthetic `verify-canary` family proves byte-identical rebuild in CI.
 
 **Talent / Ability Talent** icons are additional **one-variant** families under the
-same geometry, ingest, and build contract: a single `IconVariant` with an empty
-`recolor` map, `iconKey` equal to the content id, and no Tier II. They are
-symbolic skill glyphs for Management Dock Talent Tree chrome — not Equipment
-Bases and not wearable Armory pieces. Knight's first batch
+same **named-palette** geometry, ingest, and build contract as Equipment: a single
+`IconVariant` with an empty `recolor` map, `iconKey` equal to the content id, and no Tier II.
+They are symbolic skill glyphs for Management Dock Talent Tree chrome — not Equipment
+Bases, not wearable Armory pieces, and **not** Loadout **Ability icons** (see **Ability
+icons**). Knight's first batch
 (`fortitude`, `swordcraft`, `hold-the-line`, `falling-star`) lands in
 [#305](https://github.com/jsbellamy/nightglass/issues/305); later Class batches
 extend the same registry without changing gates.
