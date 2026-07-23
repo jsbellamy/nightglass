@@ -84,6 +84,7 @@ export function mountLoadoutSurface(
   const { content } = options;
 
   const shell = mountSurfaceShell(root, "loadout-surface", {
+    reconcile: true,
     title: "Loadout",
     body(snapshot) {
       const classId = options.getSelectedClassId()!;
@@ -189,6 +190,10 @@ export function mountLoadoutSurface(
             cmd: "setLoadout",
             args: [classId, nextLoadout],
           });
+          // Committing a choice ends the live picker interaction so reconcile
+          // can flush the post-setLoadout Snapshot (pending-edit marker). Combat
+          // pumps while the select stays focused still pause rebuilds.
+          select.blur();
         });
 
         slotElements.push(

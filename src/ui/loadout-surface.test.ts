@@ -290,6 +290,133 @@ describe("Loadout surface", () => {
     surface.destroy();
     root.remove();
   });
+
+  it("keeps the focused Ability picker select across a changed Snapshot render", () => {
+    const root = document.createElement("div");
+    document.body.append(root);
+    const boot = createEngine(fixtureContent, undefined, LOOT_SEED);
+    boot.advanceBy(1);
+    const saved = boot.snapshot();
+    saved.progression.characterXp.knight = 850;
+    const engine = createEngine(fixtureContent, saved, LOOT_SEED);
+    const selected = { current: "knight" as ClassId };
+    const surface = mountLoadoutSurface(
+      root,
+      mountOptions(fixtureContent, selected, (command) => {
+        if (command.cmd === "allocateTalent") {
+          engine.allocateTalent(command.args[0], command.args[1]);
+        }
+      }),
+    );
+
+    surface.render(engine.snapshot());
+    const select = root.querySelector<HTMLSelectElement>(".loadout-assign");
+    if (!select) {
+      throw new Error("missing loadout select");
+    }
+    select.focus();
+    expect(document.activeElement).toBe(select);
+    expect(sweepRawText(root)).toBe("9 damage");
+
+    engine.allocateTalent("knight", "k-swordcraft");
+    engine.allocateTalent("knight", "k-swordcraft");
+    surface.render(engine.snapshot());
+
+    expect(root.querySelector(".loadout-assign")).toBe(select);
+    expect(document.activeElement).toBe(select);
+    expect(sweepRawText(root)).toBe("9 damage");
+
+    surface.destroy();
+    root.remove();
+  });
+
+  it("flushes the paused Snapshot after the Ability picker blurs", async () => {
+    const root = document.createElement("div");
+    document.body.append(root);
+    const outside = document.createElement("button");
+    outside.type = "button";
+    outside.textContent = "outside";
+    document.body.append(outside);
+    const boot = createEngine(fixtureContent, undefined, LOOT_SEED);
+    boot.advanceBy(1);
+    const saved = boot.snapshot();
+    saved.progression.characterXp.knight = 850;
+    const engine = createEngine(fixtureContent, saved, LOOT_SEED);
+    const selected = { current: "knight" as ClassId };
+    const surface = mountLoadoutSurface(
+      root,
+      mountOptions(fixtureContent, selected, (command) => {
+        if (command.cmd === "allocateTalent") {
+          engine.allocateTalent(command.args[0], command.args[1]);
+        }
+      }),
+    );
+
+    surface.render(engine.snapshot());
+    const select = root.querySelector<HTMLSelectElement>(".loadout-assign");
+    if (!select) {
+      throw new Error("missing loadout select");
+    }
+    select.focus();
+    expect(sweepRawText(root)).toBe("9 damage");
+
+    engine.allocateTalent("knight", "k-swordcraft");
+    engine.allocateTalent("knight", "k-swordcraft");
+    surface.render(engine.snapshot());
+    expect(sweepRawText(root)).toBe("9 damage");
+
+    outside.focus();
+    select.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
+    await Promise.resolve();
+
+    expect(sweepRawText(root)).toBe("10 damage");
+    expect(document.activeElement).toBe(outside);
+
+    surface.destroy();
+    root.remove();
+    outside.remove();
+  });
+
+  it("dispatches setLoadout from a change on the Ability picker", async () => {
+    const root = document.createElement("div");
+    document.body.append(root);
+    const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
+    engine.advanceBy(1);
+    const commands: unknown[] = [];
+    const selected = { current: "knight" as ClassId };
+    const surface = mountLoadoutSurface(
+      root,
+      mountOptions(fixtureContent, selected, (command) => {
+        commands.push(command);
+        if (command.cmd === "setLoadout") {
+          engine.setLoadout(command.args[0], command.args[1]);
+          surface.render(engine.snapshot());
+        }
+      }),
+    );
+
+    surface.render(engine.snapshot());
+    const select = root.querySelector<HTMLSelectElement>(".loadout-assign");
+    if (!select) {
+      throw new Error("missing loadout select");
+    }
+    select.focus();
+    select.value = "k-pommel";
+    select.dispatchEvent(new Event("change", { bubbles: true }));
+    await Promise.resolve();
+
+    expect(commands).toContainEqual({
+      cmd: "setLoadout",
+      args: ["knight", ["k-pommel", "k-rally", "k-sweep"]],
+    });
+    expect(
+      knightSection(root).querySelector('[data-pending-kind="loadout"]')?.textContent,
+    ).toMatch(/next Wave/i);
+    expect(document.activeElement).not.toBe(select);
+
+    surface.destroy();
+    root.remove();
+  });
 });
 
 describe("Loadout surface source boundary", () => {
