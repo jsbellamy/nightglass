@@ -1,0 +1,139 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "1de571a90db41abd737e9aea1404b1276292496a0c30ed5cdb373e2204049541",
+  "asset_class": "interface",
+  "kind": "ability-loadout-icon",
+  "color_mode": "source-local",
+  "outline": [
+    58,
+    6,
+    20
+  ],
+  "runtime_destination": "deferred \u2014 unregistered interim; later activation slice (#534)",
+  "candidate": "judgment-r3",
+  "issue_prompt": "TRUE chunky pixel-art ability icon only, exact 32\u00d732 logical pixel grid rendered large. Judgment: one descending radiant gavel-shaped beam striking a dark cracked seal, a severe high-damage light verdict. Centered 26\u201330 pixels, two-cell #ff00ff clearance, flat blocks, 3-pixel structures, selective charcoal-plum outline, upper-left lighting. Use white-gold light, amber, scarlet crack, deep indigo target; source-local mechanic colors, no named game palette. Solid #ff00ff background. No judge, hand, text, UI frame, architecture, cast shadow, diffuse glow cloud, loose particles, gradient, anti-aliasing, blur, dithering, watermark, or transparency.",
+  "style_references": [
+    {
+      "path": "src/assets/icons/preview/verify-ability-canary@8x.png",
+      "sha256": "82a04baf5f96334431bbb23c8b3767055b80379202ede610b964301c26873ea9",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icon-sources/verify-ability-canary/source.grid",
+      "sha256": "07d4d4cb1bdca6b9d80c8a80217533dd050985f1639e96c543a811a3abd97614",
+      "role": "pipeline_ability_reference"
+    },
+    {
+      "path": "src/assets/icons/preview/sunlance@8x.png",
+      "sha256": "6bfe904acb6f3a3fb68153d8edcf0cdd6fd7bdbf51daf44c96fdf274fac573fb",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/preview/battle-liturgy@8x.png",
+      "sha256": "9d253e343fe3eb65f8796a05f79cc34d87190676f6a8155423ff17f084a0df43",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/preview/benediction@8x.png",
+      "sha256": "7a34c357faa80d6f1a0f0d529fac7d123a6bee361a7e541b77b7905e0aa852b9",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/preview/devotion@8x.png",
+      "sha256": "d4d4bba239c4490b3998434615f690a48371f8b806362b85dd305670c91db8c2",
+      "role": "style_cohort"
+    }
+  ],
+  "prompt": "TRUE chunky pixel-art ability icon only, exact 32\u00d732 logical pixel grid rendered large. Judgment: compact descending radiant hammer-beam of white-gold light striking a small dark cracked circular seal \u2014 severe light verdict symbol. Keep silhouette SMALLER and clearly inset \u2014 long side about 24\u201328 logical pixels. At least THREE full solid #ff00ff magenta cells of clearance on EVERY edge, especially bottom and left \u2014 subject must NOT touch the canvas edge. Flat blocks, 3-pixel structures, selective charcoal-plum outline, upper-left lighting. Colors: white-gold, amber, scarlet crack, deep indigo. ENTIRE background solid flat #ff00ff only. No person, hand, text, UI frame, architecture, cast shadow, glow, particles, gradient, anti-aliasing, blur, dithering, watermark, or transparency.",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        320,
+        245,
+        703,
+        766
+      ],
+      "pitch_x": {
+        "pitch": 18.150000000000052,
+        "score": 0.1582686142387073
+      },
+      "pitch_y": {
+        "pitch": 19.700000000000074,
+        "score": 0.09655294601647403
+      },
+      "grid": [
+        21,
+        26
+      ]
+    },
+    "mode": "source-local",
+    "cluster": {
+      "unique_before": 265,
+      "unique_after_peel_cluster": 12,
+      "palette_rgb": [
+        [
+          254,
+          253,
+          230
+        ],
+        [
+          50,
+          27,
+          102
+        ],
+        [
+          54,
+          8,
+          35
+        ],
+        [
+          247,
+          191,
+          22
+        ],
+        [
+          253,
+          227,
+          81
+        ],
+        [
+          253,
+          235,
+          124
+        ],
+        [
+          222,
+          154,
+          9
+        ],
+        [
+          235,
+          50,
+          35
+        ],
+        [
+          192,
+          119,
+          5
+        ],
+        [
+          66,
+          43,
+          36
+        ],
+        [
+          252,
+          214,
+          58
+        ],
+        [
+          191,
+          184,
+          106
+        ]
+      ]
+    }
+  },
+  "note": "#530 Priest Basic/Core Ability unregistered source-local icon; activation deferred to #534"
+}

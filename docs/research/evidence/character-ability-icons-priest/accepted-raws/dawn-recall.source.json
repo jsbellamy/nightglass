@@ -1,0 +1,119 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "50b93a6c7d9435e107d78dc3531928e7cb0a91066f22b24acee15c87f01eb65c",
+  "asset_class": "interface",
+  "kind": "ability-loadout-icon",
+  "color_mode": "source-local",
+  "outline": [
+    58,
+    6,
+    20
+  ],
+  "runtime_destination": "deferred \u2014 unregistered interim; later activation slice (#534)",
+  "candidate": "dawn-recall-r10c",
+  "issue_prompt": "TRUE chunky pixel-art ability icon only, exact 32\u00d732 logical pixel grid rendered large. Dawn Recall: a small broken halo rejoining above an upward-rising soul flame, unmistakably revival rather than ordinary healing. Centered 26\u201330 pixels, two-cell #ff00ff clearance, flat square pixels, members at least 3 pixels, selective one-pixel charcoal-plum outline, upper-left light. Use dawn orange, gold, pale cream, spiritual cyan, deep violet shadow; source-local colors, no named palette. Solid #ff00ff background. No body, grave scene, text, border, cast shadow, haze, floating particle field, gradients, anti-aliasing, blur, dithering, watermark, or transparency.",
+  "style_references": [
+    {
+      "path": "src/assets/icons/preview/verify-ability-canary@8x.png",
+      "sha256": "82a04baf5f96334431bbb23c8b3767055b80379202ede610b964301c26873ea9",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icon-sources/verify-ability-canary/source.grid",
+      "sha256": "07d4d4cb1bdca6b9d80c8a80217533dd050985f1639e96c543a811a3abd97614",
+      "role": "pipeline_ability_reference"
+    },
+    {
+      "path": "src/assets/icons/preview/sunlance@8x.png",
+      "sha256": "6bfe904acb6f3a3fb68153d8edcf0cdd6fd7bdbf51daf44c96fdf274fac573fb",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/preview/battle-liturgy@8x.png",
+      "sha256": "9d253e343fe3eb65f8796a05f79cc34d87190676f6a8155423ff17f084a0df43",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/preview/benediction@8x.png",
+      "sha256": "7a34c357faa80d6f1a0f0d529fac7d123a6bee361a7e541b77b7905e0aa852b9",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/preview/devotion@8x.png",
+      "sha256": "d4d4bba239c4490b3998434615f690a48371f8b806362b85dd305670c91db8c2",
+      "role": "style_cohort"
+    }
+  ],
+  "prompt": "TRUE chunky pixel-art ability icon only on exact 32\u00d732 logical pixel grid rendered large. Hard flat square pixels only \u2014 no AA, blur, glow, dither. Dawn Recall: broken gold halo rejoining above thick upward cyan-gold soul flame. Long side MUST be 26\u201329 logical pixels \u2014 compact but large. At least THREE #ff00ff magenta cells clearance on every edge. Flat poster colors: dawn orange, gold, cream, spiritual cyan, deep violet. Charcoal-plum outline, upper-left light. Solid #ff00ff background. No body, grave, text, shadow, particles, gradient, watermark, transparency.",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        163,
+        93,
+        862,
+        938
+      ],
+      "pitch_x": {
+        "pitch": 26.050000000000036,
+        "score": 0.11178446408142055
+      },
+      "pitch_y": {
+        "pitch": 28.850000000000076,
+        "score": 0.18511457536230053
+      },
+      "grid": [
+        27,
+        29
+      ]
+    },
+    "mode": "source-local",
+    "cluster": {
+      "unique_before": 222,
+      "unique_after_peel_cluster": 8,
+      "palette_rgb": [
+        [
+          253,
+          248,
+          197
+        ],
+        [
+          3,
+          149,
+          253
+        ],
+        [
+          44,
+          7,
+          61
+        ],
+        [
+          253,
+          185,
+          12
+        ],
+        [
+          17,
+          239,
+          252
+        ],
+        [
+          254,
+          240,
+          153
+        ],
+        [
+          27,
+          18,
+          252
+        ],
+        [
+          248,
+          89,
+          25
+        ]
+      ]
+    }
+  },
+  "note": "#530 Priest Ability C2 scale rework \u2014 unregistered source-local icon; activation deferred to #534"
+}

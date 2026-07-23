@@ -1,0 +1,139 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "f4737ec3a6f55535612d0ee8366ea9a427ef067b1be9645af1b7dcb7064bff90",
+  "asset_class": "interface",
+  "kind": "ability-loadout-icon",
+  "color_mode": "source-local",
+  "outline": [
+    58,
+    6,
+    20
+  ],
+  "runtime_destination": "deferred \u2014 unregistered interim; later activation slice (#534)",
+  "candidate": "mending-light-r3",
+  "issue_prompt": "TRUE chunky pixel-art ability icon only, exact 32\u00d732 logical pixel grid rendered large. Mending Light: a bold healing cross formed by four rounded light shards around one repaired heart seam, clearly single-ally healing. Centered 26\u201330 pixels with two #ff00ff cells clearance, flat blocks, 3-pixel structures, selective charcoal-plum outline, upper-left lighting. Use warm cream, healing green, soft gold, rose heart accent; source-local colors without Moonberry/Fowl limitation. Solid #ff00ff background only. No hands, character, letters, UI frame, scenery, shadow, diffuse glow, particle spray, gradients, anti-aliasing, blur, dithering, watermark, or transparency.",
+  "style_references": [
+    {
+      "path": "src/assets/icons/preview/verify-ability-canary@8x.png",
+      "sha256": "82a04baf5f96334431bbb23c8b3767055b80379202ede610b964301c26873ea9",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icon-sources/verify-ability-canary/source.grid",
+      "sha256": "07d4d4cb1bdca6b9d80c8a80217533dd050985f1639e96c543a811a3abd97614",
+      "role": "pipeline_ability_reference"
+    },
+    {
+      "path": "src/assets/icons/preview/sunlance@8x.png",
+      "sha256": "6bfe904acb6f3a3fb68153d8edcf0cdd6fd7bdbf51daf44c96fdf274fac573fb",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/preview/battle-liturgy@8x.png",
+      "sha256": "9d253e343fe3eb65f8796a05f79cc34d87190676f6a8155423ff17f084a0df43",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/preview/benediction@8x.png",
+      "sha256": "7a34c357faa80d6f1a0f0d529fac7d123a6bee361a7e541b77b7905e0aa852b9",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/preview/devotion@8x.png",
+      "sha256": "d4d4bba239c4490b3998434615f690a48371f8b806362b85dd305670c91db8c2",
+      "role": "style_cohort"
+    }
+  ],
+  "prompt": "TRUE chunky pixel-art ability icon only, exact 32\u00d732 logical pixel grid rendered large. Mending Light: a bold healing cross formed by four rounded light shards around one repaired heart seam, clearly single-ally healing. Keep silhouette SMALLER \u2014 long side about 24\u201328 logical pixels, clearly inset. At least THREE full #ff00ff magenta cells clearance on every edge. Flat blocks, 3-pixel structures, selective charcoal-plum outline, upper-left lighting. Use warm cream, healing green, soft gold, rose heart accent; source-local colors. Solid #ff00ff background only. No hands, character, letters, UI frame, scenery, shadow, diffuse glow, particle spray, gradients, anti-aliasing, blur, dithering, watermark, or transparency.",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        288,
+        268,
+        735,
+        751
+      ],
+      "pitch_x": {
+        "pitch": 19.944444444444535,
+        "score": 0.17449863885984496
+      },
+      "pitch_y": {
+        "pitch": 20.94444444444455,
+        "score": 0.3205757533167083
+      },
+      "grid": [
+        23,
+        23
+      ]
+    },
+    "mode": "source-local",
+    "cluster": {
+      "unique_before": 155,
+      "unique_after_peel_cluster": 12,
+      "palette_rgb": [
+        [
+          244,
+          233,
+          188
+        ],
+        [
+          254,
+          253,
+          221
+        ],
+        [
+          125,
+          185,
+          149
+        ],
+        [
+          240,
+          56,
+          76
+        ],
+        [
+          100,
+          166,
+          139
+        ],
+        [
+          244,
+          200,
+          66
+        ],
+        [
+          45,
+          10,
+          37
+        ],
+        [
+          252,
+          229,
+          137
+        ],
+        [
+          250,
+          128,
+          130
+        ],
+        [
+          207,
+          36,
+          68
+        ],
+        [
+          254,
+          242,
+          162
+        ],
+        [
+          153,
+          26,
+          56
+        ]
+      ]
+    }
+  },
+  "note": "#530 Priest Basic/Core Ability unregistered source-local icon; activation deferred to #534"
+}

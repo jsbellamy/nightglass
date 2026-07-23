@@ -1,0 +1,124 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "850743bb02b70e0dd8536bf2a1aded62312040deda85ac00ba0f57ba5efb5d05",
+  "asset_class": "interface",
+  "kind": "ability-loadout-icon",
+  "color_mode": "source-local",
+  "outline": [
+    58,
+    6,
+    20
+  ],
+  "runtime_destination": "deferred \u2014 unregistered interim; later activation slice (#534)",
+  "candidate": "sun-mote-r8b",
+  "issue_prompt": "TRUE chunky pixel-art ability icon only, exact 32\u00d732 logical pixel grid rendered large. Sun Mote: one compact golden sun orb with four broad rays and a forward-pointing light wedge, a simple single-target light attack. Centered 26\u201330 pixels, two full #ff00ff cells clear, flat pixels, structures at least 3 pixels, selective one-pixel charcoal-plum outline, upper-left light. Use solar gold, amber, cream-white center, warm coral accent; source-local colors, no named palette. Solid #ff00ff background. No character, face, words, UI frame, sky scene, cast shadow, soft bloom, loose particles, gradient, anti-aliasing, blur, dithering, watermark, or transparency.",
+  "style_references": [
+    {
+      "path": "src/assets/icons/preview/verify-ability-canary@8x.png",
+      "sha256": "82a04baf5f96334431bbb23c8b3767055b80379202ede610b964301c26873ea9",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icon-sources/verify-ability-canary/source.grid",
+      "sha256": "07d4d4cb1bdca6b9d80c8a80217533dd050985f1639e96c543a811a3abd97614",
+      "role": "pipeline_ability_reference"
+    },
+    {
+      "path": "src/assets/icons/preview/sunlance@8x.png",
+      "sha256": "6bfe904acb6f3a3fb68153d8edcf0cdd6fd7bdbf51daf44c96fdf274fac573fb",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/preview/battle-liturgy@8x.png",
+      "sha256": "9d253e343fe3eb65f8796a05f79cc34d87190676f6a8155423ff17f084a0df43",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/preview/benediction@8x.png",
+      "sha256": "7a34c357faa80d6f1a0f0d529fac7d123a6bee361a7e541b77b7905e0aa852b9",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/preview/devotion@8x.png",
+      "sha256": "d4d4bba239c4490b3998434615f690a48371f8b806362b85dd305670c91db8c2",
+      "role": "style_cohort"
+    }
+  ],
+  "prompt": "TRUE chunky pixel-art ability icon only on exact 32\u00d732 logical pixel grid rendered large. Hard flat square pixels only \u2014 no AA, blur, glow, dither. Sun Mote: golden sun orb with four broad rays and forward light wedge. IMPORTANT SIZE: make the opaque silhouette about 28 logical pixels across (same fill as a large ability icon reference), with a thin continuous magenta #ff00ff margin of about two cells on all sides \u2014 do not touch the image border. Colors: solar gold, amber, cream, coral. Charcoal-plum selective outline, upper-left light. Solid #ff00ff background. No character, text, UI, particles, gradient, watermark, transparency.",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        51,
+        90,
+        963,
+        933
+      ],
+      "pitch_x": {
+        "pitch": 32.41111111111118,
+        "score": 0.1268690154107642
+      },
+      "pitch_y": {
+        "pitch": 32.76111111111116,
+        "score": 0.2591217920656411
+      },
+      "grid": [
+        28,
+        26
+      ]
+    },
+    "mode": "source-local",
+    "cluster": {
+      "unique_before": 137,
+      "unique_after_peel_cluster": 9,
+      "palette_rgb": [
+        [
+          250,
+          93,
+          49
+        ],
+        [
+          59,
+          12,
+          63
+        ],
+        [
+          253,
+          198,
+          31
+        ],
+        [
+          254,
+          253,
+          238
+        ],
+        [
+          254,
+          249,
+          200
+        ],
+        [
+          253,
+          229,
+          95
+        ],
+        [
+          253,
+          215,
+          51
+        ],
+        [
+          253,
+          239,
+          138
+        ],
+        [
+          254,
+          244,
+          171
+        ]
+      ]
+    }
+  },
+  "note": "#530 Priest Ability C2 scale rework \u2014 unregistered source-local icon; activation deferred to #534"
+}
