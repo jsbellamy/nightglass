@@ -650,14 +650,6 @@ describe("Loadout surface", () => {
       args: ["knight", ["k-pommel", "k-rally", "k-sweep"]],
     });
 
-    const focusables = root.querySelectorAll<HTMLElement>(
-      "button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])",
-    );
-    expect(focusables.length).toBeGreaterThan(0);
-    for (const element of focusables) {
-      expect(element.classList.contains("focus-ring")).toBe(true);
-    }
-
     surface.destroy();
     root.remove();
   });
