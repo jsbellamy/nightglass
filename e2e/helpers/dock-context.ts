@@ -73,8 +73,8 @@ export type CharacterSectionId = "loadout" | "talents" | "stats";
 /** @deprecated Use {@link CharacterSectionId}. */
 export type CharacterSubTabId = CharacterSectionId;
 
-export const LEGACY_CHARACTER_NAV_ORDER = ["loadout", "talents", "stats"] as const;
-export const SUCCESSOR_CHARACTER_NAV_ORDER = ["build", "stats"] as const;
+const LEGACY_CHARACTER_NAV_ORDER = ["loadout", "talents", "stats"] as const;
+const SUCCESSOR_CHARACTER_NAV_ORDER = ["build", "stats"] as const;
 
 export type CharacterNavigationModel = "legacy" | "successor";
 
@@ -82,7 +82,7 @@ export type CharacterNavigationModel = "legacy" | "successor";
  * Expand Character evidence helpers for the Build/Stats migration (#511) —
  * classifies DOM tab order during the interim expand phase only.
  */
-export function classifyCharacterNavigationOrder(
+function classifyCharacterNavigationOrder(
   subTabIds: readonly (string | undefined)[],
 ): CharacterNavigationModel {
   const order = subTabIds.map((id) => id ?? "");
@@ -103,7 +103,7 @@ export function classifyCharacterNavigationOrder(
   );
 }
 
-export async function readCharacterNavigationOrder(dock: Page): Promise<string[]> {
+async function readCharacterNavigationOrder(dock: Page): Promise<string[]> {
   return dock.evaluate(() =>
     [...document.querySelectorAll("[data-character-sub-tab]")].map(
       (button) => (button as HTMLElement).dataset.characterSubTab ?? "",

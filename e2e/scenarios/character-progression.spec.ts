@@ -28,6 +28,7 @@ test.describe("Character progression evidence scenarios", () => {
     }
     await focusDockTab(dock, "character");
 
+    // Interim — Expand Character evidence helpers for the Build/Stats migration (#511).
     const navModel = await expectApprovedCharacterNavigationOrder(dock);
     if (navModel === "legacy") {
       await expect(dock.locator('[data-character-sub-tab="loadout"][aria-selected="true"]')).toBeVisible();

@@ -108,7 +108,7 @@ test.describe("accessibility keyboard floor", () => {
     await dock.keyboard.press("ArrowLeft");
     await expect(dock.locator('[data-dock-tab="character"][aria-selected="true"]')).toBeVisible();
 
-    // Character starts on Loadout (legacy tabs) or Build (successor) with Loadout visible.
+    // Interim — Expand Character evidence helpers for the Build/Stats migration (#511).
     const characterNavModel = await expectApprovedCharacterNavigationOrder(dock);
     if (characterNavModel === "legacy") {
       await expect(dock.locator('[data-character-sub-tab="loadout"][aria-selected="true"]')).toBeVisible();
@@ -184,6 +184,7 @@ test.describe("accessibility keyboard floor", () => {
     }
 
     // Character header tabs: legacy Loadout → Talents → Stats, or successor Build → Stats.
+    // Interim — Expand Character evidence helpers for the Build/Stats migration (#511).
     if (characterNavModel === "legacy") {
       await dock.locator('[data-character-sub-tab="loadout"]').focus();
       await dock.keyboard.press("ArrowRight");
