@@ -226,7 +226,7 @@ test.describe("accessibility keyboard floor", () => {
     }
     await expect(
       dock.locator(
-        '[data-class-id="knight"] .talent-cell[data-talent-id="fortitude"] .talent-rank-badge',
+        '[data-class-id="knight"] [data-talent-id="fortitude"] .talent-rank-stepper-value',
       ),
     ).toHaveText("5/5");
 
@@ -241,13 +241,13 @@ test.describe("accessibility keyboard floor", () => {
     await pressEnterKeydown(deallocate);
     await expect(
       dock.locator(
-        '[data-class-id="knight"] .talent-cell[data-talent-id="fortitude"] .talent-rank-badge',
+        '[data-class-id="knight"] [data-talent-id="fortitude"] .talent-rank-stepper-value',
       ),
     ).toHaveText("4/5");
     await pressEnterKeydown(allocate);
     await expect(
       dock.locator(
-        '[data-class-id="knight"] .talent-cell[data-talent-id="fortitude"] .talent-rank-badge',
+        '[data-class-id="knight"] [data-talent-id="fortitude"] .talent-rank-stepper-value',
       ),
     ).toHaveText("5/5");
 

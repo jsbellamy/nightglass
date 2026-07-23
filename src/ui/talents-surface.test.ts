@@ -8,7 +8,7 @@ import { createEngine } from "../core/engine";
 import { fixtureContent } from "../core/testing/fixture-content";
 import type { ClassId } from "../core/types";
 import { formatAbilityDescription } from "./ability-format";
-import { characterStatsFor } from "./snapshot-view";
+import { characterStatsFor, classKitFor, formatStatModifierPerRank, talentTierDefs } from "./snapshot-view";
 import { mountTalentsSurface } from "./talents-surface";
 import { legalityViewFromEngine } from "./engine-legality";
 import { buildContent } from "../data";
@@ -153,7 +153,9 @@ describe("Talents surface", () => {
       ".equipment-icon-img--content",
     );
     expect(statIcon?.dataset["iconKey"]).toBe("k-fortitude");
-    expect(statCell?.querySelector(".talent-rank-badge")?.textContent).toBe("5/5");
+    expect(
+      talentGroup(root, "k-fortitude").querySelector(".talent-rank-stepper-value")?.textContent,
+    ).toBe("5/5");
 
     const abilityCell = knightSection(root).querySelector<HTMLElement>(
       '.talent-cell--chosen[data-talent-id="k-hold-line"]',
@@ -219,7 +221,7 @@ describe("Talents surface", () => {
     root.remove();
   });
 
-  it("shows Stat rank badges without name or pip prose on the cell", () => {
+  it("shows Stat rank in the attached stepper without per-rank prose on the face", () => {
     const root = document.createElement("div");
     const engine = leveledKnightEngine();
     engine.allocateTalent("knight", "k-fortitude");
@@ -227,11 +229,12 @@ describe("Talents surface", () => {
     const surface = mountTalentsSurface(root, mountOptions(selected));
 
     renderTalents(surface, engine);
-    const cell = knightSection(root).querySelector<HTMLElement>(
-      '.talent-cell[data-talent-id="k-fortitude"]',
-    );
-    expect(cell?.querySelector(".talent-rank-badge")?.textContent).toBe("1/5");
-    expect(cell?.querySelector(".talent-name")).toBeNull();
+    const group = talentGroup(root, "k-fortitude");
+    const cell = group.querySelector<HTMLElement>('.talent-cell[data-talent-id="k-fortitude"]');
+    expect(group.querySelector(".talent-rank-stepper-value")?.textContent).toBe("1/5");
+    expect(group.querySelector(".talent-name")?.textContent).toMatch(/Fortitude/i);
+    expect(group.querySelector(".talent-stat-per-rank-summary")?.textContent).toMatch(/Max Health/i);
+    expect(cell?.querySelector(".talent-rank-badge")).toBeNull();
     expect(cell?.querySelector(".talent-per-rank")).toBeNull();
     expect(cell?.querySelector(".talent-rank-pips")).toBeNull();
     expect(cell?.getAttribute("aria-label")).toMatch(/Fortitude.*1 of 5/i);
@@ -260,8 +263,9 @@ describe("Talents surface", () => {
     );
     expect(chosen?.classList.contains("talent-cell--chosen")).toBe(true);
     expect(other?.classList.contains("talent-cell--chosen")).toBe(false);
-    expect(chosen?.querySelector(".talent-name")).toBeNull();
-    expect(other?.querySelector(".talent-name")).toBeNull();
+    expect(
+      talentGroup(root, "k-hold-line").querySelector(".talent-name")?.textContent,
+    ).toMatch(/Hold/i);
     expect(chosen?.getAttribute("aria-label")).toMatch(/Hold/i);
 
     surface.destroy();
@@ -289,8 +293,7 @@ describe("Talents surface", () => {
       root.querySelector('[data-talent-popover="true"] .talent-popover-name')?.textContent,
     ).toBe("Fortitude");
     expect(
-      root.querySelector('.talent-cell[data-talent-id="k-fortitude"] .talent-rank-badge')
-        ?.textContent,
+      talentGroup(root, "k-fortitude").querySelector(".talent-rank-stepper-value")?.textContent,
     ).toBe("1/5");
 
     surface.destroy();
@@ -720,6 +723,86 @@ describe("Talents surface", () => {
     expect(knightSection(root).querySelector('[data-talent-points="true"]')?.textContent).toBe(
       "3 Talent Points available",
     );
+
+    surface.destroy();
+  });
+
+  it("orders Stat talent face before minus then plus inside each compact row", () => {
+    const root = document.createElement("div");
+    const engine = leveledKnightEngine();
+    engine.allocateTalent("knight", "k-fortitude");
+    const selected = { current: "knight" as ClassId };
+    const surface = mountTalentsSurface(root, mountOptions(selected));
+
+    renderTalents(surface, engine);
+    const group = talentGroup(root, "k-fortitude");
+    const focusables = [...group.querySelectorAll<HTMLElement>(
+      "button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])",
+    )];
+    expect(focusables.map((node) => node.getAttribute("data-talent-action") ?? "face")).toEqual([
+      "face",
+      "deallocate",
+      "allocate",
+    ]);
+    expect(group.querySelector("[data-talent-rank-stepper='true']")).not.toBeNull();
+
+    surface.destroy();
+  });
+
+  it("shows cascade-blocked feedback with data-talent-cascade-blocked on Stat rows", () => {
+    const fullContent = buildContent();
+    const root = document.createElement("div");
+    const boot = createEngine(fullContent, undefined, LOOT_SEED);
+    boot.advanceBy(1);
+    const saved = boot.snapshot();
+    saved.progression.characterXp.knight = 3_000;
+    const engine = createEngine(fullContent, saved, LOOT_SEED);
+    for (let rank = 0; rank < 5; rank += 1) {
+      engine.allocateTalent("knight", rank % 2 === 0 ? "fortitude" : "swordcraft");
+    }
+    engine.allocateTalent("knight", "hold-the-line");
+    engine.allocateTalent("knight", "iron-discipline");
+    const selected = { current: "knight" as ClassId };
+    const surface = mountTalentsSurface(root, {
+      content: fullContent,
+      getSelectedClassId: () => selected.current,
+    });
+
+    surface.render(engine.snapshot(), legalityViewFromEngine(engine));
+    const fortitudeGroup = root.querySelector<HTMLElement>(
+      '[data-talent-group="true"][data-talent-id="fortitude"]',
+    );
+    const warning = fortitudeGroup?.querySelector<HTMLElement>("[data-talent-cascade-blocked]");
+    expect(warning?.textContent).toMatch(/Talent Tier 2/i);
+
+    surface.destroy();
+  });
+
+  it("evidence: talent-direct-actions — uses compact Build column row CSS beside 230px Loadout", () => {
+    const css = readFileSync(
+      join(dirname(fileURLToPath(import.meta.url)), "../styles.css"),
+      "utf8",
+    );
+    expect(css).toMatch(
+      /\.character-build-board\s+\[data-character-section="talents"\]\s+\.talent-stat-compact-row/,
+    );
+    expect(css).toMatch(
+      /\.character-build-board\s+\[data-character-section="loadout"\][\s\S]*?flex:\s*0\s+0\s+230px/,
+    );
+  });
+
+  it("renders exact per-rank Stat summary text from content definitions", () => {
+    const root = document.createElement("div");
+    const engine = leveledKnightEngine();
+    const selected = { current: "knight" as ClassId };
+    const surface = mountTalentsSurface(root, mountOptions(selected));
+
+    renderTalents(surface, engine);
+    const kit = classKitFor(fixtureContent, "knight");
+    const fortitude = talentTierDefs(kit)[0]!.statRow.find((entry) => entry.id === "k-fortitude");
+    expect(fortitude).toBeDefined();
+    const summary = talentGroup(root, "k-fortitude").querySelector(".talent-stat-per-rank-summary");
+    expect(summary?.textContent).toBe(formatStatModifierPerRank(fortitude!.perRank));
 
     surface.destroy();
   });

@@ -910,6 +910,153 @@ html.dock-window body {
   overflow: hidden;
 }
 
+.character-build-board [data-character-section="talents"] .talent-stat-row,
+.character-build-board [data-character-section="talents"] .talent-ability-row {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  gap: 2px;
+}
+
+.character-build-board [data-character-section="talents"] .talent-tile {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 100%;
+  gap: 2px;
+}
+
+.character-build-board [data-character-section="talents"] .talent-stat-compact-row,
+.character-build-board [data-character-section="talents"] .talent-ability-compact-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  min-width: 0;
+}
+
+.character-build-board [data-character-section="talents"] .talent-stat-compact-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.character-build-board [data-character-section="talents"] .talent-stat-compact-text .talent-name,
+.character-build-board [data-character-section="talents"] .talent-ability-compact-row .talent-name {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.character-build-board [data-character-section="talents"] .talent-stat-per-rank-summary {
+  margin: 0;
+  font-size: 9px;
+  line-height: 1.2;
+  color: var(--dock-text-muted, #d8d0bf);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.character-build-board [data-character-section="talents"] .talent-cell--stat-face,
+.character-build-board [data-character-section="talents"] .talent-ability-compact-row .talent-cell {
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+}
+
+.character-build-board [data-character-section="talents"] .talent-rank-stepper {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: stretch;
+  border: 1px solid rgba(255, 249, 233, 0.22);
+  border-radius: 4px;
+  overflow: hidden;
+  background: rgba(25, 28, 38, 0.95);
+}
+
+.character-build-board [data-character-section="talents"] .talent-rank-stepper .talent-stepper-btn {
+  min-width: 24px;
+  height: 26px;
+  padding: 0 4px;
+  border: none;
+  border-radius: 0;
+  font-size: 14px;
+}
+
+.character-build-board [data-character-section="talents"] .talent-rank-stepper .talent-stepper-btn--minus {
+  border-right: 1px solid rgba(255, 249, 233, 0.16);
+}
+
+.character-build-board [data-character-section="talents"] .talent-rank-stepper .talent-stepper-btn--plus {
+  border-left: 1px solid rgba(255, 249, 233, 0.16);
+}
+
+.character-build-board [data-character-section="talents"] .talent-rank-stepper-value {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  padding: 0 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--dock-text, #fff9e9);
+  border-left: 1px solid rgba(255, 249, 233, 0.12);
+  border-right: 1px solid rgba(255, 249, 233, 0.12);
+}
+
+.character-build-board [data-character-section="talents"] .talent-rank-stepper .talent-stepper-btn:disabled {
+  opacity: 1;
+  color: #c9c2b2;
+  background: #1a1d27;
+  cursor: not-allowed;
+}
+
+.character-build-board [data-character-section="talents"] .talent-ability-compact-action {
+  flex-shrink: 0;
+  min-width: 28px;
+  height: 26px;
+  padding: 0 6px;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.character-build-board [data-character-section="talents"] .talent-ability-compact-action:disabled {
+  opacity: 1;
+  color: #c9c2b2;
+  background: #1a1d27;
+  border-color: rgba(255, 249, 233, 0.1);
+  cursor: not-allowed;
+}
+
+.character-build-board [data-character-section="talents"] .talent-tier-title {
+  margin: 4px 0 1px;
+  font-size: 11px;
+}
+
+.character-build-board [data-character-section="talents"] .talent-row-title {
+  margin: 4px 0 1px;
+  font-size: 10px;
+}
+
+.character-build-board [data-character-section="talents"] .talent-tier-gate-note,
+.character-build-board [data-character-section="talents"] .talent-gate-note {
+  margin: 0 0 2px;
+  font-size: 10px;
+  line-height: 1.25;
+}
+
+.character-build-board [data-character-section="talents"] .talent-tile-warning {
+  font-size: 9px;
+  line-height: 1.25;
+}
+
 .character-subtabs {
   display: flex;
   flex-shrink: 0;

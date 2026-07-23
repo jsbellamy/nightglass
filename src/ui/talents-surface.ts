@@ -299,39 +299,60 @@ export function mountTalentsSurface(
     );
 
     const info = el("button", {
-      class: "talent-cell focus-ring",
+      class: "talent-cell talent-cell--stat-face focus-ring",
       data: { talentId: statTalent.id },
       props: { type: "button", disabled: tierLocked, tabIndex: tierLocked ? -1 : 0 },
       aria: {
         label: `${statTalent.name}, ${rank} of ${statTalent.maxRanks} ranks`,
       },
-    }, [
-      el("span", {
-        class: "talent-rank-badge",
-        text: `${rank}/${statTalent.maxRanks}`,
-      }),
-    ]);
+    });
     appendTalentCellIcon(info, statTalent.iconKey, statTalent.name);
 
+    const minus = renderActionButton(
+      classId,
+      statTalent.id,
+      "deallocate",
+      `Remove one rank from ${statTalent.name}`,
+      !canDeallocate,
+    );
+    minus.classList.add("talent-stepper-btn", "talent-stepper-btn--minus");
+    const plus = renderActionButton(
+      classId,
+      statTalent.id,
+      "allocate",
+      `Add one rank to ${statTalent.name}`,
+      !canAllocate,
+    );
+    plus.classList.add("talent-stepper-btn", "talent-stepper-btn--plus");
+
+    const stepper = el("div", {
+      class: "talent-rank-stepper",
+      data: { talentRankStepper: "true" },
+    }, [
+      minus,
+      el("span", {
+        class: "talent-rank-stepper-value",
+        text: `${rank}/${statTalent.maxRanks}`,
+        aria: { hidden: "true" },
+      }),
+      plus,
+    ]);
+
     const group = el("div", {
-      class: "talent-tile",
+      class: "talent-tile talent-stat-compact",
       data: { talentGroup: "true", talentId: statTalent.id },
     }, [
-      info,
-      renderActionButton(
-        classId,
-        statTalent.id,
-        "deallocate",
-        `Remove one rank from ${statTalent.name}`,
-        !canDeallocate,
-      ),
-      renderActionButton(
-        classId,
-        statTalent.id,
-        "allocate",
-        `Add one rank to ${statTalent.name}`,
-        !canAllocate,
-      ),
+      el("div", { class: "talent-stat-compact-row" }, [
+        info,
+        el("div", { class: "talent-stat-compact-text" }, [
+          el("span", { class: "talent-name", text: statTalent.name }),
+          el("span", {
+            class: "talent-stat-per-rank-summary",
+            text: formatStatModifierPerRank(statTalent.perRank),
+          }),
+        ]),
+        stepper,
+      ]),
     ]);
 
     group.setAttribute("role", "group");
@@ -406,33 +427,33 @@ export function mountTalentsSurface(
       }
     }
 
-    const children: HTMLElement[] = [info];
-    if (chosen) {
-      children.push(
-        renderActionButton(
+    const action = chosen
+      ? renderActionButton(
           classId,
           abilityId,
           "deallocate",
           `Clear ${abilityName}`,
           !legality.canDeallocateTalent(classId, abilityId),
-        ),
-      );
-    } else {
-      children.push(
-        renderActionButton(
+        )
+      : renderActionButton(
           classId,
           abilityId,
           "allocate",
           `Choose ${abilityName}`,
           tierLocked || allocateBlocked,
-        ),
-      );
-    }
+        );
+    action.classList.add("talent-ability-compact-action");
 
     const group = el("div", {
-      class: "talent-tile talent-tile--ability",
+      class: "talent-tile talent-tile--ability talent-ability-compact",
       data: { talentGroup: "true", talentId: abilityId },
-    }, children);
+    }, [
+      el("div", { class: "talent-ability-compact-row" }, [
+        info,
+        el("span", { class: "talent-name", text: abilityName }),
+        action,
+      ]),
+    ]);
     group.setAttribute("role", "group");
 
     for (const warning of warnings) {
