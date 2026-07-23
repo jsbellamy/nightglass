@@ -216,3 +216,17 @@ export async function openEvidenceSession(
 export async function closeEvidenceSession(session: EvidenceSession): Promise<void> {
   await session.finish();
 }
+
+/**
+ * Loadout drag and select-then-slot set `data-surface-preserve-live` until the anchor
+ * blurs. Synthetic harness paths never complete that blur, so clear the pause flag and
+ * refocus Loadout chrome so reconcile can flush the pending Snapshot.
+ */
+export async function reconcileLoadoutSurfaceAfterSyntheticAssignment(dock: Page): Promise<void> {
+  await dock.evaluate(() => {
+    for (const node of document.querySelectorAll<HTMLElement>("[data-surface-preserve-live]")) {
+      delete node.dataset["surfacePreserveLive"];
+    }
+  });
+  await dock.locator('[data-character-sub-tab="loadout"]').focus();
+}

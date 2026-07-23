@@ -222,7 +222,7 @@ export const EVIDENCE_SCENARIOS: readonly EvidenceScenario[] = [
     slugs: ["character-loadout-no-scroll", "character-loadout-assignment"],
     spec: {
       id: "rendered-evidence:character-loadout",
-      path: "e2e/rendered-evidence.spec.ts",
+      path: "e2e/scenarios/character-loadout.spec.ts",
     },
     fixture: "live-tile-and-dock",
     reviewScenes: [],
@@ -234,7 +234,7 @@ export const EVIDENCE_SCENARIOS: readonly EvidenceScenario[] = [
     slugs: ["character-information-popovers"],
     spec: {
       id: "rendered-evidence:character-information-popovers",
-      path: "e2e/rendered-evidence.spec.ts",
+      path: "e2e/scenarios/character-loadout.spec.ts",
     },
     fixture: "live-tile-and-dock",
     reviewScenes: [],
