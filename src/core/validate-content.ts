@@ -501,13 +501,7 @@ function statusHasValidTickEffect(status: StatusEffectDef): boolean {
   if (!abilityEffectHasEffect(tickEffect)) {
     return false;
   }
-  if (tickEffect.kind !== "damage") {
-    return false;
-  }
-  if (tickEffect.channel !== "physical" && tickEffect.channel !== "elemental") {
-    return false;
-  }
-  return true;
+  return validateStatusTickEffect(status.id, tickEffect).length === 0;
 }
 
 function validateStatusBehavior(status: StatusEffectDef): string[] {

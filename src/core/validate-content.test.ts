@@ -354,6 +354,11 @@ describe("validateContent", () => {
         { ...base, id: "k-zero-damage", effects: [{ kind: "damage", channel: "physical", coefficient: 0 }] },
         {
           ...base,
+          id: "k-negative-damage",
+          effects: [{ kind: "damage", channel: "physical", coefficient: -1 }],
+        },
+        {
+          ...base,
           id: "k-omitted-coeff",
           effects: [{ kind: "damage", channel: "physical" }],
         },
@@ -375,6 +380,7 @@ describe("validateContent", () => {
     expect(violations).toEqual(
       expect.arrayContaining([
         'ability "k-zero-damage" damage effect coefficient must be greater than 0',
+        'ability "k-negative-damage" damage effect coefficient must be greater than 0',
         'ability "k-negative-heal" heal effect coefficient must be greater than 0',
         'ability "k-zero-revive" revive effect coefficient must be greater than 0',
       ]),
@@ -432,6 +438,13 @@ describe("validateContent", () => {
           modifiers: { flat: { armor: 1 } },
         },
         {
+          id: "negative-duration",
+          name: "Negative Duration",
+          kind: "buff",
+          durationMs: -100,
+          modifiers: { flat: { armor: 1 } },
+        },
+        {
           id: "fractional-duration",
           name: "Fractional Duration",
           kind: "stun",
@@ -443,6 +456,7 @@ describe("validateContent", () => {
     expect(violations).toEqual(
       expect.arrayContaining([
         'status "zero-duration" durationMs must be a positive integer',
+        'status "negative-duration" durationMs must be a positive integer',
         'status "fractional-duration" durationMs must be a positive integer',
       ]),
     );

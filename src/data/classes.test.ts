@@ -3,11 +3,7 @@ import { isAbilityValid } from "../core/combat";
 import type { AbilityDef, ClassKitDef, StatusEffectDef } from "../core/types";
 import type { CombatantState } from "../core/snapshot";
 import { talentTierDefs } from "../core/talents";
-import {
-  abilityEffectHasEffect,
-  statModifiersHaveEffect,
-  validateContent,
-} from "../core/validate-content";
+import { validateContent } from "../core/validate-content";
 import {
   REVIEWED_CLASS_BASES,
   REVIEWED_CLASS_KIT_ABILITIES,
@@ -54,28 +50,6 @@ describe("assembled Class Kit content", () => {
 
   it("ships no behaviorless Abilities, Status Effects, or Stat Talents", () => {
     expect(validateContent(content)).toEqual([]);
-    for (const ability of content.abilities) {
-      expect(ability.effects.length).toBeGreaterThan(0);
-      for (const effect of ability.effects) {
-        expect(abilityEffectHasEffect(effect)).toBe(true);
-      }
-    }
-    for (const status of content.statuses) {
-      expect(status.durationMs).toBeGreaterThan(0);
-      expect(Number.isInteger(status.durationMs)).toBe(true);
-      if (status.kind === "buff" || status.kind === "debuff") {
-        const tickHasEffect =
-          status.tickEffect !== undefined && abilityEffectHasEffect(status.tickEffect);
-        expect(statModifiersHaveEffect(status.modifiers) || tickHasEffect).toBe(true);
-      }
-    }
-    for (const classKit of content.classes) {
-      for (const tier of talentTierDefs(classKit)) {
-        for (const statTalent of tier.statRow) {
-          expect(statModifiersHaveEffect(statTalent.perRank)).toBe(true);
-        }
-      }
-    }
   });
 
   it("authored Stat Talents and Ability Talents use iconKey equal to id", () => {
