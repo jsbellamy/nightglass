@@ -5,12 +5,12 @@ import { EMPTY_ENGINE_LEGALITY } from "./engine-legality";
 import {
   characterStatBreakdown,
   characterXpProgressLabel,
-  CLASS_LABELS,
   effectiveTalentState,
   levelFor,
   spentTalentPoints,
   statsDifferFromCommittedCombat,
   type CharacterStatBreakdownLine,
+  type CharacterStatKey,
   type ModifierContribution,
 } from "./snapshot-view";
 import { el, mountSurfaceShell, pendingMarker } from "./surface-shell";
@@ -91,6 +91,33 @@ function renderStatRow(line: CharacterStatBreakdownLine): HTMLElement {
   );
 }
 
+const STAT_GROUPS: ReadonlyArray<{
+  id: "vitals" | "offense" | "defense";
+  heading: string;
+  keys: readonly CharacterStatKey[];
+}> = [
+  { id: "vitals", heading: "Vitals", keys: ["maxHealth"] },
+  { id: "offense", heading: "Offense", keys: ["physical", "elemental"] },
+  { id: "defense", heading: "Defense", keys: ["armor", "elementalResistance"] },
+];
+
+function renderStatGroup(
+  group: (typeof STAT_GROUPS)[number],
+  linesByKey: Map<CharacterStatKey, CharacterStatBreakdownLine>,
+): HTMLElement {
+  const rows = group.keys.map((key) => {
+    const line = linesByKey.get(key);
+    if (!line) {
+      throw new Error(`missing stat line for ${key}`);
+    }
+    return renderStatRow(line);
+  });
+  return el("section", { class: "stats-group", data: { statsGroup: group.id } }, [
+    el("h4", { class: "stats-group-heading", text: group.heading }),
+    el("div", { class: "stats-group-cards" }, rows),
+  ]);
+}
+
 export function mountStatsSurface(root: HTMLElement, options: StatsSurfaceOptions): StatsSurface {
   const { content } = options;
 
@@ -103,23 +130,25 @@ export function mountStatsSurface(root: HTMLElement, options: StatsSurfaceOption
       const talentState = effectiveTalentState(snapshot, classId);
       const points = Math.max(0, level - spentTalentPoints(talentState));
       const lines = characterStatBreakdown(snapshot, content, classId);
+      const linesByKey = new Map(lines.map((line) => [line.key, line]));
       const showPending = statsDifferFromCommittedCombat(snapshot, content, classId);
+      const xpLabel = characterXpProgressLabel(snapshot, content, classId);
+      const talentLabel = `${points} Talent Point${points === 1 ? "" : "s"} available`;
 
       const sectionChildren: HTMLElement[] = [
-        el("h3", {
-          class: "surface-section-title",
-          text: `${CLASS_LABELS[classId]} · Level ${level}`,
-        }),
-        el("p", {
-          class: "stats-xp",
-          data: { statsXp: "true" },
-          text: characterXpProgressLabel(snapshot, content, classId),
-        }),
-        el("p", {
-          class: "stats-talent-points",
-          data: { statsTalentPoints: "true" },
-          text: `${points} Talent Point${points === 1 ? "" : "s"} available`,
-        }),
+        el("div", { class: "stats-overview", data: { statsOverview: "true" } }, [
+          el("p", { class: "stats-overview-line" }, [
+            el("span", { data: { statsLevel: "true" }, text: `Level ${level}` }),
+            el("span", { class: "stats-overview-sep", text: " · " }),
+            el("span", { data: { statsXp: "true" }, text: xpLabel }),
+            el("span", { class: "stats-overview-sep", text: " · " }),
+            el("span", {
+              class: "stats-talent-points",
+              data: { statsTalentPoints: "true" },
+              text: talentLabel,
+            }),
+          ]),
+        ]),
       ];
 
       if (showPending) {
@@ -129,7 +158,11 @@ export function mountStatsSurface(root: HTMLElement, options: StatsSurfaceOption
       }
 
       sectionChildren.push(
-        el("div", { class: "stats-table", data: { statsTable: "true" } }, lines.map(renderStatRow)),
+        el(
+          "div",
+          { class: "stats-sheet", data: { statsTable: "true" } },
+          STAT_GROUPS.map((group) => renderStatGroup(group, linesByKey)),
+        ),
       );
 
       return [el("section", { class: "stats-character", data: { classId } }, sectionChildren)];
