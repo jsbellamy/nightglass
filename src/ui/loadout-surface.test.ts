@@ -13,7 +13,7 @@ import {
   formatAbilityDescription,
   formatAbilityTimings,
 } from "./ability-format";
-import { characterStatsFor } from "./snapshot-view";
+import { characterStatsFor, classKitFor, effectiveTalentState, unlockableAbilityIds } from "./snapshot-view";
 import { computeLoadoutAssignment, mountLoadoutSurface } from "./loadout-surface";
 
 const LOOT_SEED = 42;
@@ -86,7 +86,7 @@ function pressEnter(element: HTMLElement): void {
   element.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
 }
 
-describe("computeLoadoutAssignment", () => {
+describe("Loadout assignment tuple", () => {
   const base: [string, string, string] = ["a", "b", "c"];
 
   it("replaces a slot when the Ability is not slotted", () => {
@@ -97,7 +97,7 @@ describe("computeLoadoutAssignment", () => {
     expect(computeLoadoutAssignment(base, "b", 2)).toEqual(["a", "c", "b"]);
   });
 
-  it("returns null for a no-op on the same slot", () => {
+  it("does not change the tuple when assigning an Ability to its current slot", () => {
     expect(computeLoadoutAssignment(base, "b", 1)).toBeNull();
   });
 });
@@ -152,11 +152,16 @@ describe("Loadout surface", () => {
     const surface = mountLoadoutSurface(root, mountOptions(fixtureContent, selected));
 
     surface.render(engine.snapshot());
+    const classKit = classKitFor(fixtureContent, "knight");
+    const talentState = effectiveTalentState(engine.snapshot(), "knight");
+    const expectedPool = unlockableAbilityIds(classKit, talentState).filter(
+      (id) => id !== classKit.basicAbilityId,
+    );
     const poolIds = [
       ...(root.querySelectorAll<HTMLElement>(".loadout-pool-tiles [data-ability-id]") ?? []),
     ].map((node) => node.dataset["abilityId"]);
+    expect(poolIds).toEqual(expectedPool);
     expect(new Set(poolIds).size).toBe(poolIds.length);
-    expect(poolIds.length).toBeGreaterThanOrEqual(3);
 
     surface.destroy();
   });
@@ -174,6 +179,53 @@ describe("Loadout surface", () => {
     expect(
       root.querySelector(`.loadout-pool-tiles [data-ability-id="${basic?.dataset["abilityId"]}"]`),
     ).toBeNull();
+
+    surface.destroy();
+  });
+
+  it("discloses Basic Attack mechanics through the shared popover", () => {
+    const root = document.createElement("div");
+    const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
+    const selected = { current: "knight" as ClassId };
+    const surface = mountLoadoutSurface(root, mountOptions(fixtureContent, selected));
+    const snapshot = engine.snapshot();
+    const basicId = classKitFor(fixtureContent, "knight").basicAbilityId;
+    const basicAbility = fixtureContent.abilities.find((entry) => entry.id === basicId)!;
+
+    surface.render(snapshot);
+    const basic = root.querySelector<HTMLElement>("[data-loadout-basic]")!;
+    basic.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
+    expect(
+      root.querySelector('[data-loadout-ability-popover="true"] [data-ability-description="true"]')
+        ?.textContent,
+    ).toBe(
+      formatAbilityDescription(
+        basicAbility,
+        characterStatsFor(snapshot, fixtureContent, "knight"),
+        fixtureContent.statuses,
+      ),
+    );
+
+    surface.destroy();
+  });
+
+  it("exposes Activation Delay state on slotted tiles at edit time", () => {
+    const root = document.createElement("div");
+    const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
+    engine.advanceBy(1);
+    const selected = { current: "knight" as ClassId };
+    const surface = mountLoadoutSurface(
+      root,
+      mountOptions(fixtureContent, selected, (command) => {
+        if (command.cmd === "setLoadout") {
+          engine.setLoadout(command.args[0], command.args[1]);
+        }
+      }),
+    );
+
+    engine.setLoadout("knight", ["k-pommel", "k-sweep", "k-rally"]);
+    surface.render(engine.snapshot());
+    expect(slotTile(root, 0).dataset["activationDelay"]).toBe("true");
 
     surface.destroy();
   });
@@ -280,6 +332,7 @@ describe("Loadout surface", () => {
     surface.render(engine.snapshot());
 
     const pommelSlot = slotTile(root, 0);
+    expect(pommelSlot.dataset["activationDelay"]).toBe("true");
     pommelSlot.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
     expect(
       root.querySelector('[data-loadout-ability-popover="true"] [data-activation-delay="true"]')
@@ -288,6 +341,37 @@ describe("Loadout surface", () => {
     expect(root.querySelector('[data-cooldown-telemetry="true"]')).toBeNull();
 
     surface.destroy();
+  });
+
+  it("clears Activation Delay markers after the config-applied boundary", () => {
+    const root = document.createElement("div");
+    const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
+    engine.advanceBy(1);
+    const selected = { current: "knight" as ClassId };
+    const surface = mountLoadoutSurface(
+      root,
+      mountOptions(fixtureContent, selected, (command) => {
+        if (command.cmd === "setLoadout") {
+          engine.setLoadout(command.args[0], command.args[1]);
+        }
+      }),
+    );
+
+    engine.setLoadout("knight", ["k-pommel", "k-sweep", "k-rally"]);
+    surface.render(engine.snapshot());
+    expect(slotTile(root, 0).dataset["activationDelay"]).toBe("true");
+
+    for (let ms = 0; ms < 120_000; ms += 1) {
+      const events = engine.advanceBy(1);
+      if (events.some((event) => event.type === "config-applied")) {
+        surface.render(engine.snapshot());
+        expect(slotTile(root, 0).dataset["activationDelay"]).toBeUndefined();
+        expect(root.querySelector('[data-cooldown-telemetry="true"]')).toBeNull();
+        surface.destroy();
+        return;
+      }
+    }
+    throw new Error("config-applied never emitted");
   });
 
   it("never renders live cooldown or Action Cycle telemetry during a Stage Attempt", () => {
@@ -379,7 +463,8 @@ describe("Loadout surface", () => {
     const target = root.querySelector<HTMLElement>('[data-loadout-slot-drop][data-slot="0"]')!;
     dragBetween(source, target);
 
-    expect(commands).toContainEqual({
+    expect(commands).toHaveLength(1);
+    expect(commands[0]).toEqual({
       cmd: "setLoadout",
       args: ["knight", ["k-pommel", "k-rally", "k-sweep"]],
     });
@@ -504,7 +589,8 @@ describe("Loadout surface", () => {
     const targetSlot = slotTile(root, 0);
     pressEnter(targetSlot);
 
-    expect(commands).toContainEqual({
+    expect(commands).toHaveLength(1);
+    expect(commands[0]).toEqual({
       cmd: "setLoadout",
       args: ["knight", ["k-pommel", "k-rally", "k-sweep"]],
     });
@@ -558,7 +644,8 @@ describe("Loadout surface", () => {
     pressEnter(targetSlot);
     surface.render(engine.snapshot());
 
-    expect(commands).toContainEqual({
+    expect(commands).toHaveLength(1);
+    expect(commands[0]).toEqual({
       cmd: "setLoadout",
       args: ["knight", ["k-pommel", "k-rally", "k-sweep"]],
     });

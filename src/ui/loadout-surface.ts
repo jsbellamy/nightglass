@@ -409,6 +409,7 @@ export function mountLoadoutSurface(
     loadout: [string, string, string],
     context: { kind: "pool" } | { kind: "slot"; slotIndex: LoadoutSlotIndex },
     host: HTMLElement,
+    activationDelayPending = false,
   ): HTMLElement {
     const tile = el("button", {
       class: "loadout-assign-tile ability-card focus-ring",
@@ -416,6 +417,7 @@ export function mountLoadoutSurface(
         abilityId: ability.id,
         loadoutAssignTile: "true",
         ...(context.kind === "slot" ? { loadoutSlot: String(context.slotIndex) } : { loadoutPool: "true" }),
+        ...(context.kind === "slot" && activationDelayPending ? { activationDelay: "true" } : {}),
       },
       props: { type: "button" },
       aria: { label: ability.name, pressed: "false" },
@@ -485,6 +487,7 @@ export function mountLoadoutSurface(
     const hasPending = snapshot.pendingEdits.some(
       (edit) => edit.kind === "loadout" && edit.classId === classId,
     );
+    const inserted = hasPending ? newlyInsertedAbilities(appliedLoadout(snapshot, classId), loadout) : new Set<string>();
 
     const unlocked = unlockableAbilityIds(classKit, talentState);
 
@@ -555,6 +558,7 @@ export function mountLoadoutSurface(
           loadout,
           { kind: "slot", slotIndex: slotIndex as LoadoutSlotIndex },
           host,
+          inserted.has(abilityId),
         ),
       ]);
       bindSlotDrop(classId, loadout, slotIndex as LoadoutSlotIndex, slotDrop);
@@ -590,11 +594,7 @@ export function mountLoadoutSurface(
   root.addEventListener("keydown", onKeydown);
 
   function hasPausedInteraction(): boolean {
-    if (root.querySelector("[data-surface-preserve-live]")) {
-      return true;
-    }
-    const active = document.activeElement;
-    return active instanceof HTMLSelectElement && root.contains(active);
+    return root.querySelector("[data-surface-preserve-live]") !== null;
   }
 
   function render(snapshot: ReadonlySnapshot | null, legality?: EngineLegalityView): void {
