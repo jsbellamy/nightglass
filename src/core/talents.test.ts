@@ -13,6 +13,13 @@ import {
 
 const knightKit = fixtureContent.classes.find((entry) => entry.id === "knight")!;
 
+/** Shipped wizard kit loadout ids (see `src/data/classes/wizard.ts`) for duplicate-strip regression. */
+const wizardProductionLoadoutKit = {
+  ...fixtureContent.classes.find((entry) => entry.id === "wizard")!,
+  defaultLoadout: ["prism-ward", "frost-lance", "cinder-bloom"],
+  coreAbilityIds: ["cinder-bloom", "frost-lance", "prism-ward", "thunder-ring"],
+} satisfies ClassKitDef;
+
 const twoTierKnight = {
   ...knightKit,
   talentTiers: [
@@ -123,6 +130,23 @@ describe("deallocateTalentPoint", () => {
     expect(stripped.every((abilityId) => knightKit.coreAbilityIds.includes(abilityId as never))).toBe(
       true,
     );
+  });
+});
+
+describe("stripAbilityFromLoadout", () => {
+  it("replaces a removed talent ability without duplicating abilities already on the loadout (wizard)", () => {
+    const loadout: [string, string, string] = ["starfall", "prism-ward", "frost-lance"];
+    const stripped = stripAbilityFromLoadout(loadout, "starfall", wizardProductionLoadoutKit);
+    expect(stripped).not.toContain("starfall");
+    expect(stripped[1]).toBe("prism-ward");
+    expect(stripped[2]).toBe("frost-lance");
+    expect(new Set(stripped).size).toBe(3);
+    const naiveFallback = wizardProductionLoadoutKit.defaultLoadout.find(
+      (entry) => entry !== "starfall",
+    );
+    expect(naiveFallback).toBe("prism-ward");
+    expect(stripped[0]).not.toBe(naiveFallback);
+    expect(stripped[0]).toBe("cinder-bloom");
   });
 });
 

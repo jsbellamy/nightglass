@@ -321,7 +321,11 @@ export function stripAbilityFromLoadout(
   abilityId: string,
   classKit: ClassKitDef,
 ): [string, string, string] {
-  const fallback = classKit.defaultLoadout.find((entry) => entry !== abilityId) ?? classKit.coreAbilityIds[0]!;
+  const present = new Set(loadout.filter((entry) => entry !== abilityId));
+  const candidates = [...classKit.defaultLoadout, ...classKit.coreAbilityIds];
+  const fallback =
+    candidates.find((entry) => entry !== abilityId && !present.has(entry)) ??
+    classKit.coreAbilityIds[0]!;
   return loadout.map((entry) => (entry === abilityId ? fallback : entry)) as [string, string, string];
 }
 
