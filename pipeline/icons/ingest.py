@@ -25,9 +25,9 @@ from .constants import (  # noqa: E402
     PITCH_MAX_DIVISOR,
     PITCH_MIN_DIVISOR,
 )
-from .palette import DEFAULT_SOURCE_PALETTE_ID, Swatch, load_runtime_palette  # noqa: E402
+from .palette import DEFAULT_SOURCE_PALETTE_ID, SOURCE_LOCAL_OUTLINE_RGB, Swatch, load_runtime_palette  # noqa: E402
 from .paint import nearest  # noqa: E402
-from .text_source import TextSource, cells_to_source, write_text  # noqa: E402
+from .text_source import TextSource, cells_to_local_source, cells_to_source, write_text  # noqa: E402
 
 # Character stills use recover_grid end-to-end; icons share the same primitives
 # with icon pitch bounds in recover_icon_grid below.
@@ -139,6 +139,20 @@ def ingest_raw_to_text_source(
     source = cells_to_source(source_key, palette_id, palette_subset, swatches)
     write_text(out_path, source)
     return {"recovered": meta, "ramp": ramp_stats}
+
+
+def ingest_raw_to_local_text_source(
+    raw_path: pathlib.Path,
+    *,
+    source_key: str,
+    out_path: pathlib.Path,
+    outline_rgb: tuple[int, int, int] | None = None,
+) -> dict:
+    rgb_cells, meta = recover_icon_grid(raw_path)
+    outline = outline_rgb or SOURCE_LOCAL_OUTLINE_RGB
+    source = cells_to_local_source(source_key, rgb_cells, outline_rgb=outline)
+    write_text(out_path, source)
+    return {"recovered": meta, "mode": "source-local"}
 
 
 def write_provenance_sidecar(raw_path: pathlib.Path, *, provider: str = "synthetic-fixture") -> None:

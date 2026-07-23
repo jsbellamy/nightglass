@@ -22,8 +22,8 @@ Equipment and Talent icons **must** keep named-palette validation mandatory. Abi
 
 | Layer | Artifact | Role |
 | --- | --- | --- |
-| Source | Text grid under `src/assets/icon-sources/<family>/source.grid` | Legend chars → named swatches from the family's declared palette (`moonberry-16` for committed Moonberry Equipment and Talent icons; `fowl-harvest-24` for Fowl Equipment once acquired); **generated output, never hand-edited** |
-| Runtime | `src/assets/icons/<iconKey>.png` + `manifest.json` | 34×34 inventory icons consumed by the UI; manifest records the family's selected `palette` id and palette-specific `outline` swatch name |
+| Source | Text grid under `src/assets/icon-sources/<family>/source.grid` | **Named palette:** legend chars → swatches from the family's declared palette (`moonberry-16` for committed Moonberry Equipment and Talent icons; `fowl-harvest-24` for Fowl Equipment). **Source-local Ability:** legend chars → explicit opaque `r,g,b` triples (see **Ability icons**). Generated output, never hand-edited |
+| Runtime | `src/assets/icons/<iconKey>.png` + `manifest.json` | 34×34 inventory icons consumed by the UI; named-palette entries record `palette` and palette-specific `outline` swatch name; source-local Ability entries record `color_mode` and common dark `outline` rgb |
 | Review | `src/assets/icons/preview/<iconKey>@8x.png`, `family-sheet@8x.png` | PR-review approval targets (binary PNG diff) |
 
 **Ability (Loadout)** icons use the same runtime path and preview discipline when their
@@ -65,6 +65,19 @@ re-run ingest, never pixels in the grid file.
 in this section apply to **Equipment Base** and **Talent / Ability Talent** sources. **Ability
 (Loadout)** sources follow **Ability icons** below and do not use `moonberry-16` or
 `fowl-harvest-24` scoping.
+
+### Source-local text form (Ability Loadout only)
+
+Each Ability `source.grid` selects **source-local** mode exclusively (no `palette` /
+`palette_subset`):
+
+- `color_mode: source-local`
+- `outline` — common dark one-cell ring rgb, canonical `58,6,20` (charcoal-plum read)
+- `legend` — one character per line mapping to opaque `r,g,b` or `.` for transparent
+- `grid` — equal-width rows using only legend characters
+
+Malformed, duplicate legend characters, duplicate rgb values, transparent rgba tokens, and
+out-of-range channels are **parse errors**. Ingest emits the same canonical serialization.
 
 ## Ability icons (Loadout Basic / Core Abilities)
 
@@ -144,6 +157,8 @@ A `recolor` map whose **target** already appears in the source `palette_subset` 
 
 Each `manifest.json` entry records:
 
+**Named palette** (Equipment, Talent, verify canaries):
+
 ```json
 {
   "canvas": [34, 34],
@@ -154,8 +169,21 @@ Each `manifest.json` entry records:
 }
 ```
 
-`palette` and `outline` always match the family's selected palette. Moonberry entries
-use `"outline": "contour-plum-deepest"`; Fowl entries use `"outline": "oil-ink"`.
+**Source-local Ability** (Loadout):
+
+```json
+{
+  "canvas": [34, 34],
+  "color_mode": "source-local",
+  "outline": [58, 6, 20],
+  "source_family": "<key>",
+  "sha256": "<digest>"
+}
+```
+
+Named entries: `palette` and `outline` always match the family's selected palette.
+Moonberry entries use `"outline": "contour-plum-deepest"`; Fowl entries use `"outline": "oil-ink"`.
+Source-local entries omit `palette` and record the common dark outline rgb.
 The family contact sheet may include icons from both palettes.
 
 ## Provider prompt shells

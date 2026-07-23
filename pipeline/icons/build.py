@@ -13,8 +13,19 @@ if __name__ == "__main__" and __package__ is None:
     __package__ = "icons"
 
 from .constants import CANVAS
-from .palette import outline_swatch_name
-from .paint import paint_source_icon, runtime_png_bytes, scale_nearest, sha256_bytes
+from .palette import (
+    NAMED_PALETTE_COLOR_MODE,
+    SOURCE_LOCAL_COLOR_MODE,
+    outline_swatch_name,
+    swatch_for_local_rgb,
+)
+from .paint import (
+    paint_source_icon,
+    paint_source_local_icon,
+    runtime_png_bytes,
+    scale_nearest,
+    sha256_bytes,
+)
 from .registry import ALL_BUILD_FAMILIES, FAMILIES, validate_registry
 from .text_source import cells_from_source, parse_text
 
@@ -64,12 +75,37 @@ def build_all() -> dict[str, str]:
         source = parse_text(path)
         if source.source_key != family.source_key:
             raise ValueError(f"{path}: source_key mismatch")
+        if source.color_mode != family.color_mode:
+            raise ValueError(
+                f"{path}: color_mode {source.color_mode!r} does not match family "
+                f"{family.color_mode!r}"
+            )
+        cells = cells_from_source(source)
+        if family.color_mode == SOURCE_LOCAL_COLOR_MODE:
+            if source.outline_rgb is None:
+                raise ValueError(f"{path}: source-local source missing outline")
+            outline = swatch_for_local_rgb(source.outline_rgb)
+            for variant in family.variants:
+                icon = paint_source_local_icon(cells, outline=outline)
+                raw = runtime_png_bytes(icon)
+                key = variant.icon_key
+                (OUT_DIR / f"{key}.png").write_bytes(raw)
+                scale_nearest(icon, 8).save(PREVIEW_DIR / f"{key}@8x.png")
+                hashes[f"runtime:{key}"] = sha256_bytes(raw)
+                manifest[key] = {
+                    "canvas": [CANVAS, CANVAS],
+                    "color_mode": SOURCE_LOCAL_COLOR_MODE,
+                    "outline": list(source.outline_rgb),
+                    "source_family": family.source_key,
+                    "sha256": hashes[f"runtime:{key}"],
+                }
+                runtimes[key] = icon
+            continue
         if source.palette_id != family.palette_id:
             raise ValueError(
                 f"{path}: palette {source.palette_id!r} does not match family "
                 f"{family.palette_id!r}"
             )
-        cells = cells_from_source(source)
         subset = frozenset(family.palette_subset)
         outline_name = outline_swatch_name(family.palette_id)
         for variant in family.variants:

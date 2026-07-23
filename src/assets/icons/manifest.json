@@ -588,5 +588,19 @@
     "outline": "oil-ink",
     "source_family": "verify-fowl-canary",
     "sha256": "fdd8910ed6d6a7fb55b2a105568afcd7ad7b0aef4fbcd52ed7f7257e32bc14c9"
+  },
+  "verify-ability-canary": {
+    "canvas": [
+      34,
+      34
+    ],
+    "color_mode": "source-local",
+    "outline": [
+      58,
+      6,
+      20
+    ],
+    "source_family": "verify-ability-canary",
+    "sha256": "4dd04352cc4752e0ca6db9ed3d338e0833a3b79222ca72889313012cb45f9e8e"
   }
 }
