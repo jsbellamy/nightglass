@@ -39,6 +39,59 @@ describe("Character picker", () => {
     picker.destroy();
   });
 
+  it("reuses unchanged chip rows across a re-render so hover state does not flash", () => {
+    const root = document.createElement("div");
+    const picker = mountCharacterPicker(root, {
+      content: fixtureContent,
+      onSelect: () => undefined,
+    });
+    const engine = createEngine(fixtureContent, undefined, 3);
+    const snapshot = engine.snapshot();
+    const roster = rosterClassIds(snapshot);
+
+    picker.render(snapshot, roster[0]!);
+    const before = [...root.querySelectorAll<HTMLElement>("[data-character-row]")];
+
+    // Re-render with the identical Snapshot and selection: every row node persists.
+    picker.render(snapshot, roster[0]!);
+    const after = [...root.querySelectorAll<HTMLElement>("[data-character-row]")];
+
+    expect(after).toHaveLength(before.length);
+    for (let i = 0; i < before.length; i += 1) {
+      expect(after[i]).toBe(before[i]);
+    }
+
+    picker.destroy();
+  });
+
+  it("rebuilds only the row whose selection changed and leaves the others in place", () => {
+    const root = document.createElement("div");
+    const picker = mountCharacterPicker(root, {
+      content: fixtureContent,
+      onSelect: () => undefined,
+    });
+    const engine = createEngine(fixtureContent, undefined, 3);
+    const snapshot = engine.snapshot();
+    const roster = rosterClassIds(snapshot);
+
+    picker.render(snapshot, roster[0]!);
+    // Rows are keyed by Roster slot index, so locate each by its slot.
+    const rowAt = (index: number): HTMLElement =>
+      root.querySelector<HTMLElement>(`[data-character-row="${index}"]`)!;
+    const firstBefore = rowAt(0);
+    const secondBefore = rowAt(1);
+    const thirdBefore = rowAt(2);
+
+    // Move selection from slot 0 to slot 1: only those two rows change state.
+    picker.render(snapshot, roster[1]!);
+
+    expect(rowAt(0)).not.toBe(firstBefore);
+    expect(rowAt(1)).not.toBe(secondBefore);
+    expect(rowAt(2)).toBe(thirdBefore);
+
+    picker.destroy();
+  });
+
   it("shows Class label, Level N, and position badge for each chip", () => {
     const root = document.createElement("div");
     const picker = mountCharacterPicker(root, {
