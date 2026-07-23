@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 
 import { describe, expect, it } from "vitest";
-import { buildContent } from "../data";
+import { buildClassKitSlice, buildContent } from "../data";
 import { fixtureContent } from "../core/testing/fixture-content";
 import { assertRegisteredContentIcons } from "./content-icons";
 import {
@@ -23,8 +23,8 @@ describe("equipment icon registry", () => {
     const equipmentKeys = collectContentEquipmentIconKeys(content);
     const talentKeys = collectContentTalentIconKeys(content);
     expect(equipmentKeys).toHaveLength(24);
-    expect(talentKeys).toHaveLength(32);
-    expect(registeredIconKeys()).toHaveLength(56);
+    expect(talentKeys).toHaveLength(52);
+    expect(registeredIconKeys()).toHaveLength(76);
 
     for (const key of [...equipmentKeys, ...talentKeys]) {
       expect(() => resolveIcon(key)).not.toThrow();
@@ -51,6 +51,21 @@ describe("equipment icon registry", () => {
     expect(chrome.className).toContain("equipment-icon-img--chrome");
     expect(chrome.width).toBe(CHROME_ICON_SIZE);
     expect(chrome.height).toBe(CHROME_ICON_SIZE);
+  });
+
+  it("resolves every Basic and Core Ability iconKey through production PNGs", () => {
+    const classKit = buildClassKitSlice();
+    const basicCoreIds = classKit.abilities
+      .filter((ability) => ability.slot === "basic" || ability.slot === "core")
+      .map((ability) => ability.id)
+      .sort();
+    expect(basicCoreIds).toHaveLength(20);
+    for (const abilityId of basicCoreIds) {
+      const ability = classKit.abilities.find((entry) => entry.id === abilityId)!;
+      expect(ability.iconKey).toBe(abilityId);
+      expect(() => resolveIcon(abilityId)).not.toThrow();
+      expect(resolveIcon(abilityId).url).toMatch(/\.png$/);
+    }
   });
 
   it("tags each Equipment icon with a tier-scoped pool identity", () => {

@@ -24,6 +24,21 @@ describe("assertRegisteredContentIcons", () => {
     }
   });
 
+  it("reports selectable Abilities that lack iconKey", () => {
+    const content = buildContent();
+    const broken = {
+      ...content,
+      abilities: content.abilities.map((ability) => {
+        if (ability.id !== "steel-cut") {
+          return ability;
+        }
+        const { iconKey: _removed, ...withoutIconKey } = ability;
+        return withoutIconKey;
+      }),
+    };
+    expect(() => assertRegisteredContentIcons(broken)).toThrow(/steel-cut.*lacks iconKey/);
+  });
+
   it("reports missing registry entries for talent icon keys", () => {
     const content = buildContent();
     const broken = {
