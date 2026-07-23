@@ -53,9 +53,12 @@ def _logical_block_raw(
 def write_gate_fixtures(fixtures_dir: pathlib.Path) -> None:
     fixtures_dir.mkdir(parents=True, exist_ok=True)
 
-    # MIN_LONG_AXIS: pass at 20, fail at 19
+    # MIN_LONG_AXIS: pass at 20; thin (<20) advances with size_review annotation
     _save_raw(_logical_block_raw(20, 8), fixtures_dir / "long-axis-pass.png")
     _save_raw(_logical_block_raw(19, 8), fixtures_dir / "long-axis-fail.png")
+
+    # Overshoot: recovered grid > MAX_BODY must downscale-to-fit (advance)
+    _save_raw(_logical_block_raw(34, 12), fixtures_dir / "overshoot-fit.png")
 
     # Off-ramp 20% (#131 retune): pass ~0%, fail ~25% off-palette cells
     _save_raw(

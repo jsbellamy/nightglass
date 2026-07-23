@@ -33,6 +33,34 @@ from .text_source import TextSource, cells_to_local_source, cells_to_source, wri
 # with icon pitch bounds in recover_icon_grid below.
 _ICON_SHARED_RECOVER = recover_grid
 
+Cell = tuple[int, int, int] | None
+
+
+def _downscale_cells_to_fit(
+    cells: list[list[Cell]],
+    *,
+    max_body: int = MAX_BODY,
+) -> tuple[list[list[Cell]], int, int]:
+    """Nearest-neighbour downscale of a compact logical grid to fit max_body."""
+    grid_h = len(cells)
+    grid_w = len(cells[0]) if cells else 0
+    if grid_w <= max_body and grid_h <= max_body:
+        return cells, grid_w, grid_h
+    scale = min(max_body / grid_w, max_body / grid_h)
+    w2 = max(1, int(grid_w * scale + 1e-9))
+    h2 = max(1, int(grid_h * scale + 1e-9))
+    if (w2, h2) == (grid_w, grid_h):
+        return cells, grid_w, grid_h
+    fitted: list[list[Cell]] = []
+    for y in range(h2):
+        src_y = min(grid_h - 1, int(y * grid_h / h2))
+        row: list[Cell] = []
+        for x in range(w2):
+            src_x = min(grid_w - 1, int(x * grid_w / w2))
+            row.append(cells[src_y][src_x])
+        fitted.append(row)
+    return fitted, w2, h2
+
 
 def recover_icon_grid(
     raw_path: pathlib.Path,
@@ -62,23 +90,24 @@ def recover_icon_grid(
     cells = sample_cells(src, fg, bbox, pitch_x, pitch_y)
     grid_h = len(cells)
     grid_w = len(cells[0]) if cells else 0
-    meta = {
+    meta: dict = {
         "bbox": bbox,
         "pitch_x": {"pitch": pitch_x["pitch"], "score": pitch_x["score"]},
         "pitch_y": {"pitch": pitch_y["pitch"], "score": pitch_y["score"]},
         "grid": [grid_w, grid_h],
     }
     if grid_w > MAX_BODY or grid_h > MAX_BODY:
-        raise ValueError(
-            f"{raw_path.name}: overshoot recovered {grid_w}×{grid_h} "
-            f"(max body {MAX_BODY}×{MAX_BODY} before outline ring)"
-        )
+        cells, w2, h2 = _downscale_cells_to_fit(cells)
+        meta["fit"] = {
+            "from": [grid_w, grid_h],
+            "to": [w2, h2],
+            "reason": "overshoot",
+        }
+        meta["grid"] = [w2, h2]
+        grid_w, grid_h = w2, h2
     long_axis = max(grid_w, grid_h)
     if long_axis < MIN_LONG_AXIS:
-        raise ValueError(
-            f"{raw_path.name}: underfill recovered long axis {long_axis} "
-            f"(need ≥{MIN_LONG_AXIS})"
-        )
+        meta["size_review"] = "thin"
     return cells, meta
 
 
