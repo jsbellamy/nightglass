@@ -16,15 +16,12 @@ import {
 import { postBusCommand, postBusSnapshot } from "./helpers/bus";
 import { advanceUntil, advanceUntilVisible } from "./helpers/advance";
 import { contrastRatio, parseRGB } from "./helpers/contrast";
+import { declareEvidenceScenario } from "./helpers/evidence-scenarios";
 import { focusDockTab, openTileAndDock, openTilePage } from "./helpers/dock-context";
+import { captureReviewScene } from "./helpers/review-scenes";
 import { holdTheLineStatusSnapshot, keyboardBootSnapshot } from "./helpers/snapshots";
 
 const SCREENSHOTS = "e2e-screenshots";
-/** Committed review artifact for the knockout-readability judgement (#103). */
-const KNOCKOUT_ARTIFACT = "docs/research/evidence/knockout-readability/tile-combat.png";
-/** Committed review artifact after Character Equipment removal (#300): Armory worn strip. */
-const EQUIPMENT_CHROME_LEGIBILITY_ARTIFACT =
-  "docs/research/evidence/124-equipment-icon-consumers/armory-worn-strip.png";
 
 type Rect = { x: number; y: number; w: number; h: number; cls?: string };
 
@@ -226,9 +223,7 @@ function effectImagesReady(state: EffectImageLoadingState): boolean {
 }
 
 test.describe("rendered-output evidence seam", () => {
-  test("evidence: tile-geometry / evidence: native-1x-scaling / evidence: aa-contrast / evidence: effect-image-loading — Battle Tile geometry, sprites, contrast, effect frames, status glyphs, and combat feedback at native 1×", async ({
-    browser,
-  }) => {
+  declareEvidenceScenario("tile-baseline-combat", async ({ browser }) => {
     const { context, tile } = await openTile(browser);
     const pageErrors: string[] = [];
     tile.on("pageerror", (e) => pageErrors.push(String(e)));
@@ -335,9 +330,8 @@ test.describe("rendered-output evidence seam", () => {
     // assert on the nodes CSS actually targets (.combatant-sprite / .combatant-stack).
     await advanceUntilVisible(tile, tile.locator(".combatant.knocked-out"));
     await expect(tile.locator(".combatant.knocked-out")).toBeVisible();
-    mkdirSync("docs/research/evidence/knockout-readability", { recursive: true });
     await tile.screenshot({ path: `${SCREENSHOTS}/02-tile-combat.png` });
-    await tile.screenshot({ path: KNOCKOUT_ARTIFACT });
+    await captureReviewScene(tile, "tile-baseline-combat", "tile-combat");
 
     const ko = await tile.evaluate(() => {
       const combatant = document.querySelector(".combatant.knocked-out");
@@ -359,9 +353,7 @@ test.describe("rendered-output evidence seam", () => {
     await context.close();
   });
 
-  test("evidence: effect-image-loading — Hold the Line status glyph loads from a seeded Snapshot without page error", async ({
-    browser,
-  }) => {
+  declareEvidenceScenario("hold-the-line-status-glyph", async ({ browser }) => {
     const snapshot = holdTheLineStatusSnapshot();
     const pageErrors: string[] = [];
     const { context, tile } = await openTilePage(browser, JSON.stringify(snapshot));
@@ -389,9 +381,7 @@ test.describe("rendered-output evidence seam", () => {
     await context.close();
   });
 
-  test("evidence: tile-geometry — five Opponents fit the Battle Tile at 1× on a Stage 2 Wave without overlap", async ({
-    browser,
-  }) => {
+  declareEvidenceScenario("tile-five-opponents-drop-clearance", async ({ browser }) => {
     test.setTimeout(60_000);
     const { context, tile } = await openTile(browser);
 
@@ -527,9 +517,7 @@ test.describe("rendered-output evidence seam", () => {
     await context.close();
   });
 
-  test("evidence: cross-webview-delivery / evidence: dock-surfaces — Management Dock populates from the Battle Tile over a shared bus and cycles Armory, Character, and Stage with Character sub-tab scenes", async ({
-    browser,
-  }) => {
+  declareEvidenceScenario("dock-cross-webview-surfaces", async ({ browser }) => {
     const { context, tile } = await openTile(browser);
     const pageErrors: string[] = [];
     tile.on("pageerror", (e) => pageErrors.push(String(e)));
@@ -761,9 +749,7 @@ test.describe("rendered-output evidence seam", () => {
     await context.close();
   });
 
-  test("evidence: dock-navigation-ownership — Armory and Character share one left rail; Stage has zero rail width; no compact Armory selector", async ({
-    browser,
-  }) => {
+  declareEvidenceScenario("dock-navigation-ownership", async ({ browser }) => {
     const { context, dock } = await openTileAndDock(browser);
 
     const tabOrder = await dock.evaluate(() =>
@@ -824,9 +810,7 @@ test.describe("rendered-output evidence seam", () => {
     await context.close();
   });
 
-  test("evidence: armory-collection-unequipped / evidence: armory-comparison-popover — unequipped collection grid and transient comparison popover at dock size", async ({
-    browser,
-  }) => {
+  declareEvidenceScenario("armory-collection-compare", async ({ browser }) => {
     const { context, tile } = await openTile(browser);
     const dock = await context.newPage();
     await dock.setViewportSize({ width: DOCK_WIDTH, height: DOCK_HEIGHT });
@@ -889,9 +873,7 @@ test.describe("rendered-output evidence seam", () => {
     await context.close();
   });
 
-  test("evidence: armory-drag-equip-unequip / evidence: armory-density-no-outer-scroll — pointer drag equip and unequip with 800×480 layout without outer-panel scroll", async ({
-    browser,
-  }) => {
+  declareEvidenceScenario("armory-drag-density", async ({ browser }) => {
     const { context, tile } = await openTile(browser);
     const dock = await context.newPage();
     await dock.setViewportSize({ width: DOCK_WIDTH, height: DOCK_HEIGHT });
@@ -982,9 +964,7 @@ test.describe("rendered-output evidence seam", () => {
     await context.close();
   });
 
-  test("evidence: equipment-icon-content-tier / evidence: equipment-icon-chrome-legibility — Armory grid content-tier geometry and density; worn strip carries the chrome-legibility slug (content tier, explicit change)", async ({
-    browser,
-  }) => {
+  declareEvidenceScenario("equipment-icon-tiers", async ({ browser }) => {
     const { context, tile } = await openTile(browser);
     const dock = await context.newPage();
     await dock.setViewportSize({ width: DOCK_WIDTH, height: DOCK_HEIGHT });
@@ -1130,16 +1110,13 @@ test.describe("rendered-output evidence seam", () => {
 
     expect(await dock.locator('[data-character-section="equipment"]').count()).toBe(0);
 
-    mkdirSync("docs/research/evidence/124-equipment-icon-consumers", { recursive: true });
-    const wornStrip = await dock.locator('[data-armory-worn-strip="true"]');
-    await wornStrip.screenshot({ path: EQUIPMENT_CHROME_LEGIBILITY_ARTIFACT });
+    const wornStrip = dock.locator('[data-armory-worn-strip="true"]');
+    await captureReviewScene(wornStrip, "equipment-icon-tiers", "armory-worn-strip");
 
     await context.close();
   });
 
-  test("evidence: character-loadout-no-scroll / evidence: character-loadout-assignment — unlocked pool and three slots fit; drag shows valid targets and replace/swap", async ({
-    browser,
-  }) => {
+  declareEvidenceScenario("character-loadout", async ({ browser }) => {
     const { context, dock } = await openTileAndDock(
       browser,
       JSON.stringify(keyboardBootSnapshot()),
@@ -1351,9 +1328,7 @@ test.describe("rendered-output evidence seam", () => {
     await context.close();
   });
 
-  test("evidence: character-information-popovers — Ability and Talent popovers share hover/focus text, stay in Dock bounds, and stay non-interactive", async ({
-    browser,
-  }) => {
+  declareEvidenceScenario("character-information-popovers", async ({ browser }) => {
     const { context, dock } = await openTileAndDock(
       browser,
       JSON.stringify(keyboardBootSnapshot()),
@@ -1447,9 +1422,7 @@ test.describe("rendered-output evidence seam", () => {
     await context.close();
   });
 
-  test("evidence: character-stats-breakdown — Stats sub-tab order, five totals/source rows, and pending marker fit at 800×480", async ({
-    browser,
-  }) => {
+  declareEvidenceScenario("character-stats-breakdown", async ({ browser }) => {
     const { context, dock } = await openTileAndDock(
       browser,
       JSON.stringify(keyboardBootSnapshot()),
@@ -1542,9 +1515,7 @@ test.describe("rendered-output evidence seam", () => {
     await context.close();
   });
 
-  test("evidence: character-talents-tree-scroll / evidence: talent-direct-actions — tile +/−, chosen/rank/gate states, Ability Talent replace, and tree scroll retention", async ({
-    browser,
-  }) => {
+  declareEvidenceScenario("character-talents-actions", async ({ browser }) => {
     const { context, dock } = await openTileAndDock(
       browser,
       JSON.stringify(keyboardBootSnapshot()),
