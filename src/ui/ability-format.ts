@@ -291,9 +291,7 @@ function formatApplyStatusClause(
   const detail = detailParts.length > 0 ? `: ${detailParts.join(", ")}` : "";
 
   if (targeting.kind === "self" || targeting.kind === "party") {
-    const object =
-      targeting.kind === "self" ? status.name : status.name;
-    return `${grantVerb} ${object} for ${duration}${detail}`;
+    return `${grantVerb} ${status.name} for ${duration}${detail}`;
   }
   return `${grantVerb} for ${duration}${detail}`;
 }
