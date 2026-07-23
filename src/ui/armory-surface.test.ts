@@ -154,6 +154,55 @@ describe("Armory surface", () => {
     surface.destroy();
   });
 
+  it("reuses Character selector chips across a re-render so hovered tabs do not flash", () => {
+    const root = document.createElement("div");
+    const selected = { current: "knight" as ClassId };
+    const snapshot = armorySnapshot([]);
+    const surface = mountWithSelection(root, selected);
+    renderArmory(surface, snapshot);
+
+    const chipsFor = (): HTMLElement[] => [
+      ...root.querySelectorAll<HTMLElement>(".armory-character-selector [data-character-chip]"),
+    ];
+    const before = chipsFor();
+
+    // Re-render with the identical Snapshot and selection: every chip node persists.
+    renderArmory(surface, snapshot);
+    const after = chipsFor();
+
+    expect(after).toHaveLength(before.length);
+    for (let i = 0; i < before.length; i += 1) {
+      expect(after[i]).toBe(before[i]);
+    }
+
+    surface.destroy();
+  });
+
+  it("rebuilds only the selector chips whose selection changed", () => {
+    const root = document.createElement("div");
+    const selected = { current: "knight" as ClassId };
+    const snapshot = armorySnapshot([]);
+    const surface = mountWithSelection(root, selected);
+    renderArmory(surface, snapshot);
+
+    const roster = rosterClassIds(snapshot);
+    const chipAt = (index: number): HTMLElement =>
+      [...root.querySelectorAll<HTMLElement>(".armory-character-selector [data-character-chip]")][
+        index
+      ]!;
+    const selectedSlotBefore = chipAt(0);
+    const unaffectedSlotBefore = chipAt(2);
+
+    // Move selection from slot 0 to slot 1: slot 2's selected-state is unchanged.
+    selected.current = roster[1]!;
+    renderArmory(surface, snapshot);
+
+    expect(chipAt(0)).not.toBe(selectedSlotBefore);
+    expect(chipAt(2)).toBe(unaffectedSlotBefore);
+
+    surface.destroy();
+  });
+
   it("moves Armory Character selection with Arrow keys and retargets the worn strip", () => {
     const root = document.createElement("div");
     const selected = { current: "knight" as ClassId };

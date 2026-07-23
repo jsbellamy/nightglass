@@ -131,13 +131,20 @@ export function mountArmorySurface(
     aria: { label: "Armory collection" },
   });
   const armoryPanes = el("div", { class: "armory-panes armory-panes--full" }, [gridEl]);
+  // Persistent Character-selector tablist: its chips reconcile in place so a hovered tab
+  // keeps its native :hover instead of flashing when a management pump rebuilds the body.
+  const selectorEl = el("div", {
+    class: "armory-character-selector",
+    data: { armoryCharacterSelector: "true" },
+    props: { role: "tablist" },
+    aria: { label: "Characters" },
+  });
   const bodyEl = el("div", {
     class: "armory-body armory-body--compare-host",
     data: { surfaceRetain: "true" },
   });
   bodyEl.append(armoryPanes, comparePopover);
   let currentToolbar: HTMLElement | null = null;
-  let currentSelector: HTMLElement | null = null;
   let currentWornStrip: HTMLElement | null = null;
 
   /** Swap a persistent-body section in place, keeping the grid attached and unmoved. */
@@ -588,79 +595,127 @@ export function mountArmorySurface(
     browseCompatibility = { classId, slot };
   }
 
-  function renderArmoryCharacterSelector(snapshot: ReadonlySnapshot): HTMLElement {
+  function selectorSelectAt(index: number): void {
+    const roster = lastSnapshot ? rosterClassIds(lastSnapshot) : [];
+    const classId = roster[index];
+    if (!classId) {
+      return;
+    }
+    options.selectClassId(classId);
+  }
+
+  function onSelectorChipKeydown(event: KeyboardEvent, classId: ClassId): void {
+    const roster = lastSnapshot ? rosterClassIds(lastSnapshot) : [];
+    const index = roster.indexOf(classId);
+    if (index < 0 || roster.length === 0) {
+      return;
+    }
+    const last = roster.length - 1;
+    if (event.key === "ArrowRight") {
+      event.preventDefault();
+      selectorSelectAt((index + 1) % roster.length);
+      return;
+    }
+    if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      selectorSelectAt((index - 1 + roster.length) % roster.length);
+      return;
+    }
+    if (event.key === "Home") {
+      event.preventDefault();
+      selectorSelectAt(0);
+      return;
+    }
+    if (event.key === "End") {
+      event.preventDefault();
+      selectorSelectAt(last);
+    }
+  }
+
+  function selectorChipStateKey(
+    snapshot: ReadonlySnapshot,
+    selected: ClassId | null,
+    classId: ClassId,
+  ): string {
+    return [classId, classId === selected ? "sel" : "", levelFor(snapshot, content, classId)].join(
+      "|",
+    );
+  }
+
+  function buildSelectorChip(
+    snapshot: ReadonlySnapshot,
+    selected: ClassId | null,
+    classId: ClassId,
+  ): HTMLElement {
+    const isSelected = classId === selected;
+    const chip = el(
+      "button",
+      {
+        class: "character-picker-chip focus-ring",
+        data: {
+          characterChip: classId,
+          selectorChipKey: selectorChipStateKey(snapshot, selected, classId),
+        },
+        props: {
+          type: "button",
+          role: "tab",
+          tabIndex: isSelected ? 0 : -1,
+        },
+      },
+      [
+        el("span", { class: "character-chip-name", text: CLASS_LABELS[classId] }),
+        el("span", {
+          class: "character-chip-level",
+          text: `Level ${levelFor(snapshot, content, classId)}`,
+        }),
+      ],
+    );
+    chip.setAttribute("aria-selected", isSelected ? "true" : "false");
+    bindPressable(chip, () => options.selectClassId(classId));
+    chip.addEventListener("keydown", (event) => onSelectorChipKeydown(event, classId));
+    return chip;
+  }
+
+  function reconcileCharacterSelector(snapshot: ReadonlySnapshot): void {
+    if (selectorEl.parentNode !== bodyEl) {
+      // Insert once, after the toolbar and before the panes/worn strip.
+      bodyEl.insertBefore(selectorEl, armoryPanes);
+    }
     const roster = rosterClassIds(snapshot);
     const selected = options.getSelectedClassId();
-    const selector = el("div", {
-      class: "armory-character-selector",
-      data: { armoryCharacterSelector: "true" },
-      props: { role: "tablist" },
-      aria: { label: "Characters" },
+
+    // Keyed by Roster slot index (unique) — a Class can occupy both a Party slot
+    // and Reserve, so Class alone would collide.
+    const existing = new Map<number, HTMLElement>();
+    [...selectorEl.children].forEach((child, index) => {
+      existing.set(index, child as HTMLElement);
     });
 
-    function selectAt(index: number): void {
-      const classId = roster[index];
-      if (!classId) {
-        return;
+    const desired: HTMLElement[] = roster.map((classId, index) => {
+      const prev = existing.get(index);
+      if (
+        prev &&
+        prev.dataset["selectorChipKey"] === selectorChipStateKey(snapshot, selected, classId)
+      ) {
+        return prev;
       }
-      options.selectClassId(classId);
-    }
+      return buildSelectorChip(snapshot, selected, classId);
+    });
 
-    function onChipKeydown(event: KeyboardEvent, classId: ClassId): void {
-      const index = roster.indexOf(classId);
-      if (index < 0 || roster.length === 0) {
-        return;
-      }
-      const last = roster.length - 1;
-      if (event.key === "ArrowRight") {
-        event.preventDefault();
-        selectAt((index + 1) % roster.length);
-        return;
-      }
-      if (event.key === "ArrowLeft") {
-        event.preventDefault();
-        selectAt((index - 1 + roster.length) % roster.length);
-        return;
-      }
-      if (event.key === "Home") {
-        event.preventDefault();
-        selectAt(0);
-        return;
-      }
-      if (event.key === "End") {
-        event.preventDefault();
-        selectAt(last);
+    const keep = new Set<Node>(desired);
+    for (const child of [...selectorEl.childNodes]) {
+      if (!keep.has(child)) {
+        selectorEl.removeChild(child);
       }
     }
-
-    for (const classId of roster) {
-      const isSelected = classId === selected;
-      const chip = el(
-        "button",
-        {
-          class: "character-picker-chip focus-ring",
-          data: { characterChip: classId },
-          props: {
-            type: "button",
-            role: "tab",
-            tabIndex: isSelected ? 0 : -1,
-          },
-        },
-        [
-          el("span", { class: "character-chip-name", text: CLASS_LABELS[classId] }),
-          el("span", {
-            class: "character-chip-level",
-            text: `Level ${levelFor(snapshot, content, classId)}`,
-          }),
-        ],
-      );
-      chip.setAttribute("aria-selected", isSelected ? "true" : "false");
-      bindPressable(chip, () => options.selectClassId(classId));
-      chip.addEventListener("keydown", (event) => onChipKeydown(event, classId));
-      selector.append(chip);
+    let cursor = selectorEl.firstChild;
+    for (const node of desired) {
+      if (node === cursor) {
+        cursor = cursor.nextSibling;
+        continue;
+      }
+      selectorEl.insertBefore(node, cursor);
     }
-
-    return selector;
   }
 
   function renderWornStrip(snapshot: ReadonlySnapshot): HTMLElement {
@@ -1073,10 +1128,7 @@ export function mountArmorySurface(
     showTitle: false,
     body(snapshot) {
       currentToolbar = swapBodySection(currentToolbar, renderToolbar(snapshot));
-      currentSelector = swapBodySection(
-        currentSelector,
-        renderArmoryCharacterSelector(snapshot),
-      );
+      reconcileCharacterSelector(snapshot);
       currentWornStrip = swapBodySection(currentWornStrip, renderWornStrip(snapshot));
       reconcileGrid(snapshot, bodyEl);
       return [bodyEl];
