@@ -6,6 +6,7 @@ import {
 } from "./helpers/contrast";
 import {
   focusCharacterSection,
+  focusCharacterView,
   focusDockTab,
 } from "./helpers/dock-context";
 import { declareEvidenceScenario } from "./helpers/evidence-scenarios";
@@ -34,6 +35,23 @@ const DOCK_PRIMARY_TEXT: { tab: "character" | "armory" | "stage"; selector: stri
   {
     tab: "character",
     selector: ".character-picker .character-chip-name",
+  },
+  {
+    tab: "character",
+    selector: '[data-character-sub-tab="build"][aria-selected="true"]',
+  },
+  {
+    tab: "character",
+    selector: ".character-workspace-name",
+  },
+  {
+    tab: "character",
+    selector: '[data-character-section="loadout"] [data-loadout-available-heading="true"]',
+  },
+  {
+    tab: "character",
+    selector:
+      '[data-character-section="loadout"] .loadout-pool-strip .loadout-assign-tile--strip-icon',
   },
   {
     tab: "character",
@@ -67,6 +85,15 @@ const DOCK_PRIMARY_TEXT: { tab: "character" | "armory" | "stage"; selector: stri
     tab: "character",
     selector:
       '[data-character-section="talents"] [data-talent-id="fortitude"][data-talent-action="deallocate"]',
+  },
+  {
+    tab: "character",
+    selector:
+      '[data-character-section="talents"] [data-talent-id="fortitude"] .talent-rank-stepper-value',
+  },
+  {
+    tab: "character",
+    selector: '[data-character-section="stats"] .stats-group-heading',
   },
   {
     tab: "character",
@@ -125,8 +152,8 @@ test.describe("accessibility contrast floor", () => {
     for (const { tab, selector } of DOCK_PRIMARY_TEXT) {
       await focusDockTab(seededDock, tab);
       if (tab === "character") {
-        if (selector.includes('[data-character-section="loadout"]')) {
-          await focusCharacterSection(seededDock, "loadout");
+        if (selector.includes('[data-character-section="loadout"]') || selector.includes(".loadout-pool-strip")) {
+          await focusCharacterView(seededDock, "build");
           if (
             selector.includes('[data-loadout-ability-popover="true"]') &&
             !loadoutPopoverPrepared
@@ -142,9 +169,9 @@ test.describe("accessibility contrast floor", () => {
             ).toBeVisible();
             loadoutPopoverPrepared = true;
           }
-        } else if (selector.includes('[data-character-section="stats"]')) {
+        } else if (selector.includes('[data-character-section="stats"]') || selector.includes(".stats-group-heading")) {
           await focusCharacterSection(seededDock, "stats");
-        } else if (selector.includes('[data-character-section="talents"]')) {
+        } else if (selector.includes('[data-character-section="talents"]') || selector.includes("talent-rank-stepper")) {
           await focusCharacterSection(seededDock, "talents");
           if (!talentPopoverPrepared) {
             const fortitudeCell = seededDock.locator(
@@ -158,6 +185,10 @@ test.describe("accessibility contrast floor", () => {
             ).toBeVisible();
             talentPopoverPrepared = true;
           }
+        } else if (selector.includes('[data-character-sub-tab="build"]')) {
+          await focusCharacterView(seededDock, "build");
+        } else if (selector.includes(".character-workspace-name")) {
+          await focusCharacterView(seededDock, "build");
         }
       }
       if (tab === "armory" && selector === ".character-picker .character-chip-name") {
