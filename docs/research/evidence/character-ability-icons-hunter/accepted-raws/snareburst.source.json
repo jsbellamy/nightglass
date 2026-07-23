@@ -1,0 +1,68 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "prompt": "TRUE chunky pixel-art ability icon only, exact 32\u00d732 logical pixel grid rendered large. Snareburst: a circular toothed trap cord snapping shut around three inward arrowheads with one compact stun star, clearly an area snare burst. Shrink the glyph \u2014 long side about 26\u201328 logical pixels with generous empty magenta. At least THREE full #ff00ff cells clear on every edge. Flat blocks, structures at least 3 pixels, selective charcoal-plum outline, upper-left lighting. Use trap iron, rope gold, forest green, warning orange-red, pale impact; source-local colors, no named game palette. Solid #ff00ff background. No victim, hunter, text, UI border, ground scene, cast shadow, diffuse glow, loose debris, gradient, anti-aliasing, blur, dithering, watermark, or transparency.",
+  "raw_sha256": "198a23631146992d9a664734139c0a69a40e0df015576468d63930c22d36fcc3",
+  "asset_class": "interface",
+  "kind": "ability-loadout-icon",
+  "color_mode": "source-local",
+  "runtime_destination": "src/assets/icon-sources/snareburst/source.grid",
+  "candidate": "snareburst-r2",
+  "style_references": [
+    {
+      "path": "src/assets/icons/preview/verify-ability-canary@8x.png",
+      "sha256": "82a04baf5f96334431bbb23c8b3767055b80379202ede610b964301c26873ea9",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/preview/heartseeker@8x.png",
+      "sha256": "dca30cd6c512f771f726af8784bf395ca5a969766b8540a9ec78ab29e0bee9aa",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/preview/fletchers-eye@8x.png",
+      "sha256": "65f575adc7fba3fe2b709abaccf5e33b955b9a5ad5c69a899ee59192a16337e9",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/preview/draw-weight@8x.png",
+      "sha256": "ee638bb4a2051b5ce14384965c0450286d6c3d062f41978cf958f58972c425db",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/preview/fieldcraft@8x.png",
+      "sha256": "fd5f0cbb351ef0081ac549f89cc9b9d24591d7bde8ae92397786afc10a40f85b",
+      "role": "style_cohort"
+    }
+  ],
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        223,
+        177,
+        799,
+        815
+      ],
+      "pitch_x": {
+        "pitch": 30.700000000000184,
+        "score": 0.14007149900565494
+      },
+      "pitch_y": {
+        "pitch": 25.650000000000112,
+        "score": 0.09023765363672248
+      },
+      "grid": [
+        19,
+        25
+      ]
+    },
+    "mode": "source-local",
+    "color_reduce": {
+      "unique_before": 168,
+      "unique_after": 12,
+      "max_colors": 12,
+      "cluster_dist": 28,
+      "note": "Task-local flat-fill cluster so source-local legend stays within A\u2013Z/a\u2013z/0\u20139 grid alphabet; rebuild is from committed source.grid, not provider raw."
+    }
+  }
+}

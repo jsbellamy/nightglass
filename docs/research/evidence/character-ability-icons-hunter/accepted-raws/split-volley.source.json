@@ -1,0 +1,68 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "prompt": "TRUE chunky pixel-art ability icon only, exact 32\u00d732 logical pixel grid rendered large. Split Volley: three thick arrows fanning outward from one central release point, immediately readable as an all-enemies physical volley. Compact centered group about 26\u201328 logical pixels wide. CRITICAL: leave generous solid #ff00ff magenta margin on ALL four sides \u2014 at least FOUR full magenta cells of clearance; subject must NOT touch any canvas edge. Clean flat pixels, shafts at least 3 pixels, selective one-pixel charcoal-plum outline, upper-left light. Use forest green, warm brown-orange, steel blue heads, cream fletching; source-local colors without Moonberry/Fowl limits. Solid #ff00ff background only. No bowman, words, UI frame, landscape, cast shadow, soft aura, many loose arrows, gradients, anti-aliasing, blur, dithering, watermark, or transparency.",
+  "raw_sha256": "3460c8f7a3437ba65098fde0b69722d1b89666017ccf79d430bb85072ca0699a",
+  "asset_class": "interface",
+  "kind": "ability-loadout-icon",
+  "color_mode": "source-local",
+  "runtime_destination": "src/assets/icon-sources/split-volley/source.grid",
+  "candidate": "split-volley-r2",
+  "style_references": [
+    {
+      "path": "src/assets/icons/preview/verify-ability-canary@8x.png",
+      "sha256": "82a04baf5f96334431bbb23c8b3767055b80379202ede610b964301c26873ea9",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/preview/heartseeker@8x.png",
+      "sha256": "dca30cd6c512f771f726af8784bf395ca5a969766b8540a9ec78ab29e0bee9aa",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/preview/fletchers-eye@8x.png",
+      "sha256": "65f575adc7fba3fe2b709abaccf5e33b955b9a5ad5c69a899ee59192a16337e9",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/preview/draw-weight@8x.png",
+      "sha256": "ee638bb4a2051b5ce14384965c0450286d6c3d062f41978cf958f58972c425db",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/preview/fieldcraft@8x.png",
+      "sha256": "fd5f0cbb351ef0081ac549f89cc9b9d24591d7bde8ae92397786afc10a40f85b",
+      "role": "style_cohort"
+    }
+  ],
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        201,
+        180,
+        857,
+        824
+      ],
+      "pitch_x": {
+        "pitch": 23.400000000000073,
+        "score": 0.4344278336316623
+      },
+      "pitch_y": {
+        "pitch": 23.050000000000068,
+        "score": 0.417545656957442
+      },
+      "grid": [
+        28,
+        28
+      ]
+    },
+    "mode": "source-local",
+    "color_reduce": {
+      "unique_before": 129,
+      "unique_after": 9,
+      "max_colors": 12,
+      "cluster_dist": 28,
+      "note": "Task-local flat-fill cluster so source-local legend stays within A\u2013Z/a\u2013z/0\u20139 grid alphabet; rebuild is from committed source.grid, not provider raw."
+    }
+  }
+}

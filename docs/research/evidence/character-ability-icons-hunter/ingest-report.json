@@ -1,0 +1,152 @@
+{
+  "quickshot": {
+    "recovered": {
+      "bbox": [
+        283,
+        194,
+        821,
+        835
+      ],
+      "pitch_x": {
+        "pitch": 23.43333333333341,
+        "score": 0.38867108460366784
+      },
+      "pitch_y": {
+        "pitch": 23.683333333333415,
+        "score": 0.4445712596237851
+      },
+      "grid": [
+        23,
+        27
+      ]
+    },
+    "mode": "source-local",
+    "color_reduce": {
+      "unique_before": 139,
+      "unique_after": 12,
+      "max_colors": 12,
+      "cluster_dist": 28,
+      "note": "Task-local flat-fill cluster so source-local legend stays within A\u2013Z/a\u2013z/0\u20139 grid alphabet; rebuild is from committed source.grid, not provider raw."
+    }
+  },
+  "pinpoint-shot": {
+    "recovered": {
+      "bbox": [
+        273,
+        285,
+        874,
+        716
+      ],
+      "pitch_x": {
+        "pitch": 23.472222222222317,
+        "score": 0.11571256224522103
+      },
+      "pitch_y": {
+        "pitch": 21.372222222222288,
+        "score": 0.11414021128392596
+      },
+      "grid": [
+        26,
+        20
+      ]
+    },
+    "mode": "source-local",
+    "color_reduce": {
+      "unique_before": 133,
+      "unique_after": 9,
+      "max_colors": 12,
+      "cluster_dist": 28,
+      "note": "Task-local flat-fill cluster so source-local legend stays within A\u2013Z/a\u2013z/0\u20139 grid alphabet; rebuild is from committed source.grid, not provider raw."
+    }
+  },
+  "barbed-arrow": {
+    "recovered": {
+      "bbox": [
+        278,
+        276,
+        763,
+        738
+      ],
+      "pitch_x": {
+        "pitch": 21.100000000000108,
+        "score": 0.23836956663006892
+      },
+      "pitch_y": {
+        "pitch": 21.25000000000011,
+        "score": 0.3065712987960784
+      },
+      "grid": [
+        23,
+        22
+      ]
+    },
+    "mode": "source-local",
+    "color_reduce": {
+      "unique_before": 151,
+      "unique_after": 12,
+      "max_colors": 12,
+      "cluster_dist": 28,
+      "note": "Task-local flat-fill cluster so source-local legend stays within A\u2013Z/a\u2013z/0\u20139 grid alphabet; rebuild is from committed source.grid, not provider raw."
+    }
+  },
+  "split-volley": {
+    "recovered": {
+      "bbox": [
+        201,
+        180,
+        857,
+        824
+      ],
+      "pitch_x": {
+        "pitch": 23.400000000000073,
+        "score": 0.4344278336316623
+      },
+      "pitch_y": {
+        "pitch": 23.050000000000068,
+        "score": 0.417545656957442
+      },
+      "grid": [
+        28,
+        28
+      ]
+    },
+    "mode": "source-local",
+    "color_reduce": {
+      "unique_before": 129,
+      "unique_after": 9,
+      "max_colors": 12,
+      "cluster_dist": 28,
+      "note": "Task-local flat-fill cluster so source-local legend stays within A\u2013Z/a\u2013z/0\u20139 grid alphabet; rebuild is from committed source.grid, not provider raw."
+    }
+  },
+  "snareburst": {
+    "recovered": {
+      "bbox": [
+        223,
+        177,
+        799,
+        815
+      ],
+      "pitch_x": {
+        "pitch": 30.700000000000184,
+        "score": 0.14007149900565494
+      },
+      "pitch_y": {
+        "pitch": 25.650000000000112,
+        "score": 0.09023765363672248
+      },
+      "grid": [
+        19,
+        25
+      ]
+    },
+    "mode": "source-local",
+    "color_reduce": {
+      "unique_before": 168,
+      "unique_after": 12,
+      "max_colors": 12,
+      "cluster_dist": 28,
+      "note": "Task-local flat-fill cluster so source-local legend stays within A\u2013Z/a\u2013z/0\u20139 grid alphabet; rebuild is from committed source.grid, not provider raw."
+    }
+  }
+}
