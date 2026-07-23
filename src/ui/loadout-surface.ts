@@ -2,7 +2,7 @@ import type { ReadonlySnapshot } from "../core/snapshot";
 import type { AbilityDef, BaseStats, ClassId, Content, StatusEffectDef } from "../core/types";
 import {
   formatAbilityChoiceLabel,
-  formatAbilityDescription,
+  formatAbilityInlineMechanics,
   formatAbilityTimings,
 } from "./ability-format";
 import type { TileCommand } from "./bus";
@@ -55,7 +55,7 @@ function renderAbilityCard(
     el("p", {
       class: "ability-description",
       data: { abilityDescription: "true" },
-      text: formatAbilityDescription(ability, stats, statuses),
+      text: formatAbilityInlineMechanics(ability, stats, statuses),
     }),
   );
 

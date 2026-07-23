@@ -9,7 +9,7 @@ import { fixtureContent } from "../core/testing/fixture-content";
 import type { ClassId } from "../core/types";
 import type { Snapshot } from "../core/snapshot";
 import { mountBattleTile } from "./battle-tile";
-import { formatAbilityChoiceLabel, formatAbilityDescription } from "./ability-format";
+import { formatAbilityChoiceLabel, formatAbilityInlineMechanics } from "./ability-format";
 import { characterStatsFor } from "./snapshot-view";
 import { mountLoadoutSurface } from "./loadout-surface";
 
@@ -47,7 +47,7 @@ function sweepDescriptionText(root: HTMLElement): string | undefined {
 }
 
 function expectedSweepDescription(snapshot: Snapshot): string {
-  return formatAbilityDescription(
+  return formatAbilityInlineMechanics(
     fixtureContent.abilities.find((entry) => entry.id === "k-sweep")!,
     characterStatsFor(snapshot, fixtureContent, "knight"),
     fixtureContent.statuses,
@@ -118,6 +118,40 @@ describe("Loadout surface", () => {
     engine.allocateTalent("knight", "k-swordcraft");
     engine.allocateTalent("knight", "k-swordcraft");
     surface.render(engine.snapshot());
+    expect(sweepDescriptionText(root)).toBe(expectedSweepDescription(engine.snapshot()));
+
+    surface.destroy();
+  });
+
+  it("recomputes ability descriptions when Equipment changes", () => {
+    const root = document.createElement("div");
+    const boot = createEngine(fixtureContent, undefined, LOOT_SEED);
+    boot.advanceBy(1);
+    const saved = structuredClone(boot.snapshot()) as Snapshot;
+    saved.progression.armory = [
+      {
+        dropId: 1,
+        baseId: "fixture-blade-ii",
+        itemLevel: 1,
+        rarity: "common",
+        affixes: [],
+        awardedAtMs: 0,
+        seen: true,
+        locked: false,
+        assignedTo: null,
+      },
+    ];
+    const engine = createEngine(fixtureContent, saved, LOOT_SEED);
+    const selected = { current: "knight" as ClassId };
+    const surface = mountLoadoutSurface(root, mountOptions(fixtureContent, selected));
+
+    surface.render(engine.snapshot());
+    const before = sweepDescriptionText(root);
+
+    engine.equip(1, "knight", "weapon");
+    surface.render(engine.snapshot());
+
+    expect(before).not.toBe(sweepDescriptionText(root));
     expect(sweepDescriptionText(root)).toBe(expectedSweepDescription(engine.snapshot()));
 
     surface.destroy();

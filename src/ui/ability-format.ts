@@ -371,12 +371,21 @@ function formatAbilityMechanics(
   return `${prefix}${body}`;
 }
 
+/** Mechanical body only (no ability name prefix). Use when the name is shown separately. */
+export function formatAbilityInlineMechanics(
+  ability: AbilityDef,
+  stats: BaseStats,
+  statuses: readonly StatusEffectDef[],
+): string {
+  return formatAbilityMechanics(ability, stats, statuses, false);
+}
+
 export function formatAbilityDescription(
   ability: AbilityDef,
   stats: BaseStats,
   statuses: readonly StatusEffectDef[],
 ): string {
-  return `${ability.name}: ${formatAbilityMechanics(ability, stats, statuses, false)}`;
+  return `${ability.name}: ${formatAbilityInlineMechanics(ability, stats, statuses)}`;
 }
 
 export function formatAbilityChoiceLabel(

@@ -847,6 +847,8 @@ html.dock-window body {
 
 .character-section .loadout-order-note {
   margin: 0;
+  font-size: 9px;
+  line-height: 1.2;
 }
 
 .character-section .loadout-character,
@@ -865,13 +867,17 @@ html.dock-window body {
 }
 
 .character-section .surface-section-title {
-  margin: 2px 0 2px;
+  margin: 0 0 2px;
 }
 
 .character-section .ability-card,
 .character-section .basic-attack,
 .character-section .loadout-slot {
-  padding: 4px 6px;
+  padding: 2px 4px;
+}
+
+.character-section .basic-attack .slot-label {
+  margin: 0 0 1px;
 }
 
 .character-section .ability-name,
@@ -879,11 +885,16 @@ html.dock-window body {
 .character-section .ability-raw,
 .character-section .ability-timings {
   margin: 0;
-  line-height: 1.25;
+  line-height: 1.15;
 }
 
 .character-section .ability-description {
-  font-size: 10px;
+  font-size: 9px;
+  color: var(--text-muted, #9aa3b2);
+}
+
+.character-section .ability-timings {
+  font-size: 9px;
   color: var(--text-muted, #9aa3b2);
 }
 
@@ -899,7 +910,9 @@ html.dock-window body {
 }
 
 .character-section .slot-label {
-  margin: 0 0 2px;
+  margin: 0 0 1px;
+  font-size: 9px;
+  line-height: 1.15;
 }
 
 .character-section .loadout-assign {
