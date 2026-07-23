@@ -2,15 +2,17 @@ import type { ReadonlySnapshot } from "../core/snapshot";
 import type { EngineLegalityView } from "./engine-legality";
 import type { DockSurfaceMountOptions } from "./dock";
 import { mountLoadoutSurface } from "./loadout-surface";
+import { mountStatsSurface } from "./stats-surface";
 import { mountTalentsSurface } from "./talents-surface";
 import { mountTabStrip } from "./tab-strip";
 
-export type CharacterTabId = "loadout" | "talents";
+export type CharacterTabId = "loadout" | "talents" | "stats";
 
-const CHARACTER_TABS: { id: CharacterTabId; label: string }[] = [
+export const CHARACTER_TABS = [
   { id: "loadout", label: "Loadout" },
   { id: "talents", label: "Talents" },
-];
+  { id: "stats", label: "Stats" },
+] as const satisfies ReadonlyArray<{ id: CharacterTabId; label: string }>;
 
 export interface CharacterSurface {
   render(snapshot: ReadonlySnapshot | null, legality?: EngineLegalityView): void;
@@ -59,6 +61,7 @@ export function mountCharacterSurface(
 
   const loadout = mountLoadoutSurface(sections.get("loadout")!, options);
   const talents = mountTalentsSurface(sections.get("talents")!, options);
+  const stats = mountStatsSurface(sections.get("stats")!, options);
 
   function syncPanels(): void {
     for (const { id } of CHARACTER_TABS) {
@@ -81,10 +84,12 @@ export function mountCharacterSurface(
     render(snapshot, legality) {
       loadout.render(snapshot, legality);
       talents.render(snapshot, legality);
+      stats.render(snapshot, legality);
     },
     destroy() {
       loadout.destroy();
       talents.destroy();
+      stats.destroy();
       tabStrip.destroy();
       root.replaceChildren();
       root.classList.remove("character-surface");
