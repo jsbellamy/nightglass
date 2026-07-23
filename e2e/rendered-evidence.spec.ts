@@ -620,7 +620,6 @@ test.describe("rendered-output evidence seam", () => {
         const bodyBox = dockBody?.getBoundingClientRect();
         const surfaceBox = dockSurface?.getBoundingClientRect();
         const pickerStyle = picker ? getComputedStyle(picker) : null;
-        const railVisible = t === "armory" || t === "character";
         return {
           chars: panel ? panel.textContent?.trim().length ?? 0 : 0,
           visibleCount: visible.length,
