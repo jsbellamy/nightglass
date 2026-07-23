@@ -47,6 +47,8 @@ import {
   deallocateTalentPoint,
   emptyTalentState,
   normalizeClassTalentState,
+  replaceAbilityInLoadout,
+  resolveTalentTier,
   stripAbilityFromLoadout,
   type ClassTalentState,
 } from "./talents";
@@ -205,6 +207,38 @@ function setTalentDraft(state: EngineState, classId: ClassId, draft: ClassTalent
       abilityTalentId: tier.abilityTalentId,
     })),
   });
+}
+
+function pushClassPendingEdits(
+  state: EngineState,
+  classId: ClassId,
+  talentDraft: ClassTalentState,
+  loadout?: [string, string, string],
+): void {
+  const remaining = state.pendingEdits.filter(
+    (edit) =>
+      !(
+        (edit.kind === "talent" && edit.classId === classId) ||
+        (edit.kind === "loadout" && edit.classId === classId)
+      ),
+  );
+  const normalized = cloneClassTalentState(talentDraft);
+  const edits: Snapshot["pendingEdits"] = [
+    {
+      kind: "talent",
+      classId,
+      statRanks: { ...normalized.statRanks },
+      abilityTalentId: normalized.abilityTalentId,
+      tierStates: normalized.tierStates.map((tier) => ({
+        statRanks: { ...tier.statRanks },
+        abilityTalentId: tier.abilityTalentId,
+      })),
+    },
+  ];
+  if (loadout) {
+    edits.push({ kind: "loadout", classId, loadout: [...loadout] });
+  }
+  state.pendingEdits = [...remaining, ...edits];
 }
 
 function makePartyCombatant(
@@ -1520,9 +1554,25 @@ export function createEngine(
     if (!classKit) {
       throw new Error(`Missing Class Kit ${classId}`);
     }
-    const draft = pendingEdits.effectiveTalentState(pendingEditSnapshot(state), classId);
+    const snapshot = pendingEditSnapshot(state);
+    const draft = pendingEdits.effectiveTalentState(snapshot, classId);
+    const loadout = pendingEdits.effectiveLoadout(snapshot, classId);
+    const location = resolveTalentTier(classKit, talentId);
+    const previousAbility =
+      location && location.tierDef.abilityRow.includes(talentId)
+        ? (draft.tierStates[location.tierIndex]?.abilityTalentId ?? null)
+        : null;
     const level = characterLevel(state.progression, classId, index.content.xpThresholds);
     allocateTalentPoint(draft, classKit, talentId, level);
+    if (
+      previousAbility &&
+      previousAbility !== talentId &&
+      loadout.includes(previousAbility)
+    ) {
+      const nextLoadout = replaceAbilityInLoadout(loadout, previousAbility, talentId);
+      pushClassPendingEdits(state, classId, draft, nextLoadout);
+      return;
+    }
     setTalentDraft(state, classId, draft);
   }
 

@@ -1063,7 +1063,7 @@ test.describe("rendered-output evidence seam", () => {
         panelScrollable: panel.scrollHeight > panel.clientHeight + 1,
         talentsVisible: Boolean(talentsSection && !talentsSection.hidden),
         tierSections: panel.querySelectorAll("[data-talent-tier]").length,
-        tierRows: panel.querySelectorAll(".talent-grid .talent-cell").length,
+        tierRows: panel.querySelectorAll(".talent-tree-scroll .talent-cell").length,
         overflowY: getComputedStyle(panel).overflowY,
       };
     });

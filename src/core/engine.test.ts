@@ -5,7 +5,7 @@ import { partyEntityId } from "./entity-id";
 import type { DropInstance, Snapshot } from "./snapshot";
 import { statuses as shippedStatuses } from "../data/statuses";
 import { wizardTier2Abilities } from "../data/classes/wizard";
-import { effectiveTalentState } from "./pending-edits";
+import { effectiveLoadout, effectiveTalentState } from "./pending-edits";
 import { characterStats } from "./stats";
 import { fixtureContent, fixtureContentWithAuthoredStages, fourTierFixtureContent } from "./testing/fixture-content";
 import { driveBy, scenario } from "./testing/scenario";
@@ -2303,6 +2303,98 @@ describe("progression", () => {
       }
     }
     throw new Error("config-applied never emitted for talent boundary");
+  });
+
+  it("replaces a slotted Ability Talent in one command and orders Talent before Loadout pending edits", () => {
+    const engine = createEngine(
+      fixtureContent,
+      scenario().withXp("knight", 850).build(),
+      LOOT_SEED,
+    );
+    for (let rank = 0; rank < 5; rank += 1) {
+      engine.allocateTalent(
+        "knight",
+        rank % 2 === 0 ? "k-fortitude" : "k-swordcraft",
+      );
+    }
+    engine.allocateTalent("knight", "k-hold-line");
+    engine.setLoadout("knight", ["k-hold-line", "k-sweep", "k-rally"]);
+
+    expect(engine.canAllocateTalent("knight", "k-falling-star")).toBe(true);
+    engine.allocateTalent("knight", "k-falling-star");
+
+    const snap = engine.snapshot();
+    expect(snap.pendingEdits.map((edit) => edit.kind)).toEqual(["talent", "loadout"]);
+    expect(effectiveLoadout(snap, "knight")).toEqual(["k-falling-star", "k-sweep", "k-rally"]);
+    expect(new Set(effectiveLoadout(snap, "knight")).size).toBe(3);
+  });
+
+  it("leaves Loadout unchanged when replacing an unslotted Ability Talent", () => {
+    const engine = createEngine(
+      fixtureContent,
+      scenario().withXp("knight", 850).build(),
+      LOOT_SEED,
+    );
+    for (let rank = 0; rank < 5; rank += 1) {
+      engine.allocateTalent(
+        "knight",
+        rank % 2 === 0 ? "k-fortitude" : "k-swordcraft",
+      );
+    }
+    engine.allocateTalent("knight", "k-hold-line");
+    const before = [...effectiveLoadout(engine.snapshot(), "knight")];
+    engine.allocateTalent("knight", "k-falling-star");
+    const snap = engine.snapshot();
+    expect(snap.pendingEdits.some((edit) => edit.kind === "loadout")).toBe(false);
+    expect(effectiveLoadout(snap, "knight")).toEqual(before);
+  });
+
+  it("applies replaced slotted Ability Talents at the Wave boundary with Activation Delay", () => {
+    const engine = createEngine(
+      fixtureContent,
+      scenario().withXp("knight", 850).build(),
+      LOOT_SEED,
+    );
+    for (let rank = 0; rank < 5; rank += 1) {
+      engine.allocateTalent(
+        "knight",
+        rank % 2 === 0 ? "k-fortitude" : "k-swordcraft",
+      );
+    }
+    engine.allocateTalent("knight", "k-hold-line");
+    engine.setLoadout("knight", ["k-hold-line", "k-sweep", "k-rally"]);
+    engine.allocateTalent("knight", "k-falling-star");
+
+    let transitionAt: number | null = null;
+    let elapsed = 0;
+    while (elapsed < 300_000) {
+      elapsed += 1;
+      const events = driveBy(engine, 1);
+      if (
+        events.some(
+          (event) => event.type === "wave-cleared" && event.encounter === 1,
+        )
+      ) {
+        transitionAt = engine.snapshot().simNowMs;
+      }
+      if (events.some((event) => event.type === "config-applied")) {
+        const snap = engine.snapshot();
+        expect(snap.progression.talents.knight?.abilityTalentId).toBe("k-falling-star");
+        expect(snap.progression.loadouts.knight).toEqual([
+          "k-falling-star",
+          "k-sweep",
+          "k-rally",
+        ]);
+        const knight = snap.attempt?.combatants.find(
+          (combatant) => combatant.defId === "knight",
+        );
+        expect(knight?.cooldownReadyAtMs["k-falling-star"]).toBe(
+          (transitionAt ?? 0) + 2_000 + 12_000,
+        );
+        return;
+      }
+    }
+    throw new Error("config-applied never emitted for replaced talent boundary");
   });
 
   describe("multi-tier Talent commands", () => {

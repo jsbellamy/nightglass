@@ -88,16 +88,28 @@ describe("Stat Row", () => {
 });
 
 describe("Ability Row", () => {
-  it("unlocks on the sixth point and enforces mutual exclusivity", () => {
+  it("unlocks on the sixth point and replaces the sibling Ability without spending another point", () => {
     const state = emptyTalentState(knightKit);
     for (let rank = 0; rank < 5; rank += 1) {
       allocateTalentPoint(state, knightKit, rank % 2 === 0 ? "k-fortitude" : "k-swordcraft", 6);
     }
     expect(() => allocateTalentPoint(state, knightKit, "k-hold-line", 6)).not.toThrow();
     expect(state.abilityTalentId).toBe("k-hold-line");
+    expect(() => allocateTalentPoint(state, knightKit, "k-falling-star", 6)).not.toThrow();
+    expect(state.abilityTalentId).toBe("k-falling-star");
     expect(() => allocateTalentPoint(state, knightKit, "k-falling-star", 6)).toThrow(
-      /mutually exclusive/i,
+      /already allocated/i,
     );
+  });
+
+  it("allows Ability replacement with zero available Talent Points when the row is complete", () => {
+    const state = emptyTalentState(knightKit);
+    for (let rank = 0; rank < 5; rank += 1) {
+      allocateTalentPoint(state, knightKit, rank % 2 === 0 ? "k-fortitude" : "k-swordcraft", 6);
+    }
+    allocateTalentPoint(state, knightKit, "k-hold-line", 6);
+    expect(() => allocateTalentPoint(state, knightKit, "k-falling-star", 6)).not.toThrow();
+    expect(spentTalentPoints(state)).toBe(6);
   });
 
   it("requires five Stat Row points before an Ability Talent can be bought", () => {
@@ -185,9 +197,8 @@ describe("two Talent Tiers", () => {
     }
     allocateTalentPoint(state, twoTierKnight, "k2-hold-line", 12);
     expect(state.tierStates[1]!.abilityTalentId).toBe("k2-hold-line");
-    expect(() => allocateTalentPoint(state, twoTierKnight, "k2-falling-star", 12)).toThrow(
-      /mutually exclusive/i,
-    );
+    allocateTalentPoint(state, twoTierKnight, "k2-falling-star", 12);
+    expect(state.tierStates[1]!.abilityTalentId).toBe("k2-falling-star");
   });
 
   it("blocks Tier 1 reductions while Tier 2 holds points and enforces Tier 2 Stat floor with Ability", () => {

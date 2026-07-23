@@ -109,19 +109,19 @@ test.describe("accessibility keyboard floor", () => {
       dock,
       '[data-class-id="knight"] .talent-cell[data-talent-id="fortitude"]',
     );
-    await dock.keyboard.press("Enter");
+    await dock.keyboard.press("Tab");
     const allocate = dock.locator(
-      '[data-class-id="knight"] [data-talent-detail="true"] [data-talent-id="fortitude"][data-talent-action="allocate"]',
+      '[data-class-id="knight"] [data-talent-id="fortitude"][data-talent-action="allocate"]',
     );
     await allocate.focus();
     await assertFocusRingVisible(
       dock,
-      '[data-class-id="knight"] [data-talent-detail="true"] [data-talent-id="fortitude"][data-talent-action="allocate"]',
+      '[data-class-id="knight"] [data-talent-id="fortitude"][data-talent-action="allocate"]',
     );
     await dock.keyboard.press("Enter");
     await expect(
       dock.locator(
-        '[data-class-id="knight"] [data-talent-detail="true"] [data-talent-id="fortitude"][data-talent-action="deallocate"]',
+        '[data-class-id="knight"] [data-talent-id="fortitude"][data-talent-action="deallocate"]',
       ),
     ).toBeVisible();
 
