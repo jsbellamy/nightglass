@@ -1093,8 +1093,18 @@ html.dock-window body {
   display: none !important;
 }
 
-.character-section .dock-surface-title {
+.character-section[data-character-section="stats"] .dock-surface-title {
   display: none;
+}
+
+.character-build-board .dock-surface-title {
+  display: block;
+  margin: 0 0 2px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  color: var(--dock-text, #fff9e9);
 }
 
 .character-section .loadout-order-note,

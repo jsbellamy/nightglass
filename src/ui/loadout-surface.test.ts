@@ -157,6 +157,44 @@ describe("Loadout surface", () => {
     surface.destroy();
   });
 
+  it("orders the assignment hint before the Loadout heading", () => {
+    const root = document.createElement("div");
+    const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
+    const selected = { current: "knight" as ClassId };
+    const surface = mountLoadoutSurface(root, mountOptions(fixtureContent, selected));
+
+    surface.render(engine.snapshot());
+    const hint = root.querySelector(".loadout-assignment-hint");
+    const title = root.querySelector(".dock-surface-title");
+    expect(hint).not.toBeNull();
+    expect(title?.textContent).toBe("Loadout");
+    expect(
+      hint!.compareDocumentPosition(title!) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+
+    surface.destroy();
+  });
+
+  it("keeps DOM order Basic Attack, Slots I–III, then Available skills", () => {
+    const root = document.createElement("div");
+    const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
+    const selected = { current: "knight" as ClassId };
+    const surface = mountLoadoutSurface(root, mountOptions(fixtureContent, selected));
+
+    surface.render(engine.snapshot());
+    const section = knightSection(root);
+    const basic = section.querySelector("[data-loadout-basic]");
+    const slots = section.querySelector(".loadout-slots");
+    const pool = section.querySelector(".loadout-pool-strip");
+    expect(basic).not.toBeNull();
+    expect(slots).not.toBeNull();
+    expect(pool).not.toBeNull();
+    expect(basic!.compareDocumentPosition(slots!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(slots!.compareDocumentPosition(pool!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+
+    surface.destroy();
+  });
+
   it("re-renders the newly selected Character without a remount", () => {
     const root = document.createElement("div");
     const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
@@ -257,6 +295,9 @@ describe("Loadout surface", () => {
     const engine = createEngine(content, undefined, LOOT_SEED);
     const selected = { current: "knight" as ClassId };
     const surface = mountLoadoutSurface(root, mountOptions(content, selected));
+    root.style.height = "320px";
+    root.style.width = "230px";
+    document.body.append(root);
 
     surface.render(engine.snapshot());
     const tiles = root.querySelectorAll(".loadout-pool-tiles [data-loadout-assign-tile]");
@@ -265,6 +306,25 @@ describe("Loadout surface", () => {
     expect(strip).not.toBeNull();
     expect(root.querySelector(".loadout-pool-strip")).not.toBeNull();
     expect(strip!.childElementCount).toBe(10);
+
+    const baselineRoot = document.createElement("div");
+    baselineRoot.style.height = "320px";
+    baselineRoot.style.width = "230px";
+    document.body.append(baselineRoot);
+
+    const baselineSurface = mountLoadoutSurface(
+      baselineRoot,
+      mountOptions(fixtureContent, selected),
+    );
+    const baselineEngine = createEngine(fixtureContent, undefined, LOOT_SEED);
+    baselineSurface.render(baselineEngine.snapshot());
+    const baselineHeight = baselineRoot.getBoundingClientRect().height;
+    const stressHeight = root.getBoundingClientRect().height;
+    expect(stressHeight).toBe(baselineHeight);
+
+    baselineSurface.destroy();
+    baselineRoot.remove();
+    root.remove();
 
     surface.destroy();
   });
