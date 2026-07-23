@@ -35,11 +35,6 @@ export const EVIDENCE_SLUG_CATALOG = [
 
 export type EvidenceSlug = (typeof EVIDENCE_SLUG_CATALOG)[number];
 
-/** Slugs that must appear on a registered Playwright scenario title. */
-export const EVIDENCE_SCENARIO_SLUGS = EVIDENCE_SLUG_CATALOG.filter(
-  (slug) => !(EVIDENCE_CITATION_ONLY_SLUGS as readonly string[]).includes(slug),
-);
-
 export type ScenarioId =
   | "tile-baseline-combat"
   | "hold-the-line-status-glyph"

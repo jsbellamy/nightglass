@@ -47,7 +47,7 @@ function readSource(relativeToRepo: string): string {
   return readFileSync(path.join(REPO_ROOT, relativeToRepo), "utf8");
 }
 
-export function collectDeclarationsBySpec(): Map<string, Map<string, number>> {
+function collectDeclarationsBySpec(): Map<string, Map<string, number>> {
   const bySpec = new Map<string, Map<string, number>>();
   for (const file of listE2eSources()) {
     const relative = path.relative(REPO_ROOT, file).replaceAll("\\", "/");

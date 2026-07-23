@@ -1,7 +1,6 @@
 import { expect, test } from "@playwright/test";
 import {
   EVIDENCE_SCENARIOS,
-  EVIDENCE_SLUG_CATALOG,
   evidenceScenarioTitle,
 } from "./helpers/evidence-scenarios";
 import {
@@ -45,7 +44,6 @@ test.describe("evidence scenario registry", () => {
     const colour = EVIDENCE_SCENARIOS.find((s) => s.id === "colour-independence");
     expect(keyboard?.slugs).toEqual([]);
     expect(colour?.slugs).toEqual([]);
-    expect(EVIDENCE_SLUG_CATALOG.length).toBeGreaterThan(0);
   });
 
   test("assigns unique review-scene IDs within each scenario", () => {

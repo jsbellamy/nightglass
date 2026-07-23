@@ -80,3 +80,14 @@ Evidence Session fixture, numeric assertions, and optional review scenes.
 scenes that the spec does not emit. Acceptance-guide `evidence:` citations must
 resolve to the registry, except the explicit review-artifact-only knockout
 disposition documented in `docs/agents/acceptance-evidence.md`.
+
+## Local runner notes
+
+`playwright.config.ts` sets `reuseExistingServer: !process.env.CI`, so a preview
+server already on port 4173 is reused. Rebuild (`npm run build` or restart
+preview) after changing `src/`. While iterating, the `test:evidence:*` scripts
+still prefix `playwright install chromium` (~0.6 s when cached); reserve
+`npm run test:evidence` for the final full gate (~90 s of real-time simulation).
+
+Playwright also supports `npx playwright test --last-failed` when a broader run
+already failed and you want only the red cases back.
