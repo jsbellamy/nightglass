@@ -5,6 +5,7 @@ import {
   EVIDENCE_REVIEW_ARTIFACT_ONLY_SLUGS,
   EVIDENCE_SLUG_CATALOG,
   EVIDENCE_SCENARIOS,
+  registeredEvidenceScenarios,
   type ScenarioId,
 } from "./evidence-scenarios";
 import { assertSafeReviewOutputPath } from "./review-scenes";
@@ -153,7 +154,7 @@ function specCapturesScenarioScene(
 
 export function findSceneEmissionDrift(): string[] {
   const errors: string[] = [];
-  for (const scenario of EVIDENCE_SCENARIOS) {
+  for (const scenario of registeredEvidenceScenarios()) {
     const specSource = readSource(scenario.spec.path);
     if (!specSource.includes("captureReviewScene") && scenario.reviewScenes.length > 0) {
       errors.push(`scenario ${scenario.id} registers review scenes but never calls captureReviewScene`);
@@ -208,7 +209,7 @@ export function findScenarioSlugCatalogDrift(): string[] {
   const catalogSlugs = new Set<string>(EVIDENCE_SLUG_CATALOG);
   const used = new Set<string>();
   const errors: string[] = [];
-  for (const scenario of EVIDENCE_SCENARIOS) {
+  for (const scenario of registeredEvidenceScenarios()) {
     for (const slug of scenario.slugs) {
       if (!catalogSlugs.has(slug)) {
         errors.push(`unknown slug ${slug} on scenario ${scenario.id}`);
