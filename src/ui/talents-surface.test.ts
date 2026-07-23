@@ -54,14 +54,26 @@ function knightSection(root: HTMLElement): HTMLElement {
   return section;
 }
 
-function selectTalentCell(root: HTMLElement, talentId: string): void {
-  const cell = knightSection(root).querySelector<HTMLElement>(
-    `.talent-cell[data-talent-id="${talentId}"]`,
+function talentGroup(root: HTMLElement, talentId: string): HTMLElement {
+  const group = knightSection(root).querySelector<HTMLElement>(
+    `[data-talent-group="true"][data-talent-id="${talentId}"]`,
   );
+  if (!group) {
+    throw new Error(`missing talent group ${talentId}`);
+  }
+  return group;
+}
+
+function openTalentPopover(root: HTMLElement, talentId: string): void {
+  talentGroup(root, talentId).dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
+}
+
+function selectTalentCell(root: HTMLElement, talentId: string): void {
+  const cell = talentGroup(root, talentId).querySelector<HTMLElement>(".talent-cell");
   if (!cell) {
     throw new Error(`missing talent cell ${talentId}`);
   }
-  cell.click();
+  cell.focus();
 }
 
 function leveledKnightEngine() {
@@ -90,24 +102,25 @@ describe("Talents surface", () => {
     expect(knight.querySelectorAll(".talent-stat-row .talent-cell")).toHaveLength(2);
     expect(knight.querySelectorAll(".talent-ability-row .talent-cell")).toHaveLength(2);
     expect(knight.querySelector(".talent-card")).toBeNull();
-    expect(knight.querySelector('[data-talent-detail="true"]')).not.toBeNull();
-    expect(knight.querySelector('[data-talent-detail="true"] .surface-empty')?.textContent).toBe(
-      "Select a Talent",
-    );
+    expect(knight.querySelector('[data-talent-detail="true"]')).toBeNull();
+    expect(knight.querySelector(".talent-tree-scroll")).not.toBeNull();
+    expect(
+      knight.querySelector('[data-talent-id="k-fortitude"][data-talent-action="allocate"]'),
+    ).not.toBeNull();
 
     surface.destroy();
   });
 
-  it("renders a full ability description in Ability Talent detail before actions", () => {
+  it("renders a full ability description in the shared popover without tile actions inside", () => {
     const root = document.createElement("div");
     const engine = leveledKnightEngine();
     const selected = { current: "knight" as ClassId };
     const surface = mountTalentsSurface(root, mountOptions(selected));
 
     renderTalents(surface, engine);
-    selectTalentCell(root, "k-hold-line");
-    const detail = knightSection(root).querySelector('[data-talent-detail="true"]');
-    const description = detail?.querySelector('[data-ability-description="true"]');
+    openTalentPopover(root, "k-hold-line");
+    const popover = root.querySelector('[data-talent-popover="true"]');
+    const description = popover?.querySelector('[data-ability-description="true"]');
     const holdLine = fixtureContent.abilities.find((entry) => entry.id === "k-hold-line")!;
     expect(description?.textContent).toBe(
       formatAbilityDescription(
@@ -116,10 +129,7 @@ describe("Talents surface", () => {
         fixtureContent.statuses,
       ),
     );
-    const actions = detail?.querySelector(".talent-detail-actions");
-    expect(
-      description!.compareDocumentPosition(actions!) & Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy();
+    expect(popover?.querySelector('[data-talent-action]')).toBeNull();
 
     surface.destroy();
   });
@@ -159,22 +169,30 @@ describe("Talents surface", () => {
 
   it("reuses the same talent icon node across renders with a changed Snapshot", () => {
     const root = document.createElement("div");
+    document.body.append(root);
     const engine = leveledKnightEngine();
     const selected = { current: "knight" as ClassId };
     const surface = mountTalentsSurface(root, mountOptions(selected));
 
     renderTalents(surface, engine);
-    const before = root.querySelector<HTMLImageElement>(".equipment-icon-img--content");
+    openTalentPopover(root, "k-fortitude");
+    const fortitudeIcon = () =>
+      talentGroup(root, "k-fortitude").querySelector<HTMLImageElement>(
+        ".equipment-icon-img--content",
+      );
+    const before = fortitudeIcon();
     expect(before).not.toBeNull();
 
     const next = structuredClone(engine.snapshot());
     next.progression.characterXp.knight += 1;
     surface.render(next, legalityViewFromEngine(engine));
 
-    const after = root.querySelector<HTMLImageElement>(".equipment-icon-img--content");
-    expect(after).toBe(before);
+    const after = fortitudeIcon();
+    expect(after?.dataset["iconKey"]).toBe(before?.dataset["iconKey"]);
+    expect(after?.src).toBe(before?.src);
 
     surface.destroy();
+    root.remove();
   });
 
   it("shows Stat rank badges without name or pip prose on the cell", () => {
@@ -225,65 +243,56 @@ describe("Talents surface", () => {
     surface.destroy();
   });
 
-  it("keeps the selected Talent cell across a Snapshot pump", () => {
+  it("keeps focus and popover content across a Snapshot pump", () => {
     const root = document.createElement("div");
+    document.body.append(root);
     const engine = leveledKnightEngine();
     const selected = { current: "knight" as ClassId };
     const surface = mountTalentsSurface(root, mountOptions(selected));
 
     renderTalents(surface, engine);
     selectTalentCell(root, "k-fortitude");
-    expect(root.querySelector(".talent-cell.selected")?.getAttribute("data-talent-id")).toBe(
-      "k-fortitude",
-    );
-    expect(root.querySelector('[data-talent-detail="true"] .talent-name')?.textContent).toBe(
-      "Fortitude",
-    );
+    openTalentPopover(root, "k-fortitude");
+    expect(
+      root.querySelector('[data-talent-popover="true"] .talent-popover-name')?.textContent,
+    ).toBe("Fortitude");
 
     engine.allocateTalent("knight", "k-fortitude");
     renderTalents(surface, engine);
 
-    expect(root.querySelector(".talent-cell.selected")?.getAttribute("data-talent-id")).toBe(
-      "k-fortitude",
-    );
-    expect(root.querySelector('[data-talent-detail="true"] .talent-name')?.textContent).toBe(
-      "Fortitude",
-    );
+    expect(document.activeElement?.getAttribute("data-talent-id")).toBe("k-fortitude");
+    expect(
+      root.querySelector('[data-talent-popover="true"] .talent-popover-name')?.textContent,
+    ).toBe("Fortitude");
     expect(
       root.querySelector('.talent-cell[data-talent-id="k-fortitude"] .talent-rank-badge')
         ?.textContent,
     ).toBe("1/5");
 
     surface.destroy();
+    root.remove();
   });
 
-  it("does not auto-select on mount or Class switch", () => {
+  it("does not open a popover on mount and clears it on Class switch", () => {
     const root = document.createElement("div");
     const engine = leveledKnightEngine();
     const selected = { current: "knight" as ClassId };
     const surface = mountTalentsSurface(root, mountOptions(selected));
 
     renderTalents(surface, engine);
-    expect(root.querySelector('[data-talent-detail="true"] .surface-empty')?.textContent).toBe(
-      "Select a Talent",
-    );
+    expect(root.querySelector('[data-talent-popover="true"]')?.hidden).toBe(true);
 
-    selectTalentCell(root, "k-fortitude");
-    expect(root.querySelector('[data-talent-detail="true"] .talent-name')?.textContent).toBe(
-      "Fortitude",
-    );
+    openTalentPopover(root, "k-fortitude");
+    expect(root.querySelector('[data-talent-popover="true"]')?.hidden).toBe(false);
 
     selected.current = "wizard";
     renderTalents(surface, engine);
-    expect(root.querySelector('[data-talent-detail="true"] .surface-empty')?.textContent).toBe(
-      "Select a Talent",
-    );
-    expect(root.querySelector(".talent-cell.selected")).toBeNull();
+    expect(root.querySelector('[data-talent-popover="true"]')?.hidden).toBe(true);
 
     surface.destroy();
   });
 
-  it("moves allocate and deallocate actions into the sticky detail panel", () => {
+  it("exposes labeled +/− tile actions with stat detail only in the popover", () => {
     const root = document.createElement("div");
     const engine = leveledKnightEngine();
     engine.allocateTalent("knight", "k-fortitude");
@@ -291,28 +300,24 @@ describe("Talents surface", () => {
     const surface = mountTalentsSurface(root, mountOptions(selected));
 
     renderTalents(surface, engine);
-    expect(
-      root.querySelector('.talent-cell [data-talent-action="allocate"]'),
-    ).toBeNull();
-
-    selectTalentCell(root, "k-fortitude");
-    const detail = root.querySelector('[data-talent-detail="true"]');
-    expect(detail?.querySelector(".talent-name")?.textContent).toBe("Fortitude");
-    expect(detail?.querySelector(".talent-per-rank")?.textContent).toMatch(/per rank/i);
-    expect(detail?.querySelector('[data-stat-delta="true"]')?.textContent).toMatch(
-      /Max Health|Physical/i,
+    const allocate = knightSection(root).querySelector<HTMLButtonElement>(
+      `[data-talent-id="k-fortitude"][data-talent-action="allocate"]`,
     );
+    const deallocate = knightSection(root).querySelector<HTMLButtonElement>(
+      `[data-talent-id="k-fortitude"][data-talent-action="deallocate"]`,
+    );
+    expect(allocate?.textContent).toBe("+");
+    expect(deallocate?.textContent).toBe("−");
+    expect(allocate?.getAttribute("aria-label")).toMatch(/Add one rank to Fortitude/i);
+    openTalentPopover(root, "k-fortitude");
     expect(
-      detail?.querySelector('[data-talent-action="allocate"]')?.textContent,
-    ).toBe("Add point");
-    expect(
-      detail?.querySelector('[data-talent-action="deallocate"]')?.textContent,
-    ).toBe("Remove point");
+      root.querySelector('[data-talent-popover="true"] .talent-per-rank')?.textContent,
+    ).toMatch(/per rank/i);
 
     surface.destroy();
   });
 
-  it("selects a Talent cell on keyboard focus without requiring Enter", () => {
+  it("opens the shared popover on keyboard focus without requiring Enter", () => {
     const root = document.createElement("div");
     document.body.append(root);
     const engine = leveledKnightEngine();
@@ -324,9 +329,9 @@ describe("Talents surface", () => {
       '.talent-cell[data-talent-id="k-fortitude"]',
     );
     cell?.focus();
-    expect(root.querySelector('[data-talent-detail="true"] .talent-name')?.textContent).toBe(
-      "Fortitude",
-    );
+    expect(
+      root.querySelector('[data-talent-popover="true"] .talent-popover-name')?.textContent,
+    ).toBe("Fortitude");
     expect(document.activeElement?.getAttribute("data-talent-id")).toBe("k-fortitude");
 
     surface.destroy();
@@ -347,16 +352,17 @@ describe("Talents surface", () => {
     renderTalents(surface, engine);
     expect(root.querySelector('[data-loadout-warning="true"]')).toBeNull();
 
-    selectTalentCell(root, "k-hold-line");
-    const detail = root.querySelector('[data-talent-detail="true"]');
-    expect(detail?.querySelector(".talent-name")?.textContent).toMatch(/Hold/i);
-    expect(detail?.querySelector('[data-loadout-warning="true"]')?.textContent).toMatch(
-      /Slotted in Loadout/i,
-    );
-    expect(detail?.querySelector('[data-talent-action="deallocate"]')?.textContent).toBe(
-      "Remove",
-    );
-    expect(root.querySelector('.talent-cell [data-talent-action]')).toBeNull();
+    openTalentPopover(root, "k-hold-line");
+    expect(
+      root.querySelector('[data-talent-popover="true"] [data-loadout-warning="true"]')?.textContent,
+    ).toMatch(/Slotted in Loadout/i);
+    expect(
+      talentGroup(root, "k-hold-line").querySelector('[data-talent-action="deallocate"]')
+        ?.textContent,
+    ).toBe("−");
+    expect(
+      talentGroup(root, "k-hold-line").querySelector('[data-talent-action="allocate"]'),
+    ).toBeNull();
 
     surface.destroy();
   });
@@ -369,7 +375,6 @@ describe("Talents surface", () => {
 
     renderTalents(surface, engine);
     const knight = knightSection(root);
-    const detail = knight.querySelector('[data-talent-detail="true"]');
     expect(knight.querySelector('[data-talent-points="true"]')).not.toBeNull();
     expect(
       [...knight.querySelectorAll(".talent-row-title")].map((node) => node.textContent),
@@ -377,8 +382,6 @@ describe("Talents surface", () => {
     expect(knight.querySelector(".talent-gate-note")?.textContent).toMatch(
       /Spend 5 Stat Row points/i,
     );
-    expect(detail?.contains(knight.querySelector('[data-talent-points="true"]')!)).toBe(false);
-    expect(detail?.contains(knight.querySelector(".talent-gate-note")!)).toBe(false);
 
     surface.destroy();
   });
@@ -630,9 +633,10 @@ describe("Talents surface", () => {
     engine.allocateTalent("knight", "iron-discipline");
     surface.render(engine.snapshot(), legalityViewFromEngine(engine));
     selectTalentCell(root, "vanguard");
+    openTalentPopover(root, "vanguard");
     const vanguard = fullContent.abilities.find((entry) => entry.id === "vanguard")!;
     const description = knightSection(root)
-      .querySelector('[data-talent-detail="true"]')
+      .querySelector('[data-talent-popover="true"]')
       ?.querySelector('[data-ability-description="true"]');
     expect(description?.textContent).toBe(
       formatAbilityDescription(

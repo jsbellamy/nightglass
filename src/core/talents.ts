@@ -121,7 +121,7 @@ function tierHasAnyPoints(tierState: TierTalentState): boolean {
   return spentTierPoints(tierState) > 0;
 }
 
-function resolveTalentTier(
+export function resolveTalentTier(
   classKit: ClassKitDef,
   talentId: string,
 ): { tierIndex: number; tierDef: TalentTierDef } | null {
@@ -160,11 +160,11 @@ function allocateTierTalentPoint(
   talentId: string,
 ): void {
   if (isAbilityTalent(tierDef, talentId)) {
-    if (tierState.abilityTalentId && tierState.abilityTalentId !== talentId) {
-      throw new Error("Ability Talents are mutually exclusive");
-    }
     if (tierState.abilityTalentId === talentId) {
       throw new Error(`Ability Talent ${talentId} is already allocated`);
+    }
+    if (tierState.abilityTalentId !== null) {
+      throw new Error("Ability Talent replacement is handled at allocateTalentPoint");
     }
     if (totalStatPoints(tierState.statRanks) < 5) {
       throw new Error("Ability Row unlocks only after five Stat Row points are spent");
@@ -206,11 +206,19 @@ export function allocateTalentPoint(
 
   const tierState = state.tierStates[tierIndex]!;
   if (isAbilityTalent(tierDef, talentId)) {
-    if (tierState.abilityTalentId && tierState.abilityTalentId !== talentId) {
-      throw new Error("Ability Talents are mutually exclusive");
-    }
-    if (tierState.abilityTalentId === talentId) {
+    const current = tierState.abilityTalentId;
+    if (current === talentId) {
       throw new Error(`Ability Talent ${talentId} is already allocated`);
+    }
+    if (current !== null) {
+      if (totalStatPoints(tierState.statRanks) < 5) {
+        throw new Error("Ability Row unlocks only after five Stat Row points are spent");
+      }
+      tierState.abilityTalentId = talentId;
+      if (tierIndex === 0) {
+        syncLegacyTierOneFields(state);
+      }
+      return;
     }
   }
 
@@ -327,6 +335,25 @@ export function stripAbilityFromLoadout(
     candidates.find((entry) => entry !== abilityId && !present.has(entry)) ??
     classKit.coreAbilityIds[0]!;
   return loadout.map((entry) => (entry === abilityId ? fallback : entry)) as [string, string, string];
+}
+
+/** Swap a slotted Ability for its Talent replacement without duplicating entries. */
+export function replaceAbilityInLoadout(
+  loadout: [string, string, string],
+  previousAbilityId: string,
+  nextAbilityId: string,
+): [string, string, string] {
+  const previousSlot = loadout.indexOf(previousAbilityId);
+  if (previousSlot === -1) {
+    return loadout;
+  }
+  const next: [string, string, string] = [...loadout] as [string, string, string];
+  const existingNextSlot = next.indexOf(nextAbilityId);
+  if (existingNextSlot !== -1 && existingNextSlot !== previousSlot) {
+    next[existingNextSlot] = previousAbilityId;
+  }
+  next[previousSlot] = nextAbilityId;
+  return next;
 }
 
 export function talentStatModifiers(

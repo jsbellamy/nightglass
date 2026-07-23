@@ -47,12 +47,12 @@ const DOCK_PRIMARY_TEXT: { tab: "character" | "armory" | "stage"; selector: stri
   {
     tab: "character",
     selector:
-      '[data-character-section="talents"] [data-talent-detail="true"] .talent-name',
+      '[data-character-section="talents"] [data-talent-popover="true"] .talent-popover-name',
   },
   {
     tab: "character",
     selector:
-      '[data-character-section="talents"] [data-talent-detail="true"] [data-talent-action="allocate"]',
+      '[data-character-section="talents"] [data-talent-id="fortitude"][data-talent-action="allocate"]',
   },
   {
     tab: "character",
@@ -115,14 +115,13 @@ test.describe("accessibility contrast floor", () => {
         } else if (selector.includes('[data-character-section="talents"]')) {
           await focusCharacterSubTab(dock, "talents");
           if (!talentDetailPrepared) {
-            await dock
-              .locator(
-                '[data-character-section="talents"] [data-class-id="knight"] .talent-cell[data-talent-id="fortitude"]',
-              )
-              .click();
+            const fortitudeCell = dock.locator(
+              '[data-character-section="talents"] [data-class-id="knight"] .talent-cell[data-talent-id="fortitude"]',
+            );
+            await fortitudeCell.hover();
             await expect(
               dock.locator(
-                '[data-character-section="talents"] [data-talent-detail="true"] .talent-name',
+                '[data-character-section="talents"] [data-talent-popover="true"] .talent-popover-name',
               ),
             ).toBeVisible();
             talentDetailPrepared = true;

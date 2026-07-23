@@ -890,7 +890,7 @@ html.dock-window body {
   color: var(--text-muted, #9aa3b2);
 }
 
-.talent-detail .ability-description {
+.talent-detail-popover .ability-description {
   margin: 4px 0 6px;
   font-size: 11px;
   line-height: 1.35;
@@ -1201,19 +1201,74 @@ html.dock-window body {
   gap: 6px;
 }
 
-.talent-panes {
-  display: flex;
-  gap: 8px;
+.talent-tree-scroll {
+  flex: 1;
   min-height: 0;
-  flex: 1;
-}
-
-.talent-grid {
-  flex: 1;
-  min-width: 0;
+  overflow: auto;
   display: flex;
   flex-direction: column;
   gap: 4px;
+}
+
+.talent-tree-host {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.talent-detail-popover {
+  z-index: 4;
+  max-width: min(280px, 100%);
+  max-height: min(240px, 100%);
+  overflow: auto;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 249, 233, 0.2);
+  background: rgba(18, 20, 28, 0.98);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+}
+
+.talent-tile {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+}
+
+.talent-tile-warning {
+  flex: 1 1 100%;
+  margin: 0;
+  font-size: 10px;
+  line-height: 1.35;
+  color: #e8c89a;
+}
+
+.talent-tile-action {
+  box-sizing: border-box;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 6px;
+  border: 1px solid rgba(255, 249, 233, 0.22);
+  border-radius: 4px;
+  background: rgba(35, 38, 50, 0.95);
+  color: var(--dock-text, #fff9e9);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.talent-tile-action:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.talent-popover-name {
+  margin: 0 0 4px;
+  font-weight: 700;
+  font-size: 12px;
 }
 
 .talent-tier-section {
@@ -1241,25 +1296,6 @@ html.dock-window body {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-}
-
-.talent-detail {
-  flex: 0 0 220px;
-  width: 220px;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  position: sticky;
-  top: 0;
-  align-self: start;
-}
-
-.talent-detail-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  margin-top: 4px;
 }
 
 .ability-card,
