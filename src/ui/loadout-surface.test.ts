@@ -336,6 +336,33 @@ describe("Loadout surface", () => {
     surface.destroy();
   });
 
+  it("keeps mechanical popover coordinates stable across four equivalent Snapshot pumps", () => {
+    const root = document.createElement("div");
+    const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
+    const selected = { current: "knight" as ClassId };
+    const surface = mountLoadoutSurface(root, mountOptions(fixtureContent, selected));
+
+    surface.render(engine.snapshot());
+    const tile = poolTile(root, "k-sweep");
+    tile.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
+
+    const popover = root.querySelector<HTMLElement>('[data-loadout-ability-popover="true"]');
+    const left = popover?.style.left;
+    const top = popover?.style.top;
+    expect(left).toBeTruthy();
+    expect(top).toBeTruthy();
+
+    for (let pump = 0; pump < 4; pump += 1) {
+      surface.render(engine.snapshot());
+    }
+
+    expect(popover?.hidden).toBe(false);
+    expect(popover?.style.left).toBe(left);
+    expect(popover?.style.top).toBe(top);
+
+    surface.destroy();
+  });
+
   it("shows Activation Delay in the popover at edit time for newly inserted slot Abilities", () => {
     const root = document.createElement("div");
     const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
