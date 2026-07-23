@@ -84,6 +84,8 @@ export type ReviewSceneId =
   | "character-sub-loadout"
   | "character-sub-talents"
   | "character-sub-stats"
+  | "character-stats-breakdown"
+  | "talent-direct-actions"
   | "dock-navigation-ownership-stage";
 
 export type ReviewScene = {
@@ -246,10 +248,10 @@ export const EVIDENCE_SCENARIOS: readonly EvidenceScenario[] = [
     slugs: ["character-stats-breakdown"],
     spec: {
       id: "rendered-evidence:character-stats-breakdown",
-      path: "e2e/rendered-evidence.spec.ts",
+      path: "e2e/scenarios/character-progression.spec.ts",
     },
     fixture: "live-tile-and-dock",
-    reviewScenes: [],
+    reviewScenes: [{ id: "character-stats-breakdown" }],
     summary:
       "Stats sub-tab order, five totals/source rows, and pending marker fit at 800×480",
   },
@@ -258,10 +260,10 @@ export const EVIDENCE_SCENARIOS: readonly EvidenceScenario[] = [
     slugs: ["character-talents-tree-scroll", "talent-direct-actions"],
     spec: {
       id: "rendered-evidence:character-talents-actions",
-      path: "e2e/rendered-evidence.spec.ts",
+      path: "e2e/scenarios/character-progression.spec.ts",
     },
     fixture: "live-tile-and-dock",
-    reviewScenes: [],
+    reviewScenes: [{ id: "talent-direct-actions" }],
     summary:
       "tile +/−, chosen/rank/gate states, Ability Talent replace, and tree scroll retention",
   },
