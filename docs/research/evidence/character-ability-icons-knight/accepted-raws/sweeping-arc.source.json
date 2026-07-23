@@ -1,0 +1,136 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "900ddfeafc120c60df0af0a34bffb3c5f35cbe0f427f8508db7ea000926ca794",
+  "asset_class": "interface",
+  "kind": "ability-loadout-icon",
+  "color_mode": "source-local",
+  "runtime_destination": null,
+  "source_key": "sweeping-arc",
+  "candidate": "sweeping-arc-r2",
+  "prompt": "TRUE chunky pixel-art ability icon only, drawn on an exact 32\u00d732 logical pixel grid rendered large. Sweeping Arc: a heavy sword tracing one broad crescent sweep across multiple small target ticks, immediately readable as an all-enemies physical attack. Make the silhouette LARGER: centered long side about 26\u201330 logical pixels with two full #ff00ff cells clearance. Flat pixels, 3-pixel minimum structures, selective one-pixel charcoal-plum outline, upper-left lighting. Use steel blue, silver, warm cream slash arc, and restrained crimson target accents; unrestricted source-local mechanic colors, no Moonberry/Fowl palette requirement. Solid #ff00ff background only. No character, hand, text, UI frame, shadow, soft glow, loose particles, gradients, anti-aliasing, blur, dithering, watermark, or transparency.",
+  "style_references": [
+    {
+      "path": "src/assets/icons/preview/verify-ability-canary@8x.png",
+      "sha256": "82a04baf5f96334431bbb23c8b3767055b80379202ede610b964301c26873ea9",
+      "role": "style_reference"
+    },
+    {
+      "path": "src/assets/icon-sources/verify-ability-canary/source.grid",
+      "sha256": "07d4d4cb1bdca6b9d80c8a80217533dd050985f1639e96c543a811a3abd97614",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/preview/hold-the-line@8x.png",
+      "sha256": "5cabcf87ac295551d3ede65c147b3a7db88c6a1e4dc487dbdfb9c0d9f109447d",
+      "role": "style_reference"
+    },
+    {
+      "path": "src/assets/icons/preview/vanguard@8x.png",
+      "sha256": "30f9208820a70520a80b99974148cf0d51eb5b372ebfd06464e57419ad28567f",
+      "role": "style_reference"
+    },
+    {
+      "path": "src/assets/icons/preview/sundering-charge@8x.png",
+      "sha256": "5881a58c700585977aae2c74d401d165e246ffdadd0266459e545505a943aa47",
+      "role": "style_reference"
+    },
+    {
+      "path": "src/assets/icons/preview/iron-discipline@8x.png",
+      "sha256": "3277a2b4089b9943b0b2a188fa934d98ae465ec26ca22bc4747849986a191238",
+      "role": "style_reference"
+    }
+  ],
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        97,
+        63,
+        911,
+        959
+      ],
+      "pitch_x": {
+        "pitch": 31.916666666666767,
+        "score": 0.28688437050903903
+      },
+      "pitch_y": {
+        "pitch": 31.966666666666768,
+        "score": 0.28063142449895984
+      },
+      "grid": [
+        25,
+        28
+      ]
+    },
+    "mode": "source-local",
+    "flat_collapse": {
+      "max_colors": 12,
+      "merge_dist": 28.0,
+      "unique_before": 249,
+      "unique_after": 12,
+      "palette_rgb": [
+        [
+          253,
+          247,
+          220
+        ],
+        [
+          240,
+          224,
+          173
+        ],
+        [
+          53,
+          10,
+          51
+        ],
+        [
+          179,
+          195,
+          194
+        ],
+        [
+          65,
+          97,
+          151
+        ],
+        [
+          129,
+          159,
+          183
+        ],
+        [
+          110,
+          23,
+          59
+        ],
+        [
+          178,
+          151,
+          143
+        ],
+        [
+          212,
+          44,
+          58
+        ],
+        [
+          224,
+          89,
+          84
+        ],
+        [
+          225,
+          123,
+          117
+        ],
+        [
+          228,
+          172,
+          156
+        ]
+      ]
+    }
+  },
+  "evidence_raw": "docs/research/evidence/character-ability-icons-knight/accepted-raws/sweeping-arc.png"
+}

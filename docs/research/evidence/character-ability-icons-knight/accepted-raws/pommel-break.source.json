@@ -1,0 +1,136 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "af4009db40e0dfcd812fcf5785c0a09e93fd4b6bc8d751c6abd54def0b6d70f7",
+  "asset_class": "interface",
+  "kind": "ability-loadout-icon",
+  "color_mode": "source-local",
+  "runtime_destination": null,
+  "source_key": "pommel-break",
+  "candidate": "pommel-break-r5",
+  "prompt": "TRUE chunky pixel-art ability icon ONLY. Drawn on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel is one clean flat square block \u2014 no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered symbolic skill glyph: Pommel Break \u2014 a small brass sword pommel nub hitting a small cracked round helm disc with a tiny pale impact spark (almost no rays). Keep the WHOLE glyph SMALL in the middle of the canvas: long side about 20\u201324 logical pixels only. Leave a very wide flat solid magenta #ff00ff margin \u2014 at least five full magenta cells clear on every edge. Selective one-logical-pixel charcoal-plum outline. Structural members at least 3 logical pixels thick. Colors: steel blue, dark iron, brass, pale cream impact, thin orange-red crack. Upper-left lighting. No hand, character, text, UI frame, scenery, shadow, glow, particles, gradient, anti-aliasing, blur, dithering, watermark, or transparency.",
+  "style_references": [
+    {
+      "path": "src/assets/icons/preview/verify-ability-canary@8x.png",
+      "sha256": "82a04baf5f96334431bbb23c8b3767055b80379202ede610b964301c26873ea9",
+      "role": "style_reference"
+    },
+    {
+      "path": "src/assets/icon-sources/verify-ability-canary/source.grid",
+      "sha256": "07d4d4cb1bdca6b9d80c8a80217533dd050985f1639e96c543a811a3abd97614",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/preview/hold-the-line@8x.png",
+      "sha256": "5cabcf87ac295551d3ede65c147b3a7db88c6a1e4dc487dbdfb9c0d9f109447d",
+      "role": "style_reference"
+    },
+    {
+      "path": "src/assets/icons/preview/vanguard@8x.png",
+      "sha256": "30f9208820a70520a80b99974148cf0d51eb5b372ebfd06464e57419ad28567f",
+      "role": "style_reference"
+    },
+    {
+      "path": "src/assets/icons/preview/sundering-charge@8x.png",
+      "sha256": "5881a58c700585977aae2c74d401d165e246ffdadd0266459e545505a943aa47",
+      "role": "style_reference"
+    },
+    {
+      "path": "src/assets/icons/preview/iron-discipline@8x.png",
+      "sha256": "3277a2b4089b9943b0b2a188fa934d98ae465ec26ca22bc4747849986a191238",
+      "role": "style_reference"
+    }
+  ],
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        321,
+        356,
+        693,
+        675
+      ],
+      "pitch_x": {
+        "pitch": 18.71111111111123,
+        "score": 0.5170766981520988
+      },
+      "pitch_y": {
+        "pitch": 18.76111111111123,
+        "score": 0.5436409996289349
+      },
+      "grid": [
+        20,
+        17
+      ]
+    },
+    "mode": "source-local",
+    "flat_collapse": {
+      "max_colors": 12,
+      "merge_dist": 28.0,
+      "unique_before": 190,
+      "unique_after": 12,
+      "palette_rgb": [
+        [
+          37,
+          29,
+          20
+        ],
+        [
+          74,
+          84,
+          88
+        ],
+        [
+          107,
+          118,
+          121
+        ],
+        [
+          149,
+          154,
+          153
+        ],
+        [
+          30,
+          75,
+          133
+        ],
+        [
+          50,
+          110,
+          184
+        ],
+        [
+          110,
+          95,
+          26
+        ],
+        [
+          180,
+          153,
+          56
+        ],
+        [
+          200,
+          186,
+          131
+        ],
+        [
+          233,
+          208,
+          115
+        ],
+        [
+          222,
+          62,
+          29
+        ],
+        [
+          254,
+          254,
+          252
+        ]
+      ]
+    }
+  },
+  "evidence_raw": "docs/research/evidence/character-ability-icons-knight/accepted-raws/pommel-break.png"
+}
