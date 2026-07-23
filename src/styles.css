@@ -1332,10 +1332,6 @@ html.dock-window body {
   color: var(--dock-text, #fff9e9);
 }
 
-.stats-overview-sep {
-  color: var(--dock-text-muted, #d8d0bf);
-}
-
 .stats-sheet {
   display: flex;
   flex-direction: column;
@@ -1389,8 +1385,7 @@ html.dock-window body {
   color: rgba(255, 249, 233, 0.78);
 }
 
-.stats-xp,
-.stats-talent-points {
+.stats-xp {
   margin: 0;
   font-size: 11px;
   line-height: 1.35;

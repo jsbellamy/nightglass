@@ -168,7 +168,7 @@ export const EVIDENCE_SCENARIOS: readonly EvidenceScenario[] = [
       { id: "character-sub-stats" },
     ],
     summary:
-      "Management Dock populates from the Battle Tile over a shared bus; Character opens Build then Stats with simultaneous Build-board scenes",
+      "Management Dock populates from the Battle Tile over a shared bus; Character opens recovered Variant C Build then XP-only Stats at 800×480 with four-visible/10-reachable tray",
   },
   {
     id: "dock-navigation-ownership",
@@ -258,7 +258,7 @@ export const EVIDENCE_SCENARIOS: readonly EvidenceScenario[] = [
     fixture: "live-tile-and-dock",
     reviewScenes: [{ id: "character-stats-breakdown" }],
     summary:
-      "Stats Vitals/Offense/Defense groups, five totals/source rows, and pending marker fit at 800×480",
+      "Variant C Stats: Vitals/Offense/Defense groups, five totals/source rows, XP-only overview, pending marker fit, no outer scroll at 800×480",
   },
   {
     id: "character-talents-actions",
