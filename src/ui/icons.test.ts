@@ -23,8 +23,8 @@ describe("equipment icon registry", () => {
     const equipmentKeys = collectContentEquipmentIconKeys(content);
     const talentKeys = collectContentTalentIconKeys(content);
     expect(equipmentKeys).toHaveLength(30);
-    expect(talentKeys).toHaveLength(60);
-    expect(registeredIconKeys()).toHaveLength(90);
+    expect(talentKeys).toHaveLength(64);
+    expect(registeredIconKeys()).toHaveLength(94);
 
     for (const key of [...equipmentKeys, ...talentKeys]) {
       expect(() => resolveIcon(key)).not.toThrow();

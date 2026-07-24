@@ -313,6 +313,20 @@ export const effectRecipes: Record<string, EffectRecipe> = {
     durationMs: 360,
     cuesMs: { impact_expected: 1200 },
   },
+  "radiant-bulwark": {
+    stillKey: "heal-rise",
+    frames: "heal-rise",
+    anchor: "band",
+    durationMs: 390,
+    cuesMs: { impact_expected: 700 },
+  },
+  "solar-verdict": {
+    stillKey: "spell-bolt",
+    frames: "spell-bolt-light",
+    anchor: "lane_travel",
+    durationMs: 100,
+    cuesMs: { release_projectile: 850 },
+  },
 };
 
 export const CLASS_KIT_ABILITY_IDS = Object.keys(effectRecipes);

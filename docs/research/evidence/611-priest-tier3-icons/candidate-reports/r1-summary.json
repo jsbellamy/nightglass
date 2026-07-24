@@ -1,0 +1,54 @@
+[
+  {
+    "candidate": "zealous-faith-r1",
+    "primary": "raw-gate-fail",
+    "grid": [
+      20,
+      24
+    ],
+    "size_review": null,
+    "clipped": [
+      "none"
+    ],
+    "error": "zealous-faith-r1.png: off-ramp reject (39.6% > 20%)"
+  },
+  {
+    "candidate": "solar-study-r1",
+    "primary": "advance",
+    "grid": [
+      29,
+      28
+    ],
+    "size_review": "ok",
+    "clipped": [
+      "none"
+    ],
+    "error": null
+  },
+  {
+    "candidate": "radiant-bulwark-r1",
+    "primary": "raw-gate-fail",
+    "grid": [
+      20,
+      24
+    ],
+    "size_review": null,
+    "clipped": [
+      "none"
+    ],
+    "error": "radiant-bulwark-r1.png: off-ramp reject (32.2% > 20%)"
+  },
+  {
+    "candidate": "solar-verdict-r1",
+    "primary": "advance",
+    "grid": [
+      18,
+      27
+    ],
+    "size_review": "ok",
+    "clipped": [
+      "none"
+    ],
+    "error": null
+  }
+]

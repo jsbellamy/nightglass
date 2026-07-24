@@ -1,0 +1,64 @@
+{
+  "candidate": "solar-study-r1",
+  "key": "solar-study",
+  "path": "/Users/jakebellamy/VSProjects/games/game_idea/nightglass-wt-611/docs/research/evidence/611-priest-tier3-icons/scratch/solar-study-r1.png",
+  "raw_gates": "pass",
+  "clipped": [
+    "none"
+  ],
+  "pitch_x": {
+    "pitch": 22.766666666666726,
+    "score": 0.09340497729259785
+  },
+  "pitch_y": {
+    "pitch": 22.41666666666672,
+    "score": 0.10249599915436254
+  },
+  "grid": [
+    29,
+    28
+  ],
+  "ramp": {
+    "opaque_cells": 516,
+    "far_cells": 76,
+    "far_fraction": 0.1473,
+    "off_ramp_reject": false,
+    "quantize_histogram": {
+      "mint-pale": 66,
+      "mint-light": 12,
+      "berry-mid": 36,
+      "mint": 9,
+      "cream": 216,
+      "berry-shadow": 21,
+      "berry-bright": 21,
+      "berry": 63,
+      "sage": 3,
+      "cream-gold": 50,
+      "mint-shadow": 18,
+      "twilight-slate": 1
+    }
+  },
+  "recovered": {
+    "bbox": [
+      427,
+      196,
+      1098,
+      816
+    ],
+    "pitch_x": {
+      "pitch": 22.766666666666726,
+      "score": 0.09340497729259785
+    },
+    "pitch_y": {
+      "pitch": 22.41666666666672,
+      "score": 0.10249599915436254
+    },
+    "grid": [
+      29,
+      28
+    ]
+  },
+  "size_review": "ok",
+  "primary": "advance",
+  "raw_sha256": "05c9e7f6225a660d4f80cbb6b5abcea0d69987124eb20c7d6cb2e6f025632e05"
+}

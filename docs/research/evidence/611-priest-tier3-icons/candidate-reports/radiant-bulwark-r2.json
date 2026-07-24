@@ -1,0 +1,53 @@
+{
+  "candidate": "radiant-bulwark-r2",
+  "key": "radiant-bulwark",
+  "clipped": [
+    "none"
+  ],
+  "recovered": {
+    "bbox": [
+      438,
+      114,
+      1098,
+      903
+    ],
+    "pitch_x": {
+      "pitch": 28.14444444444453,
+      "score": 0.1992618323549024
+    },
+    "pitch_y": {
+      "pitch": 27.244444444444518,
+      "score": 0.13455079480294904
+    },
+    "grid": [
+      23,
+      29
+    ]
+  },
+  "ramp": {
+    "opaque_cells": 420,
+    "far_cells": 13,
+    "far_fraction": 0.031,
+    "off_ramp_reject": false,
+    "quantize_histogram": {
+      "cream": 169,
+      "mint-shadow": 40,
+      "cream-gold": 60,
+      "mint-light": 27,
+      "berry-mid": 59,
+      "mint-pale": 16,
+      "mint": 9,
+      "twilight-slate": 10,
+      "berry-bright": 5,
+      "berry": 19,
+      "sage": 6
+    }
+  },
+  "grid": [
+    23,
+    29
+  ],
+  "size_review": "ok",
+  "raw_sha256": "a73ec995aecb538b11df8e85baf65315c90cc54e8ef99b9068c9e59fde8d14f5",
+  "primary": "advance"
+}
