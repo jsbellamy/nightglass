@@ -5,6 +5,7 @@ import {
   knightClass,
   knightTier2,
   knightTier2Abilities,
+  knightTier3,
 } from "./knight";
 import { talentTierDefs } from "../../core/talents";
 
@@ -88,8 +89,8 @@ describe("Knight Talent Tier 2 exports", () => {
   it("is assembled into shipped Class Kit and Content", () => {
     expect(knightClass.talentTiers).toBeUndefined();
     const shippedKnight = buildContent().classes.find((entry) => entry.id === "knight");
-    expect(shippedKnight?.talentTiers).toEqual([knightTier2]);
-    expect(talentTierDefs(shippedKnight!)).toEqual([knightClass.talents, knightTier2]);
+    expect(shippedKnight?.talentTiers).toEqual([knightTier2, knightTier3]);
+    expect(talentTierDefs(shippedKnight!)).toEqual([knightClass.talents, knightTier2, knightTier3]);
 
     for (const id of TIER2_ABILITY_IDS) {
       expect(knightAbilities.some((ability) => ability.id === id)).toBe(false);
@@ -100,9 +101,9 @@ describe("Knight Talent Tier 2 exports", () => {
       expect(shipped.abilities.some((ability) => ability.id === id)).toBe(true);
       expect(classKit.abilities.some((ability) => ability.id === id)).toBe(true);
     }
-    expect(classKit.abilities).toHaveLength(36);
+    expect(classKit.abilities).toHaveLength(38);
     expect(
       classKit.abilities.filter((ability) => ability.classId === "knight" && ability.slot === "talent"),
-    ).toHaveLength(4);
+    ).toHaveLength(6);
   });
 });

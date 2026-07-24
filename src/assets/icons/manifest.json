@@ -439,6 +439,46 @@
     "source_family": "twin-fang",
     "sha256": "7272af7ee34a1461a43dcd2ed38b25fbb6cc95bcde87ded08464d25649096624"
   },
+  "aegis-wall": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "aegis-wall",
+    "sha256": "fd7c1ed0907c2ddbe0dde04b4d7c9d058ab5eb37702bd1e474167abfc73807e0"
+  },
+  "bulwark": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "bulwark",
+    "sha256": "6f8802c75cac3f0a3af50100dfdb92939179b1d5d72f4d3c6960e7c3763842b7"
+  },
+  "titans-cleave": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "titans-cleave",
+    "sha256": "26d074e1ca888c110bad602602f2c176a08e24e3e500ade4f5641a37a3211467"
+  },
+  "warblade": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "warblade",
+    "sha256": "75ea88f66714ded3c9dd9c43ae54efdec1de9189e57ae1da191664e0b5d1add1"
+  },
   "augerwire-longbow": {
     "canvas": [
       34,

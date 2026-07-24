@@ -1,0 +1,85 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "9cce7a79632224f701a1326ffaa696b27f437f071449c4b365d395d74a1c1e1e",
+  "asset_class": "interface",
+  "kind": "talent-skill-glyph",
+  "runtime_destination": "src/assets/icons/warblade.png",
+  "source_key": "warblade",
+  "candidate": "warblade-r3",
+  "palette_subset": [
+    "contour-plum-deepest",
+    "contour-plum-deep",
+    "mint-shadow",
+    "mint",
+    "mint-light",
+    "mint-pale",
+    "cream",
+    "berry-shadow",
+    "berry-mid",
+    "berry",
+    "sage",
+    "twilight-slate"
+  ],
+  "style_references": [
+    {
+      "path": "src/assets/icons/fortitude.png",
+      "sha256": "c6788da990b7fea87b4cbeb084f25f10c5281fd8973e2748765984f628b8b984",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/iron-discipline.png",
+      "sha256": "95c78e600886659836bf55795f227c20f50362a543a96b8bc39cfee992fbfcf7",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/vanguard.png",
+      "sha256": "fd3cdc119667da78e5fffdaeb1725a0f2f1fe56dcd479589ba39653b355f7727",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/swordcraft.png",
+      "sha256": "4bb58b68f4804bce1b1433dd396d36f2cfdb55c56639fc52ac7200865ffb5649",
+      "role": "style_cohort"
+    }
+  ],
+  "prompt": "TRUE chunky pixel art talent emblem ONLY on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel one clean flat square block. Subject must be identical in composition language to crossed-blade skill glyphs: two mint-steel longswords crossed in an X shape only. Cream hilts, berry crossguards, bright mint edge-glint on both blades. FORBIDDEN: any shield, kite, tower shield, round shield, moon disk, boss, crest plate, or circular backing \u2014 leave those out entirely. Magenta #ff00ff flat background with at least two full magenta cells clearance on every edge. Only mint / berry / cream / plum Moonberry flat colours (8\u201312). No brown, tan, cyan, pure white, or pure black. Structural members at least 3 logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        367,
+        97,
+        1168,
+        922
+      ],
+      "pitch_x": {
+        "pitch": 28.49444444444452,
+        "score": 0.319559632419265
+      },
+      "pitch_y": {
+        "pitch": 29.394444444444535,
+        "score": 0.5265811420093948
+      },
+      "grid": [
+        28,
+        28
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 425,
+      "far_cells": 76,
+      "far_fraction": 0.1788,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "contour-plum-deep": 157,
+        "cream": 55,
+        "mint-light": 92,
+        "berry": 84,
+        "mint": 25,
+        "mint-pale": 12
+      }
+    }
+  },
+  "note": "#609 Knight Tier-3 warblade",
+  "evidence_raw": "docs/research/evidence/609-knight-tier3-icons/accepted-raws/warblade.png"
+}

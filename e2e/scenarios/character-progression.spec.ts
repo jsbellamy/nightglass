@@ -205,11 +205,11 @@ test.describe("Character progression evidence scenarios", () => {
 
     expect(talentsFit, "Character talents metrics").not.toBeNull();
     expect(talentsFit!.talentsVisible).toBe(true);
-    expect(talentsFit!.tierSections).toBe(2);
-    expect(talentsFit!.tierRows).toBeGreaterThanOrEqual(8);
+    expect(talentsFit!.tierSections).toBe(3);
+    expect(talentsFit!.tierRows).toBeGreaterThanOrEqual(12);
     expect(talentsFit!.panelScrollable, "Character panel does not outer-scroll").toBe(false);
     expect(talentsFit!.buildScrollable, "Build board does not outer-scroll").toBe(false);
-    expect(talentsFit!.treeScrollable, "two-tier tree scrolls inside the column").toBe(true);
+    expect(talentsFit!.treeScrollable, "multi-tier tree scrolls inside the column").toBe(true);
     expect(talentsFit!.stickyDetail, "sticky Talent detail retired").toBe(false);
     expect(talentsFit!.attachedStepper, "rank stepper attached to Talent face").toBe(true);
     expect(talentsFit!.minusBeforePlus, "minus precedes plus in tab order DOM").toBe(true);
