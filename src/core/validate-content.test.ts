@@ -189,7 +189,7 @@ describe("validateContent", () => {
     );
   });
 
-  it("validates encounter budgets for Stages 7–9 when wave and boss xp totals match authored budgets", () => {
+  it("validates Stage 7 encounter budget when wave and boss xp totals match authored budget", () => {
     const waveOpponent = {
       id: "fixture-wave-160",
       name: "Fixture Wave 160",
