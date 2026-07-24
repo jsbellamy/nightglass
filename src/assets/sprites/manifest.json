@@ -574,5 +574,37 @@
       "provider": "Cursor GenerateImage",
       "raw_sha256": "856e250b990260edad8193dd25851d6c2a658feef03577be797d6e56c6504f6d"
     }
+  },
+  "the-unwound": {
+    "action": "still",
+    "frame_size": [
+      134,
+      72
+    ],
+    "visual_bounds": [
+      0,
+      1,
+      134,
+      72
+    ],
+    "foot_anchor": [
+      67,
+      72
+    ],
+    "palette": "unwound-belfry-24",
+    "baseline_row": 71,
+    "total_ms": 1,
+    "frames": [
+      {
+        "name": "the-unwound",
+        "duration_ms": 1,
+        "sha256": "d5da019b044acff95eaa89ffbfaa35521c423bcb445bfa8e9cdceeb7d71f3a7b"
+      }
+    ],
+    "cues_ms": {},
+    "source": {
+      "provider": "Cursor GenerateImage",
+      "raw_sha256": "ab42369a93b7c66dda08d407117754b7e97cda2ed1135346845b92838dfbbf6a"
+    }
   }
 }
