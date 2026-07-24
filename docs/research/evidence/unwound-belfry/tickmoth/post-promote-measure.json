@@ -1,0 +1,31 @@
+{
+  "tag": "tickmoth",
+  "candidates": [
+    {
+      "candidate": "/Users/jakebellamy/VSProjects/games/game_idea/nightglass-wt-569/assets-raw/grid_raw/tickmoth.png",
+      "tag": "tickmoth",
+      "status": "advance",
+      "primary_failure": null,
+      "next_action": "advance to visual review",
+      "gates": [],
+      "clipped_sides": [],
+      "cursor_stamp_removed": false,
+      "opaque_bounds": [
+        0,
+        0,
+        925,
+        756
+      ],
+      "fitted_opaque_size": [
+        30,
+        24
+      ],
+      "profile": {
+        "role": "ordinary-opponent",
+        "max_opaque_w": 30,
+        "max_opaque_h": 68,
+        "facing": "left"
+      }
+    }
+  ]
+}
