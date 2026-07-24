@@ -214,12 +214,20 @@ Decision: [Automatic Combat rules](https://github.com/jsbellamy/nightglass/issue
   Cooldown begins at Impact. Damage does not interrupt actions. No turns, no
   global cooldown, no spendable resources — every non-basic Ability has a
   positive authored cooldown.
+- **Initiative Roll.** At the start of each Wave or Boss every combatant,
+  including Party Members carried over from the previous Wave, draws one uniform
+  integer 0–600 ms from the combat RNG stream and cannot begin an Action Cycle
+  until it elapses. The roll happens once per Encounter; because Action Cycle
+  periods are constant, combatants offset by a roll do not re-synchronize within
+  an Encounter.
 - **First-valid slot priority.** Each Character evaluates its ordered
   three-slot Ability Loadout and uses the first Ability off cooldown with a
   valid target, else the free basic attack. Duplicates forbidden; no
   player-authored thresholds or scripting.
-- **Deterministic resolution.** No misses, variance, crits, dodges, procs, or
-  random targeting. Physical Damage is reduced by Armor, Elemental Damage by
+- **Deterministic resolution.** Randomness in combat resolution is limited to
+  two seeded draws from a persisted combat RNG stream: the **Initiative Roll**
+  and the **Critical Hit** roll. No misses, dodges, procs, or random targeting.
+  Physical Damage is reduced by Armor, Elemental Damage by
   the single shared Elemental Resistance:
   `max(1, floor(raw × 100 / (100 + mitigation)))`. Healing ignores mitigation
   and cannot overheal. Same-timestamp events resolve as a batch (expiries
@@ -459,8 +467,10 @@ short-window merging (green `+` for Healing); up to two Status icons then a
 "+n" chip; collapse-then-desaturate Knockout readable without colour; ~1.5s
 centre-lane banners for Boss Wave, Stage Attempt, Stage cleared, and Party
 Defeat (routine numbered Waves stay silent); Drop notifications in the status
-line badging the Armory tab. Cooldown and Action Cycle telemetry lives only in the Dock's
-Loadout surface. Deferred: screen shake, hit-stop, combat log, DPS meters.
+line badging the Armory tab. Three per-Party-Member cooldown pips above each
+Character, one per Ability Loadout slot, filling as that slot recharges; Action
+Cycle telemetry stays out of the tile. Deferred: screen shake, hit-stop, combat
+log, DPS meters.
 
 ---
 

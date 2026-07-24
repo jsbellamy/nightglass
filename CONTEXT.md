@@ -168,6 +168,10 @@ _Avoid_: cast time (as the general term)
 The instant within an Action Cycle when its damage, healing, Buffs, or other combat effects are applied and its cooldown begins.
 _Avoid_: hit (as the general term)
 
+**Initiative Roll**:
+The one-time randomized opening delay each combatant draws at the start of a Wave or Boss, before its first Action Cycle of that Encounter. It desynchronizes combatants that share an Action Cycle period.
+_Avoid_: turn order, initiative score
+
 **Recovery**:
 The post-Impact portion of an Action Cycle that must finish before the combatant chooses another action.
 _Avoid_: backswing, end lag
@@ -175,6 +179,18 @@ _Avoid_: backswing, end lag
 **Cooldown**:
 The time after an Ability's Impact before that Ability can be chosen again.
 _Avoid_: recharge
+
+**Critical Chance**:
+A combat statistic giving the probability that a damage result is a Critical Hit, expressed as a decimal fraction.
+_Avoid_: crit rate
+
+**Critical Damage**:
+A combat statistic giving the multiplier applied to a Critical Hit's raw damage.
+_Avoid_: crit power, crit multiplier
+
+**Critical Hit**:
+A damage result that multiplies its raw amount by the actor's Critical Damage before mitigation, occurring at the actor's Critical Chance. Healing is never a Critical Hit.
+_Avoid_: crit (in prose), lucky hit
 
 **Damage Channel**:
 Whether an Ability effect applies **Physical Damage** or **Elemental Damage**. Distinct from **Element**, which names a specific elemental identity within Elemental Damage.
@@ -196,9 +212,9 @@ _Avoid_: physical resistance, defense
 Damage carrying an Element identity and reduced by the target's Elemental Resistance. The vertical slice uses one shared resistance value across all Elements.
 _Avoid_: magic damage, spell damage (as general terms)
 
-**Elemental Power**:
-A derived statistic used to calculate an Ability's raw Elemental Damage and Healing: `floor((base Elemental + flat bonuses) × (1 + summed percentage bonuses))`. The dedicated **Character → Stats** surface exposes the consolidated Elemental Power total with Base, Equipment, and Talent breakdowns. Ability and Talent tiles elsewhere show per-Ability results and generated mechanical text in a hover/focus popover rather than inline consolidated totals.
-_Avoid_: magic power, spell power
+**Spell Power**:
+A derived statistic used to calculate an Ability's raw Elemental Damage and Healing. For an Elemental Damage effect carrying Element E: `floor((base Spell + flat Spell bonuses + flat E bonuses) × (1 + summed percentage Spell bonuses + summed percentage E bonuses))`. Healing omits the Element terms. The dedicated **Character → Stats** surface exposes the consolidated Spell Power total with Base, Equipment, and Talent breakdowns. Ability and Talent tiles elsewhere show per-Ability results and generated mechanical text in a hover/focus popover rather than inline consolidated totals.
+_Avoid_: magic power, elemental power
 
 **Elemental Resistance**:
 A combat statistic that reduces incoming Elemental Damage regardless of its Element in the vertical slice. It may later become separate resistance values for individual Elements.
@@ -208,8 +224,12 @@ _Avoid_: ward, magic defense
 The identity carried by Elemental Damage for future element-specific interactions. In the vertical slice, every Element is reduced by the same Elemental Resistance statistic.
 _Avoid_: using "damage channel" to mean an Element; damage type (as the general term)
 
+**Element Power**:
+A derived statistic that applies only to Elemental Damage of one Element, stacking with Spell Power in the same formula. The vertical slice defines Fire Power, Frost Power, Lightning Power, and Light Power.
+_Avoid_: elemental affinity, mastery
+
 **Healing**:
-Restoration of lost health up to a Character's maximum health. Its raw amount is calculated from the user's Elemental Power and the Ability's Healing coefficient. Excess Healing has no effect unless an Ability explicitly defines another outcome.
+Restoration of lost health up to a Character's maximum health. Its raw amount is calculated from the user's Spell Power and the Ability's Healing coefficient. Excess Healing has no effect unless an Ability explicitly defines another outcome.
 _Avoid_: recovery (which names an Action Cycle phase)
 
 **Status Effect**:
