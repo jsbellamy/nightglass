@@ -12,6 +12,7 @@ import { buildContent, XP_THRESHOLDS } from "./index";
 import { fowlHarvestOpponents } from "./fowl-harvest-opponents";
 import { unwoundBelfryOpponents } from "./unwound-belfry-opponents";
 import { fowlHarvestStages } from "./fowl-harvest-stages";
+import { unwoundBelfryStages } from "./unwound-belfry-stages";
 import { opponentAbilities } from "./opponents";
 
 const LOOT_SEED = 42;
@@ -84,8 +85,7 @@ function sumEncounterXp(stage: StageDef): number {
   const sumWave = (opponentIds: string[]) =>
     opponentIds.reduce((total, opponentId) => total + opponentById(opponentId).xpAward, 0);
   return (
-    sumWave(stage.waves[0]!.opponents) +
-    sumWave(stage.waves[1]!.opponents) +
+    stage.waves.reduce((total, wave) => total + sumWave(wave.opponents), 0) +
     sumWave(stage.boss.opponents)
   );
 }
@@ -107,9 +107,10 @@ function advanceUntil(
 }
 
 function savedAtBossEncounter(stage: StageId): Snapshot {
+  const encounter = stage === 10 ? 1 : 3;
   const saved = scenario(content)
     .atStage(stage)
-    .atEncounter(3)
+    .atEncounter(encounter)
     .withOpponentsAtOneHealth()
     .build();
   saved.lootRngState = LOOT_SEED;
@@ -133,7 +134,7 @@ function driveUntilStageCleared(
 }
 
 describe("assembled Stage content", () => {
-  it("passes validateContent with exact encounter XP budgets for Stages 1–6", () => {
+  it("passes validateContent for all shipped Stages 1–10", () => {
     expect(validateContent(content)).toEqual([]);
     for (const stage of content.stages) {
       const budget = ENCOUNTER_BUDGETS[stage.id as keyof typeof ENCOUNTER_BUDGETS];
@@ -141,9 +142,9 @@ describe("assembled Stage content", () => {
     }
   });
 
-  it("defines six contiguous Stages with Moonberry 1–3 unchanged and Fowl 4–6 appended", () => {
-    expect(content.stages).toHaveLength(6);
-    expect(content.stages.map((stage) => stage.id)).toEqual([1, 2, 3, 4, 5, 6]);
+  it("defines ten contiguous Stages with Moonberry 1–3, Fowl 4–6, and Belfry 7–10", () => {
+    expect(content.stages).toHaveLength(10);
+    expect(content.stages.map((stage) => stage.id)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
     expect(content.stages.slice(0, 3).map((stage) => stage.name)).toEqual([...MOONBERRY_STAGE_NAMES]);
     expect(content.stages.slice(0, 3).map((stage) => stage.backdropKey)).toEqual([
       "backdrop-1",
@@ -155,7 +156,8 @@ describe("assembled Stage content", () => {
       [40, 40, 17, 3],
       [25, 45, 24, 6],
     ]);
-    expect(content.stages.slice(3)).toEqual(fowlHarvestStages);
+    expect(content.stages.slice(3, 6)).toEqual(fowlHarvestStages);
+    expect(content.stages.slice(6)).toEqual(unwoundBelfryStages);
   });
 
   it("preserves Moonberry opponents and thresholds 1–6 ahead of Fowl expansion", () => {
@@ -213,7 +215,11 @@ describe("assembled Stage content", () => {
   });
 
   it("reaches Level 9 at 2000 XP after a clean Stage 1–6 clear and Level 12 after three Stage 6 farms", () => {
-    const cleanRunXp = content.stages.reduce((total, stage) => total + sumEncounterXp(stage), 0);
+    const stagesOneThroughSix = content.stages.filter((stage) => stage.id <= 6);
+    const cleanRunXp = stagesOneThroughSix.reduce(
+      (total, stage) => total + sumEncounterXp(stage),
+      0,
+    );
     expect(cleanRunXp).toBe(2000);
     expect(levelFromXp(cleanRunXp, content.xpThresholds)).toBe(9);
 
@@ -225,19 +231,19 @@ describe("assembled Stage content", () => {
     expect(content.xpThresholds[11]).toBe(3950);
   });
 
-  it("unlocks Stage 4 on the first Stage 3 clear and repeats Stage 6 after a Stage 6 clear", () => {
+  it("unlocks Stage 4 on the first Stage 3 clear and repeats Stage 10 after a Stage 10 clear", () => {
     let engine = createEngine(content, savedAtBossEncounter(3), LOOT_SEED);
     driveUntilStageCleared(engine, 3);
     let snap = engine.snapshot();
     expect(snap.progression.unlockedStage).toBe(4);
     expect(snap.attempt?.stage).toBe(4);
 
-    engine = createEngine(content, savedAtBossEncounter(6), LOOT_SEED);
-    const events = driveUntilStageCleared(engine, 6);
+    engine = createEngine(content, savedAtBossEncounter(10), LOOT_SEED);
+    const events = driveUntilStageCleared(engine, 10);
     snap = engine.snapshot();
-    expect(events.some((event) => event.type === "stage-cleared" && event.stage === 6)).toBe(true);
-    expect(snap.progression.unlockedStage).toBe(6);
-    expect(snap.attempt?.stage).toBe(6);
+    expect(events.some((event) => event.type === "stage-cleared" && event.stage === 10)).toBe(true);
+    expect(snap.progression.unlockedStage).toBe(10);
+    expect(snap.attempt?.stage).toBe(10);
     expect(snap.attempt?.encounter).toBe(1);
   });
 
@@ -264,7 +270,7 @@ describe("assembled Stage content", () => {
   it("declares every Fowl sprite key and backdrop key used by shipped Stages 4–6", () => {
     const fowlOpponents = content.opponents.filter((entry) => FOWL_OPPONENT_IDS.has(entry.id));
     expect(new Set(fowlOpponents.map((entry) => entry.spriteKey))).toEqual(new Set(FOWL_SPRITE_KEYS));
-    for (const stage of content.stages.filter((entry) => entry.id >= 4)) {
+    for (const stage of content.stages.filter((entry) => entry.id >= 4 && entry.id <= 6)) {
       expect(FOWL_BACKDROP_KEYS).toContain(stage.backdropKey);
     }
   });
@@ -336,7 +342,7 @@ describe("assembled Stage content", () => {
     const defeated = events.some((event) => event.type === "party-defeat" && event.stage === 6);
     expect(cleared || defeated).toBe(true);
     if (cleared) {
-      expect(engine.snapshot().progression.unlockedStage).toBe(6);
+      expect(engine.snapshot().progression.unlockedStage).toBe(7);
     }
   });
 });

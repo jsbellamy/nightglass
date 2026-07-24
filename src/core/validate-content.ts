@@ -327,8 +327,8 @@ export function validateContent(
   }
 
   if (!fixture) {
-    if (content.stages.length !== 6) {
-      violations.push(`Content defines ${content.stages.length} stages, expected exactly 6`);
+    if (content.stages.length !== 10) {
+      violations.push(`Content defines ${content.stages.length} stages, expected exactly 10`);
     }
     violations.push(...shippedStageContiguityViolations(content.stages));
 

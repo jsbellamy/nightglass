@@ -171,13 +171,13 @@ describe("validateContent", () => {
     expect(validateContent(buildContent())).toEqual([]);
   });
 
-  it("requires exactly six contiguous shipped Stages", () => {
+  it("requires exactly ten contiguous shipped Stages", () => {
     const shipped = buildContent();
     expect(validateContent(shipped)).toEqual([]);
 
     const threeStages = { ...shipped, stages: shipped.stages.slice(0, 3) };
     expect(validateContent(threeStages)).toContain(
-      "Content defines 3 stages, expected exactly 6",
+      "Content defines 3 stages, expected exactly 10",
     );
 
     const gap = {

@@ -86,7 +86,7 @@ describe("Stage surface", () => {
     surface.render(engine.snapshot());
 
     expect(root.querySelector(".dock-surface-title")).toBeNull();
-    expect(root.querySelectorAll(".stage-row")).toHaveLength(6);
+    expect(root.querySelectorAll(".stage-row")).toHaveLength(10);
     expect(root.querySelector('[data-stage-id="1"]')?.textContent).toMatch(/Orchard Understory/);
     expect(root.querySelector('[data-stage-id="4"]')?.textContent).toMatch(/Last Stop Diner/);
     expect(root.querySelector('[data-stage-id="2"]')?.getAttribute("aria-disabled")).toBe("true");

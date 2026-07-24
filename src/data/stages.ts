@@ -1,6 +1,7 @@
 import type { Content, StageDef } from "../core/types";
 import { fowlHarvestStages } from "./fowl-harvest-stages";
 import { opponents } from "./opponents";
+import { unwoundBelfryStages } from "./unwound-belfry-stages";
 
 /** Stage rosters and rarity odds from issue #40 / issue #5. */
 export const stages: StageDef[] = [
@@ -46,6 +47,7 @@ export const stages: StageDef[] = [
     backdropKey: "backdrop-3",
   },
   ...fowlHarvestStages,
+  ...unwoundBelfryStages,
 ];
 
 export function buildStageSlice(): {
