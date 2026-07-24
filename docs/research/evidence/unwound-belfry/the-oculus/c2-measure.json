@@ -1,0 +1,42 @@
+{
+  "candidate": "c2",
+  "raw_size": [
+    1536,
+    1024
+  ],
+  "runtime_size": [
+    480,
+    86
+  ],
+  "magenta_hot_pixels": 0,
+  "whole_mean_luma": 9.238,
+  "whole_max_luma": 180.532,
+  "whole_p95_luma": 24.349,
+  "bottom_fifth_mean_luma": 9.373,
+  "midband_mean_luma": 9.921,
+  "top_fifth_mean_luma": 8.056,
+  "opp_half_mean_luma": 9.691,
+  "party_half_mean_luma": 8.784,
+  "reduction": {
+    "crop_box": [
+      0,
+      374,
+      1536,
+      649
+    ],
+    "crop_size": [
+      1536,
+      275
+    ],
+    "resample": "NEAREST",
+    "runtime_size": [
+      480,
+      86
+    ]
+  },
+  "source_resolution": [
+    1536,
+    1024
+  ],
+  "runtime_sha256": "04b21947bbfe6cba50541c0dd410d5c103e1b9b0075a51e90d0329cc5c30759c"
+}

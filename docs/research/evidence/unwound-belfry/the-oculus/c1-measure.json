@@ -1,0 +1,16 @@
+{
+  "candidate": "c1",
+  "raw_size": [
+    1536,
+    1024
+  ],
+  "runtime_size": [
+    480,
+    86
+  ],
+  "magenta_hot_pixels": 0,
+  "whole_mean_luma": 12.196,
+  "whole_max_luma": 198.267,
+  "whole_p95_luma": 29.911,
+  "primary_result": "contrast \u2014 near-white star/glow peaks (runtime max_lum ~198)"
+}
