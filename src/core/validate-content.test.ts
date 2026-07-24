@@ -189,6 +189,92 @@ describe("validateContent", () => {
     );
   });
 
+  it("validates Stage 7 encounter budget when wave and boss xp totals match authored budget", () => {
+    const waveOpponent = {
+      id: "fixture-wave-160",
+      name: "Fixture Wave 160",
+      family: "test",
+      boss: false,
+      base: { maxHealth: 40, physical: 8, elemental: 0, armor: 5, elementalResistance: 5 },
+      abilityIds: ["grunt-attack"],
+      xpAward: 160,
+      spriteKey: "fixture-wave-160",
+    };
+    const bossOpponent = {
+      id: "fixture-boss-480",
+      name: "Fixture Boss 480",
+      family: "test",
+      boss: true,
+      base: { maxHealth: 200, physical: 12, elemental: 0, armor: 10, elementalResistance: 10 },
+      abilityIds: ["boss-smash"],
+      xpAward: 480,
+      spriteKey: "fixture-boss-480",
+    };
+    const content: Content = {
+      ...fixtureContent,
+      opponents: [...fixtureContent.opponents, waveOpponent, bossOpponent],
+      stages: [
+        {
+          id: 7,
+          name: "Stage Seven Fixture",
+          waves: [{ opponents: ["fixture-wave-160"] }, { opponents: ["fixture-wave-160"] }],
+          boss: { opponents: ["fixture-boss-480"] },
+          rarityOdds: [55, 35, 9, 1],
+          backdropKey: "fixture-seven",
+        },
+      ],
+    };
+
+    expect(validateContent(content, { fixture: true })).toEqual([]);
+  });
+
+  it("accepts a boss-only Stage with zero ordinary waves", () => {
+    const content: Content = {
+      ...fixtureContent,
+      opponents: [
+        ...fixtureContent.opponents,
+        {
+          id: "fixture-ten-boss",
+          name: "Fixture Ten Boss",
+          family: "test",
+          boss: true,
+          base: { maxHealth: 500, physical: 20, elemental: 0, armor: 15, elementalResistance: 15 },
+          abilityIds: ["boss-smash"],
+          xpAward: 1500,
+          spriteKey: "fixture-ten-boss",
+        },
+      ],
+      stages: [
+        {
+          id: 10,
+          name: "Boss Only Fixture",
+          waves: [],
+          boss: { opponents: ["fixture-ten-boss"] },
+          rarityOdds: [55, 35, 9, 1],
+          backdropKey: "fixture-belfry",
+        },
+      ],
+    };
+
+    expect(validateContent(content, { fixture: true })).toEqual([]);
+  });
+
+  it("rejects a Stage whose wave count does not match its authored budget", () => {
+    const content: Content = {
+      ...fixtureContent,
+      stages: [
+        {
+          ...fixtureContent.stages[0]!,
+          waves: [],
+        },
+      ],
+    };
+
+    expect(validateContent(content, { fixture: true })).toContain(
+      "stage 1 has 0 waves, expected 2",
+    );
+  });
+
   it("rejects Stage 4–6 encounter budgets that diverge from ENCOUNTER_BUDGETS", () => {
     const shipped = buildContent();
     const broken = {

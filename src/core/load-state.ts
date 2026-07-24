@@ -12,7 +12,7 @@ import type { ClassId, ClassKitDef, Content, EquipmentSlotId, ItemLevel, StageId
 export const SAVE_SCHEMA_VERSION = 1;
 
 const CLASS_IDS = new Set<ClassId>(["knight", "wizard", "priest", "hunter"]);
-const STAGE_IDS = new Set<StageId>([1, 2, 3, 4, 5, 6]);
+const STAGE_IDS = new Set<StageId>([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
 const RARITIES = new Set(["common", "uncommon", "rare", "epic"]);
 const EQUIPMENT_SLOTS = new Set<EquipmentSlotId>(["weapon", "armor", "charm"]);
 
