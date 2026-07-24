@@ -111,6 +111,38 @@ describe("validateContent", () => {
     );
   });
 
+  it("keeps four-Tier authored Equipment at cardinality 24 without Tier V Affix bands", () => {
+    const content: Content = {
+      ...buildContent(),
+      equipmentBases: fourTierFixtureContent.equipmentBases,
+      affixBands: fourTierFixtureContent.affixBands,
+    };
+    expect(content.equipmentBases).toHaveLength(24);
+    expect(validateContent(content)).toEqual([]);
+  });
+
+  it("rejects a five-Tier catalog missing Tier V Affix bands", () => {
+    const tierVBases = [
+      ...fourTierFixtureContent.equipmentBases,
+      {
+        id: "fixture-armor-v",
+        name: "Fixture Armor V",
+        slot: "armor" as const,
+        tier: 5 as const,
+        guaranteed: { flat: { armor: 30 } },
+        iconKey: "fixture-armor-v",
+      },
+    ];
+    const content: Content = {
+      ...buildContent(),
+      equipmentBases: tierVBases,
+      affixBands: fourTierFixtureContent.affixBands,
+    };
+    expect(validateContent(content)).toContain(
+      'affixBands missing Equipment Tier 5 band for AffixId "flat-physical"',
+    );
+  });
+
   it("rejects a wave with a Boss alongside other Opponents", () => {
     const content: Content = {
       ...fixtureContent,

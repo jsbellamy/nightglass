@@ -1,7 +1,7 @@
 export type ClassId = "knight" | "wizard" | "priest" | "hunter";
 export type StageId = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
 export type ItemLevel = StageId;
-export type EquipmentTier = 1 | 2 | 3 | 4;
+export type EquipmentTier = 1 | 2 | 3 | 4 | 5;
 export type DamageChannel = "physical" | "elemental";
 export type Element = "fire" | "frost" | "lightning" | "light";
 export type FormationSlot = "front" | "middle" | "back";
@@ -141,6 +141,7 @@ export interface AffixBandDef {
   tier2: [number, number];
   tier3?: [number, number];
   tier4?: [number, number];
+  tier5?: [number, number];
 }
 
 export interface Content {
