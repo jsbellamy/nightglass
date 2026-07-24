@@ -135,6 +135,8 @@ The normalizer performs, in order:
    [`pipeline/palette.json`](../pipeline/palette.json) (`moonberry-16`). Fowl
    Harvest opponent identities use
    [`pipeline/palettes/fowl-harvest-24.json`](../pipeline/palettes/fowl-harvest-24.json).
+   Unwound Belfry opponent identities use
+   [`pipeline/palettes/unwound-belfry-24.json`](../pipeline/palettes/unwound-belfry-24.json).
    Palette selection is keyed per asset identity in the pipeline; unknown palette
    ids fail closed. Until a later wave lands keyed selection in
    `pipeline/acquire.py`, committed Moonberry bodies remain frozen and

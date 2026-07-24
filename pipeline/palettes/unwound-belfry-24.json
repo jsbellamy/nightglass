@@ -1,0 +1,35 @@
+{
+  "name": "unwound-belfry-24",
+  "version": 1,
+  "derived_from": [
+    "docs/unwound-belfry-theme.md §Body palette"
+  ],
+  "method": "hand-authored named ramps from the Unwound Belfry theme contract",
+  "note": "Opponent-body palette for The Unwound Belfry Visual Theme. Exact-match disjoint from moonberry-glow@1 and #ff00ff; nearest-in-RGB with no dithering.",
+  "colors": [
+    { "name": "belfry-void", "hex": "#0c0b16", "rgb": [12, 11, 22] },
+    { "name": "moonless-indigo", "hex": "#171528", "rgb": [23, 21, 40] },
+    { "name": "indigo-shadow", "hex": "#22203a", "rgb": [34, 32, 58] },
+    { "name": "dusk-indigo", "hex": "#33314f", "rgb": [51, 49, 79] },
+    { "name": "slate-indigo", "hex": "#474765", "rgb": [71, 71, 101] },
+    { "name": "brass-umber", "hex": "#4a3a1f", "rgb": [74, 58, 31] },
+    { "name": "tarnished-brass", "hex": "#6e5227", "rgb": [110, 82, 39] },
+    { "name": "old-brass", "hex": "#8f6d31", "rgb": [143, 109, 49] },
+    { "name": "brass", "hex": "#b08a3e", "rgb": [176, 138, 62] },
+    { "name": "brass-light", "hex": "#cfa85a", "rgb": [207, 168, 90] },
+    { "name": "verdigris-deep", "hex": "#153f3a", "rgb": [21, 63, 58] },
+    { "name": "verdigris", "hex": "#1f6157", "rgb": [31, 97, 87] },
+    { "name": "verdigris-light", "hex": "#3a8a76", "rgb": [58, 138, 118] },
+    { "name": "patina-pale", "hex": "#6bb39a", "rgb": [107, 179, 154] },
+    { "name": "candle-ivory-deep", "hex": "#b9a06d", "rgb": [185, 160, 109] },
+    { "name": "candle-ivory", "hex": "#e8d3a0", "rgb": [232, 211, 160] },
+    { "name": "candle-flame", "hex": "#f6ecc6", "rgb": [246, 236, 198] },
+    { "name": "ivory-white", "hex": "#fbf6e2", "rgb": [251, 246, 226] },
+    { "name": "glass-teal", "hex": "#3d7d8f", "rgb": [61, 125, 143] },
+    { "name": "cold-glass", "hex": "#7fb8c9", "rgb": [127, 184, 201] },
+    { "name": "glass-highlight", "hex": "#c8e8ef", "rgb": [200, 232, 239] },
+    { "name": "alarm-ember", "hex": "#7a1f22", "rgb": [122, 31, 34] },
+    { "name": "alarm-red", "hex": "#b8302e", "rgb": [184, 48, 46] },
+    { "name": "alarm-glow", "hex": "#e0563f", "rgb": [224, 86, 63] }
+  ]
+}
