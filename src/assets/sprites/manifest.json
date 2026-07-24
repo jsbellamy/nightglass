@@ -451,32 +451,32 @@
     "action": "still",
     "frame_size": [
       30,
-      17
+      18
     ],
     "visual_bounds": [
       0,
       0,
       30,
-      17
+      18
     ],
     "foot_anchor": [
       15,
-      17
+      18
     ],
     "palette": "unwound-belfry-24",
-    "baseline_row": 16,
+    "baseline_row": 17,
     "total_ms": 1,
     "frames": [
       {
         "name": "tollbat",
         "duration_ms": 1,
-        "sha256": "6528394ee0a6f94538f7bd6ba631fdce1fc0b6d72ba5707ca2f21424f8d6bf8b"
+        "sha256": "5e5481a1efa6686c8df751e9db2ae1c338bf6b6deb3a708ef675f643fcf56d79"
       }
     ],
     "cues_ms": {},
     "source": {
       "provider": "Cursor GenerateImage",
-      "raw_sha256": "580f1e23b6c00c1762885ce2895bd1f29dd5e553da1e520d6cd7d9f86d6a9dbd"
+      "raw_sha256": "5d2d90d0b09c67f8762521712ef9e33201e8081621bd42a8567cf9c2335bf861"
     }
   }
 }

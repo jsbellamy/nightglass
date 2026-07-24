@@ -1,12 +1,12 @@
 {
   "status": "promoted",
-  "candidate": "assets-raw/scratch/tollbat/tollbat-c2.png",
+  "candidate": "assets-raw/scratch/tollbat/tollbat-c3.png",
   "raw": "/Users/jakebellamy/VSProjects/games/game_idea/nightglass-wt-570/assets-raw/grid_raw/tollbat.png",
   "sidecar": "/Users/jakebellamy/VSProjects/games/game_idea/nightglass-wt-570/assets-raw/grid_raw/tollbat.source.json",
   "runtime": "/Users/jakebellamy/VSProjects/games/game_idea/nightglass-wt-570/src/assets/sprites/tollbat.png",
   "manifest": "/Users/jakebellamy/VSProjects/games/game_idea/nightglass-wt-570/src/assets/sprites/manifest.json",
   "measurement": {
-    "candidate": "assets-raw/scratch/tollbat/tollbat-c2.png",
+    "candidate": "assets-raw/scratch/tollbat/tollbat-c3.png",
     "tag": "tollbat",
     "status": "advance",
     "primary_failure": null,
@@ -17,12 +17,12 @@
     "opaque_bounds": [
       0,
       0,
-      1267,
-      747
+      1388,
+      853
     ],
     "fitted_opaque_size": [
       30,
-      17
+      18
     ],
     "profile": {
       "role": "ordinary-opponent",
