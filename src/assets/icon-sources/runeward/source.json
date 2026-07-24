@@ -1,0 +1,83 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "a104013c1857813fabe326d3f3e81d75e6d29d3365946937da4820fed5ab02ee",
+  "asset_class": "interface",
+  "kind": "talent-skill-glyph",
+  "runtime_destination": "src/assets/icons/runeward.png",
+  "candidate": "runeward-r1",
+  "palette_subset": [
+    "contour-plum-deepest",
+    "contour-plum-deep",
+    "mint-shadow",
+    "mint",
+    "mint-light",
+    "mint-pale",
+    "cream",
+    "berry-shadow",
+    "berry-mid",
+    "berry",
+    "sage",
+    "twilight-slate"
+  ],
+  "style_references": [
+    {
+      "path": "src/assets/icons/elemental-practice.png",
+      "sha256": "0572db1603feab66c3db3774fb11cf67baec20e9449633f380c3c0387250db7a",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/leyline-attunement.png",
+      "sha256": "1347fcd73afdd5f65801285a76fe11656bcb59f2ab43cdf3343335d915d8b7cd",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/wildfire-sigil.png",
+      "sha256": "324bf36f001b45690588ec5a1344b1fa47a182a1b35899e6fbeb84f9b73ea669",
+      "role": "style_cohort"
+    }
+  ],
+  "prompt": "TRUE chunky pixel art talent emblem ONLY on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel one clean flat square block \u2014 uniform square pixel blocks only, no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered storybook night-garden fantasy emblem in three-quarter display angle: a circular warding rune sigil ring with mint glyph marks on a plum band, cream inner circle. Leave at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Use only mint / berry / cream / plum Moonberry colours (8\u201312 flat colours). No brown, tan, cyan, pure white, or pure black. Structural members at least 3 logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        393,
+        128,
+        1160,
+        894
+      ],
+      "pitch_x": {
+        "pitch": 26.333333333333403,
+        "score": 0.09885668313899047
+      },
+      "pitch_y": {
+        "pitch": 28.383333333333432,
+        "score": 0.10662964839255056
+      },
+      "grid": [
+        29,
+        27
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 615,
+      "far_cells": 12,
+      "far_fraction": 0.0195,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "contour-plum-deep": 45,
+        "berry-mid": 36,
+        "berry": 266,
+        "mint-light": 64,
+        "sage": 2,
+        "berry-shadow": 17,
+        "cream": 153,
+        "mint": 31,
+        "mint-pale": 1
+      }
+    }
+  },
+  "note": "#610 Wizard Tier-3 runeward",
+  "source_key": "runeward",
+  "evidence_raw": "docs/research/evidence/610-wizard-tier3-icons/accepted-raws/runeward.png"
+}

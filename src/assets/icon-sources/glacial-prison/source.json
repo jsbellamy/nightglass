@@ -1,0 +1,86 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "87ac2b9af7c278c897d4cdf6249d4b6fe63de3360e6c9fffc477e165e34e36a2",
+  "asset_class": "interface",
+  "kind": "talent-skill-glyph",
+  "runtime_destination": "src/assets/icons/glacial-prison.png",
+  "candidate": "glacial-prison-r1",
+  "palette_subset": [
+    "contour-plum-deepest",
+    "contour-plum-deep",
+    "mint-shadow",
+    "mint",
+    "mint-light",
+    "mint-pale",
+    "cream",
+    "cream-gold",
+    "berry-shadow",
+    "berry-mid",
+    "berry",
+    "sage",
+    "twilight-slate"
+  ],
+  "style_references": [
+    {
+      "path": "src/assets/icons/elemental-practice.png",
+      "sha256": "0572db1603feab66c3db3774fb11cf67baec20e9449633f380c3c0387250db7a",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/leyline-attunement.png",
+      "sha256": "1347fcd73afdd5f65801285a76fe11656bcb59f2ab43cdf3343335d915d8b7cd",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/wildfire-sigil.png",
+      "sha256": "324bf36f001b45690588ec5a1344b1fa47a182a1b35899e6fbeb84f9b73ea669",
+      "role": "style_cohort"
+    }
+  ],
+  "prompt": "TRUE chunky pixel art talent emblem ONLY on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel one clean flat square block \u2014 uniform square pixel blocks only, no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered storybook night-garden fantasy emblem in three-quarter display angle: a faceted mint ice crystal prism encasing a small dark plum figure silhouette. Leave at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Use only mint / berry / cream / plum Moonberry colours (8\u201312 flat colours). No brown, tan, cyan, pure white, or pure black. Structural members at least 3 logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        353,
+        63,
+        1171,
+        971
+      ],
+      "pitch_x": {
+        "pitch": 35.94999999999987,
+        "score": 0.0915102748540965
+      },
+      "pitch_y": {
+        "pitch": 35.449999999999896,
+        "score": 0.05789107705878095
+      },
+      "grid": [
+        22,
+        26
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 335,
+      "far_cells": 29,
+      "far_fraction": 0.0866,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "cream": 71,
+        "mint": 40,
+        "mint-light": 49,
+        "mint-shadow": 24,
+        "mint-pale": 15,
+        "sage": 1,
+        "berry-shadow": 68,
+        "berry-mid": 21,
+        "berry": 35,
+        "contour-plum-deep": 6,
+        "cream-gold": 5
+      }
+    }
+  },
+  "note": "#610 Wizard Tier-3 glacial-prison",
+  "source_key": "glacial-prison",
+  "evidence_raw": "docs/research/evidence/610-wizard-tier3-icons/accepted-raws/glacial-prison.png"
+}

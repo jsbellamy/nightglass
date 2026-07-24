@@ -827,7 +827,7 @@ describe("Talents surface", () => {
       });
       surface.render(engine.snapshot(), legalityViewFromEngine(engine));
       const section = root.querySelector<HTMLElement>(`[data-class-id="${classId}"]`);
-      const expectedTiers = classId === "knight" ? 3 : 2;
+      const expectedTiers = classId === "knight" || classId === "wizard" ? 3 : 2;
       expect(section?.querySelectorAll("[data-talent-tier]")).toHaveLength(expectedTiers);
       expect(section?.querySelectorAll(".talent-stat-row .talent-cell")).toHaveLength(
         expectedTiers * 2,

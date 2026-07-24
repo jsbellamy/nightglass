@@ -1,0 +1,6 @@
+{
+  "candidate": "arcane-overflow-r1",
+  "primary": "clip-fail",
+  "clipped": ["top", "bottom", "left", "right"],
+  "error": "arcane-overflow-r1.png: subject clipped by generator at top/bottom/left/right of the 1536x1024 raw canvas"
+}

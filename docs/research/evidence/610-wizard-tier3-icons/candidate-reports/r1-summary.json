@@ -1,0 +1,50 @@
+[
+  {
+    "candidate": "arcane-overflow-r1",
+    "primary": "clip-fail",
+    "clipped": ["top", "bottom", "left", "right"],
+    "error": "arcane-overflow-r1.png: subject clipped by generator at top/bottom/left/right of the 1536x1024 raw canvas"
+  },
+  {
+    "candidate": "runeward-r1",
+    "primary": "advance",
+    "grid": [
+      29,
+      27
+    ],
+    "pitch_x": 0.09885668313899047,
+    "pitch_y": 0.10662964839255056,
+    "far_fraction": 0.0195,
+    "clipped": [],
+    "size_review": null,
+    "fit": null
+  },
+  {
+    "candidate": "comet-fall-r1",
+    "primary": "advance",
+    "grid": [
+      28,
+      24
+    ],
+    "pitch_x": 0.42951077496958867,
+    "pitch_y": 0.45185915816508176,
+    "far_fraction": 0.0384,
+    "clipped": [],
+    "size_review": null,
+    "fit": null
+  },
+  {
+    "candidate": "glacial-prison-r1",
+    "primary": "advance",
+    "grid": [
+      22,
+      26
+    ],
+    "pitch_x": 0.0915102748540965,
+    "pitch_y": 0.05789107705878095,
+    "far_fraction": 0.0866,
+    "clipped": [],
+    "size_review": null,
+    "fit": null
+  }
+]

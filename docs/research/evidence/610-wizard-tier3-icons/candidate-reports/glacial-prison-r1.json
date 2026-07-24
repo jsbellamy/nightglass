@@ -1,0 +1,43 @@
+{
+  "candidate": "glacial-prison-r1",
+  "recovered": {
+    "bbox": [
+      353,
+      63,
+      1171,
+      971
+    ],
+    "pitch_x": {
+      "pitch": 35.94999999999987,
+      "score": 0.0915102748540965
+    },
+    "pitch_y": {
+      "pitch": 35.449999999999896,
+      "score": 0.05789107705878095
+    },
+    "grid": [
+      22,
+      26
+    ]
+  },
+  "ramp": {
+    "opaque_cells": 335,
+    "far_cells": 29,
+    "far_fraction": 0.0866,
+    "off_ramp_reject": false,
+    "quantize_histogram": {
+      "cream": 71,
+      "mint": 40,
+      "mint-light": 49,
+      "mint-shadow": 24,
+      "mint-pale": 15,
+      "sage": 1,
+      "berry-shadow": 68,
+      "berry-mid": 21,
+      "berry": 35,
+      "contour-plum-deep": 6,
+      "cream-gold": 5
+    }
+  },
+  "primary": "advance"
+}

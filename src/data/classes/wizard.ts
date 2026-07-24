@@ -144,6 +144,59 @@ export const wizardTier2: TalentTierDef = {
   abilityRow: ["wildfire-sigil", "absolute-zero"],
 };
 
+export const wizardTier3Abilities: AbilityDef[] = [
+  {
+    id: "comet-fall",
+    name: "Comet Fall",
+    classId: "wizard",
+    slot: "talent",
+    iconKey: "comet-fall",
+    targeting: { kind: "all-opponents" },
+    effects: [
+      { kind: "damage", channel: "elemental", element: "fire", coefficient: 2.0 },
+      { kind: "apply-status", statusId: "scorched" },
+    ],
+    windUpMs: 900,
+    recoveryMs: 800,
+    cooldownMs: 16_000,
+  },
+  {
+    id: "glacial-prison",
+    name: "Glacial Prison",
+    classId: "wizard",
+    slot: "talent",
+    iconKey: "glacial-prison",
+    targeting: { kind: "all-opponents" },
+    effects: [
+      { kind: "damage", channel: "elemental", element: "frost", coefficient: 0.7 },
+      { kind: "apply-status", statusId: "stun", stunMs: 1_500 },
+    ],
+    windUpMs: 700,
+    recoveryMs: 800,
+    cooldownMs: 17_000,
+  },
+];
+
+export const wizardTier3: TalentTierDef = {
+  statRow: [
+    {
+      id: "arcane-overflow",
+      name: "Arcane Overflow",
+      perRank: { percent: { elementalPower: 0.06 } },
+      maxRanks: 5,
+      iconKey: "arcane-overflow",
+    },
+    {
+      id: "runeward",
+      name: "Runeward",
+      perRank: { flat: { elementalResistance: 5 } },
+      maxRanks: 5,
+      iconKey: "runeward",
+    },
+  ],
+  abilityRow: ["comet-fall", "glacial-prison"],
+};
+
 export const wizardClass: ClassKitDef = {
   id: "wizard",
   name: "Wizard",

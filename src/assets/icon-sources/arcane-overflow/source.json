@@ -1,0 +1,87 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "dd12f29f04cc832fe1a6933d889e0b186401746fe903e501b5e295188f8becbc",
+  "asset_class": "interface",
+  "kind": "talent-skill-glyph",
+  "runtime_destination": "src/assets/icons/arcane-overflow.png",
+  "candidate": "arcane-overflow-r2",
+  "palette_subset": [
+    "contour-plum-deepest",
+    "contour-plum-deep",
+    "mint-shadow",
+    "mint",
+    "mint-light",
+    "mint-pale",
+    "cream",
+    "cream-gold",
+    "berry-shadow",
+    "berry-mid",
+    "berry",
+    "berry-bright",
+    "sage",
+    "twilight-slate"
+  ],
+  "style_references": [
+    {
+      "path": "src/assets/icons/elemental-practice.png",
+      "sha256": "0572db1603feab66c3db3774fb11cf67baec20e9449633f380c3c0387250db7a",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/leyline-attunement.png",
+      "sha256": "1347fcd73afdd5f65801285a76fe11656bcb59f2ab43cdf3343335d915d8b7cd",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/wildfire-sigil.png",
+      "sha256": "324bf36f001b45690588ec5a1344b1fa47a182a1b35899e6fbeb84f9b73ea669",
+      "role": "style_cohort"
+    }
+  ],
+  "prompt": "TRUE chunky pixel art talent emblem ONLY on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel one clean flat square block \u2014 uniform square pixel blocks only, no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered storybook night-garden fantasy emblem in three-quarter display angle: a compact glowing arcane orb overflowing with berry-bright rune sparks spilling over its rim, mint and cream highlights on a plum vessel. Keep the entire emblem well inside the frame with generous empty magenta margin \u2014 at least four full magenta cells of clearance on every edge especially top bottom left and right. Flat solid magenta #ff00ff background filling the entire canvas, nothing else in frame. Use only mint / berry / cream / plum Moonberry colours (8\u201312 flat colours). No brown, tan, cyan, pure white, or pure black. Structural members at least 3 logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        435,
+        125,
+        1082,
+        883
+      ],
+      "pitch_x": {
+        "pitch": 38.18333333333314,
+        "score": 0.09099256268549151
+      },
+      "pitch_y": {
+        "pitch": 36.133333333333255,
+        "score": 0.11007360334826839
+      },
+      "grid": [
+        17,
+        21
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 238,
+      "far_cells": 1,
+      "far_fraction": 0.0042,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "berry": 62,
+        "berry-bright": 11,
+        "mint": 36,
+        "mint-light": 19,
+        "cream": 56,
+        "berry-mid": 14,
+        "berry-shadow": 31,
+        "contour-plum-deep": 3,
+        "mint-pale": 2,
+        "sage": 2,
+        "cream-gold": 2
+      }
+    }
+  },
+  "note": "#610 Wizard Tier-3 arcane-overflow",
+  "source_key": "arcane-overflow",
+  "evidence_raw": "docs/research/evidence/610-wizard-tier3-icons/accepted-raws/arcane-overflow.png"
+}

@@ -1,0 +1,172 @@
+[
+  {
+    "key": "arcane-overflow",
+    "candidate": "arcane-overflow-r2",
+    "raw_sha256": "dd12f29f04cc832fe1a6933d889e0b186401746fe903e501b5e295188f8becbc",
+    "recovered": {
+      "bbox": [
+        435,
+        125,
+        1082,
+        883
+      ],
+      "pitch_x": {
+        "pitch": 38.18333333333314,
+        "score": 0.09099256268549151
+      },
+      "pitch_y": {
+        "pitch": 36.133333333333255,
+        "score": 0.11007360334826839
+      },
+      "grid": [
+        17,
+        21
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 238,
+      "far_cells": 1,
+      "far_fraction": 0.0042,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "berry": 62,
+        "berry-bright": 11,
+        "mint": 36,
+        "mint-light": 19,
+        "cream": 56,
+        "berry-mid": 14,
+        "berry-shadow": 31,
+        "contour-plum-deep": 3,
+        "mint-pale": 2,
+        "sage": 2,
+        "cream-gold": 2
+      }
+    }
+  },
+  {
+    "key": "runeward",
+    "candidate": "runeward-r1",
+    "raw_sha256": "a104013c1857813fabe326d3f3e81d75e6d29d3365946937da4820fed5ab02ee",
+    "recovered": {
+      "bbox": [
+        393,
+        128,
+        1160,
+        894
+      ],
+      "pitch_x": {
+        "pitch": 26.333333333333403,
+        "score": 0.09885668313899047
+      },
+      "pitch_y": {
+        "pitch": 28.383333333333432,
+        "score": 0.10662964839255056
+      },
+      "grid": [
+        29,
+        27
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 615,
+      "far_cells": 12,
+      "far_fraction": 0.0195,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "contour-plum-deep": 45,
+        "berry-mid": 36,
+        "berry": 266,
+        "mint-light": 64,
+        "sage": 2,
+        "berry-shadow": 17,
+        "cream": 153,
+        "mint": 31,
+        "mint-pale": 1
+      }
+    }
+  },
+  {
+    "key": "comet-fall",
+    "candidate": "comet-fall-r1",
+    "raw_sha256": "5b34a670af8afd105b801bc20888d7b113939b99870d7c58a4999fab32a19338",
+    "recovered": {
+      "bbox": [
+        352,
+        162,
+        1176,
+        878
+      ],
+      "pitch_x": {
+        "pitch": 29.51666666666676,
+        "score": 0.42951077496958867
+      },
+      "pitch_y": {
+        "pitch": 29.916666666666767,
+        "score": 0.45185915816508176
+      },
+      "grid": [
+        28,
+        24
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 365,
+      "far_cells": 14,
+      "far_fraction": 0.0384,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "berry-shadow": 73,
+        "berry-mid": 72,
+        "cream": 100,
+        "mint-light": 51,
+        "berry": 59,
+        "berry-bright": 9,
+        "mint-pale": 1
+      }
+    }
+  },
+  {
+    "key": "glacial-prison",
+    "candidate": "glacial-prison-r1",
+    "raw_sha256": "87ac2b9af7c278c897d4cdf6249d4b6fe63de3360e6c9fffc477e165e34e36a2",
+    "recovered": {
+      "bbox": [
+        353,
+        63,
+        1171,
+        971
+      ],
+      "pitch_x": {
+        "pitch": 35.94999999999987,
+        "score": 0.0915102748540965
+      },
+      "pitch_y": {
+        "pitch": 35.449999999999896,
+        "score": 0.05789107705878095
+      },
+      "grid": [
+        22,
+        26
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 335,
+      "far_cells": 29,
+      "far_fraction": 0.0866,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "cream": 71,
+        "mint": 40,
+        "mint-light": 49,
+        "mint-shadow": 24,
+        "mint-pale": 15,
+        "sage": 1,
+        "berry-shadow": 68,
+        "berry-mid": 21,
+        "berry": 35,
+        "contour-plum-deep": 6,
+        "cream-gold": 5
+      }
+    }
+  }
+]
