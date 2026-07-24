@@ -32,6 +32,7 @@ import { statuses } from "./statuses";
 export const XP_THRESHOLDS = [
   0, 100, 250, 450, 650, 850,
   1100, 1400, 2000, 2600, 3250, 3950,
+  4700, 5500, 6400, 7400, 8500, 9700,
 ] as const;
 
 const CLASS_KIT_ABILITIES = [
@@ -47,18 +48,18 @@ const CLASS_KIT_ABILITIES = [
 
 const SHIPPED_ABILITIES = [...CLASS_KIT_ABILITIES, ...opponentAbilities];
 
-function withTalentTierTwo(
+function withTalentTiers(
   classKit: ClassKitDef,
-  tierTwo: TalentTierDef,
+  tiers: readonly TalentTierDef[],
 ): ClassKitDef {
-  return { ...classKit, talentTiers: [tierTwo] };
+  return { ...classKit, talentTiers: tiers as [TalentTierDef, ...TalentTierDef[]] };
 }
 
 const CLASS_KITS: ClassKitDef[] = [
-  withTalentTierTwo(knightClass, knightTier2),
-  withTalentTierTwo(wizardClass, wizardTier2),
-  withTalentTierTwo(priestClass, priestTier2),
-  withTalentTierTwo(hunterClass, hunterTier2),
+  withTalentTiers(knightClass, [knightTier2]),
+  withTalentTiers(wizardClass, [wizardTier2]),
+  withTalentTiers(priestClass, [priestTier2]),
+  withTalentTiers(hunterClass, [hunterTier2]),
 ];
 
 export interface ClassKitSlice {
