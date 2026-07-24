@@ -517,12 +517,17 @@ export function mountTalentsSurface(
 
     const statPointsInTier = totalStatPoints(tierState.statRanks);
     const tierChildren: HTMLElement[] = [];
+    const spentInThisTier = spentInTier(tierState);
 
     if (multiTier) {
+      const tierTitle =
+        spentInThisTier > 0
+          ? `Talent Tier ${tierIndex + 1} · ${spentInThisTier}/6`
+          : `Talent Tier ${tierIndex + 1}`;
       tierChildren.push(
         el("h3", {
           class: "talent-tier-title",
-          text: `Talent Tier ${tierIndex + 1}`,
+          text: tierTitle,
         }),
       );
     }
@@ -538,9 +543,7 @@ export function mountTalentsSurface(
     }
 
     tierChildren.push(
-      el("h4", { class: "talent-row-title", text: "Stat Row" }),
       el("div", { class: "talent-stat-row" }, statTiles),
-      el("h4", { class: "talent-row-title", text: "Ability Row" }),
       el("p", {
         class: "talent-gate-note",
         text:

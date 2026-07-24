@@ -171,6 +171,32 @@ describe("Character surface", () => {
     surface.destroy();
   });
 
+  it("stacks Variant C identity chrome with a class monogram and Selected character eyebrow", () => {
+    const root = document.createElement("div");
+    const selected = { current: "knight" as ClassId };
+    const surface = mountCharacterSurface(root, mountOptions(selected));
+    const engine = leveledKnightEngine();
+
+    surface.render(engine.snapshot(), EMPTY_ENGINE_LEGALITY);
+
+    const header = root.querySelector(".character-workspace-header");
+    const identity = root.querySelector(".character-workspace-identity");
+    const monogram = root.querySelector(".character-workspace-monogram");
+    const eyebrow = root.querySelector(".character-workspace-eyebrow");
+    const subline = root.querySelector(".character-workspace-subline");
+    expect(header?.contains(root.querySelector(".character-workspace-header-chrome"))).toBe(true);
+    expect(identity).not.toBeNull();
+    expect(monogram?.textContent).toBe("K");
+    expect(eyebrow?.textContent).toBe("Selected character");
+    expect(subline?.textContent).toMatch(/Level \d+.*Front.*Talent Points available/);
+
+    selected.current = "wizard";
+    surface.render(engine.snapshot(), EMPTY_ENGINE_LEGALITY);
+    expect(monogram?.textContent).toBe("W");
+
+    surface.destroy();
+  });
+
   it("keeps the active Character view across Snapshot re-renders", () => {
     const root = document.createElement("div");
     const selected = { current: "knight" as ClassId };

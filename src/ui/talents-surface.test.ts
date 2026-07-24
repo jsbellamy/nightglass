@@ -418,7 +418,7 @@ describe("Talents surface", () => {
     surface.destroy();
   });
 
-  it("keeps points, row titles, and Ability gate note visible outside the detail", () => {
+  it("omits Stat Row and Ability Row headings while keeping gate copy outside the detail", () => {
     const root = document.createElement("div");
     const engine = leveledKnightEngine();
     const selected = { current: "knight" as ClassId };
@@ -426,13 +426,11 @@ describe("Talents surface", () => {
 
     renderTalents(surface, engine);
     const knight = knightSection(root);
-    expect(knight.querySelector('[data-talent-points="true"]')).not.toBeNull();
-    expect(
-      [...knight.querySelectorAll(".talent-row-title")].map((node) => node.textContent),
-    ).toEqual(["Stat Row", "Ability Row"]);
+    expect(knight.querySelector(".talent-row-title")).toBeNull();
     expect(knight.querySelector(".talent-gate-note")?.textContent).toMatch(
       /Spend 5 Stat Row points/i,
     );
+    expect(knight.querySelectorAll(".talent-stat-row .talent-tile").length).toBeGreaterThan(0);
 
     surface.destroy();
   });

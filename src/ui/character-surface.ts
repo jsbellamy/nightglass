@@ -49,11 +49,20 @@ export function mountCharacterSurface(
   let activeView: CharacterViewId = "build";
 
   const header = el("header", { class: "character-workspace-header" });
-  const headerMeta = el("div", { class: "character-workspace-meta" });
+  const headerMonogram = el("span", {
+    class: "character-workspace-monogram",
+    aria: { hidden: "true" },
+  });
+  const headerIdentityText = el("div", { class: "character-workspace-identity-text" });
+  const headerEyebrow = el("span", {
+    class: "character-workspace-eyebrow",
+    text: "Selected character",
+  });
   const headerName = el("span", {
     class: "character-workspace-name",
     data: { characterHeaderName: "true" },
   });
+  const headerSubline = el("div", { class: "character-workspace-subline" });
   const headerLevel = el("span", {
     class: "character-workspace-level",
     data: { characterHeaderLevel: "true" },
@@ -66,7 +75,12 @@ export function mountCharacterSurface(
     class: "character-workspace-talent-points",
     data: { characterHeaderTalentPoints: "true" },
   });
-  headerMeta.append(headerName, headerLevel, headerPosition, headerTalentPoints);
+  headerSubline.append(headerLevel, headerPosition, headerTalentPoints);
+  headerIdentityText.append(headerEyebrow, headerName, headerSubline);
+  const headerIdentity = el("div", { class: "character-workspace-identity" }, [
+    headerMonogram,
+    headerIdentityText,
+  ]);
 
   const sections = new Map<CharacterSectionId, HTMLElement>();
 
@@ -117,7 +131,7 @@ export function mountCharacterSurface(
   }
 
   const headerChrome = el("div", { class: "character-workspace-header-chrome" }, [tabStrip.element]);
-  header.append(headerMeta, headerChrome);
+  header.append(headerIdentity, headerChrome);
   root.append(header, buildPanel, statsPanel);
 
   const loadout = mountLoadoutSurface(sections.get("loadout")!, options);
@@ -141,6 +155,7 @@ export function mountCharacterSurface(
 
   function updateHeader(snapshot: ReadonlySnapshot | null): void {
     if (!snapshot) {
+      headerMonogram.textContent = "";
       headerName.textContent = "";
       headerLevel.textContent = "";
       headerPosition.textContent = "";
@@ -149,12 +164,14 @@ export function mountCharacterSurface(
     }
     const classId = options.getSelectedClassId();
     if (!classId) {
+      headerMonogram.textContent = "";
       headerName.textContent = "";
       headerLevel.textContent = "";
       headerPosition.textContent = "";
       headerTalentPoints.textContent = "";
       return;
     }
+    headerMonogram.textContent = CLASS_LABELS[classId].charAt(0);
     headerName.textContent = CLASS_LABELS[classId];
     headerLevel.textContent = `Level ${levelFor(snapshot, content, classId)}`;
     headerPosition.textContent = formationPositionLabel(snapshot, classId);
