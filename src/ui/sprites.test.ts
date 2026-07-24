@@ -96,6 +96,35 @@ describe("sprite registry", () => {
     expect(resolveSprite("the-fryer").url).not.toBe(resolveSprite("the-combine").url);
   });
 
+  it("resolves all seven Unwound Belfry bodies with ordinary/Boss roles and manifest geometry", () => {
+    const ordinary = ["tickmoth", "tollbat", "astrolabe-spider"] as const;
+    const bosses = ["the-vigil", "the-tocsin", "the-unwound", "aphelion"] as const;
+    for (const key of ordinary) {
+      const sprite = resolveSprite(key);
+      const manifest = manifestJson[key];
+      expect(isRegisteredSpriteKey(key)).toBe(true);
+      expect(spriteBattlefieldRole(key)).toBe("ordinary_opponent");
+      expect(sprite.frameSize).toEqual(manifest.frame_size);
+      expect(sprite.visualBounds).toEqual(manifest.visual_bounds);
+      expect(sprite.footAnchor).toEqual(manifest.foot_anchor);
+      expect(sprite.url).toContain(key);
+      expect(SPRITE_SOURCES[key].url).toBe(sprite.url);
+    }
+    for (const key of bosses) {
+      const sprite = resolveSprite(key);
+      const manifest = manifestJson[key];
+      expect(isRegisteredSpriteKey(key)).toBe(true);
+      expect(spriteBattlefieldRole(key)).toBe("boss");
+      expect(sprite.frameSize).toEqual(manifest.frame_size);
+      expect(sprite.visualBounds).toEqual(manifest.visual_bounds);
+      expect(sprite.footAnchor).toEqual(manifest.foot_anchor);
+      expect(sprite.url).toContain(key);
+      expect(SPRITE_SOURCES[key].url).toBe(sprite.url);
+    }
+    expect(resolveSprite("the-vigil").url).not.toBe(resolveSprite("aphelion").url);
+    expect(resolveSprite("the-tocsin").url).not.toBe(resolveSprite("the-unwound").url);
+  });
+
   it("rejects missing or malformed manifest geometry", () => {
     expect(() => geometryFromManifestEntry("missing", undefined)).toThrow(/Missing manifest/);
     expect(() =>
