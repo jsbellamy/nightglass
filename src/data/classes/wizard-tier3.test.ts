@@ -105,7 +105,7 @@ describe("Wizard Talent Tier 3 exports", () => {
       expect(shipped.abilities.some((ability) => ability.id === id)).toBe(true);
       expect(classKit.abilities.some((ability) => ability.id === id)).toBe(true);
     }
-    expect(classKit.abilities).toHaveLength(40);
+    expect(classKit.abilities).toHaveLength(42);
     expect(
       classKit.abilities.filter((ability) => ability.classId === "wizard" && ability.slot === "talent"),
     ).toHaveLength(6);

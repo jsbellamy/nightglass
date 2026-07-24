@@ -57,6 +57,7 @@ import pommelBreakUrl from "../assets/icons/pommel-break.png";
 import prismaticShelterUrl from "../assets/icons/prismatic-shelter.png";
 import prismWardUrl from "../assets/icons/prism-ward.png";
 import quickshotUrl from "../assets/icons/quickshot.png";
+import radiantBulwarkUrl from "../assets/icons/radiant-bulwark.png";
 import radiantStudyUrl from "../assets/icons/radiant-study.png";
 import rallyingGuardUrl from "../assets/icons/rallying-guard.png";
 import redBeaconTokenUrl from "../assets/icons/red-beacon-token.png";
@@ -64,6 +65,8 @@ import shieldBraceUrl from "../assets/icons/shield-brace.png";
 import roadsideReliquaryUrl from "../assets/icons/roadside-reliquary.png";
 import runewardUrl from "../assets/icons/runeward.png";
 import snareburstUrl from "../assets/icons/snareburst.png";
+import solarStudyUrl from "../assets/icons/solar-study.png";
+import solarVerdictUrl from "../assets/icons/solar-verdict.png";
 import splitVolleyUrl from "../assets/icons/split-volley.png";
 import starfallUrl from "../assets/icons/starfall.png";
 import starfruitPrismUrl from "../assets/icons/starfruit-prism.png";
@@ -89,6 +92,7 @@ import warHymnUrl from "../assets/icons/war-hymn.png";
 import wardingLoreUrl from "../assets/icons/warding-lore.png";
 import wayfarersWardUrl from "../assets/icons/wayfarers-ward.png";
 import wildfireSigilUrl from "../assets/icons/wildfire-sigil.png";
+import zealousFaithUrl from "../assets/icons/zealous-faith.png";
 
 export const CONTENT_ICON_SIZE = 34;
 export const CHROME_ICON_SIZE = 16;
@@ -165,6 +169,7 @@ export const ICON_SOURCES = {
   "prismatic-shelter": { url: prismaticShelterUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "prism-ward": { url: prismWardUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   quickshot: { url: quickshotUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
+  "radiant-bulwark": { url: radiantBulwarkUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "radiant-study": { url: radiantStudyUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "rallying-guard": { url: rallyingGuardUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "red-beacon-token": { url: redBeaconTokenUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
@@ -172,6 +177,8 @@ export const ICON_SOURCES = {
   "roadside-reliquary": { url: roadsideReliquaryUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   runeward: { url: runewardUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   snareburst: { url: snareburstUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
+  "solar-study": { url: solarStudyUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
+  "solar-verdict": { url: solarVerdictUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "split-volley": { url: splitVolleyUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   starfall: { url: starfallUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "starfruit-prism": { url: starfruitPrismUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
@@ -197,6 +204,7 @@ export const ICON_SOURCES = {
   "warding-lore": { url: wardingLoreUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "wayfarers-ward": { url: wayfarersWardUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "wildfire-sigil": { url: wildfireSigilUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
+  "zealous-faith": { url: zealousFaithUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
 } as const satisfies Record<string, IconSource>;
 
 const FIXTURE_ICON_ALIASES: Record<string, keyof typeof ICON_SOURCES> = {

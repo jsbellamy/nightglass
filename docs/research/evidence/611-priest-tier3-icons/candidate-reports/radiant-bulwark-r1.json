@@ -1,0 +1,23 @@
+{
+  "candidate": "radiant-bulwark-r1",
+  "key": "radiant-bulwark",
+  "path": "/Users/jakebellamy/VSProjects/games/game_idea/nightglass-wt-611/docs/research/evidence/611-priest-tier3-icons/scratch/radiant-bulwark-r1.png",
+  "raw_gates": "pass",
+  "clipped": [
+    "none"
+  ],
+  "pitch_x": {
+    "pitch": 32.20000000000014,
+    "score": 0.11673155798190875
+  },
+  "pitch_y": {
+    "pitch": 32.250000000000135,
+    "score": 0.1587191958277435
+  },
+  "grid": [
+    20,
+    24
+  ],
+  "primary": "raw-gate-fail",
+  "error": "radiant-bulwark-r1.png: off-ramp reject (32.2% > 20%)"
+}

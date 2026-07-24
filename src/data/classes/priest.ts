@@ -146,6 +146,60 @@ export const priestTier2: TalentTierDef = {
   abilityRow: ["benediction", "dawn-ascendant"],
 };
 
+export const priestTier3Abilities: AbilityDef[] = [
+  {
+    id: "radiant-bulwark",
+    name: "Radiant Bulwark",
+    classId: "priest",
+    slot: "talent",
+    iconKey: "radiant-bulwark",
+    targeting: { kind: "party" },
+    effects: [
+      { kind: "heal", coefficient: 1.4 },
+      { kind: "apply-status", statusId: "sheltered" },
+    ],
+    windUpMs: 700,
+    recoveryMs: 700,
+    cooldownMs: 16_000,
+    validWhile: "any-ally-missing-health",
+  },
+  {
+    id: "solar-verdict",
+    name: "Solar Verdict",
+    classId: "priest",
+    slot: "talent",
+    iconKey: "solar-verdict",
+    targeting: { kind: "closest-opponent" },
+    effects: [
+      { kind: "damage", channel: "elemental", element: "light", coefficient: 3.0 },
+      { kind: "apply-status", statusId: "exposed" },
+    ],
+    windUpMs: 850,
+    recoveryMs: 700,
+    cooldownMs: 14_000,
+  },
+];
+
+export const priestTier3: TalentTierDef = {
+  statRow: [
+    {
+      id: "zealous-faith",
+      name: "Zealous Faith",
+      perRank: { percent: { maxHealth: 0.06 } },
+      maxRanks: 5,
+      iconKey: "zealous-faith",
+    },
+    {
+      id: "solar-study",
+      name: "Solar Study",
+      perRank: { percent: { elementalPower: 0.06 } },
+      maxRanks: 5,
+      iconKey: "solar-study",
+    },
+  ],
+  abilityRow: ["radiant-bulwark", "solar-verdict"],
+};
+
 export const priestClass: ClassKitDef = {
   id: "priest",
   name: "Priest",

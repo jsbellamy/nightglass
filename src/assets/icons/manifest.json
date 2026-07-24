@@ -519,6 +519,46 @@
     "source_family": "runeward",
     "sha256": "37da3bbb15ee6d285e104d48c24270dc60af5e245dc27c88a037053c2e621ca8"
   },
+  "zealous-faith": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "zealous-faith",
+    "sha256": "e3af32ce212d16785216e01d3860dd2dc1baf4f22d8a0a0fbf01a8ffd6c91934"
+  },
+  "solar-study": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "solar-study",
+    "sha256": "6f0cbaabedd379f1490957d2299c506bb29ff9837c147b15d114608948f27b60"
+  },
+  "radiant-bulwark": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "radiant-bulwark",
+    "sha256": "462feda3068fce00966737d74534b7f70a6b34852d7c44282f33df4ec111166a"
+  },
+  "solar-verdict": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "solar-verdict",
+    "sha256": "db051a3782ee80afe35536025c8b3f1e52cfab1fe6eb9cbe4aad199370e7f6eb"
+  },
   "augerwire-longbow": {
     "canvas": [
       34,

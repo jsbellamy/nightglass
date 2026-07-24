@@ -1,0 +1,23 @@
+{
+  "candidate": "zealous-faith-r1",
+  "key": "zealous-faith",
+  "path": "/Users/jakebellamy/VSProjects/games/game_idea/nightglass-wt-611/docs/research/evidence/611-priest-tier3-icons/scratch/zealous-faith-r1.png",
+  "raw_gates": "pass",
+  "clipped": [
+    "none"
+  ],
+  "pitch_x": {
+    "pitch": 32.91666666666678,
+    "score": 0.09479961423060437
+  },
+  "pitch_y": {
+    "pitch": 31.616666666666823,
+    "score": 0.09586729932666986
+  },
+  "grid": [
+    20,
+    24
+  ],
+  "primary": "raw-gate-fail",
+  "error": "zealous-faith-r1.png: off-ramp reject (39.6% > 20%)"
+}

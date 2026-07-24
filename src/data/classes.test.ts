@@ -72,17 +72,18 @@ describe("assembled Class Kit content", () => {
     }
   });
 
-  it("ships 40 Class Abilities: 4 basics, 16 Core, 20 Ability Talents", () => {
+  it("ships 42 Class Abilities: 4 basics, 16 Core, 22 Ability Talents", () => {
     const classAbilities = buildClassKitSlice().abilities;
-    expect(classAbilities).toHaveLength(40);
+    expect(classAbilities).toHaveLength(42);
     expect(classAbilities.filter((ability) => ability.slot === "basic")).toHaveLength(4);
     expect(classAbilities.filter((ability) => ability.slot === "core")).toHaveLength(16);
-    expect(classAbilities.filter((ability) => ability.slot === "talent")).toHaveLength(20);
+    expect(classAbilities.filter((ability) => ability.slot === "talent")).toHaveLength(22);
   });
 
   it("assembles ordered Talent Tiers for every Class", () => {
     for (const classKit of content.classes) {
-      const expectedExtra = classKit.id === "knight" || classKit.id === "wizard" ? 2 : 1;
+      const expectedExtra =
+        classKit.id === "knight" || classKit.id === "wizard" || classKit.id === "priest" ? 2 : 1;
       expect(classKit.talentTiers).toHaveLength(expectedExtra);
       const tiers = talentTierDefs(classKit);
       expect(tiers).toHaveLength(expectedExtra + 1);
@@ -97,7 +98,7 @@ describe("assembled Class Kit content", () => {
     for (const classKit of content.classes) {
       const talentAbilityIds = talentTierDefs(classKit).flatMap((tier) => tier.abilityRow);
       expect(talentAbilityIds).toHaveLength(
-        classKit.id === "knight" || classKit.id === "wizard" ? 6 : 4,
+        classKit.id === "knight" || classKit.id === "wizard" || classKit.id === "priest" ? 6 : 4,
       );
       for (const abilityId of talentAbilityIds) {
         const ability = abilityById(abilityId);

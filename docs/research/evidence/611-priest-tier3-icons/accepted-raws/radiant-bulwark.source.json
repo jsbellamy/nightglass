@@ -1,0 +1,85 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "a73ec995aecb538b11df8e85baf65315c90cc54e8ef99b9068c9e59fde8d14f5",
+  "asset_class": "interface",
+  "kind": "talent-skill-glyph",
+  "runtime_destination": "src/assets/icons/radiant-bulwark.png",
+  "candidate": "radiant-bulwark-r2",
+  "palette_subset": [
+    "contour-plum-deepest",
+    "contour-plum-deep",
+    "mint-shadow",
+    "mint",
+    "mint-light",
+    "mint-pale",
+    "cream",
+    "cream-gold",
+    "berry-shadow",
+    "berry-mid",
+    "berry",
+    "berry-bright",
+    "sage",
+    "twilight-slate"
+  ],
+  "style_references": [
+    {
+      "path": "src/assets/icons/devotion.png",
+      "role": "style_cohort",
+      "sha256": "d3fd5d7b4bebe7082920b91032a9e388ec5ec95b8ab93c78fe27096e21432305"
+    },
+    {
+      "path": "src/assets/icons/battle-liturgy.png",
+      "role": "style_cohort",
+      "sha256": "355def4d134aa231977313d7130c8fe00ed2a4c6020f7ba268d50ba532c8388a"
+    },
+    {
+      "path": "src/assets/icons/benediction.png",
+      "role": "style_cohort",
+      "sha256": "d9f946a942656ab44cf0df7e94945e770281c6f4b5dee0cf6b84f580b8ab7308"
+    }
+  ],
+  "prompt": "TRUE chunky pixel art talent emblem ONLY on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel one clean flat square block \u2014 uniform square pixel blocks only, no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered storybook night-garden fantasy emblem in three-quarter display angle: a domed cream light barrier arcing protectively over a small berry sprout \u2014 fill colors must be only cream, cream-gold, mint-pale, mint, berry, and plum; no yellow, amber, orange, white, or gold metal. Keep the entire emblem well inside the frame with generous empty magenta margin \u2014 at least four full magenta cells of clearance on every edge especially top bottom left and right. Flat solid magenta #ff00ff background filling the entire canvas, nothing else in frame. Use only mint / berry / cream / plum Moonberry colours (8\u201312 flat colours). No brown, tan, cyan, pure white, or pure black. Structural members at least 3 logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        438,
+        114,
+        1098,
+        903
+      ],
+      "pitch_x": {
+        "pitch": 28.14444444444453,
+        "score": 0.1992618323549024
+      },
+      "pitch_y": {
+        "pitch": 27.244444444444518,
+        "score": 0.13455079480294904
+      },
+      "grid": [
+        23,
+        29
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 420,
+      "far_cells": 13,
+      "far_fraction": 0.031,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "cream": 169,
+        "mint-shadow": 40,
+        "cream-gold": 60,
+        "mint-light": 27,
+        "berry-mid": 59,
+        "mint-pale": 16,
+        "mint": 9,
+        "twilight-slate": 10,
+        "berry-bright": 5,
+        "berry": 19,
+        "sage": 6
+      }
+    }
+  },
+  "note": "#611 Priest Tier-3 Talent / Ability Talent one-variant icon"
+}

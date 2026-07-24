@@ -1,0 +1,65 @@
+{
+  "candidate": "zealous-faith-r2",
+  "key": "zealous-faith",
+  "clipped": [
+    "none"
+  ],
+  "recovered": {
+    "bbox": [
+      429,
+      132,
+      1122,
+      875
+    ],
+    "pitch_x": {
+      "pitch": 34.2666666666667,
+      "score": 0.07804428028476298
+    },
+    "pitch_y": {
+      "pitch": 21.116666666666674,
+      "score": 0.056701098501849984
+    },
+    "grid": [
+      18,
+      30
+    ],
+    "fit": {
+      "from": [
+        21,
+        35
+      ],
+      "to": [
+        18,
+        30
+      ],
+      "reason": "overshoot"
+    }
+  },
+  "ramp": {
+    "opaque_cells": 277,
+    "far_cells": 11,
+    "far_fraction": 0.0397,
+    "off_ramp_reject": false,
+    "quantize_histogram": {
+      "berry-shadow": 52,
+      "cream": 103,
+      "mint-light": 36,
+      "berry-mid": 4,
+      "sage": 8,
+      "berry": 36,
+      "twilight-slate": 3,
+      "berry-bright": 8,
+      "cream-gold": 6,
+      "mint": 12,
+      "mint-shadow": 3,
+      "mint-pale": 6
+    }
+  },
+  "grid": [
+    18,
+    30
+  ],
+  "size_review": "ok",
+  "raw_sha256": "c5a226720daedbec82a328e5288c45d365fa54631a72c9677f526b67f69c6209",
+  "primary": "advance"
+}

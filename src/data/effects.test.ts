@@ -32,7 +32,7 @@ describe("effect recipes", () => {
   it("covers every Class Kit ability id exactly once", () => {
     const kitIds = classKit.abilities.map((a) => a.id).sort();
     expect(CLASS_KIT_ABILITY_IDS.sort()).toEqual(kitIds);
-    expect(Object.keys(effectRecipes)).toHaveLength(40);
+    expect(Object.keys(effectRecipes)).toHaveLength(42);
   });
 
   it("uses only legal anchor kinds and never strike_self", () => {
@@ -85,6 +85,11 @@ describe("effect recipes", () => {
   it("maps Knight Talent Tier 3 abilities to the exact effect derivation families", () => {
     expect(effectRecipes["aegis-wall"]?.frames).toBe("buff-halo");
     expect(effectRecipes["titans-cleave"]?.frames).toBe("arc-slash-heavy");
+  });
+
+  it("maps Priest Talent Tier 3 abilities to the exact effect derivation families", () => {
+    expect(effectRecipes["radiant-bulwark"]?.frames).toBe("heal-rise");
+    expect(effectRecipes["solar-verdict"]?.frames).toBe("spell-bolt-light");
   });
 
   it("presents Twin Fang as one arrow-bolt while gameplay applies two damage effects", () => {

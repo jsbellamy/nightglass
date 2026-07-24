@@ -1,0 +1,86 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "05c9e7f6225a660d4f80cbb6b5abcea0d69987124eb20c7d6cb2e6f025632e05",
+  "asset_class": "interface",
+  "kind": "talent-skill-glyph",
+  "runtime_destination": "src/assets/icons/solar-study.png",
+  "candidate": "solar-study-r1",
+  "palette_subset": [
+    "contour-plum-deepest",
+    "contour-plum-deep",
+    "mint-shadow",
+    "mint",
+    "mint-light",
+    "mint-pale",
+    "cream",
+    "cream-gold",
+    "berry-shadow",
+    "berry-mid",
+    "berry",
+    "berry-bright",
+    "sage",
+    "twilight-slate"
+  ],
+  "style_references": [
+    {
+      "path": "src/assets/icons/devotion.png",
+      "role": "style_cohort",
+      "sha256": "d3fd5d7b4bebe7082920b91032a9e388ec5ec95b8ab93c78fe27096e21432305"
+    },
+    {
+      "path": "src/assets/icons/battle-liturgy.png",
+      "role": "style_cohort",
+      "sha256": "355def4d134aa231977313d7130c8fe00ed2a4c6020f7ba268d50ba532c8388a"
+    },
+    {
+      "path": "src/assets/icons/benediction.png",
+      "role": "style_cohort",
+      "sha256": "d9f946a942656ab44cf0df7e94945e770281c6f4b5dee0cf6b84f580b8ab7308"
+    }
+  ],
+  "prompt": "TRUE chunky pixel art talent emblem ONLY on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel one clean flat square block \u2014 uniform square pixel blocks only, no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered storybook night-garden fantasy emblem in three-quarter display angle: an open storybook tome with a cream-gold sun glyph on its page. Keep the entire emblem well inside the frame with generous empty magenta margin \u2014 at least four full magenta cells of clearance on every edge especially top bottom left and right. Flat solid magenta #ff00ff background filling the entire canvas, nothing else in frame. Use only mint / berry / cream / plum Moonberry colours (8\u201312 flat colours). No brown, tan, cyan, pure white, or pure black. Structural members at least 3 logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        427,
+        196,
+        1098,
+        816
+      ],
+      "pitch_x": {
+        "pitch": 22.766666666666726,
+        "score": 0.09340497729259785
+      },
+      "pitch_y": {
+        "pitch": 22.41666666666672,
+        "score": 0.10249599915436254
+      },
+      "grid": [
+        29,
+        28
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 516,
+      "far_cells": 76,
+      "far_fraction": 0.1473,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "mint-pale": 66,
+        "mint-light": 12,
+        "berry-mid": 36,
+        "mint": 9,
+        "cream": 216,
+        "berry-shadow": 21,
+        "berry-bright": 21,
+        "berry": 63,
+        "sage": 3,
+        "cream-gold": 50,
+        "mint-shadow": 18,
+        "twilight-slate": 1
+      }
+    }
+  },
+  "note": "#611 Priest Tier-3 Talent / Ability Talent one-variant icon"
+}

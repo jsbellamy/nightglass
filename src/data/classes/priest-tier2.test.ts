@@ -7,6 +7,7 @@ import {
   priestClass,
   priestTier2,
   priestTier2Abilities,
+  priestTier3,
 } from "./priest";
 
 const EXPECTED_PRIEST_TIER2_ABILITIES: AbilityDef[] = [
@@ -104,7 +105,7 @@ describe("Priest Talent Tier 2 content", () => {
     const content = buildContent();
     const priest = content.classes.find((entry) => entry.id === "priest");
     expect(priest).toBeDefined();
-    expect(priest?.talentTiers).toEqual([priestTier2]);
+    expect(priest?.talentTiers).toEqual([priestTier2, priestTier3]);
     expect(priestClass.talentTiers).toBeUndefined();
     expect(priest?.talents).toEqual(priestClass.talents);
     for (const statId of priestTier2.statRow.map((stat) => stat.id)) {
