@@ -93,6 +93,11 @@ gate passes; do not mirror a generated raw as a substitute for reacquisition.
   `fowl-harvest`, body palette `fowl-harvest-24`, identity prompt kits, and
   toxic rural dusk material rules. Party Characters remain `moonberry-16`; do not
   retheme existing Moonberry sprites in acquisition prompts.
+- For **Unwound Belfry** opponent bodies and backdrops, read
+  [`../unwound-belfry-theme.md`](../unwound-belfry-theme.md). It owns theme id
+  `unwound-belfry`, body palette `unwound-belfry-24`, identity prompt kits, and
+  moonless belfry-night material rules. Party Characters remain `moonberry-16`; do
+  not retheme existing Moonberry sprites in acquisition prompts.
 - For Moonberry visual language, use the decision and retained references from
   [Prototype the original-IP art direction](https://github.com/jsbellamy/nightglass/issues/3).
 - For another asset class, the task must declare its runtime shape and validator;
