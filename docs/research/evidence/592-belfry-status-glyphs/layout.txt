@@ -1,0 +1,7 @@
+Belfry theme status glyphs (#592) — 7×7 procedural point sets
+
+corroded   scattered pit corrosion (10 px)
+tolling    small bell mouth (14 px)
+timeslip   bent clock hand (10 px)
+
+Full cohort: 16 glyphs in src/assets/effects/status/ (see pipeline/effects/verify.py STATUS_GLYPH_IDS)
