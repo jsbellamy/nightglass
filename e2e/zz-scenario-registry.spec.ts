@@ -34,8 +34,8 @@ test.describe("evidence scenario registry", () => {
     }
   });
 
-  test("defineEvidenceScenario throws when scenario id is already in the static catalogue", () => {
-    const row = EVIDENCE_SCENARIOS[0]!;
+  test("defineEvidenceScenario throws when scenario id is already registered", () => {
+    const row = registeredEvidenceScenarios().find((scenario) => scenario.id === "five-actor-pools")!;
     expect(() => defineEvidenceScenario(row, async () => {})).toThrow(
       /duplicate evidence scenario id: five-actor-pools/,
     );

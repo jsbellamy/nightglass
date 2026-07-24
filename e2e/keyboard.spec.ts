@@ -8,7 +8,7 @@ import {
   focusDockTab,
   openDockFromTileKeyboard,
 } from "./helpers/dock-context";
-import { declareEvidenceScenario } from "./helpers/evidence-scenarios";
+import { defineEvidenceScenario } from "./helpers/evidence-scenarios";
 import { openEvidenceSession } from "./helpers/evidence-session";
 import { keyboardBootSnapshot } from "./helpers/snapshots";
 
@@ -27,7 +27,17 @@ async function pressEnterKeydown(
 }
 
 test.describe("accessibility keyboard floor", () => {
-  declareEvidenceScenario("keyboard-floor", async ({ browser }) => {
+  defineEvidenceScenario(
+    {
+      id: "keyboard-floor",
+      slugs: [],
+      spec: { id: "keyboard:keyboard-floor", path: "e2e/keyboard.spec.ts" },
+      fixture: "live-tile-and-dock",
+      reviewScenes: [],
+      summary:
+        "Armory → Character Build/Stats journeys with strip assign/swap, Talent −/+, and popover disclosure without pointer",
+    },
+    async ({ browser }) => {
     test.setTimeout(180_000);
     const bootSave = JSON.stringify(keyboardBootSnapshot());
     const session = await openEvidenceSession(browser, "live-tile-and-dock", {
@@ -336,5 +346,6 @@ test.describe("accessibility keyboard floor", () => {
     await expect(dock.locator(".stage-confirm")).toHaveCount(0);
 
     await session.finish();
-  });
+  },
+  );
 });

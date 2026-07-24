@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { declareEvidenceScenario } from "./helpers/evidence-scenarios";
+import { defineEvidenceScenario } from "./helpers/evidence-scenarios";
 import { openEvidenceSession } from "./helpers/evidence-session";
 
 async function waitForActorPool(tile: import("@playwright/test").Page): Promise<void> {
@@ -28,7 +28,17 @@ async function waitForLungeOffset(tile: import("@playwright/test").Page): Promis
 }
 
 test.describe("accessibility reduced motion", () => {
-  declareEvidenceScenario("reduced-motion", async ({ browser }) => {
+  defineEvidenceScenario(
+    {
+      id: "reduced-motion",
+      slugs: ["reduced-motion"],
+      spec: { id: "reduced-motion:reduced-motion", path: "e2e/reduced-motion.spec.ts" },
+      fixture: "reduced-motion-live-tile",
+      reviewScenes: [],
+      summary:
+        "actor pool stays visible during Action Cycles while lunge/recoil offsets stay disabled",
+    },
+    async ({ browser }) => {
     test.setTimeout(120_000);
 
     const reduced = await openEvidenceSession(browser, "reduced-motion-live-tile");
@@ -57,5 +67,6 @@ test.describe("accessibility reduced motion", () => {
     const tile = control.tile!;
     await waitForLungeOffset(tile);
     await control.finish();
-  });
+  },
+  );
 });
