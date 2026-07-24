@@ -3,7 +3,8 @@
 Asset class for battlefield scenery behind Party and opponent combatants in the
 Battle Tile. Shipped Moonberry Stage scenes use keys `backdrop-1` through
 `backdrop-3`; additional keys (for example Fowl Harvest backdrops in
-`docs/fowl-harvest-theme.md`) are discovered from complete archived bundles.
+`docs/fowl-harvest-theme.md` and Unwound Belfry backdrops in
+`docs/unwound-belfry-theme.md`) are discovered from complete archived bundles.
 Frozen by [#59](https://github.com/jsbellamy/nightglass/issues/59); bundle
 discovery generalized in
 [#319](https://github.com/jsbellamy/nightglass/issues/319).
@@ -16,8 +17,10 @@ Runtime destination: src/assets/backdrops/<key>.png
 Runtime shape: 480×86 RGB(A) PNG; opaque preferred; no magenta key
 Visual vocabulary: declared per backdrop — Moonberry night-garden for the three
   shipped Stage scenes (`backdrop-1` … `backdrop-3`); Fowl Harvest toxic rural
-  dusk for themed keys documented in `docs/fowl-harvest-theme.md`. EXEMPT from
-  body palettes (`moonberry-16`, `fowl-harvest-24`, and future named body palettes)
+  dusk for themed keys documented in `docs/fowl-harvest-theme.md`; Unwound Belfry
+  moonless belfry-night for themed keys documented in
+  `docs/unwound-belfry-theme.md`. EXEMPT from body palettes (`moonberry-16`,
+  `fowl-harvest-24`, `unwound-belfry-24`, and future named body palettes)
 Geometry: full battlefield band under the 24px status line; near-flat ground
   band in the bottom fifth; detail concentrated in the upper two thirds;
   no characters, creatures, or UI-like elements
@@ -71,7 +74,9 @@ Do not reintroduce the body pipeline's no-resize rule here.
 
 Body palettes (`moonberry-16` for Party Characters and the Moonberry opponent
 cohort; `fowl-harvest-24` for Fowl Harvest opponent bodies per
-`docs/fowl-harvest-theme.md`) apply only to Character and opponent **bodies**.
+`docs/fowl-harvest-theme.md`; `unwound-belfry-24` for Unwound Belfry opponent
+bodies per `docs/unwound-belfry-theme.md`) apply only to Character and opponent
+**bodies**.
 Backdrops are **free** of those palettes, bound instead to their declared Visual
 Theme read so combatants, `moonberry-glow` effects, 2px health bars, and damage
 numbers remain the brightest signals in the tile. Judgement is the tile review
