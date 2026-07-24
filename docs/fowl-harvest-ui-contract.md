@@ -560,8 +560,8 @@ This contract does not add harness tests; it routes them.
 | Loadout DOM/focus order Basic Attack → Slots I–III → Available skills; icon-only strip (4 visible, 10 reachable), replace/displace, swap, Basic Attack excluded | `src/ui/loadout-surface.test.ts` + `evidence: character-loadout-assignment` | No reset control; strip heading name disclosure |
 | Stats XP-only body; canonical five derived stats (no invented combat telemetry) | `src/ui/stats-surface.test.ts` + `evidence: character-stats-breakdown` | Vitals/Offense/Defense groups; Base/Equip/Talent flat vs %; pending wave marker when effective ≠ combat; no Level/Talent Points in Stats body |
 | Talent attached steppers `−`/`+`; Ability Talent same-slot preservation | `src/ui/talents-surface.test.ts` + `evidence: talent-direct-actions` | Cascade message `[data-talent-cascade-blocked="true"]` |
-| Two-Tier tree scroll inside 800×480 | `evidence: character-talents-tree-scroll` | Supersedes single-tier `evidence: character-talents-no-scroll` for two-Tier Content |
-| Tier 2 gate + connector + lock copy | `src/ui/talents-surface.test.ts` + `evidence: character-talents-tree-scroll` | Happy-dom for DOM hooks; rendered scene for connector visibility |
+| Multi-tier tree scroll inside 800×480 | `evidence: character-talents-tree-scroll` | Supersedes single-tier `evidence: character-talents-no-scroll` for multi-tier Content (Knight ships three tiers) |
+| Tier gate + connector + lock copy | `src/ui/talents-surface.test.ts` + `evidence: character-talents-tree-scroll` | Happy-dom for DOM hooks; rendered scene for connector visibility |
 | Talent icons (both Tiers) | `evidence: talent-icon-content-tier` | `src/ui/talents-surface.test.ts` + review artifact path in acceptance doc |
 | Six-Stage list + group headings | `evidence: stage-list-six` | New rendered-evidence scenario; group labels non-interactive |
 | Stage confirm preserved | `e2e/keyboard.spec.ts` (Stage flow) + `src/ui/stage-surface.test.ts` | Retain `[data-surface-retain]` confirm behavior |
