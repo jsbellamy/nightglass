@@ -112,31 +112,16 @@ export type EvidenceScenario = {
   summary: string;
 };
 
-export const EVIDENCE_SCENARIOS: readonly EvidenceScenario[] = [];
-
 const runtimeEvidenceScenarios: EvidenceScenario[] = [];
 
-const scenarioById = new Map(EVIDENCE_SCENARIOS.map((scenario) => [scenario.id, scenario]));
-
 function assertEvidenceScenarioIdAvailable(id: ScenarioId): void {
-  if (scenarioById.has(id) || runtimeEvidenceScenarios.some((row) => row.id === id)) {
+  if (runtimeEvidenceScenarios.some((row) => row.id === id)) {
     throw new Error(`duplicate evidence scenario id: ${id}`);
   }
 }
 
 export function registeredEvidenceScenarios(): readonly EvidenceScenario[] {
-  if (runtimeEvidenceScenarios.length === 0) {
-    return EVIDENCE_SCENARIOS;
-  }
-  return [...EVIDENCE_SCENARIOS, ...runtimeEvidenceScenarios];
-}
-
-export function evidenceScenarioById(id: ScenarioId): EvidenceScenario {
-  const scenario = scenarioById.get(id);
-  if (!scenario) {
-    throw new Error(`unknown evidence scenario: ${id}`);
-  }
-  return scenario;
+  return runtimeEvidenceScenarios;
 }
 
 export function evidenceScenarioTitle(scenario: EvidenceScenario): string {
@@ -151,11 +136,6 @@ export function evidenceScenarioTitle(scenario: EvidenceScenario): string {
   }
   const prefix = scenario.slugs.map((slug) => `evidence: ${slug}`).join(" / ");
   return `${prefix} — ${scenario.summary}`;
-}
-
-export function declareEvidenceScenario(id: ScenarioId, body: EvidenceTestBody): void {
-  const scenario = evidenceScenarioById(id);
-  test(evidenceScenarioTitle(scenario), body);
 }
 
 export function defineEvidenceScenario(scenario: EvidenceScenario, body: EvidenceTestBody): void {
