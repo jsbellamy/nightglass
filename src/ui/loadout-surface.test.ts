@@ -145,9 +145,9 @@ describe("Loadout surface", () => {
     expect(sections[0]?.getAttribute("data-class-id")).toBe("knight");
     expect(knightSection(root).querySelector(".basic-attack")).not.toBeNull();
     expect(knightSection(root).querySelectorAll(".loadout-slot")).toHaveLength(3);
-    expect(knightSection(root).querySelector('[data-slot="0"] .slot-label')?.textContent).toMatch(
-      /Slot I/,
-    );
+    expect(
+      knightSection(root).querySelector('[data-slot="0"] .loadout-slot-mark')?.textContent,
+    ).toBe("I");
     expect(root.querySelector(".loadout-assignment-hint")?.textContent).toMatch(
       /Select a skill, then a slot/i,
     );
@@ -269,6 +269,71 @@ describe("Loadout surface", () => {
     surface.destroy();
   });
 
+  it("uses flat loadout rows with circled roman slot marks and no per-slot card shells", () => {
+    const root = document.createElement("div");
+    const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
+    const selected = { current: "knight" as ClassId };
+    const surface = mountLoadoutSurface(root, mountOptions(fixtureContent, selected));
+
+    surface.render(engine.snapshot());
+    const section = knightSection(root);
+    expect(section.querySelector(".basic-attack.loadout-row")).not.toBeNull();
+    expect(section.querySelector(".basic-attack .loadout-row-label")?.textContent).toBe(
+      "Basic Attack",
+    );
+    const marks = [...section.querySelectorAll<HTMLElement>(".loadout-slot .loadout-slot-mark")].map(
+      (node) => node.textContent,
+    );
+    expect(marks).toEqual(["I", "II", "III"]);
+    for (const slot of section.querySelectorAll<HTMLElement>(".loadout-slot")) {
+      expect(slot.classList.contains("loadout-row")).toBe(true);
+      expect(slot.querySelector(".loadout-slot-mark")).not.toBeNull();
+    }
+
+    surface.destroy();
+  });
+
+  it("shows a pool overflow hint only when more than four Abilities are available", () => {
+    const root = document.createElement("div");
+    const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
+    const selected = { current: "knight" as ClassId };
+    const surface = mountLoadoutSurface(root, mountOptions(fixtureContent, selected));
+
+    surface.render(engine.snapshot());
+    expect(root.querySelector("[data-loadout-pool-overflow='true']")).toBeNull();
+
+    const content = structuredClone(fixtureContent);
+    const extraIds: string[] = [];
+    for (let index = 0; index < 9; index += 1) {
+      const id = `k-extra-${index}`;
+      extraIds.push(id);
+      content.abilities.push({
+        id,
+        name: `Extra ${index}`,
+        classId: "knight",
+        slot: "core",
+        targeting: { kind: "closest-opponent" },
+        effects: [{ kind: "damage", channel: "physical", coefficient: 0.5 }],
+        windUpMs: 200,
+        recoveryMs: 300,
+        cooldownMs: 1000,
+        iconKey: "k-hold-line",
+      });
+    }
+    const knight = content.classes.find((entry) => entry.id === "knight")!;
+    knight.coreAbilityIds = [...knight.coreAbilityIds, ...extraIds] as typeof knight.coreAbilityIds;
+
+    const stressEngine = createEngine(content, undefined, LOOT_SEED);
+    const stressSurface = mountLoadoutSurface(root, mountOptions(content, selected));
+    stressSurface.render(stressEngine.snapshot());
+    const hint = root.querySelector<HTMLElement>("[data-loadout-pool-overflow='true']");
+    expect(hint?.textContent).toMatch(/10 · scroll/);
+    expect(hint?.hidden).toBe(false);
+
+    surface.destroy();
+    stressSurface.destroy();
+  });
+
   it("renders ten strip icons and horizontal scroll for the stress fixture", () => {
     const root = document.createElement("div");
     const content = structuredClone(fixtureContent);
@@ -306,6 +371,21 @@ describe("Loadout surface", () => {
     expect(strip).not.toBeNull();
     expect(root.querySelector(".loadout-pool-strip")).not.toBeNull();
     expect(strip!.childElementCount).toBe(10);
+    strip!.style.maxWidth = "calc(4 * 48px + 3 * 4px)";
+    const stripBox = strip!.getBoundingClientRect();
+    const fullyVisibleIcons = [...root.querySelectorAll<HTMLElement>(".loadout-assign-tile--strip-icon")].filter(
+      (icon) => {
+        const box = icon.getBoundingClientRect();
+        return (
+          box.left >= stripBox.left - 1 &&
+          box.right <= stripBox.right + 1 &&
+          box.top >= stripBox.top - 1 &&
+          box.bottom <= stripBox.bottom + 1
+        );
+      },
+    );
+    expect(fullyVisibleIcons).toHaveLength(4);
+    expect(strip!.scrollWidth).toBeGreaterThan(strip!.clientWidth);
 
     const baselineRoot = document.createElement("div");
     baselineRoot.style.height = "320px";
@@ -1056,6 +1136,16 @@ describe("Loadout surface", () => {
 });
 
 describe("Loadout surface source boundary", () => {
+  it("reserves a four-icon viewport on the Available strip inside the 230px column", () => {
+    const css = readFileSync(
+      join(dirname(fileURLToPath(import.meta.url)), "../styles.css"),
+      "utf8",
+    );
+    expect(css).toMatch(
+      /\.character-section \.loadout-pool-strip \.loadout-pool-tiles[\s\S]*?max-width:\s*calc\(4 \* var\(--loadout-strip-icon-size,\s*48px\) \+ 3 \* 4px\)/,
+    );
+  });
+
   it("does not import the Engine", () => {
     const source = readFileSync(
       join(dirname(fileURLToPath(import.meta.url)), "loadout-surface.ts"),

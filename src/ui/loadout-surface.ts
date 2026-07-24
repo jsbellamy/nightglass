@@ -543,8 +543,11 @@ export function mountLoadoutSurface(
     const basicAbility = abilityById(content, classKit.basicAbilityId);
     if (basicAbility) {
       sectionChildren.push(
-        el("div", { class: "basic-attack", aria: { label: "Basic attack fallback" } }, [
-          el("p", { class: "slot-label", text: "Basic Attack" }),
+        el("div", {
+          class: "loadout-row loadout-row--basic basic-attack",
+          aria: { label: "Basic attack fallback" },
+        }, [
+          el("span", { class: "loadout-row-label", text: "Basic Attack" }),
           renderBasicAttackTile(basicAbility),
         ]),
       );
@@ -557,13 +560,17 @@ export function mountLoadoutSurface(
         return;
       }
       const slotDrop = el("div", {
-        class: "loadout-slot",
+        class: "loadout-row loadout-slot",
         data: {
           slot: String(slotIndex),
           loadoutSlotDrop: "true",
         },
       }, [
-        el("p", { class: "slot-label", text: `Slot ${LOADOUT_SLOT_ROMAN[slotIndex]}` }),
+        el("span", {
+          class: "loadout-slot-mark",
+          text: LOADOUT_SLOT_ROMAN[slotIndex]!,
+          aria: { label: `Slot ${LOADOUT_SLOT_ROMAN[slotIndex]!}` },
+        }),
         renderAssignTile(
           ability,
           classId,
@@ -601,9 +608,21 @@ export function mountLoadoutSurface(
       data: { loadoutAvailableHeading: "true" },
       text: "Available skills",
     });
+    const poolOverflowHint =
+      availableIds.length > 4
+        ? el("span", {
+            class: "loadout-pool-overflow-hint",
+            data: { loadoutPoolOverflow: "true" },
+            text: `${availableIds.length} · scroll`,
+          })
+        : null;
+    const availableHeaderChildren: HTMLElement[] = [availableStripHeading];
+    if (poolOverflowHint) {
+      availableHeaderChildren.push(poolOverflowHint);
+    }
     sectionChildren.push(
       el("div", { class: "loadout-pool loadout-pool-strip" }, [
-        availableStripHeading,
+        el("div", { class: "loadout-available-header" }, availableHeaderChildren),
         el("div", { class: "loadout-pool-tiles", data: { loadoutPool: "true" } }, poolTiles),
       ]),
     );
