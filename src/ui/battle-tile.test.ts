@@ -7,9 +7,13 @@ import type { Snapshot } from "../core/snapshot";
 import { fixtureContent } from "../core/testing/fixture-content";
 import type { Content, StageDef, StageId } from "../core/types";
 import backdrop1Url from "../assets/backdrops/backdrop-1.png";
+import carillonHallUrl from "../assets/backdrops/carillon-hall.png";
 import crookedCornfieldUrl from "../assets/backdrops/crooked-cornfield.png";
 import harvestYardUrl from "../assets/backdrops/harvest-yard.png";
 import lastStopDinerUrl from "../assets/backdrops/last-stop-diner.png";
+import stoppedClockCourtUrl from "../assets/backdrops/stopped-clock-court.png";
+import theMainspringUrl from "../assets/backdrops/the-mainspring.png";
+import theOculusUrl from "../assets/backdrops/the-oculus.png";
 import { buildContent } from "../data";
 import * as presentationModule from "./presentation";
 import * as sfxModule from "./sfx";
@@ -452,6 +456,31 @@ describe("Battle Tile renderer", () => {
       ["last-stop-diner", lastStopDinerUrl],
       ["crooked-cornfield", crookedCornfieldUrl],
       ["harvest-yard", harvestYardUrl],
+    ] as const;
+
+    expect(new Set(cases.map(([, url]) => url)).size).toBe(cases.length);
+
+    for (const [backdropKey, expectedUrl] of cases) {
+      const root = document.createElement("main");
+      const content = contentWithStageBackdropKey(backdropKey);
+      const tile = mountBattleTile(root, content);
+      const engine = createEngine(content, undefined, LOOT_SEED);
+      tile.render(engine.snapshot());
+
+      const battlefield = root.querySelector<HTMLElement>(".battlefield");
+      const backdrop = root.querySelector<HTMLElement>(".battlefield-backdrop");
+      expect(battlefield?.dataset["backdropKey"]).toBe(backdropKey);
+      expect(backdrop?.style.backgroundImage).toContain(expectedUrl);
+      expect(expectedUrl).not.toBe(backdrop1Url);
+    }
+  });
+
+  it("resolves each Belfry backdrop key to its own runtime asset URL", () => {
+    const cases = [
+      ["stopped-clock-court", stoppedClockCourtUrl],
+      ["carillon-hall", carillonHallUrl],
+      ["the-mainspring", theMainspringUrl],
+      ["the-oculus", theOculusUrl],
     ] as const;
 
     expect(new Set(cases.map(([, url]) => url)).size).toBe(cases.length);
