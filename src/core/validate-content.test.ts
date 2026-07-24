@@ -177,7 +177,7 @@ describe("validateContent", () => {
 
     const threeStages = { ...shipped, stages: shipped.stages.slice(0, 3) };
     expect(validateContent(threeStages)).toContain(
-      "Content defines 3 stages, expected exactly 6",
+      "Content defines 3 stages, expected exactly 10",
     );
 
     const gap = {

@@ -104,8 +104,8 @@ describe("Fowl Harvest Stages 4–6", () => {
   it("is wired into shipped Content as Stages 4–6", () => {
     const content = buildContent();
 
-    expect(content.stages).toHaveLength(6);
-    expect(content.stages.slice(3)).toEqual(fowlHarvestStages);
-    expect(content.stages.map((stage) => stage.id)).toEqual([1, 2, 3, 4, 5, 6]);
+    expect(content.stages).toHaveLength(10);
+    expect(content.stages.slice(3, 6)).toEqual(fowlHarvestStages);
+    expect(content.stages.map((stage) => stage.id)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
   });
 });
