@@ -542,5 +542,37 @@
       "provider": "Cursor GenerateImage",
       "raw_sha256": "b17dec493a093b6565b320609d1c9b8841554f22551744fd5508f5457e62c683"
     }
+  },
+  "the-tocsin": {
+    "action": "still",
+    "frame_size": [
+      125,
+      72
+    ],
+    "visual_bounds": [
+      0,
+      0,
+      125,
+      71
+    ],
+    "foot_anchor": [
+      62,
+      72
+    ],
+    "palette": "unwound-belfry-24",
+    "baseline_row": 71,
+    "total_ms": 1,
+    "frames": [
+      {
+        "name": "the-tocsin",
+        "duration_ms": 1,
+        "sha256": "35320b6f10ee6280c3a33b5c6e2302003a35a10305791fa65bad1a07a2189876"
+      }
+    ],
+    "cues_ms": {},
+    "source": {
+      "provider": "Cursor GenerateImage",
+      "raw_sha256": "856e250b990260edad8193dd25851d6c2a658feef03577be797d6e56c6504f6d"
+    }
   }
 }
