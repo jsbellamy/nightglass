@@ -1,0 +1,54 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "prompt": "Ultra-wide panoramic moonless-belfry-night fantasy battlefield backdrop strip in a chunky, softly painted pixel-art style. Very low contrast and overall dark enough for bright combat sprites, 2-pixel health bars, damage numbers, and luminous effects to remain the strongest signals.\n\nSCENE: the Oculus, the tower's open astronomical crown beneath a broken firmament. A great tarnished-brass armillary frame and a cracked observatory ring open onto a moonless indigo void where the constellations hang wrong and unwound, faint cold-glass stars scattered like broken glass. Verdigris-streaked instrument rings, a snapped telescope, and a low candle-ivory glow frame the edges; one dim alarm-red signal burns at the rim. The sky is a deep dark void, not a bright starfield.\n\nCOMPOSITION: designed for a short 480\u00d786 crop. Pack the armillary frame, observatory ring, broken instruments, and horizon rim into the middle horizontal band. Keep a nearly flat, dark stone-parapet ground band across the bottom fifth for a very wide Boss. Keep the void sky thin and dark so it never competes with combat. Preserve an especially broad low-detail clearing on the opponent half so a 160\u00d772 Boss silhouette remains distinct. Nothing bright or sharp behind the Boss bar; scattered stars must stay dim.\n\nEnvironmental evidence may include a snapped ring, a cracked lens, and a fallen brass sphere, but show no complete celestial beast and no creature or body. No armillary-monster, orrery-creature, faces, readable constellations as text, logos, watermark, UI, borders, vignette frame, focal object, bright starburst, fire, gore, or hot-magenta field.\n\nRETRY ADDENDUM (preserve armillary frame, cracked observatory ring, verdigris-streaked instrument rings, snapped telescope, fallen brass sphere, candle-ivory rim glow, and one dim alarm-red rim signal from the identity reference). CRITICAL CONTRAST FIX ONLY: keep every star, cold-glass highlight, and candle-ivory glow DIM and muted \u2014 dusty cold-glass and candle-ivory, never near-white, cyan-white, or neon; no star or glow pixel should outshine a typical green health bar. Void sky stays deep dark indigo with only sparse faint stars. Alarm-red stays small and restrained. Do not brighten the rest of the scene. Do not fill the opponent half. Do not add creatures or bright starbursts.\n",
+  "raw_sha256": "6f86fbf38f09b28c984755ebec231dbf1d758b4a09bc7b82d002cce390d0b475",
+  "asset_class": "backdrop",
+  "runtime_destination": "src/assets/backdrops/the-oculus.png",
+  "candidate": "c2",
+  "canonical_identity": "the-oculus",
+  "theme": "unwound-belfry",
+  "direct_inputs": [
+    {
+      "path": "docs/research/evidence/unwound-belfry/the-oculus/scratch/the-oculus-c1.png",
+      "role": "identity edit target / prior candidate",
+      "sha256": "b5b2395b70f5226b01e415ca7c76a4fbe93f41797c35f86d61790bdad05cb5ad"
+    },
+    {
+      "path": "src/assets/backdrops/harvest-yard.png",
+      "role": "style reference",
+      "sha256": "7ea723aac4d3a71099ab92c551d7897638b19f74bb367ecc176328d9023b7ebd"
+    },
+    {
+      "path": "src/assets/backdrops/crooked-cornfield.png",
+      "role": "style reference",
+      "sha256": "3d8e94506f245536906d0503a1a3d584f858b988013cd5662655eb6d1f24bd5b"
+    },
+    {
+      "path": "src/assets/backdrops/last-stop-diner.png",
+      "role": "style reference",
+      "sha256": "932376f7fab40cef5c5b38310a274c2b66327dd0514fa20812ccf94b68cc2d6a"
+    }
+  ],
+  "source_resolution": [
+    1536,
+    1024
+  ],
+  "reduction": {
+    "crop_box": [
+      0,
+      374,
+      1536,
+      649
+    ],
+    "crop_size": [
+      1536,
+      275
+    ],
+    "resample": "NEAREST",
+    "runtime_size": [
+      480,
+      86
+    ]
+  }
+}
