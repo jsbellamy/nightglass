@@ -378,8 +378,8 @@ Decisions: [SideScape foundation](https://github.com/jsbellamy/nightglass/issues
 - The boundary is: **commands** (advancement, player configuration) → a
   **versioned serializable Snapshot** → ordered timestamped **Presentation
   Events**.
-- The Snapshot owns the simulation clock, persisted loot-RNG state, next
-  stable sequence identifiers, all progression, and the complete in-flight
+- The Snapshot owns the simulation clock, persisted loot-RNG and combat-RNG
+  state, next stable sequence identifiers, all progression, and the complete in-flight
   Stage Attempt (phases, health, Knockouts, cooldown-ready times). It excludes
   DOM, animation, audio, timer, and window state and consumed events.
 - Presentation Events carry domain facts (`action-started`, `impact`,
