@@ -15,8 +15,8 @@ export interface StageSurfaceOptions {
   onCommand?: (command: TileCommand) => void;
 }
 
-function encounterLabel(encounter: 1 | 2 | 3): string {
-  if (encounter === 3) {
+function encounterLabel(encounter: number, waveCount: number): string {
+  if (encounter === waveCount + 1) {
     return "Boss";
   }
   return `Wave ${encounter}`;
@@ -91,7 +91,11 @@ export function mountStageSurface(
       const attempt = snapshot.attempt;
 
       const positionText = attempt
-        ? `Current Attempt: Stage ${attempt.stage}, ${encounterLabel(attempt.encounter)}, ${attempt.phase}`
+        ? `Current Attempt: Stage ${attempt.stage}, ${encounterLabel(
+            attempt.encounter,
+            options.content.stages.find((stageDef) => stageDef.id === attempt.stage)?.waves
+              .length ?? 2,
+          )}, ${attempt.phase}`
         : "No active Attempt";
 
       const rows = options.content.stages.map((stageDef) => {

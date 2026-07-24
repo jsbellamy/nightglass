@@ -15,7 +15,7 @@ import { fixtureContent } from "./fixture-content";
 
 export interface ScenarioBuilder {
   atStage(stage: StageId): ScenarioBuilder;
-  atEncounter(encounter: 1 | 2 | 3): ScenarioBuilder;
+  atEncounter(encounter: number): ScenarioBuilder;
   withXp(classId: ClassId, xp: number): ScenarioBuilder;
   withParty(members: [ClassId, ClassId, ClassId], reserve: ClassId): ScenarioBuilder;
   withDrops(count: number): ScenarioBuilder;
@@ -27,7 +27,7 @@ export interface ScenarioBuilder {
 
 interface ScenarioState {
   stage: StageId;
-  encounter: 1 | 2 | 3;
+  encounter: number;
   party: [ClassId, ClassId, ClassId] | null;
   reserve: ClassId | null;
   xp: Partial<Record<ClassId, number>>;
@@ -44,13 +44,17 @@ function stageDefFor(content: Content, stage: StageId) {
   return stageDef;
 }
 
+function bossEncounter(stageDef: ReturnType<typeof stageDefFor>): number {
+  return stageDef.waves.length + 1;
+}
+
 function opponentIdsForEncounter(
   content: Content,
   stage: StageId,
-  encounter: 1 | 2 | 3,
+  encounter: number,
 ): string[] {
   const stageDef = stageDefFor(content, stage);
-  if (encounter === 3) {
+  if (encounter === bossEncounter(stageDef)) {
     return stageDef.boss.opponents;
   }
   return stageDef.waves[encounter - 1]?.opponents ?? [];
@@ -59,7 +63,7 @@ function opponentIdsForEncounter(
 function makeOpponentCombatants(
   content: Content,
   stage: StageId,
-  encounter: 1 | 2 | 3,
+  encounter: number,
 ): CombatantState[] {
   return opponentIdsForEncounter(content, stage, encounter).map((opponentId, index) => {
     const opponent = content.opponents.find((entry) => entry.id === opponentId);
@@ -149,7 +153,7 @@ class Builder implements ScenarioBuilder {
     return this;
   }
 
-  atEncounter(encounter: 1 | 2 | 3): ScenarioBuilder {
+  atEncounter(encounter: number): ScenarioBuilder {
     this.state.encounter = encounter;
     return this;
   }

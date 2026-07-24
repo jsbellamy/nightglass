@@ -55,7 +55,7 @@ export interface CombatantState {
 export interface AttemptState {
   id: number;
   stage: StageId;
-  encounter: 1 | 2 | 3;
+  encounter: number;
   phase: "fighting" | "wave-transition" | "defeat-hold";
   phaseEndsAtMs: number | null;
   equipmentLoadouts: Record<ClassId, EquipmentLoadout>;
