@@ -793,8 +793,8 @@ check("production body bundles discovered in runtime-key order",
       A.default_build_raw_tags() == (
           "astrolabe-spider", "boss", "boss-2", "boss-3", "burger-drake",
           "cornquacker", "hunter", "knight", "pipcap", "priest", "scarequack",
-          "the-combine", "the-fryer", "the-vigil", "tickmoth", "tollbat",
-          "wizard"),
+          "the-combine", "the-fryer", "the-tocsin", "the-vigil", "tickmoth",
+          "tollbat", "wizard"),
       str(A.default_build_raw_tags()))
 check("Astrolabe-Spider complete body bundle is discovered",
       "astrolabe-spider" in _discovered_body)
@@ -806,6 +806,8 @@ check("Tollbat complete body bundle is discovered",
       "tollbat" in _discovered_body)
 check("The Vigil complete body bundle is discovered",
       "the-vigil" in _discovered_body)
+check("The Tocsin complete body bundle is discovered",
+      "the-tocsin" in _discovered_body)
 check("Cornquacker complete body bundle is discovered",
       "cornquacker" in _discovered_body)
 check("The Combine complete body bundle is discovered",
