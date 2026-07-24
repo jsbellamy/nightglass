@@ -167,6 +167,23 @@ describe("parseStoredSave", () => {
     expect(restored.snapshot().attempt?.encounter).toBe(2);
   });
 
+  it("exact-version restore keeps an in-flight Attempt at encounter 4", () => {
+    const engine = createEngine(testContent, undefined, LOOT_SEED);
+    engine.advanceBy(1);
+    const saved = engine.snapshot();
+    saved.attempt = saved.attempt ? { ...saved.attempt, encounter: 4 } : null;
+
+    const parsed = parseStoredSave(JSON.stringify(saved), testContent);
+    expect(parsed.kind).toBe("exact");
+    if (parsed.kind !== "exact") {
+      return;
+    }
+    expect(parsed.snapshot.attempt?.encounter).toBe(4);
+
+    const restored = createEngine(testContent, parsed.snapshot, LOOT_SEED);
+    expect(restored.snapshot().attempt?.encounter).toBe(4);
+  });
+
   it("structurally damaged exact-version save recovers durable fields only", () => {
     const engine = createEngine(testContent, undefined, LOOT_SEED);
     engine.advanceBy(1);

@@ -18,7 +18,7 @@ const fixtureNow = () => FIXTURE_NOW_MS;
 
 function dropIdsWhileClearingEncounter(
   engine: ReturnType<typeof createEngine>,
-  encounter: 1 | 2 | 3,
+  encounter: number,
 ): number[] {
   const drops: number[] = [];
   let elapsed = 0;
@@ -39,7 +39,7 @@ function dropIdsWhileClearingEncounter(
 
 function eventsWhileClearingEncounter(
   engine: ReturnType<typeof createEngine>,
-  encounter: 1 | 2 | 3,
+  encounter: number,
 ): EngineEvent[] {
   const collected: EngineEvent[] = [];
   let elapsed = 0;
@@ -833,6 +833,105 @@ describe("content-driven stage progression", () => {
     expect(snap.progression.unlockedStage).toBe(6);
     expect(snap.attempt?.stage).toBe(6);
     expect(snap.attempt?.encounter).toBe(1);
+  });
+});
+
+describe("variable wave count and boss-only Stages", () => {
+  const threeWaveStage: StageDef = {
+    ...fixtureStageTemplate,
+    id: 1,
+    waves: [
+      { opponents: ["fixture-grunt"] },
+      { opponents: ["fixture-grunt"] },
+      { opponents: ["fixture-grunt"] },
+    ],
+    boss: { opponents: ["fixture-boss"] },
+  };
+  const threeWaveContent: Content = { ...fixtureContent, stages: [threeWaveStage] };
+
+  const bossOnlyStage: StageDef = {
+    ...fixtureStageTemplate,
+    id: 10,
+    name: "Boss Only",
+    waves: [],
+    boss: { opponents: ["fixture-boss"] },
+  };
+  const bossOnlyContent: Content = { ...fixtureContent, stages: [bossOnlyStage] };
+
+  function opponentDefIds(engine: ReturnType<typeof createEngine>): string[] {
+    return (
+      engine
+        .snapshot()
+        .attempt?.combatants.filter((combatant) => combatant.side === "opponent")
+        .map((combatant) => combatant.defId) ?? []
+    );
+  }
+
+  function engineWithOpponentsAtOneHealth(
+    content: Content,
+    saved: Snapshot,
+  ): ReturnType<typeof createEngine> {
+    const snap = structuredClone(saved);
+    for (const combatant of snap.attempt?.combatants ?? []) {
+      if (combatant.side === "opponent") {
+        combatant.health = 1;
+      }
+    }
+    return createEngine(content, snap, LOOT_SEED);
+  }
+
+  it("places the boss at encounter 4 when a Stage has three ordinary waves", () => {
+    const atEncounter = (encounter: number) =>
+      createEngine(
+        threeWaveContent,
+        scenario(threeWaveContent).atEncounter(encounter).withOpponentsAtOneHealth().build(),
+        LOOT_SEED,
+      );
+
+    expect(atEncounter(4).snapshot().attempt?.encounter).toBe(4);
+    expect(opponentDefIds(atEncounter(4))).toEqual(["fixture-boss"]);
+
+    const engine = atEncounter(3);
+    const events = driveBy(engine, 50_000);
+    expect(
+      events.some(
+        (event) =>
+          event.type === "wave-started" && event.encounter === 4 && event.boss === true,
+      ),
+    ).toBe(true);
+    expect(events.some((event) => event.type === "stage-cleared" && event.stage === 1)).toBe(
+      true,
+    );
+  });
+
+  it("starts a boss-only Stage directly at the boss with no prior ordinary wave", () => {
+    const saved = scenario(bossOnlyContent).build();
+    saved.attempt = null;
+    saved.progression.unlockedStage = 10;
+    const engine = createEngine(bossOnlyContent, saved, LOOT_SEED, fixtureNow);
+    const bootEvents = engine.advanceBy(1);
+
+    expect(bootEvents.some((event) => event.type === "stage-attempt-started" && event.stage === 10)).toBe(
+      true,
+    );
+    const waveStarts = bootEvents.filter((event) => event.type === "wave-started");
+    expect(waveStarts).toHaveLength(1);
+    expect(waveStarts[0]).toMatchObject({ encounter: 1, boss: true, stage: 10 });
+    expect(opponentDefIds(engine)).toEqual(["fixture-boss"]);
+
+    const clearing = engineWithOpponentsAtOneHealth(bossOnlyContent, engine.snapshot());
+    const clearEvents = driveBy(clearing, 50_000);
+    expect(clearEvents.some((event) => event.type === "stage-cleared" && event.stage === 10)).toBe(
+      true,
+    );
+    const stageClearedAt = clearEvents.findIndex(
+      (event) => event.type === "stage-cleared" && event.stage === 10,
+    );
+    expect(
+      clearEvents
+        .slice(0, stageClearedAt)
+        .filter((event) => event.type === "wave-started"),
+    ).toHaveLength(0);
   });
 });
 

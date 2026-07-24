@@ -349,7 +349,9 @@ function isValidAttempt(raw: unknown): raw is AttemptState {
   if (
     !isFiniteNumber(field(raw, "id")) ||
     !isStageId(field(raw, "stage")) ||
-    ![1, 2, 3].includes(encounter as number) ||
+    !isFiniteNumber(encounter) ||
+    encounter < 1 ||
+    !Number.isInteger(encounter) ||
     !["fighting", "wave-transition", "defeat-hold"].includes(phase as string) ||
     !Array.isArray(field(raw, "combatants"))
   ) {

@@ -267,7 +267,7 @@ function makePartyCombatant(
 
 function makeOpponentCombatant(
   opponent: OpponentDef,
-  encounter: 1 | 2 | 3,
+  encounter: number,
   index: number,
 ): CombatantState {
   return {
@@ -319,8 +319,12 @@ function stageDefFor(index: ContentIndex, stage: StageId): StageDef {
   return stageDef;
 }
 
-function opponentIdsForEncounter(stageDef: StageDef, encounter: 1 | 2 | 3): string[] {
-  if (encounter === 3) {
+function bossEncounter(stageDef: StageDef): number {
+  return stageDef.waves.length + 1;
+}
+
+function opponentIdsForEncounter(stageDef: StageDef, encounter: number): string[] {
+  if (encounter === bossEncounter(stageDef)) {
     return stageDef.boss.opponents;
   }
   return stageDef.waves[encounter - 1]?.opponents ?? [];
@@ -329,7 +333,7 @@ function opponentIdsForEncounter(stageDef: StageDef, encounter: 1 | 2 | 3): stri
 function spawnOpponents(
   index: ContentIndex,
   stage: StageId,
-  encounter: 1 | 2 | 3,
+  encounter: number,
 ): CombatantState[] {
   const stageDef = stageDefFor(index, stage);
   return opponentIdsForEncounter(stageDef, encounter).map((opponentId, opponentIndex) => {
@@ -345,7 +349,7 @@ function createAttempt(
   state: EngineState,
   index: ContentIndex,
   stage: StageId,
-  encounter: 1 | 2 | 3 = 1,
+  encounter: number = 1,
   preserveParty?: CombatantState[],
   preserveEquipmentLoadouts?: Record<ClassId, EquipmentLoadout>,
 ): AttemptState {
@@ -410,6 +414,7 @@ function startFreshAttempt(
   applyPendingEdits(state, index, events, state.simNowMs);
 
   state.attempt = createAttempt(state, index, stage, 1);
+  const stageDef = stageDefFor(index, stage);
   emit(state, events, {
     type: "stage-attempt-started",
     stage,
@@ -419,7 +424,7 @@ function startFreshAttempt(
     type: "wave-started",
     stage,
     encounter: 1,
-    boss: false,
+    boss: bossEncounter(stageDef) === 1,
   });
 }
 
@@ -1054,7 +1059,7 @@ function awardEncounterDrops(
   index: ContentIndex,
   events: EngineEvent[],
   stage: StageId,
-  encounter: 1 | 2 | 3,
+  encounter: number,
 ): void {
   const stageDef = stageDefFor(index, stage);
   if (encounter === 1) {
@@ -1068,7 +1073,7 @@ function awardEncounterDrops(
     lootRng: { state: state.lootRngState },
     dropId: state.nextDropId,
     awardedAtMs: state.simNowMs,
-    uncommonFloor: encounter === 3,
+    uncommonFloor: encounter === bossEncounter(stageDef),
   });
   state.lootRngState = rolled.lootRng.state;
   state.nextDropId += 1;
@@ -1100,7 +1105,7 @@ function evaluateEncounterOutcome(
       encounter: attempt.encounter,
     });
 
-    if (attempt.encounter === 3) {
+    if (attempt.encounter === bossEncounter(stageDefFor(index, attempt.stage))) {
       clearStage(state, index, events);
       return;
     }
@@ -1296,7 +1301,8 @@ function finishWaveTransition(
 
   applyPendingEdits(state, index, events, state.simNowMs);
 
-  const nextEncounter = (attempt.encounter + 1) as 1 | 2 | 3;
+  const stageDef = stageDefFor(index, attempt.stage);
+  const nextEncounter = attempt.encounter + 1;
   const party = partyCombatants(attempt.combatants);
   attempt.encounter = nextEncounter;
   attempt.phase = "fighting";
@@ -1307,7 +1313,7 @@ function finishWaveTransition(
     type: "wave-started",
     stage: attempt.stage,
     encounter: nextEncounter,
-    boss: nextEncounter === 3,
+    boss: nextEncounter === bossEncounter(stageDef),
   });
 }
 

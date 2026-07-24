@@ -54,7 +54,7 @@ describe("scenario builder", () => {
       build: () => Snapshot;
       expect: {
         stage: 1 | 2 | 3 | 4 | 5 | 6;
-        encounter: 1 | 2 | 3;
+        encounter: number;
         party: [ClassId, ClassId, ClassId];
         reserve: ClassId;
         xp?: Partial<Record<ClassId, number>>;

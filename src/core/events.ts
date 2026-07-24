@@ -2,7 +2,7 @@ import type { ClassId, DamageChannel, Element, StageId } from "./types";
 
 export type EngineEvent = { seq: number; atMs: number } & (
   | { type: "stage-attempt-started"; stage: StageId; attemptId: number }
-  | { type: "wave-started"; stage: StageId; encounter: 1 | 2 | 3; boss: boolean }
+  | { type: "wave-started"; stage: StageId; encounter: number; boss: boolean }
   | {
       type: "action-started";
       entityId: string;
@@ -27,7 +27,7 @@ export type EngineEvent = { seq: number; atMs: number } & (
   | { type: "status-expired"; entityId: string; statusId: string }
   | { type: "knockout"; entityId: string }
   | { type: "revived"; entityId: string; health: number }
-  | { type: "wave-cleared"; stage: StageId; encounter: 1 | 2 | 3 }
+  | { type: "wave-cleared"; stage: StageId; encounter: number }
   | { type: "stage-cleared"; stage: StageId }
   | { type: "party-defeat"; stage: StageId }
   | { type: "xp-awarded"; classId: ClassId; amount: number; totalXp: number }
