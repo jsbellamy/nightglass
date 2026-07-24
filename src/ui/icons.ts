@@ -1,5 +1,6 @@
 import type { Content } from "../core/types";
 import absoluteZeroUrl from "../assets/icons/absolute-zero.png";
+import aphelionConduitUrl from "../assets/icons/aphelion-conduit.png";
 import arcSparkUrl from "../assets/icons/arc-spark.png";
 import augerwireLongbowUrl from "../assets/icons/augerwire-longbow.png";
 import barbedArrowUrl from "../assets/icons/barbed-arrow.png";
@@ -17,6 +18,7 @@ import dewlightFocusUrl from "../assets/icons/dewlight-focus.png";
 import drawWeightUrl from "../assets/icons/draw-weight.png";
 import duskthornEdgeUrl from "../assets/icons/duskthorn-edge.png";
 import elementalPracticeUrl from "../assets/icons/elemental-practice.png";
+import escapementGreatswordUrl from "../assets/icons/escapement-greatsword.png";
 import fallingStarUrl from "../assets/icons/falling-star.png";
 import feedSackBrigandineUrl from "../assets/icons/feed-sack-brigandine.png";
 import fieldcraftUrl from "../assets/icons/fieldcraft.png";
@@ -35,6 +37,7 @@ import ironDisciplineUrl from "../assets/icons/iron-discipline.png";
 import judgmentUrl from "../assets/icons/judgment.png";
 import leafmailVestUrl from "../assets/icons/leafmail-vest.png";
 import leylineAttunementUrl from "../assets/icons/leyline-attunement.png";
+import mainspringRepeaterUrl from "../assets/icons/mainspring-repeater.png";
 import mendingLightUrl from "../assets/icons/mending-light.png";
 import moonpetalRelicUrl from "../assets/icons/moonpetal-relic.png";
 import moonwellUrl from "../assets/icons/moonwell.png";
@@ -58,6 +61,7 @@ import snareburstUrl from "../assets/icons/snareburst.png";
 import splitVolleyUrl from "../assets/icons/split-volley.png";
 import starfallUrl from "../assets/icons/starfall.png";
 import starfruitPrismUrl from "../assets/icons/starfruit-prism.png";
+import stoppedHourPendulumUrl from "../assets/icons/stopped-hour-pendulum.png";
 import steelCutUrl from "../assets/icons/steel-cut.png";
 import sunderingChargeUrl from "../assets/icons/sundering-charge.png";
 import sunMoteUrl from "../assets/icons/sun-mote.png";
@@ -68,8 +72,10 @@ import swordcraftUrl from "../assets/icons/swordcraft.png";
 import thornquillBladeUrl from "../assets/icons/thornquill-blade.png";
 import threshertoothBladeUrl from "../assets/icons/threshertooth-blade.png";
 import thunderRingUrl from "../assets/icons/thunder-ring.png";
+import tollingReliquaryUrl from "../assets/icons/tolling-reliquary.png";
 import twinFangUrl from "../assets/icons/twin-fang.png";
 import vanguardUrl from "../assets/icons/vanguard.png";
+import verdigrisCarapaceUrl from "../assets/icons/verdigris-carapace.png";
 import veteransEdgeUrl from "../assets/icons/veterans-edge.png";
 import warHymnUrl from "../assets/icons/war-hymn.png";
 import wardingLoreUrl from "../assets/icons/warding-lore.png";
@@ -94,6 +100,7 @@ interface IconSource {
 /** Declared native-1× dimensions for every committed Equipment Base and Talent icon. */
 export const ICON_SOURCES = {
   "absolute-zero": { url: absoluteZeroUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
+  "aphelion-conduit": { url: aphelionConduitUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "arc-spark": { url: arcSparkUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "augerwire-longbow": { url: augerwireLongbowUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "barbed-arrow": { url: barbedArrowUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
@@ -111,6 +118,7 @@ export const ICON_SOURCES = {
   "draw-weight": { url: drawWeightUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "duskthorn-edge": { url: duskthornEdgeUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "elemental-practice": { url: elementalPracticeUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
+  "escapement-greatsword": { url: escapementGreatswordUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "falling-star": { url: fallingStarUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "feed-sack-brigandine": { url: feedSackBrigandineUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   fieldcraft: { url: fieldcraftUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
@@ -129,6 +137,7 @@ export const ICON_SOURCES = {
   judgment: { url: judgmentUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "leafmail-vest": { url: leafmailVestUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "leyline-attunement": { url: leylineAttunementUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
+  "mainspring-repeater": { url: mainspringRepeaterUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "mending-light": { url: mendingLightUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "moonpetal-relic": { url: moonpetalRelicUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   moonwell: { url: moonwellUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
@@ -152,6 +161,7 @@ export const ICON_SOURCES = {
   "split-volley": { url: splitVolleyUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   starfall: { url: starfallUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "starfruit-prism": { url: starfruitPrismUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
+  "stopped-hour-pendulum": { url: stoppedHourPendulumUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "steel-cut": { url: steelCutUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "sundering-charge": { url: sunderingChargeUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "sun-mote": { url: sunMoteUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
@@ -162,8 +172,10 @@ export const ICON_SOURCES = {
   "thornquill-blade": { url: thornquillBladeUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "threshertooth-blade": { url: threshertoothBladeUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "thunder-ring": { url: thunderRingUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
+  "tolling-reliquary": { url: tollingReliquaryUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "twin-fang": { url: twinFangUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   vanguard: { url: vanguardUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
+  "verdigris-carapace": { url: verdigrisCarapaceUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "veterans-edge": { url: veteransEdgeUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "war-hymn": { url: warHymnUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "warding-lore": { url: wardingLoreUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },

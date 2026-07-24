@@ -1,0 +1,285 @@
+{
+  "escapement-greatsword": {
+    "recovered": {
+      "bbox": [
+        383,
+        58,
+        1158,
+        955
+      ],
+      "pitch_x": {
+        "pitch": 27.194444444444475,
+        "score": 0.15632297199228126
+      },
+      "pitch_y": {
+        "pitch": 26.89444444444447,
+        "score": 0.16167583443569739
+      },
+      "grid": [
+        24,
+        30
+      ],
+      "fit": {
+        "from": [
+          28,
+          34
+        ],
+        "to": [
+          24,
+          30
+        ],
+        "reason": "overshoot"
+      }
+    },
+    "ramp": {
+      "opaque_cells": 227,
+      "far_cells": 6,
+      "far_fraction": 0.0264,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "indigo-shadow": 50,
+        "candle-ivory": 4,
+        "brass": 41,
+        "tarnished-brass": 23,
+        "moonless-indigo": 28,
+        "brass-umber": 17,
+        "verdigris-deep": 15,
+        "verdigris": 16,
+        "brass-light": 9,
+        "dusk-indigo": 3,
+        "old-brass": 16,
+        "candle-ivory-deep": 1,
+        "slate-indigo": 1,
+        "verdigris-light": 3
+      }
+    }
+  },
+  "aphelion-conduit": {
+    "recovered": {
+      "bbox": [
+        465,
+        63,
+        1142,
+        955
+      ],
+      "pitch_x": {
+        "pitch": 36.70555555555539,
+        "score": 0.10290743219587437
+      },
+      "pitch_y": {
+        "pitch": 37.05555555555537,
+        "score": 0.1297038360438066
+      },
+      "grid": [
+        18,
+        24
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 148,
+      "far_cells": 10,
+      "far_fraction": 0.0676,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "brass-umber": 36,
+        "brass-light": 10,
+        "tarnished-brass": 17,
+        "candle-ivory": 3,
+        "brass": 15,
+        "indigo-shadow": 26,
+        "alarm-ember": 1,
+        "old-brass": 6,
+        "dusk-indigo": 12,
+        "cold-glass": 1,
+        "verdigris-light": 12,
+        "verdigris": 9
+      }
+    }
+  },
+  "tolling-reliquary": {
+    "recovered": {
+      "bbox": [
+        381,
+        100,
+        1086,
+        951
+      ],
+      "pitch_x": {
+        "pitch": 32.766666666666744,
+        "score": 0.25725802340065423
+      },
+      "pitch_y": {
+        "pitch": 32.71666666666675,
+        "score": 0.26114594113551104
+      },
+      "grid": [
+        22,
+        26
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 224,
+      "far_cells": 5,
+      "far_fraction": 0.0223,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "indigo-shadow": 54,
+        "tarnished-brass": 35,
+        "brass": 14,
+        "brass-umber": 35,
+        "candle-ivory-deep": 9,
+        "old-brass": 22,
+        "candle-flame": 7,
+        "verdigris-light": 9,
+        "candle-ivory": 7,
+        "alarm-red": 1,
+        "verdigris": 15,
+        "dusk-indigo": 10,
+        "brass-light": 5,
+        "moonless-indigo": 1
+      }
+    }
+  },
+  "mainspring-repeater": {
+    "recovered": {
+      "bbox": [
+        292,
+        125,
+        1251,
+        878
+      ],
+      "pitch_x": {
+        "pitch": 39.566666666666315,
+        "score": 0.07803097627931607
+      },
+      "pitch_y": {
+        "pitch": 38.866666666666355,
+        "score": 0.06555586693594848
+      },
+      "grid": [
+        24,
+        19
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 248,
+      "far_cells": 7,
+      "far_fraction": 0.0282,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "moonless-indigo": 41,
+        "brass-light": 17,
+        "indigo-shadow": 40,
+        "brass-umber": 42,
+        "old-brass": 19,
+        "slate-indigo": 5,
+        "patina-pale": 4,
+        "tarnished-brass": 18,
+        "verdigris-light": 19,
+        "brass": 10,
+        "dusk-indigo": 13,
+        "alarm-red": 1,
+        "verdigris-deep": 5,
+        "verdigris": 10,
+        "candle-ivory": 4
+      }
+    }
+  },
+  "verdigris-carapace": {
+    "recovered": {
+      "bbox": [
+        416,
+        127,
+        1106,
+        863
+      ],
+      "pitch_x": {
+        "pitch": 25.37222222222229,
+        "score": 0.20547122228265302
+      },
+      "pitch_y": {
+        "pitch": 24.922222222222285,
+        "score": 0.2658283572954193
+      },
+      "grid": [
+        27,
+        29
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 647,
+      "far_cells": 31,
+      "far_fraction": 0.0479,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "tarnished-brass": 70,
+        "brass": 42,
+        "brass-umber": 90,
+        "moonless-indigo": 85,
+        "old-brass": 69,
+        "brass-light": 34,
+        "indigo-shadow": 40,
+        "verdigris-deep": 51,
+        "verdigris": 88,
+        "verdigris-light": 69,
+        "candle-ivory": 3,
+        "patina-pale": 3,
+        "candle-ivory-deep": 3
+      }
+    }
+  },
+  "stopped-hour-pendulum": {
+    "recovered": {
+      "bbox": [
+        515,
+        30,
+        1034,
+        974
+      ],
+      "pitch_x": {
+        "pitch": 28.100000000000026,
+        "score": 0.20937307820409204
+      },
+      "pitch_y": {
+        "pitch": 28.100000000000026,
+        "score": 0.18627725688421037
+      },
+      "grid": [
+        15,
+        30
+      ],
+      "fit": {
+        "from": [
+          18,
+          34
+        ],
+        "to": [
+          15,
+          30
+        ],
+        "reason": "overshoot"
+      }
+    },
+    "ramp": {
+      "opaque_cells": 248,
+      "far_cells": 30,
+      "far_fraction": 0.121,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "brass-umber": 58,
+        "brass": 20,
+        "moonless-indigo": 22,
+        "indigo-shadow": 36,
+        "brass-light": 12,
+        "old-brass": 23,
+        "glass-teal": 3,
+        "tarnished-brass": 25,
+        "candle-ivory": 27,
+        "verdigris": 10,
+        "dusk-indigo": 5,
+        "slate-indigo": 5,
+        "alarm-red": 2
+      }
+    }
+  }
+}
