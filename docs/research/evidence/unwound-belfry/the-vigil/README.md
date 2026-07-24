@@ -32,34 +32,39 @@ See also `contract.md` and the exact prompt in `prompt.txt`.
 
 | Field | Value |
 | --- | --- |
-| Candidate | `the-vigil-c1` |
+| Candidate | `the-vigil-c1-confine` (deterministic off-eye alarm remapping of provider `the-vigil-c1`) |
 | Archived | `assets-raw/grid_raw/the-vigil.png` |
 | Sidecar | `assets-raw/grid_raw/the-vigil.source.json` (`acquisition: flexible`, `palette: unwound-belfry-24@1`) |
 | Fitted opaque | **94×72** (≤ 160×72) |
 | Cursor stamp cleanup | `false` |
 | Runtime | `src/assets/sprites/the-vigil.png` (94×72 RGBA, binary alpha) |
 
-Accepted prompt is archived byte-for-byte in the sidecar / `prompt.txt` (issue fenced prompt; no measurement clauses).
+Accepted prompt is archived byte-for-byte in the sidecar / `prompt.txt` (issue fenced prompt; no measurement clauses). Provider generation used that prompt; `c1-confine` remaps only opaque source pixels whose nearest `unwound-belfry-24` swatch is `alarm-*` and that fall outside the densest eye cluster, to the nearest non-alarm swatch — preserving geometry and identity while satisfying C4 eye confinement.
 
 ## Candidate table
 
 | Candidate | Asset class | Raw gates | Clipped sides | Measurement | Primary result | Next action |
 | --- | --- | --- | --- | --- | --- | --- |
-| the-vigil-c1 | body (Boss) | pass | none | fitted opaque 94×72 vs 160×72 | advance | visual review → **accept** → promote |
+| the-vigil-c1 | body (Boss) | pass | none | fitted opaque 94×72 vs 160×72 | advance → visual **accept** | Spec C4: 4 off-eye alarm runtime pixels → retry |
+| the-vigil-c2 | body (Boss) | pass | none | fitted opaque 88×72 | reject (alarm confinement worse) | regenerate |
+| the-vigil-c3 | body (Boss) | pass | none | fitted opaque 87×72 | reject (alarm confinement worse) | stop regen; confinement remap of c1 |
+| the-vigil-c1-confine | body (Boss) | pass | none | fitted opaque 94×72; alarm-* only in eye (7 px) | advance | visual re-review → **accept** → promote |
 
-No rejected candidates. Measurement JSON: `candidate-report.json`. Promote report: `promote-report.json`. Post-promote measure: `post-promote-measure.json`.
+Measurement JSON: `candidate-report.json` (c1), `the-vigil-c2-report.json`, `the-vigil-c3-report.json`, `the-vigil-c1-confine-report.json`. Promote report: `promote-report.json`. Post-promote measure: `post-promote-measure.json`.
 
 ## Validator / provenance
 
 | Artifact | SHA-256 |
 | --- | --- |
-| Archived raw `the-vigil.png` | `20e59ff1230f9a428b86d9285525acb457af927f3ea8201b7353cbd579932160` |
-| Runtime `src/assets/sprites/the-vigil.png` | `762f97e80152c2ed93f845e004b9bdba43298586dc43629e61e29c99586f2c51` |
-| Manifest frame sha256 | `518f9f05b6fb99bac67496e11cd7aef84be868487a3b256869f20921c20cc955` |
+| Archived raw `the-vigil.png` | `b17dec493a093b6565b320609d1c9b8841554f22551744fd5508f5457e62c683` |
+| Runtime `src/assets/sprites/the-vigil.png` | `f28e9a3cf233af672c9d1be8da693ed6d89a9fb41e0a0968c45c087c01b002d6` |
+| Manifest frame sha256 | `95d5efb12ee821395fa9ad6b156538f15d47176589b4367de29152528c484c42` |
 
 Manifest geometry: `frame_size [94,72]`, `visual_bounds [0,0,94,72]`, `foot_anchor [47,72]`, `palette: unwound-belfry-24`.
 
 Offline byte-identity: local `build_archived_bundle(['the-vigil'], out_dir=…)` matched shipped runtime bytes. CI `assets` job remains the authoritative full-catalog rebuild after push. Durable per-identity measure/palette assertions beyond discovery are deferred to the sprite-wiring slice; this slice only extends the production discovery expected-tag tuple so the complete The Vigil bundle is not treated as unexpected.
+
+C4 alarm confinement (shipped runtime): 7 `alarm-*` pixels all in the eye cluster at ~(16–19, 26–29); zero outside.
 
 ## Foot-anchor / effects / UI independence
 
@@ -70,7 +75,7 @@ Manifest records `foot_anchor: [47, 72]` (bottom-centre of the 94×72 frame). Pr
 | Step | Result |
 | --- | --- |
 | Deterministic measure/promote | **accept** |
-| Agent visual review (cohort + native single on `REVIEW_sheet_1x.png`) | **accept** — see `visual-review.md` |
+| Agent visual review (cohort + native single on `REVIEW_sheet_1x.png`) | **accept** (c1); **accept** after confine remapping — see `visual-review.md` |
 | HITL | not required by issue; human may still comment on PR |
 
 ## Review sheets

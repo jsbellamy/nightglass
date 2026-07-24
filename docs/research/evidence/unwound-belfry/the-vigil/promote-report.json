@@ -1,12 +1,12 @@
 {
   "status": "promoted",
-  "candidate": "docs/research/evidence/unwound-belfry/the-vigil/scratch/the-vigil-c1.png",
+  "candidate": "docs/research/evidence/unwound-belfry/the-vigil/scratch/the-vigil-c1-confine.png",
   "raw": "/Users/jakebellamy/VSProjects/games/game_idea/nightglass-wt-572/assets-raw/grid_raw/the-vigil.png",
   "sidecar": "/Users/jakebellamy/VSProjects/games/game_idea/nightglass-wt-572/assets-raw/grid_raw/the-vigil.source.json",
   "runtime": "/Users/jakebellamy/VSProjects/games/game_idea/nightglass-wt-572/src/assets/sprites/the-vigil.png",
   "manifest": "/Users/jakebellamy/VSProjects/games/game_idea/nightglass-wt-572/src/assets/sprites/manifest.json",
   "measurement": {
-    "candidate": "docs/research/evidence/unwound-belfry/the-vigil/scratch/the-vigil-c1.png",
+    "candidate": "docs/research/evidence/unwound-belfry/the-vigil/scratch/the-vigil-c1-confine.png",
     "tag": "the-vigil",
     "status": "advance",
     "primary_failure": null,

@@ -534,13 +534,13 @@
       {
         "name": "the-vigil",
         "duration_ms": 1,
-        "sha256": "518f9f05b6fb99bac67496e11cd7aef84be868487a3b256869f20921c20cc955"
+        "sha256": "95d5efb12ee821395fa9ad6b156538f15d47176589b4367de29152528c484c42"
       }
     ],
     "cues_ms": {},
     "source": {
       "provider": "Cursor GenerateImage",
-      "raw_sha256": "20e59ff1230f9a428b86d9285525acb457af927f3ea8201b7353cbd579932160"
+      "raw_sha256": "b17dec493a093b6565b320609d1c9b8841554f22551744fd5508f5457e62c683"
     }
   }
 }

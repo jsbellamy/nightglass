@@ -1,7 +1,7 @@
 {
   "provider": "Cursor GenerateImage",
   "acquisition_tool": "GenerateImage",
-  "raw_sha256": "20e59ff1230f9a428b86d9285525acb457af927f3ea8201b7353cbd579932160",
+  "raw_sha256": "b17dec493a093b6565b320609d1c9b8841554f22551744fd5508f5457e62c683",
   "acquisition": "flexible",
   "identity_profile": {
     "asset_class": "opponent",
@@ -12,7 +12,7 @@
   "identity": "the-vigil",
   "asset_class": "opponent",
   "runtime_destination": "src/assets/sprites/the-vigil.png",
-  "candidate": "the-vigil-c1.png",
+  "candidate": "the-vigil-c1-confine.png",
   "facing": "left",
   "role": "boss",
   "palette": "unwound-belfry-24@1",
