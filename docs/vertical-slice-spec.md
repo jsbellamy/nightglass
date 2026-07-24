@@ -47,7 +47,7 @@ Offline Progress while the app is closed.
 
 ### Deferred by resolved decisions (per-section deferrals)
 
-Prestige/meta-progression, combat RNG of any kind, resources/mana, control
+Prestige/meta-progression, resources/mana, control
 effects beyond Stun, save migration chains, screen-reader support, per-Ability
 audio, automated performance regression testing, and Equipment crafting,
 selling, sets, or binding — each recorded with its owning section below.
@@ -214,12 +214,20 @@ Decision: [Automatic Combat rules](https://github.com/jsbellamy/nightglass/issue
   Cooldown begins at Impact. Damage does not interrupt actions. No turns, no
   global cooldown, no spendable resources — every non-basic Ability has a
   positive authored cooldown.
+- **Initiative Roll.** At the start of each Wave or Boss every combatant,
+  including Party Members carried over from the previous Wave, draws one uniform
+  integer 0–600 ms from the combat RNG stream and cannot begin an Action Cycle
+  until it elapses. The roll happens once per Encounter; because Action Cycle
+  periods are constant, combatants offset by a roll do not re-synchronize within
+  an Encounter.
 - **First-valid slot priority.** Each Character evaluates its ordered
   three-slot Ability Loadout and uses the first Ability off cooldown with a
   valid target, else the free basic attack. Duplicates forbidden; no
   player-authored thresholds or scripting.
-- **Deterministic resolution.** No misses, variance, crits, dodges, procs, or
-  random targeting. Physical Damage is reduced by Armor, Elemental Damage by
+- **Deterministic resolution.** Randomness in combat resolution is limited to
+  two seeded draws from a persisted combat RNG stream: the **Initiative Roll**
+  and the **Critical Hit** roll. No misses, dodges, procs, or random targeting.
+  Physical Damage is reduced by Armor, Elemental Damage by
   the single shared Elemental Resistance:
   `max(1, floor(raw × 100 / (100 + mitigation)))`. Healing ignores mitigation
   and cannot overheal. Same-timestamp events resolve as a batch (expiries
@@ -281,7 +289,7 @@ compared to that fixture field-by-field.
   Stages cannot require a specific Class, Healing, Stun, or damage channel.
 - Two damage channels: Physical and Elemental. Hidden derived Powers:
   `Power = floor((base + flat bonuses) × (1 + summed percentage bonuses))`;
-  `raw = floor(Power × coefficient)`. Healing scales from Elemental Power. The
+  `raw = floor(Power × coefficient)`. Healing scales from Spell Power. The
   UI shows per-Ability raw results, never consolidated Power totals.
 - Levels grant no automatic statistics — each Level's power is its Talent Point
   plus Equipment progression.
@@ -335,7 +343,7 @@ bands, rarity odds; content data transcribes it directly).
   abandonment. Type selection: uniform slot category, then uniform Class for
   weapons. Rarity odds shift per Stage (S1 `55/35/9/1`, S2 `40/40/17/3`,
   S3 `25/45/24/6`).
-- **Loot RNG is a persisted stream separate from deterministic combat.** Pieces
+- **Loot RNG is a persisted stream separate from the combat stream.** Pieces
   are fully rolled and saved when awarded — reload cannot reroll; Offline
   Progress consumes the same stream; seeds are fixable for tests.
 - **Armory:** one shared, capacity-free collection including equipped pieces
@@ -370,8 +378,8 @@ Decisions: [SideScape foundation](https://github.com/jsbellamy/nightglass/issues
 - The boundary is: **commands** (advancement, player configuration) → a
   **versioned serializable Snapshot** → ordered timestamped **Presentation
   Events**.
-- The Snapshot owns the simulation clock, persisted loot-RNG state, next
-  stable sequence identifiers, all progression, and the complete in-flight
+- The Snapshot owns the simulation clock, persisted loot-RNG and combat-RNG
+  state, next stable sequence identifiers, all progression, and the complete in-flight
   Stage Attempt (phases, health, Knockouts, cooldown-ready times). It excludes
   DOM, animation, audio, timer, and window state and consumed events.
 - Presentation Events carry domain facts (`action-started`, `impact`,
@@ -459,8 +467,10 @@ short-window merging (green `+` for Healing); up to two Status icons then a
 "+n" chip; collapse-then-desaturate Knockout readable without colour; ~1.5s
 centre-lane banners for Boss Wave, Stage Attempt, Stage cleared, and Party
 Defeat (routine numbered Waves stay silent); Drop notifications in the status
-line badging the Armory tab. Cooldown and Action Cycle telemetry lives only in the Dock's
-Loadout surface. Deferred: screen shake, hit-stop, combat log, DPS meters.
+line badging the Armory tab. Three per-Party-Member cooldown pips above each
+Character, one per Ability Loadout slot, filling as that slot recharges; Action
+Cycle telemetry stays out of the tile. Deferred: screen shake, hit-stop, combat
+log, DPS meters.
 
 ---
 

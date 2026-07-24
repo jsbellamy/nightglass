@@ -59,9 +59,11 @@ Test at these public boundaries, nowhere internal:
   stay valid.
 - The Snapshot is versioned and serializable; everything transient (DOM,
   animation, audio, timers, consumed events) stays out of it.
-- Combat is deterministic — no RNG in combat resolution. The persisted loot
-  stream is the only randomness; tests assert exact damage numbers and
-  timestamps, not ranges.
+- Combat randomness is confined to two persisted, seeded streams: the loot
+  stream and the combat stream. The combat stream is drawn only for the
+  Initiative Roll and the Critical Hit roll, in a fixed combatant/effect order,
+  so a given seed reproduces byte-identical events. Tests assert exact damage
+  numbers and timestamps against a pinned seed, never ranges.
 - Test names read as behavior specifications in `CONTEXT.md` vocabulary
   ("Knockout at zero health emits `knockout` and starts recovery"), not
   implementation descriptions. Registered `evidence:` / `manual-check:`
