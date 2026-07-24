@@ -109,12 +109,14 @@ check(
 
 print("\nnamed palette catalog")
 check(
-    "palette catalog lists exactly two approved ids",
-    set(PALETTE_PATHS.keys()) == {"moonberry-16", "fowl-harvest-24"},
+    "palette catalog lists exactly three approved ids",
+    set(PALETTE_PATHS.keys())
+    == {"moonberry-16", "fowl-harvest-24", "unwound-belfry-24"},
     str(sorted(PALETTE_PATHS)),
 )
 moonberry = load_runtime_palette("moonberry-16")
 fowl = load_runtime_palette("fowl-harvest-24")
+belfry = load_runtime_palette("unwound-belfry-24")
 check(
     "moonberry catalog loads version and swatch names",
     moonberry.version == 1 and moonberry.names == frozenset(moonberry.swatches),
@@ -125,6 +127,13 @@ check(
     fowl.version == 1
     and fowl.swatches["beak-orange"].rgb == (228, 122, 53),
     f"v={fowl.version}",
+)
+check(
+    "unwound-belfry catalog loads version and 24 swatches",
+    belfry.version == 1
+    and len(belfry.names) == 24
+    and belfry.swatches["belfry-void"].rgb == (12, 11, 22),
+    f"v={belfry.version} n={len(belfry.names)}",
 )
 try:
     load_runtime_palette("not-a-palette")
@@ -486,6 +495,10 @@ check(
 check(
     "fowl outline is oil-ink",
     outline_swatch_name("fowl-harvest-24") == "oil-ink",
+)
+check(
+    "unwound-belfry outline is belfry-void",
+    outline_swatch_name("unwound-belfry-24") == "belfry-void",
 )
 
 print("\nrecolor flatten guard")
