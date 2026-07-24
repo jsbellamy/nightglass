@@ -32,7 +32,7 @@ describe("effect recipes", () => {
   it("covers every Class Kit ability id exactly once", () => {
     const kitIds = classKit.abilities.map((a) => a.id).sort();
     expect(CLASS_KIT_ABILITY_IDS.sort()).toEqual(kitIds);
-    expect(Object.keys(effectRecipes)).toHaveLength(38);
+    expect(Object.keys(effectRecipes)).toHaveLength(40);
   });
 
   it("uses only legal anchor kinds and never strike_self", () => {

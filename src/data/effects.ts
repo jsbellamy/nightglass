@@ -234,6 +234,20 @@ export const effectRecipes: Record<string, EffectRecipe> = {
     durationMs: 260,
     cuesMs: { impact_expected: 650 },
   },
+  "comet-fall": {
+    stillKey: "spell-bloom",
+    frames: "spell-bloom-scaled-fire",
+    anchor: "strike_target",
+    durationMs: 260,
+    cuesMs: { impact_expected: 900 },
+  },
+  "glacial-prison": {
+    stillKey: "spell-bloom",
+    frames: "spell-bloom-scaled-frost",
+    anchor: "strike_target",
+    durationMs: 260,
+    cuesMs: { impact_expected: 700 },
+  },
 
   // Priest
   "sun-mote": {

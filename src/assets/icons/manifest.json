@@ -479,6 +479,46 @@
     "source_family": "warblade",
     "sha256": "75ea88f66714ded3c9dd9c43ae54efdec1de9189e57ae1da191664e0b5d1add1"
   },
+  "arcane-overflow": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "arcane-overflow",
+    "sha256": "8138eabced3c9d4e0e4b5f33e3388b15026a9086b84c09b700cf30e4153bd242"
+  },
+  "comet-fall": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "comet-fall",
+    "sha256": "b340a65a2717c8fa485cc0c25f30ba3245d88cc6b443608712d72c1b1b82f2d8"
+  },
+  "glacial-prison": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "glacial-prison",
+    "sha256": "3d445a663c599c9fcecc9a2b79926825d93ef113f941ee58e5c61deced21744d"
+  },
+  "runeward": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "runeward",
+    "sha256": "37da3bbb15ee6d285e104d48c24270dc60af5e245dc27c88a037053c2e621ca8"
+  },
   "augerwire-longbow": {
     "canvas": [
       34,

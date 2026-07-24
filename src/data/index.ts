@@ -24,6 +24,8 @@ import {
   wizardClass,
   wizardTier2,
   wizardTier2Abilities,
+  wizardTier3,
+  wizardTier3Abilities,
 } from "./classes/wizard";
 import { buildEquipmentSlice } from "./equipment";
 import { opponentAbilities } from "./opponents";
@@ -43,6 +45,7 @@ const CLASS_KIT_ABILITIES = [
   ...knightTier3Abilities,
   ...wizardAbilities,
   ...wizardTier2Abilities,
+  ...wizardTier3Abilities,
   ...priestAbilities,
   ...priestTier2Abilities,
   ...hunterAbilities,
@@ -60,7 +63,7 @@ function withTalentTiers(
 
 const CLASS_KITS: ClassKitDef[] = [
   withTalentTiers(knightClass, [knightTier2, knightTier3]),
-  withTalentTiers(wizardClass, [wizardTier2]),
+  withTalentTiers(wizardClass, [wizardTier2, wizardTier3]),
   withTalentTiers(priestClass, [priestTier2]),
   withTalentTiers(hunterClass, [hunterTier2]),
 ];

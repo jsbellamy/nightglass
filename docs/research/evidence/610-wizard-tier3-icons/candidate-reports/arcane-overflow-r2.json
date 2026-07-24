@@ -1,0 +1,44 @@
+{
+  "candidate": "arcane-overflow-r2",
+  "recovered": {
+    "bbox": [
+      435,
+      125,
+      1082,
+      883
+    ],
+    "pitch_x": {
+      "pitch": 38.18333333333314,
+      "score": 0.09099256268549151
+    },
+    "pitch_y": {
+      "pitch": 36.133333333333255,
+      "score": 0.11007360334826839
+    },
+    "grid": [
+      17,
+      21
+    ]
+  },
+  "ramp": {
+    "opaque_cells": 238,
+    "far_cells": 1,
+    "far_fraction": 0.0042,
+    "off_ramp_reject": false,
+    "quantize_histogram": {
+      "berry": 62,
+      "berry-bright": 11,
+      "mint": 36,
+      "mint-light": 19,
+      "cream": 56,
+      "berry-mid": 14,
+      "berry-shadow": 31,
+      "contour-plum-deep": 3,
+      "mint-pale": 2,
+      "sage": 2,
+      "cream-gold": 2
+    }
+  },
+  "primary": "advance",
+  "MIN_GRID_SCORE": 0.04
+}

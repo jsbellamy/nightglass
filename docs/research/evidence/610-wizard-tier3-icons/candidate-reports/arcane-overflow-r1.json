@@ -1,0 +1,5 @@
+{
+  "candidate": "arcane-overflow-r1",
+  "primary": "raw-gate-fail",
+  "error": "arcane-overflow-r1.png: subject clipped by generator at top/bottom/left/right of the 1536x1024 raw canvas"
+}

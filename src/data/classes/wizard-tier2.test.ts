@@ -6,6 +6,7 @@ import {
   wizardClass,
   wizardTier2,
   wizardTier2Abilities,
+  wizardTier3,
 } from "./wizard";
 
 const EXPECTED_WIZARD_TIER2_ABILITIES: AbilityDef[] = [
@@ -117,7 +118,7 @@ describe("Wizard Talent Tier 2 exports", () => {
     }
     expect(wizardClass.talentTiers).toBeUndefined();
     const wizard = content.classes.find((entry) => entry.id === "wizard");
-    expect(wizard?.talentTiers).toEqual([wizardTier2]);
+    expect(wizard?.talentTiers).toEqual([wizardTier2, wizardTier3]);
     expect(wizard?.talents).toEqual({
       statRow: wizardClass.talents.statRow,
       abilityRow: ["starfall", "prismatic-shelter"],

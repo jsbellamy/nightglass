@@ -1,0 +1,39 @@
+{
+  "candidate": "comet-fall-r1",
+  "recovered": {
+    "bbox": [
+      352,
+      162,
+      1176,
+      878
+    ],
+    "pitch_x": {
+      "pitch": 29.51666666666676,
+      "score": 0.42951077496958867
+    },
+    "pitch_y": {
+      "pitch": 29.916666666666767,
+      "score": 0.45185915816508176
+    },
+    "grid": [
+      28,
+      24
+    ]
+  },
+  "ramp": {
+    "opaque_cells": 365,
+    "far_cells": 14,
+    "far_fraction": 0.0384,
+    "off_ramp_reject": false,
+    "quantize_histogram": {
+      "berry-shadow": 73,
+      "berry-mid": 72,
+      "cream": 100,
+      "mint-light": 51,
+      "berry": 59,
+      "berry-bright": 9,
+      "mint-pale": 1
+    }
+  },
+  "primary": "advance"
+}

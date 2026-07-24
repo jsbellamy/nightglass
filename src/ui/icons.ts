@@ -3,6 +3,7 @@ import absoluteZeroUrl from "../assets/icons/absolute-zero.png";
 import aegisWallUrl from "../assets/icons/aegis-wall.png";
 import aphelionConduitUrl from "../assets/icons/aphelion-conduit.png";
 import arcSparkUrl from "../assets/icons/arc-spark.png";
+import arcaneOverflowUrl from "../assets/icons/arcane-overflow.png";
 import augerwireLongbowUrl from "../assets/icons/augerwire-longbow.png";
 import barbedArrowUrl from "../assets/icons/barbed-arrow.png";
 import battleLiturgyUrl from "../assets/icons/battle-liturgy.png";
@@ -13,6 +14,7 @@ import bramblesongBowUrl from "../assets/icons/bramblesong-bow.png";
 import bulwarkUrl from "../assets/icons/bulwark.png";
 import cinderBloomUrl from "../assets/icons/cinder-bloom.png";
 import combineplateHarnessUrl from "../assets/icons/combineplate-harness.png";
+import cometFallUrl from "../assets/icons/comet-fall.png";
 import dawnAscendantUrl from "../assets/icons/dawn-ascendant.png";
 import dawnRecallUrl from "../assets/icons/dawn-recall.png";
 import devotionUrl from "../assets/icons/devotion.png";
@@ -29,6 +31,7 @@ import fortitudeUrl from "../assets/icons/fortitude.png";
 import frostLanceUrl from "../assets/icons/frost-lance.png";
 import fryerplateCleaverUrl from "../assets/icons/fryerplate-cleaver.png";
 import glassweaveUrl from "../assets/icons/glassweave.png";
+import glacialPrisonUrl from "../assets/icons/glacial-prison.png";
 import gloamberryLocketUrl from "../assets/icons/gloamberry-locket.png";
 import halcyonLanternUrl from "../assets/icons/halcyon-lantern.png";
 import harvestWarningLanternUrl from "../assets/icons/harvest-warning-lantern.png";
@@ -59,6 +62,7 @@ import rallyingGuardUrl from "../assets/icons/rallying-guard.png";
 import redBeaconTokenUrl from "../assets/icons/red-beacon-token.png";
 import shieldBraceUrl from "../assets/icons/shield-brace.png";
 import roadsideReliquaryUrl from "../assets/icons/roadside-reliquary.png";
+import runewardUrl from "../assets/icons/runeward.png";
 import snareburstUrl from "../assets/icons/snareburst.png";
 import splitVolleyUrl from "../assets/icons/split-volley.png";
 import starfallUrl from "../assets/icons/starfall.png";
@@ -107,6 +111,7 @@ export const ICON_SOURCES = {
   "aegis-wall": { url: aegisWallUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "aphelion-conduit": { url: aphelionConduitUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "arc-spark": { url: arcSparkUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
+  "arcane-overflow": { url: arcaneOverflowUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "augerwire-longbow": { url: augerwireLongbowUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "barbed-arrow": { url: barbedArrowUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "battle-liturgy": { url: battleLiturgyUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
@@ -117,6 +122,7 @@ export const ICON_SOURCES = {
   bulwark: { url: bulwarkUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "cinder-bloom": { url: cinderBloomUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "combineplate-harness": { url: combineplateHarnessUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
+  "comet-fall": { url: cometFallUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "dawn-ascendant": { url: dawnAscendantUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "dawn-recall": { url: dawnRecallUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   devotion: { url: devotionUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
@@ -133,6 +139,7 @@ export const ICON_SOURCES = {
   "frost-lance": { url: frostLanceUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "fryerplate-cleaver": { url: fryerplateCleaverUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   glassweave: { url: glassweaveUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
+  "glacial-prison": { url: glacialPrisonUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "gloamberry-locket": { url: gloamberryLocketUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "halcyon-lantern": { url: halcyonLanternUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "harvest-warning-lantern": { url: harvestWarningLanternUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
@@ -163,6 +170,7 @@ export const ICON_SOURCES = {
   "red-beacon-token": { url: redBeaconTokenUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "shield-brace": { url: shieldBraceUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "roadside-reliquary": { url: roadsideReliquaryUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
+  runeward: { url: runewardUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   snareburst: { url: snareburstUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "split-volley": { url: splitVolleyUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   starfall: { url: starfallUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
