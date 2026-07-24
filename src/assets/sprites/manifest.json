@@ -478,5 +478,37 @@
       "provider": "Cursor GenerateImage",
       "raw_sha256": "5d2d90d0b09c67f8762521712ef9e33201e8081621bd42a8567cf9c2335bf861"
     }
+  },
+  "astrolabe-spider": {
+    "action": "still",
+    "frame_size": [
+      30,
+      15
+    ],
+    "visual_bounds": [
+      0,
+      0,
+      30,
+      15
+    ],
+    "foot_anchor": [
+      15,
+      15
+    ],
+    "palette": "unwound-belfry-24",
+    "baseline_row": 14,
+    "total_ms": 1,
+    "frames": [
+      {
+        "name": "astrolabe-spider",
+        "duration_ms": 1,
+        "sha256": "fc85147fd88b55b6b41d5fbabb55c6fa5a2743674ae9d6a73a47f8d322404a51"
+      }
+    ],
+    "cues_ms": {},
+    "source": {
+      "provider": "Cursor GenerateImage",
+      "raw_sha256": "e1f2a82ebeee6e3f4be17a3e34649bdb37829040bd800efa61dc0737a0f52d6f"
+    }
   }
 }
