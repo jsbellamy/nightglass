@@ -134,7 +134,7 @@ function driveUntilStageCleared(
 }
 
 describe("assembled Stage content", () => {
-  it("passes validateContent with exact encounter XP budgets for Stages 1–6", () => {
+  it("passes validateContent for all shipped Stages 1–10", () => {
     expect(validateContent(content)).toEqual([]);
     for (const stage of content.stages) {
       const budget = ENCOUNTER_BUDGETS[stage.id as keyof typeof ENCOUNTER_BUDGETS];
@@ -142,7 +142,7 @@ describe("assembled Stage content", () => {
     }
   });
 
-  it("defines ten contiguous Stages with Moonberry 1–3 unchanged and Fowl 4–6 appended", () => {
+  it("defines ten contiguous Stages with Moonberry 1–3, Fowl 4–6, and Belfry 7–10", () => {
     expect(content.stages).toHaveLength(10);
     expect(content.stages.map((stage) => stage.id)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
     expect(content.stages.slice(0, 3).map((stage) => stage.name)).toEqual([...MOONBERRY_STAGE_NAMES]);

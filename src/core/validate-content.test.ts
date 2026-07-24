@@ -171,7 +171,7 @@ describe("validateContent", () => {
     expect(validateContent(buildContent())).toEqual([]);
   });
 
-  it("requires exactly six contiguous shipped Stages", () => {
+  it("requires exactly ten contiguous shipped Stages", () => {
     const shipped = buildContent();
     expect(validateContent(shipped)).toEqual([]);
 
