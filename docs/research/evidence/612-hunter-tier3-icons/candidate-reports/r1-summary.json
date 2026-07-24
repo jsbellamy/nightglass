@@ -1,0 +1,190 @@
+{
+  "master-fletcher-r1": {
+    "candidate": "master-fletcher-r1",
+    "path": "/Users/jakebellamy/VSProjects/games/game_idea/nightglass-wt-612/docs/research/evidence/612-hunter-tier3-icons/scratch/master-fletcher-r1.png",
+    "ok": true,
+    "recovered": {
+      "bbox": [
+        520,
+        261,
+        1015,
+        773
+      ],
+      "pitch_x": {
+        "pitch": 21.450000000000102,
+        "score": 0.4141202552869371
+      },
+      "pitch_y": {
+        "pitch": 21.450000000000102,
+        "score": 0.2654865626136351
+      },
+      "grid": [
+        23,
+        24
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 211,
+      "far_cells": 1,
+      "far_fraction": 0.0047,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "cream": 78,
+        "mint-pale": 44,
+        "berry": 18,
+        "mint-light": 27,
+        "berry-mid": 21,
+        "berry-shadow": 19,
+        "mint": 4
+      }
+    },
+    "primary": "advance"
+  },
+  "trailhardened-r1": {
+    "candidate": "trailhardened-r1",
+    "path": "/Users/jakebellamy/VSProjects/games/game_idea/nightglass-wt-612/docs/research/evidence/612-hunter-tier3-icons/scratch/trailhardened-r1.png",
+    "ok": true,
+    "recovered": {
+      "bbox": [
+        485,
+        221,
+        1041,
+        801
+      ],
+      "pitch_x": {
+        "pitch": 25.93888888888903,
+        "score": 0.11467740543701532
+      },
+      "pitch_y": {
+        "pitch": 27.788888888889055,
+        "score": 0.14181315452866766
+      },
+      "grid": [
+        21,
+        20
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 272,
+      "far_cells": 46,
+      "far_fraction": 0.1691,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "mint-pale": 71,
+        "mint-shadow": 43,
+        "sage": 43,
+        "mint-light": 3,
+        "mint": 11,
+        "berry-mid": 19,
+        "berry-shadow": 9,
+        "twilight-slate": 47,
+        "berry": 11,
+        "cream": 13,
+        "berry-bright": 2
+      }
+    },
+    "primary": "advance"
+  },
+  "death-rain-r1": {
+    "candidate": "death-rain-r1",
+    "path": "/Users/jakebellamy/VSProjects/games/game_idea/nightglass-wt-612/docs/research/evidence/612-hunter-tier3-icons/scratch/death-rain-r1.png",
+    "ok": false,
+    "recovered": {
+      "bbox": [
+        537,
+        249,
+        1001,
+        745
+      ],
+      "pitch_x": {
+        "pitch": 14.055555555555559,
+        "score": 0.10646822675008216
+      },
+      "pitch_y": {
+        "pitch": 24.955555555555712,
+        "score": 0.12489117821878604
+      },
+      "grid": [
+        30,
+        18
+      ],
+      "fit": {
+        "from": [
+          33,
+          20
+        ],
+        "to": [
+          30,
+          18
+        ],
+        "reason": "overshoot"
+      }
+    },
+    "ramp": {
+      "opaque_cells": 417,
+      "far_cells": 219,
+      "far_fraction": 0.5252,
+      "off_ramp_reject": true,
+      "quantize_histogram": {
+        "berry-mid": 181,
+        "cream": 35,
+        "mint-pale": 12,
+        "mint": 5,
+        "berry-shadow": 65,
+        "mint-shadow": 27,
+        "mint-light": 35,
+        "twilight-slate": 4,
+        "berry": 5,
+        "berry-bright": 25,
+        "sage": 23
+      }
+    },
+    "primary": "off-ramp",
+    "error": "off-ramp far=52.5%"
+  },
+  "killshot-r1": {
+    "candidate": "killshot-r1",
+    "path": "/Users/jakebellamy/VSProjects/games/game_idea/nightglass-wt-612/docs/research/evidence/612-hunter-tier3-icons/scratch/killshot-r1.png",
+    "ok": true,
+    "recovered": {
+      "bbox": [
+        454,
+        193,
+        1081,
+        788
+      ],
+      "pitch_x": {
+        "pitch": 26.49444444444457,
+        "score": 0.07733475770929576
+      },
+      "pitch_y": {
+        "pitch": 27.84444444444459,
+        "score": 0.10635397458013603
+      },
+      "grid": [
+        24,
+        21
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 282,
+      "far_cells": 40,
+      "far_fraction": 0.1418,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "berry": 64,
+        "berry-mid": 7,
+        "berry-shadow": 71,
+        "sage": 6,
+        "mint-light": 22,
+        "mint-shadow": 14,
+        "mint": 15,
+        "twilight-slate": 3,
+        "cream": 42,
+        "berry-bright": 37,
+        "mint-pale": 1
+      }
+    },
+    "primary": "advance"
+  }
+}

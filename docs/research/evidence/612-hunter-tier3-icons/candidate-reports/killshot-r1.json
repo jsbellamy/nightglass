@@ -1,0 +1,45 @@
+{
+  "candidate": "killshot-r1",
+  "path": "/Users/jakebellamy/VSProjects/games/game_idea/nightglass-wt-612/docs/research/evidence/612-hunter-tier3-icons/scratch/killshot-r1.png",
+  "ok": true,
+  "recovered": {
+    "bbox": [
+      454,
+      193,
+      1081,
+      788
+    ],
+    "pitch_x": {
+      "pitch": 26.49444444444457,
+      "score": 0.07733475770929576
+    },
+    "pitch_y": {
+      "pitch": 27.84444444444459,
+      "score": 0.10635397458013603
+    },
+    "grid": [
+      24,
+      21
+    ]
+  },
+  "ramp": {
+    "opaque_cells": 282,
+    "far_cells": 40,
+    "far_fraction": 0.1418,
+    "off_ramp_reject": false,
+    "quantize_histogram": {
+      "berry": 64,
+      "berry-mid": 7,
+      "berry-shadow": 71,
+      "sage": 6,
+      "mint-light": 22,
+      "mint-shadow": 14,
+      "mint": 15,
+      "twilight-slate": 3,
+      "cream": 42,
+      "berry-bright": 37,
+      "mint-pale": 1
+    }
+  },
+  "primary": "advance"
+}

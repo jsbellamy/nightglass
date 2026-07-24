@@ -559,6 +559,46 @@
     "source_family": "solar-verdict",
     "sha256": "db051a3782ee80afe35536025c8b3f1e52cfab1fe6eb9cbe4aad199370e7f6eb"
   },
+  "master-fletcher": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "master-fletcher",
+    "sha256": "da3d7ed03cdf76cb3876c09389a25ec2a347d984f953626f87e28d4c91416f5c"
+  },
+  "trailhardened": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "trailhardened",
+    "sha256": "67bd2ec82782e2d78de19a0e09879d9fd3cf958a4b229d3fba3135b8957e5350"
+  },
+  "death-rain": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "death-rain",
+    "sha256": "419809c0da5f5a8f303d7e6c45fc496126ce1d72a5b56cd8a9bc79662e81edde"
+  },
+  "killshot": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "moonberry-16",
+    "outline": "contour-plum-deepest",
+    "source_family": "killshot",
+    "sha256": "b18c9bb888f10e37addbc225f3952c027bbf49c3791c2f383dfe76acc6c8d857"
+  },
   "augerwire-longbow": {
     "canvas": [
       34,

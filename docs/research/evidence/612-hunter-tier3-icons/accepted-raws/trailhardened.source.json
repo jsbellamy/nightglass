@@ -1,0 +1,84 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "fcd3f318fdf1890df299383c07ef3a082bf612ea47ec8ee56c1f4ef230484cca",
+  "asset_class": "interface",
+  "kind": "talent-skill-glyph",
+  "runtime_destination": "src/assets/icons/trailhardened.png",
+  "candidate": "trailhardened-r3",
+  "palette_subset": [
+    "contour-plum-deepest",
+    "contour-plum-deep",
+    "mint-shadow",
+    "mint",
+    "mint-light",
+    "mint-pale",
+    "cream",
+    "berry-shadow",
+    "berry-mid",
+    "berry",
+    "berry-bright",
+    "sage",
+    "twilight-slate"
+  ],
+  "style_references": [
+    {
+      "path": "src/assets/icons/draw-weight.png",
+      "role": "style_cohort",
+      "sha256": "8295caa64a75292527c08819de73f5c7b3179bcb41e1876617d0b910c68b80ae"
+    },
+    {
+      "path": "src/assets/icons/fletchers-eye.png",
+      "role": "style_cohort",
+      "sha256": "8d7cd4921e29e3cfc90143cc7137e7b2771a9e44b81d6cd9b9e1d644387a4425"
+    },
+    {
+      "path": "src/assets/icons/piercing-rain.png",
+      "role": "style_cohort",
+      "sha256": "49484a3e2fe14e4ecf7541650ba9ed3dfa72ba4d5741e2a277c65776bf2af250"
+    }
+  ],
+  "prompt": "TRUE chunky pixel art talent emblem ONLY on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel one clean flat square block \u2014 uniform square pixel blocks only, no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered storybook night-garden fantasy emblem in three-quarter display angle: a rugged FOREARM BRACER / WRIST GUARD made of overlapping layered MINT LEAF ARMOUR PLATES \u2014 clearly a wearable cuff around a wrist silhouette, NOT a scroll, NOT a roll, NOT a bandage bundle. Show distinct overlapping leaf scales (mint / sage / mint-shadow) wrapping a cylinder cuff, with a plum-magenta buckle strap and cream buckle pin across the front. Keep the entire emblem well inside the frame with generous empty magenta margin \u2014 at least four full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background filling the entire canvas, nothing else in frame. Use only mint / berry / cream / plum Moonberry colours (8\u201312 flat colours). No brown, tan, cyan, pure white, or pure black. Structural members at least 3 logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        361,
+        168,
+        1152,
+        873
+      ],
+      "pitch_x": {
+        "pitch": 27.00000000000007,
+        "score": 0.13806162181750806
+      },
+      "pitch_y": {
+        "pitch": 26.600000000000065,
+        "score": 0.15621423028708023
+      },
+      "grid": [
+        30,
+        26
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 463,
+      "far_cells": 42,
+      "far_fraction": 0.0907,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "contour-plum-deep": 31,
+        "berry-shadow": 27,
+        "twilight-slate": 105,
+        "cream": 40,
+        "berry": 42,
+        "berry-mid": 46,
+        "mint-pale": 32,
+        "sage": 38,
+        "mint-shadow": 25,
+        "mint-light": 68,
+        "mint": 9
+      }
+    }
+  },
+  "note": "#612 Hunter Tier-3 Talent / Ability Talent one-variant icon (rework for bracer identity)"
+}

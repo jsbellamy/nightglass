@@ -1,0 +1,50 @@
+{
+  "candidate": "master-fletcher-r2",
+  "path": "/Users/jakebellamy/VSProjects/games/game_idea/nightglass-wt-612/docs/research/evidence/612-hunter-tier3-icons/scratch/master-fletcher-r2.png",
+  "ok": true,
+  "recovered": {
+    "bbox": [
+      627,
+      367,
+      912,
+      644
+    ],
+    "pitch_x": {
+      "pitch": 14.394444444444535,
+      "score": 0.35599420106221374
+    },
+    "pitch_y": {
+      "pitch": 13.844444444444527,
+      "score": 0.47738169845984785
+    },
+    "grid": [
+      20,
+      20
+    ]
+  },
+  "ramp": {
+    "opaque_cells": 214,
+    "far_cells": 3,
+    "far_fraction": 0.014,
+    "off_ramp_reject": false,
+    "quantize_histogram": {
+      "berry-shadow": 63,
+      "contour-plum-deep": 37,
+      "berry-bright": 4,
+      "berry": 9,
+      "cream": 63,
+      "sage": 20,
+      "mint-pale": 12,
+      "berry-mid": 3,
+      "mint-light": 3
+    }
+  },
+  "primary": "advance",
+  "size_review": null,
+  "fit": null,
+  "grid": [
+    20,
+    20
+  ],
+  "far_fraction": 0.014
+}

@@ -1,0 +1,46 @@
+{
+  "candidate": "trailhardened-r4",
+  "path": "/Users/jakebellamy/VSProjects/games/game_idea/nightglass-wt-612/docs/research/evidence/612-hunter-tier3-icons/scratch/trailhardened-r4.png",
+  "ok": false,
+  "recovered": {
+    "bbox": [
+      392,
+      109,
+      1193,
+      901
+    ],
+    "pitch_x": {
+      "pitch": 29.077777777777875,
+      "score": 0.24441902506056432
+    },
+    "pitch_y": {
+      "pitch": 29.227777777777877,
+      "score": 0.22455572974857316
+    },
+    "grid": [
+      28,
+      28
+    ]
+  },
+  "ramp": {
+    "opaque_cells": 523,
+    "far_cells": 123,
+    "far_fraction": 0.2352,
+    "off_ramp_reject": true,
+    "quantize_histogram": {
+      "mint-shadow": 54,
+      "mint-light": 77,
+      "cream": 99,
+      "sage": 73,
+      "mint-pale": 31,
+      "twilight-slate": 96,
+      "contour-plum-deep": 7,
+      "berry-shadow": 37,
+      "mint": 1,
+      "berry-mid": 43,
+      "berry": 5
+    }
+  },
+  "primary": "off-ramp",
+  "error": "off-ramp far=23.5%"
+}

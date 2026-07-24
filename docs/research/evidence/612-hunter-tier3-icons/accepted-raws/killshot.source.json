@@ -1,0 +1,83 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "92e45875576d225922c1a0ca9059dc54292efb264aef1154ac4d472e826b1e93",
+  "asset_class": "interface",
+  "kind": "talent-skill-glyph",
+  "runtime_destination": "src/assets/icons/killshot.png",
+  "candidate": "killshot-r3",
+  "palette_subset": [
+    "contour-plum-deepest",
+    "contour-plum-deep",
+    "mint-shadow",
+    "mint",
+    "mint-light",
+    "mint-pale",
+    "cream",
+    "berry-shadow",
+    "berry-mid",
+    "berry",
+    "berry-bright",
+    "sage",
+    "twilight-slate"
+  ],
+  "style_references": [
+    {
+      "path": "src/assets/icons/draw-weight.png",
+      "role": "style_cohort",
+      "sha256": "8295caa64a75292527c08819de73f5c7b3179bcb41e1876617d0b910c68b80ae"
+    },
+    {
+      "path": "src/assets/icons/fletchers-eye.png",
+      "role": "style_cohort",
+      "sha256": "8d7cd4921e29e3cfc90143cc7137e7b2771a9e44b81d6cd9b9e1d644387a4425"
+    },
+    {
+      "path": "src/assets/icons/piercing-rain.png",
+      "role": "style_cohort",
+      "sha256": "49484a3e2fe14e4ecf7541650ba9ed3dfa72ba4d5741e2a277c65776bf2af250"
+    }
+  ],
+  "prompt": "TRUE chunky pixel art talent emblem ONLY on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel one clean flat square block \u2014 uniform square pixel blocks only, no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered storybook night-garden fantasy emblem in three-quarter display angle: a single arrow driven through the centre of a berry target reticle \u2014 reticle rings berry / berry-bright / cream, arrow shaft mint/sage with mint-pale vanes; no brown wood, tan, yellow, amber, or gold. Keep the entire emblem well inside the frame with generous empty magenta margin \u2014 at least four full magenta cells of clearance on every edge especially top bottom left and right. Flat solid magenta #ff00ff background filling the entire canvas, nothing else in frame. Use only mint / berry / cream / plum Moonberry colours (8\u201312 flat colours). No brown, tan, cyan, pure white, or pure black. Structural members at least 3 logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "note": "#612 Hunter Tier-3 Talent / Ability Talent one-variant icon",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        606,
+        318,
+        981,
+        685
+      ],
+      "pitch_x": {
+        "pitch": 16.54444444444453,
+        "score": 0.3014598505257274
+      },
+      "pitch_y": {
+        "pitch": 15.944444444444523,
+        "score": 0.2863426152419691
+      },
+      "grid": [
+        23,
+        23
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 298,
+      "far_cells": 1,
+      "far_fraction": 0.0034,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "berry-shadow": 92,
+        "cream": 83,
+        "mint-light": 18,
+        "mint-pale": 3,
+        "berry-mid": 7,
+        "mint-shadow": 3,
+        "berry-bright": 88,
+        "berry": 2,
+        "mint": 1,
+        "sage": 1
+      }
+    }
+  }
+}

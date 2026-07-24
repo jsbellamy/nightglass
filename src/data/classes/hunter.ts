@@ -150,6 +150,56 @@ export const hunterTier2: TalentTierDef = {
   abilityRow: ["piercing-rain", "twin-fang"],
 };
 
+export const hunterTier3Abilities: AbilityDef[] = [
+  {
+    id: "death-rain",
+    name: "Death Rain",
+    classId: "hunter",
+    slot: "talent",
+    iconKey: "death-rain",
+    targeting: { kind: "all-opponents" },
+    effects: [
+      { kind: "damage", channel: "physical", coefficient: 1.0 },
+      { kind: "apply-status", statusId: "riven" },
+    ],
+    windUpMs: 700,
+    recoveryMs: 700,
+    cooldownMs: 15_000,
+  },
+  {
+    id: "killshot",
+    name: "Killshot",
+    classId: "hunter",
+    slot: "talent",
+    iconKey: "killshot",
+    targeting: { kind: "closest-opponent" },
+    effects: [{ kind: "damage", channel: "physical", coefficient: 3.4 }],
+    windUpMs: 900,
+    recoveryMs: 650,
+    cooldownMs: 14_000,
+  },
+];
+
+export const hunterTier3: TalentTierDef = {
+  statRow: [
+    {
+      id: "master-fletcher",
+      name: "Master Fletcher",
+      perRank: { percent: { physicalPower: 0.06 } },
+      maxRanks: 5,
+      iconKey: "master-fletcher",
+    },
+    {
+      id: "trailhardened",
+      name: "Trailhardened",
+      perRank: { flat: { armor: 5 } },
+      maxRanks: 5,
+      iconKey: "trailhardened",
+    },
+  ],
+  abilityRow: ["death-rain", "killshot"],
+};
+
 export const hunterClass: ClassKitDef = {
   id: "hunter",
   name: "Hunter",
