@@ -9,7 +9,7 @@ import {
   focusCharacterView,
   focusDockTab,
 } from "./helpers/dock-context";
-import { declareEvidenceScenario } from "./helpers/evidence-scenarios";
+import { defineEvidenceScenario } from "./helpers/evidence-scenarios";
 import { openEvidenceSession } from "./helpers/evidence-session";
 import { armoryColourSnapshot } from "./helpers/snapshots";
 
@@ -127,7 +127,20 @@ const CHARACTER_PICKER_TEXT = [
 ] as const;
 
 test.describe("accessibility contrast floor", () => {
-  declareEvidenceScenario("contrast-aa-dock-surfaces", async ({ browser }) => {
+  defineEvidenceScenario(
+    {
+      id: "contrast-aa-dock-surfaces",
+      slugs: ["aa-contrast", "dock-surfaces"],
+      spec: {
+        id: "contrast:contrast-aa-dock-surfaces",
+        path: "e2e/contrast.spec.ts",
+      },
+      fixture: "live-tile-and-dock",
+      reviewScenes: [],
+      summary:
+        "status line and Dock surfaces meet WCAG AA; scroll affordance appears only when a panel overflows",
+    },
+    async ({ browser }) => {
     test.setTimeout(60_000);
     const live = await openEvidenceSession(browser, "live-tile-and-dock");
     const tile = live.tile!;
@@ -293,9 +306,20 @@ test.describe("accessibility contrast floor", () => {
     expect(overflowing?.attachment.includes("local")).toBe(true);
 
     await isolated.finish();
-  });
+  },
+  );
 
-  declareEvidenceScenario("colour-independence", async ({ browser }) => {
+  defineEvidenceScenario(
+    {
+      id: "colour-independence",
+      slugs: [],
+      spec: { id: "contrast:colour-independence", path: "e2e/contrast.spec.ts" },
+      fixture: "live-tile",
+      reviewScenes: [],
+      summary:
+        "knockout, rarity, and locked-stage states expose non-colour signals",
+    },
+    async ({ browser }) => {
     test.setTimeout(60_000);
     const live = await openEvidenceSession(browser, "live-tile-and-dock");
     const tile = live.tile!;
@@ -373,5 +397,6 @@ test.describe("accessibility contrast floor", () => {
     expect(lockedStage.glyph).toBeTruthy();
 
     await isolated.finish();
-  });
+  },
+  );
 });

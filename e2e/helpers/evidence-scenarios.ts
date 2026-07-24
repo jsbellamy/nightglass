@@ -112,56 +112,7 @@ export type EvidenceScenario = {
   summary: string;
 };
 
-export const EVIDENCE_SCENARIOS: readonly EvidenceScenario[] = [
-  {
-    id: "five-actor-pools",
-    slugs: ["five-actor-pools"],
-    spec: { id: "stress:five-actor-pools", path: "e2e/stress.spec.ts" },
-    fixture: "live-tile-seeded-snapshot",
-    reviewScenes: [{ id: "stage-stress-five-pools" }],
-    summary:
-      "Stage 3 five-opponent wave renders five actor pools without pool overlap beyond tolerance",
-  },
-  {
-    id: "reduced-motion",
-    slugs: ["reduced-motion"],
-    spec: { id: "reduced-motion:reduced-motion", path: "e2e/reduced-motion.spec.ts" },
-    fixture: "reduced-motion-live-tile",
-    reviewScenes: [],
-    summary:
-      "actor pool stays visible during Action Cycles while lunge/recoil offsets stay disabled",
-  },
-  {
-    id: "keyboard-floor",
-    slugs: [],
-    spec: { id: "keyboard:keyboard-floor", path: "e2e/keyboard.spec.ts" },
-    fixture: "live-tile-and-dock",
-    reviewScenes: [],
-    summary:
-      "Armory → Character Build/Stats journeys with strip assign/swap, Talent −/+, and popover disclosure without pointer",
-  },
-  {
-    id: "contrast-aa-dock-surfaces",
-    slugs: ["aa-contrast", "dock-surfaces"],
-    spec: {
-      id: "contrast:contrast-aa-dock-surfaces",
-      path: "e2e/contrast.spec.ts",
-    },
-    fixture: "live-tile-and-dock",
-    reviewScenes: [],
-    summary:
-      "status line and Dock surfaces meet WCAG AA; scroll affordance appears only when a panel overflows",
-  },
-  {
-    id: "colour-independence",
-    slugs: [],
-    spec: { id: "contrast:colour-independence", path: "e2e/contrast.spec.ts" },
-    fixture: "live-tile",
-    reviewScenes: [],
-    summary:
-      "knockout, rarity, and locked-stage states expose non-colour signals",
-  },
-] as const;
+export const EVIDENCE_SCENARIOS: readonly EvidenceScenario[] = [];
 
 const runtimeEvidenceScenarios: EvidenceScenario[] = [];
 
