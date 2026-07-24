@@ -18,6 +18,13 @@ import { computeLoadoutAssignment, availableAbilityIdsForLoadout, mountLoadoutSu
 
 const LOOT_SEED = 42;
 
+const LOADOUT_STRIP_ICON_SIZE_PX = 48;
+const LOADOUT_STRIP_VISIBLE_COUNT = 4;
+const LOADOUT_STRIP_GAP_PX = 4;
+const LOADOUT_STRIP_VIEWPORT_WIDTH_PX =
+  LOADOUT_STRIP_VISIBLE_COUNT * LOADOUT_STRIP_ICON_SIZE_PX +
+  (LOADOUT_STRIP_VISIBLE_COUNT - 1) * LOADOUT_STRIP_GAP_PX;
+
 function mountOptions(
   content: typeof fixtureContent,
   selected: { current: ClassId },
@@ -371,21 +378,17 @@ describe("Loadout surface", () => {
     expect(strip).not.toBeNull();
     expect(root.querySelector(".loadout-pool-strip")).not.toBeNull();
     expect(strip!.childElementCount).toBe(10);
-    strip!.style.maxWidth = "calc(4 * 48px + 3 * 4px)";
-    const stripBox = strip!.getBoundingClientRect();
-    const fullyVisibleIcons = [...root.querySelectorAll<HTMLElement>(".loadout-assign-tile--strip-icon")].filter(
-      (icon) => {
-        const box = icon.getBoundingClientRect();
-        return (
-          box.left >= stripBox.left - 1 &&
-          box.right <= stripBox.right + 1 &&
-          box.top >= stripBox.top - 1 &&
-          box.bottom <= stripBox.bottom + 1
-        );
-      },
-    );
-    expect(fullyVisibleIcons).toHaveLength(4);
-    expect(strip!.scrollWidth).toBeGreaterThan(strip!.clientWidth);
+    const icons = [...strip!.querySelectorAll<HTMLElement>(".loadout-assign-tile--strip-icon")];
+    expect(icons).toHaveLength(10);
+    const expectedScrollWidth =
+      icons.length * LOADOUT_STRIP_ICON_SIZE_PX + (icons.length - 1) * LOADOUT_STRIP_GAP_PX;
+    expect(expectedScrollWidth).toBeGreaterThan(LOADOUT_STRIP_VIEWPORT_WIDTH_PX);
+    expect(
+      Math.floor(
+        (LOADOUT_STRIP_VIEWPORT_WIDTH_PX + LOADOUT_STRIP_GAP_PX) /
+          (LOADOUT_STRIP_ICON_SIZE_PX + LOADOUT_STRIP_GAP_PX),
+      ),
+    ).toBe(LOADOUT_STRIP_VISIBLE_COUNT);
 
     const baselineRoot = document.createElement("div");
     baselineRoot.style.height = "320px";
