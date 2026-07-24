@@ -1,0 +1,31 @@
+{
+  "tag": "the-vigil",
+  "candidates": [
+    {
+      "candidate": "docs/research/evidence/unwound-belfry/the-vigil/scratch/the-vigil-c1.png",
+      "tag": "the-vigil",
+      "status": "advance",
+      "primary_failure": null,
+      "next_action": "advance to visual review",
+      "gates": [],
+      "clipped_sides": [],
+      "cursor_stamp_removed": false,
+      "opaque_bounds": [
+        0,
+        0,
+        1089,
+        834
+      ],
+      "fitted_opaque_size": [
+        94,
+        72
+      ],
+      "profile": {
+        "role": "boss",
+        "max_opaque_w": 160,
+        "max_opaque_h": 72,
+        "facing": "left"
+      }
+    }
+  ]
+}
