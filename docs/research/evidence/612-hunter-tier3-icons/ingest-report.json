@@ -41,39 +41,41 @@
   "trailhardened": {
     "recovered": {
       "bbox": [
-        445,
-        226,
-        1135,
-        815
+        361,
+        168,
+        1152,
+        873
       ],
       "pitch_x": {
-        "pitch": 32.09444444444462,
-        "score": 0.2263984738462791
+        "pitch": 27.00000000000007,
+        "score": 0.13806162181750806
       },
       "pitch_y": {
-        "pitch": 31.844444444444623,
-        "score": 0.23642507321167888
+        "pitch": 26.600000000000065,
+        "score": 0.15621423028708023
       },
       "grid": [
-        22,
-        19
+        30,
+        26
       ]
     },
     "ramp": {
-      "opaque_cells": 245,
-      "far_cells": 35,
-      "far_fraction": 0.1429,
+      "opaque_cells": 463,
+      "far_cells": 42,
+      "far_fraction": 0.0907,
       "off_ramp_reject": false,
       "quantize_histogram": {
-        "berry-mid": 21,
-        "berry-shadow": 46,
-        "cream": 25,
-        "mint-light": 37,
-        "sage": 45,
-        "mint-shadow": 5,
-        "berry": 17,
-        "twilight-slate": 41,
-        "mint-pale": 8
+        "contour-plum-deep": 31,
+        "berry-shadow": 27,
+        "twilight-slate": 105,
+        "cream": 40,
+        "berry": 42,
+        "berry-mid": 46,
+        "mint-pale": 32,
+        "sage": 38,
+        "mint-shadow": 25,
+        "mint-light": 68,
+        "mint": 9
       }
     }
   },

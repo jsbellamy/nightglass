@@ -1,7 +1,47 @@
 {
   "candidate": "death-rain-r4",
-  "path": "/Users/jakebellamy/VSProjects/games/game_idea/nightglass-wt-612/docs/research/evidence/612-hunter-tier3-icons/scratch/death-rain-r4.png",
-  "ok": false,
-  "error": "death-rain-r4.png: subject clipped by generator at top/bottom/left of the 1536x1024 raw canvas",
-  "primary": "clip-fail"
+  "path": "/Users/jakebellamy/VSProjects/games/game_idea/nightglass-wt-612/docs/research/evidence/612-hunter-tier3-icons/accepted-raws/death-rain.png",
+  "ok": true,
+  "recovered": {
+    "bbox": [
+      552,
+      233,
+      983,
+      774
+    ],
+    "pitch_x": {
+      "pitch": 20.305555555555628,
+      "score": 0.16280476542004643
+    },
+    "pitch_y": {
+      "pitch": 20.105555555555625,
+      "score": 0.12150063023146113
+    },
+    "grid": [
+      22,
+      27
+    ]
+  },
+  "ramp": {
+    "opaque_cells": 291,
+    "far_cells": 1,
+    "far_fraction": 0.0034,
+    "off_ramp_reject": false,
+    "quantize_histogram": {
+      "contour-plum-deep": 116,
+      "cream": 30,
+      "mint-light": 97,
+      "berry-mid": 1,
+      "berry-bright": 45,
+      "berry-shadow": 2
+    }
+  },
+  "primary": "advance",
+  "grid": [
+    22,
+    27
+  ],
+  "far_fraction": 0.0034,
+  "fit": null,
+  "size_review": null
 }
