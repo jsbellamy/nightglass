@@ -1,7 +1,7 @@
 # Aphelion Boss body — contract declaration (#575)
 
 Asset class: opponent body — Boss (`aphelion`)
-Status: candidate for shipping (promoted)
+Status: accepted for shipping (agent visual review accept; promote complete)
 Runtime destination: `src/assets/sprites/aphelion.png`
 Runtime shape: flexible RGBA, binary alpha, `unwound-belfry-24@1`, ≤ 160×72 opaque
 Visual vocabulary: `docs/unwound-belfry-theme.md` §`aphelion`; palette `unwound-belfry-24`
