@@ -510,5 +510,37 @@
       "provider": "Cursor GenerateImage",
       "raw_sha256": "e1f2a82ebeee6e3f4be17a3e34649bdb37829040bd800efa61dc0737a0f52d6f"
     }
+  },
+  "the-vigil": {
+    "action": "still",
+    "frame_size": [
+      94,
+      72
+    ],
+    "visual_bounds": [
+      0,
+      0,
+      94,
+      72
+    ],
+    "foot_anchor": [
+      47,
+      72
+    ],
+    "palette": "unwound-belfry-24",
+    "baseline_row": 71,
+    "total_ms": 1,
+    "frames": [
+      {
+        "name": "the-vigil",
+        "duration_ms": 1,
+        "sha256": "518f9f05b6fb99bac67496e11cd7aef84be868487a3b256869f20921c20cc955"
+      }
+    ],
+    "cues_ms": {},
+    "source": {
+      "provider": "Cursor GenerateImage",
+      "raw_sha256": "20e59ff1230f9a428b86d9285525acb457af927f3ea8201b7353cbd579932160"
+    }
   }
 }
