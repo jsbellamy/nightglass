@@ -10,6 +10,7 @@ import { levelFromXp } from "../core/xp";
 import type { AbilityDef, OpponentDef, StageDef, StageId } from "../core/types";
 import { buildContent, XP_THRESHOLDS } from "./index";
 import { fowlHarvestOpponents } from "./fowl-harvest-opponents";
+import { unwoundBelfryOpponents } from "./unwound-belfry-opponents";
 import { fowlHarvestStages } from "./fowl-harvest-stages";
 import { opponentAbilities } from "./opponents";
 
@@ -52,6 +53,8 @@ const FOWL_SPRITE_KEYS = [
 const FOWL_BACKDROP_KEYS = ["last-stop-diner", "crooked-cornfield", "harvest-yard"] as const;
 
 const FOWL_OPPONENT_IDS = new Set(fowlHarvestOpponents.map((entry) => entry.id));
+const UNWOUND_BELFRY_OPPONENT_IDS = new Set(unwoundBelfryOpponents.map((entry) => entry.id));
+const EXPANSION_OPPONENT_IDS = new Set([...FOWL_OPPONENT_IDS, ...UNWOUND_BELFRY_OPPONENT_IDS]);
 
 function abilityById(id: string): AbilityDef {
   const ability = content.abilities.find((entry) => entry.id === id);
@@ -156,8 +159,7 @@ describe("assembled Stage content", () => {
   });
 
   it("preserves Moonberry opponents and thresholds 1–6 ahead of Fowl expansion", () => {
-    const fowlIds = new Set(fowlHarvestOpponents.map((entry) => entry.id));
-    const moonberryOpponents = content.opponents.filter((entry) => !fowlIds.has(entry.id));
+    const moonberryOpponents = content.opponents.filter((entry) => !EXPANSION_OPPONENT_IDS.has(entry.id));
     expect(moonberryOpponents.map((entry) => entry.id)).toEqual([...MOONBERRY_OPPONENT_IDS]);
     expect(XP_THRESHOLDS.slice(0, 6)).toEqual([0, 100, 250, 450, 650, 850]);
     expect(content.xpThresholds.slice(0, 6)).toEqual([0, 100, 250, 450, 650, 850]);
@@ -203,7 +205,11 @@ describe("assembled Stage content", () => {
       expect(sweep.windUpMs).toBeGreaterThanOrEqual(1200);
       expect(sweep.cooldownMs).toBeGreaterThan(0);
     }
-    expect(opponentAbilities.filter((ability) => ability.id.endsWith("-sweep"))).toHaveLength(3);
+    expect(
+      opponentAbilities.filter((ability) =>
+        ["boss-1-sweep", "boss-2-sweep", "boss-3-sweep"].includes(ability.id),
+      ),
+    ).toHaveLength(3);
   });
 
   it("reaches Level 9 at 2000 XP after a clean Stage 1–6 clear and Level 12 after three Stage 6 farms", () => {

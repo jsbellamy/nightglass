@@ -132,7 +132,7 @@ describe("assembled Class Kit content", () => {
       ),
     )).toHaveLength(6);
     expect(debuffs.map((status) => status.id).sort()).toEqual(
-      ["exposed", "riven", "scalded", "scorched", "shaken"],
+      ["corroded", "exposed", "riven", "scalded", "scorched", "shaken", "timeslip", "tolling"],
     );
     expect(stuns).toHaveLength(1);
     expect(stuns[0]?.id).toBe("stun");

@@ -32,6 +32,7 @@ PALETTE = json.loads((HERE / "palette_glow.json").read_text())
 GLOW_RGB = {tuple(c["rgb"]) for c in PALETTE["colors"]}
 STATUS_GLYPH_IDS = (
     "braced",
+    "corroded",
     "exposed",
     "guarded",
     "hold-the-line",
@@ -43,6 +44,8 @@ STATUS_GLYPH_IDS = (
     "shaken",
     "sheltered",
     "stun",
+    "timeslip",
+    "tolling",
     "warded",
 )
 
