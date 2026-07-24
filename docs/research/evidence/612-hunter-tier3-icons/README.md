@@ -48,8 +48,6 @@ content wired into Class Kit Content.
 | death-rain-r2 | icon | fail | top/bottom/left | — | clip-fail | clearance |
 | death-rain-r3 | icon | fail | bottom/left/right | — | clip-fail | clearance |
 | death-rain-r4 | icon | pass | none | 22×27; far 0.3% | advance | accept |
-| death-rain-r6 | icon | fail | bottom/left | — | clip-fail | reject |
-| death-rain-r7 | icon | pass | none | far 44.9% | off-ramp | reject |
 | killshot-r1 | icon | pass | none | 24×21; far 14.2% | advance | superseded by r3 |
 | killshot-r2 | icon | pass | none | far 37.2% | off-ramp | retry |
 | killshot-r3 | icon | pass | none | 23×23; far 0.3% | advance | accept |
@@ -61,8 +59,6 @@ content wired into Class Kit Content.
 | death-rain-r1 | off-ramp | far 52.5% (yellow/gold tips) |
 | death-rain-r2 | clip-fail | clipped top/bottom/left |
 | death-rain-r3 | clip-fail | clipped bottom/left/right |
-| death-rain-r6 | clip-fail | clipped bottom/left |
-| death-rain-r7 | off-ramp | far 44.9% |
 | killshot-r2 | off-ramp | far 37.2% |
 | trailhardened-r4 | off-ramp | far 23.5% |
 
