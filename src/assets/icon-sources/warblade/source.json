@@ -5,6 +5,7 @@
   "asset_class": "interface",
   "kind": "talent-skill-glyph",
   "runtime_destination": "src/assets/icons/warblade.png",
+  "source_key": "warblade",
   "candidate": "warblade-r3",
   "palette_subset": [
     "contour-plum-deepest",
@@ -79,5 +80,6 @@
       }
     }
   },
-  "note": "#609 Knight Tier-3 Talent / Ability Talent one-variant icon (warblade identity rework)"
+  "note": "#609 Knight Tier-3 warblade",
+  "evidence_raw": "docs/research/evidence/609-knight-tier3-icons/accepted-raws/warblade.png"
 }

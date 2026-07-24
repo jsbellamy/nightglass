@@ -1,0 +1,89 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "ea68a93bb7ad0d0540f5eb7208b67c9ae3ea6341c4c26231a4df9b17f881bf71",
+  "asset_class": "interface",
+  "kind": "talent-skill-glyph",
+  "runtime_destination": "src/assets/icons/bulwark.png",
+  "source_key": "bulwark",
+  "candidate": "bulwark-r3",
+  "palette_subset": [
+    "contour-plum-deepest",
+    "contour-plum-deep",
+    "mint-shadow",
+    "mint",
+    "mint-light",
+    "mint-pale",
+    "cream",
+    "cream-gold",
+    "berry-shadow",
+    "berry-mid",
+    "berry",
+    "berry-bright",
+    "sage",
+    "twilight-slate"
+  ],
+  "style_references": [
+    {
+      "path": "src/assets/icons/fortitude.png",
+      "sha256": "c6788da990b7fea87b4cbeb084f25f10c5281fd8973e2748765984f628b8b984",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/iron-discipline.png",
+      "sha256": "95c78e600886659836bf55795f227c20f50362a543a96b8bc39cfee992fbfcf7",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/vanguard.png",
+      "sha256": "fd3cdc119667da78e5fffdaeb1725a0f2f1fe56dcd479589ba39653b355f7727",
+      "role": "style_cohort"
+    }
+  ],
+  "prompt": "TRUE chunky pixel art talent emblem ONLY on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel one clean flat square block \u2014 uniform square pixel blocks only, no smaller detail, smooth gradient, anti-aliasing, blur, or dithering. A single centered storybook night-garden fantasy emblem in three-quarter display angle: a stout defensive tower shield with a plum boss rivet and cream rim, mint plates. Keep the entire shield well inside the frame with generous empty magenta margin \u2014 at least four full magenta cells of clearance on every edge especially bottom and left. Flat solid magenta #ff00ff background filling the entire canvas, nothing else in frame. Use only mint / berry / cream / plum Moonberry colours (8\u201312 flat colours). No brown, tan, cyan, pure white, or pure black. Structural members at least 3 logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        496,
+        103,
+        1038,
+        896
+      ],
+      "pitch_x": {
+        "pitch": 27.90555555555564,
+        "score": 0.14919287021334612
+      },
+      "pitch_y": {
+        "pitch": 27.505555555555635,
+        "score": 0.14904604522559606
+      },
+      "grid": [
+        19,
+        28
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 371,
+      "far_cells": 24,
+      "far_fraction": 0.0647,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "cream": 94,
+        "mint": 15,
+        "berry": 20,
+        "contour-plum-deep": 80,
+        "twilight-slate": 28,
+        "mint-shadow": 38,
+        "berry-mid": 8,
+        "mint-pale": 5,
+        "mint-light": 69,
+        "sage": 5,
+        "cream-gold": 1,
+        "berry-shadow": 7,
+        "berry-bright": 1
+      }
+    }
+  },
+  "note": "#609 Knight Tier-3 bulwark",
+  "evidence_raw": "docs/research/evidence/609-knight-tier3-icons/accepted-raws/bulwark.png"
+}

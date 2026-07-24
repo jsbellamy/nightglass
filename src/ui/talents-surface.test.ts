@@ -642,7 +642,7 @@ describe("Talents surface", () => {
     root.remove();
   });
 
-  it("stacks Talent Tier 1–3 with tier gate, selection, and Tier-2 ability descriptions", () => {
+  it("stacks Talent Tier 1–3 with tier gate, selection, and Tier-2 ability popover", () => {
     const fullContent = buildContent();
     const root = document.createElement("div");
     const boot = createEngine(fullContent, undefined, LOOT_SEED);

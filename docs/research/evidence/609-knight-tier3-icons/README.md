@@ -9,7 +9,7 @@ content wired into Class Kit Content.
 | Field | Value |
 | --- | --- |
 | Asset class | interface (Talent / Ability Talent skill glyph) |
-| Status | candidate for shipping |
+| Status | shipping (accepted) |
 | Runtime destination | `src/assets/icons/<iconKey>.png` |
 | Runtime shape | 34×34 RGBA; derived `contour-plum-deepest` outline |
 | Visual vocabulary | `moonberry-16`; per-family `palette_subset` in `pipeline/icons/registry.py` |
@@ -30,7 +30,7 @@ content wired into Class Kit Content.
 | iconKey | Subject (C6) | Accepted | Recovered |
 | --- | --- | --- | --- |
 | `bulwark` | stout defensive tower shield with a plum boss | **r3** | **19×28**; far 6.5% |
-| `warblade` | two crossed knight longswords with mint edge-glint | **r1** | **29×28**; far 3.7% |
+| `warblade` | two crossed knight longswords with mint edge-glint | **r3** | **28×28**; far 17.9% |
 | `aegis-wall` | curved wall of overlapping interlocked shields | **r1** | **27×17**; far 4.0% |
 | `titans-cleave` | enormous two-handed greatsword mid downward cleave | **r1** | **25×26**; far 13.0% |
 
@@ -41,7 +41,9 @@ content wired into Class Kit Content.
 | bulwark-r1 | icon | fail | none | pitch y=0.039 &lt; floor | pitch-fail | retry with style ref + grid shell |
 | bulwark-r2 | icon | fail | bottom/left | clipped | clip-fail | more magenta clearance |
 | bulwark-r3 | icon | pass | none | 19×28; far 6.5% | advance | accept |
-| warblade-r1 | icon | pass | none | 29×28; far 3.7% | advance | accept |
+| warblade-r1 | icon | pass | none | 29×28; far 3.7% | advance | accept then identity-reject at Spec review |
+| warblade-r2 | icon | pass | none | 30×30; far 15.7% | advance | identity-reject (shield+moon still dominant) |
+| warblade-r3 | icon | pass | none | 28×28; far 17.9% | advance | accept |
 | aegis-wall-r1 | icon | pass | none | 27×17; far 4.0% | advance | accept |
 | titans-cleave-r1 | icon | pass | none | 25×26; far 13.0% | advance | accept |
 
@@ -51,6 +53,8 @@ content wired into Class Kit Content.
 | --- | --- | --- |
 | bulwark-r1 | pitch-fail | scores x=0.074, y=0.039 (floor 0.04) |
 | bulwark-r2 | clip-fail | clipped bottom/left of raw canvas |
+| warblade-r1 | identity (Spec) | shield-forward silhouette vs crossed swords |
+| warblade-r2 | identity | shield+moon still dominant |
 
 Rejected provider raws were pruned from `scratch/`; durable record is the table
 above. Provider raws are evidence only — **nothing added to `assets-raw/`**.
@@ -60,10 +64,10 @@ above. Provider raws are evidence only — **nothing added to `assets-raw/`**.
 Composite: [`knight-tier3-sheet@8x.png`](./knight-tier3-sheet@8x.png)
 (left→right: bulwark | warblade | aegis-wall | titans-cleave).
 
-Subagent verdict: **accept**. All four match C6 identity reads, align with the
-night-garden chunky-pixel Knight talent family, and remain distinguishable.
-Size recovery for bulwark (19×28) and aegis-wall (27×17) supports rather than
-undermines intent; no retry.
+Subagent verdict: **accept** (after warblade identity rework to **r3**). All four
+match C6 identity reads, align with the night-garden chunky-pixel Knight talent
+family, and remain distinguishable. Size recovery for bulwark (19×28) and
+aegis-wall (27×17) supports rather than undermines intent.
 
 ## Artifacts
 
