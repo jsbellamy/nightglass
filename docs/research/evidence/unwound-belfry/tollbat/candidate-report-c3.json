@@ -1,0 +1,31 @@
+{
+  "tag": "tollbat",
+  "candidates": [
+    {
+      "candidate": "assets-raw/scratch/tollbat/tollbat-c3.png",
+      "tag": "tollbat",
+      "status": "advance",
+      "primary_failure": null,
+      "next_action": "advance to visual review",
+      "gates": [],
+      "clipped_sides": [],
+      "cursor_stamp_removed": false,
+      "opaque_bounds": [
+        0,
+        0,
+        1388,
+        853
+      ],
+      "fitted_opaque_size": [
+        30,
+        18
+      ],
+      "profile": {
+        "role": "ordinary-opponent",
+        "max_opaque_w": 30,
+        "max_opaque_h": 68,
+        "facing": "left"
+      }
+    }
+  ]
+}

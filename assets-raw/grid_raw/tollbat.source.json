@@ -1,0 +1,37 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "5d2d90d0b09c67f8762521712ef9e33201e8081621bd42a8567cf9c2335bf861",
+  "acquisition": "flexible",
+  "identity_profile": {
+    "asset_class": "opponent",
+    "role": "ordinary-opponent",
+    "facing": "left"
+  },
+  "cursor_stamp_removed": false,
+  "identity": "tollbat",
+  "asset_class": "opponent",
+  "runtime_destination": "src/assets/sprites/tollbat.png",
+  "candidate": "tollbat-c3.png",
+  "facing": "left",
+  "role": "ordinary-opponent",
+  "palette": "unwound-belfry-24@1",
+  "style_references": [
+    {
+      "path": "src/assets/sprites/tickmoth.png",
+      "sha256": "0e8019a793ec7c18ec10711b9490f32193f01a60179e67e6a61c7948805e5840",
+      "role": "style"
+    },
+    {
+      "path": "src/assets/sprites/burger-drake.png",
+      "sha256": "c8a0e66c892465c9fa9355df19275a1c7385f10246286c4f11c2869272f9563f",
+      "role": "style"
+    },
+    {
+      "path": "src/assets/sprites/cornquacker.png",
+      "sha256": "326ec503bc95de96ab98ce82e54e91ca32577ee5d92eebdcb608bcb50a59a8ca",
+      "role": "style"
+    }
+  ],
+  "prompt": "Single full-body Tollbat ordinary opponent game sprite, strict side profile facing LEFT. A bat anatomically fused with a cracked bronze hand-bell. Its torso is the bell: a tarnished verdigris-streaked bronze bell forms the chest and hangs from a brass yoke fused into the shoulders, a hairline crack splits one side, and an iron clapper hangs as a heavy tongue beneath a snarling muzzle. The broad leathery wings are bell-metal thin, their membrane ribs reading as cast seams; one wing sweeps forward. The mutation is one living creature, not a bat clutching or wearing a bell.\n\nPreserve its uncanny absurd identity: a snub bat head with tall notched ears and bared teeth, one cold-glass eye with an alarm-red pinpoint, the cracked bronze bell torso with brass yoke, the iron clapper tongue, two wide leathery wings, and two small hooked feet gripping nothing. Wide-winged menacing silhouette, heavier than it should be. The ears, bell torso, crack, clapper tongue, both wings, and feet must remain distinct at native game scale.\n\nChunky simplified flat-colour Unwound Belfry pixel art matching Tickmoth's block size, selective moonless-indigo contour, and 55% absurd / 45% uncanny tone. Use only named unwound-belfry-24 colors: moonless indigos, tarnished brass and bronze, verdigris patina, candle ivory, cold glass, and restrained alarm red. No gore, wounds, exposed organs, realism, gradients, anti-aliasing, blur, or dithering.\n\nShow exactly one complete subject with generous empty clearance on every edge of an opaque flat solid magenta #ff00ff background. No shadow, floor, glow, sound lines, sparkles, particles, Ability effect, text, watermark, scenery, UI, transparency, other object, or other subject.\n"
+}
