@@ -1,0 +1,83 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "8a232031b6e1aeec3f78998c68ca03fb86c3f073358b8f87751dc7843a862e28",
+  "asset_class": "interface",
+  "kind": "talent-skill-glyph",
+  "runtime_destination": "src/assets/icons/titans-cleave.png",
+  "candidate": "titans-cleave-r1",
+  "palette_subset": [
+    "contour-plum-deepest",
+    "contour-plum-deep",
+    "mint-shadow",
+    "mint",
+    "mint-light",
+    "mint-pale",
+    "cream",
+    "berry-shadow",
+    "berry-mid",
+    "berry",
+    "sage",
+    "twilight-slate"
+  ],
+  "style_references": [
+    {
+      "path": "src/assets/icons/fortitude.png",
+      "sha256": "c6788da990b7fea87b4cbeb084f25f10c5281fd8973e2748765984f628b8b984",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/iron-discipline.png",
+      "sha256": "95c78e600886659836bf55795f227c20f50362a543a96b8bc39cfee992fbfcf7",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/vanguard.png",
+      "sha256": "fd3cdc119667da78e5fffdaeb1725a0f2f1fe56dcd479589ba39653b355f7727",
+      "role": "style_cohort"
+    }
+  ],
+  "prompt": "TRUE chunky pixel art talent emblem ONLY on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel one clean flat square block, no smaller detail, gradient, anti-aliasing, blur, or dithering. A single centered storybook night-garden fantasy emblem in three-quarter display angle: an enormous two-handed greatsword mid downward cleave, blade arcing. Leave at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Use only mint / berry / cream / plum Moonberry colours (8\u201312 flat colours). No brown, tan, cyan, pure white, or pure black. Structural members at least 3 logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        324,
+        47,
+        1211,
+        981
+      ],
+      "pitch_x": {
+        "pitch": 35.92222222222208,
+        "score": 0.1078812442785212
+      },
+      "pitch_y": {
+        "pitch": 35.77222222222209,
+        "score": 0.088884623907329
+      },
+      "grid": [
+        25,
+        26
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 346,
+      "far_cells": 45,
+      "far_fraction": 0.1301,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "cream": 87,
+        "berry": 22,
+        "contour-plum-deep": 55,
+        "berry-shadow": 11,
+        "berry-mid": 19,
+        "mint-light": 29,
+        "sage": 26,
+        "mint-pale": 4,
+        "twilight-slate": 42,
+        "mint": 25,
+        "mint-shadow": 26
+      }
+    }
+  },
+  "note": "#609 Knight Tier-3 Talent / Ability Talent one-variant icon"
+}

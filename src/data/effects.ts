@@ -89,6 +89,21 @@ export const effectRecipes: Record<string, EffectRecipe> = {
     durationMs: 330,
     cuesMs: { impact_expected: 700 },
   },
+  "aegis-wall": {
+    stillKey: "buff-halo",
+    frames: "buff-halo",
+    anchor: "strike_target",
+    durationMs: 300,
+    cuesMs: { impact_expected: 400 },
+  },
+  "titans-cleave": {
+    stillKey: "arc-slash",
+    frames: "arc-slash-heavy",
+    anchor: "strike_target",
+    anchorDx: -15,
+    durationMs: 330,
+    cuesMs: { impact_expected: 800 },
+  },
 
   // Hunter
   "quickshot": {

@@ -10,6 +10,8 @@ import {
   knightClass,
   knightTier2,
   knightTier2Abilities,
+  knightTier3,
+  knightTier3Abilities,
 } from "./classes/knight";
 import {
   priestAbilities,
@@ -38,6 +40,7 @@ export const XP_THRESHOLDS = [
 const CLASS_KIT_ABILITIES = [
   ...knightAbilities,
   ...knightTier2Abilities,
+  ...knightTier3Abilities,
   ...wizardAbilities,
   ...wizardTier2Abilities,
   ...priestAbilities,
@@ -56,7 +59,7 @@ function withTalentTiers(
 }
 
 const CLASS_KITS: ClassKitDef[] = [
-  withTalentTiers(knightClass, [knightTier2]),
+  withTalentTiers(knightClass, [knightTier2, knightTier3]),
   withTalentTiers(wizardClass, [wizardTier2]),
   withTalentTiers(priestClass, [priestTier2]),
   withTalentTiers(hunterClass, [hunterTier2]),

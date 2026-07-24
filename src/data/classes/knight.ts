@@ -149,6 +149,59 @@ export const knightTier2: TalentTierDef = {
   abilityRow: ["vanguard", "sundering-charge"],
 };
 
+export const knightTier3Abilities: AbilityDef[] = [
+  {
+    id: "aegis-wall",
+    name: "Aegis Wall",
+    classId: "knight",
+    slot: "talent",
+    iconKey: "aegis-wall",
+    targeting: { kind: "party" },
+    effects: [
+      { kind: "apply-status", statusId: "sheltered" },
+      { kind: "apply-status", statusId: "inspired" },
+    ],
+    windUpMs: 400,
+    recoveryMs: 600,
+    cooldownMs: 18_000,
+  },
+  {
+    id: "titans-cleave",
+    name: "Titan's Cleave",
+    classId: "knight",
+    slot: "talent",
+    iconKey: "titans-cleave",
+    targeting: { kind: "all-opponents" },
+    effects: [
+      { kind: "damage", channel: "physical", coefficient: 2.1 },
+      { kind: "apply-status", statusId: "exposed" },
+    ],
+    windUpMs: 800,
+    recoveryMs: 800,
+    cooldownMs: 15_000,
+  },
+];
+
+export const knightTier3: TalentTierDef = {
+  statRow: [
+    {
+      id: "bulwark",
+      name: "Bulwark",
+      perRank: { flat: { armor: 5 } },
+      maxRanks: 5,
+      iconKey: "bulwark",
+    },
+    {
+      id: "warblade",
+      name: "Warblade",
+      perRank: { percent: { physicalPower: 0.06 } },
+      maxRanks: 5,
+      iconKey: "warblade",
+    },
+  ],
+  abilityRow: ["aegis-wall", "titans-cleave"],
+};
+
 export const knightClass: ClassKitDef = {
   id: "knight",
   name: "Knight",

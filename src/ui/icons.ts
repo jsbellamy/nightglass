@@ -1,5 +1,6 @@
 import type { Content } from "../core/types";
 import absoluteZeroUrl from "../assets/icons/absolute-zero.png";
+import aegisWallUrl from "../assets/icons/aegis-wall.png";
 import aphelionConduitUrl from "../assets/icons/aphelion-conduit.png";
 import arcSparkUrl from "../assets/icons/arc-spark.png";
 import augerwireLongbowUrl from "../assets/icons/augerwire-longbow.png";
@@ -9,6 +10,7 @@ import benedictionUrl from "../assets/icons/benediction.png";
 import berrybrightCharmUrl from "../assets/icons/berrybright-charm.png";
 import blackOilLocketUrl from "../assets/icons/black-oil-locket.png";
 import bramblesongBowUrl from "../assets/icons/bramblesong-bow.png";
+import bulwarkUrl from "../assets/icons/bulwark.png";
 import cinderBloomUrl from "../assets/icons/cinder-bloom.png";
 import combineplateHarnessUrl from "../assets/icons/combineplate-harness.png";
 import dawnAscendantUrl from "../assets/icons/dawn-ascendant.png";
@@ -72,11 +74,13 @@ import swordcraftUrl from "../assets/icons/swordcraft.png";
 import thornquillBladeUrl from "../assets/icons/thornquill-blade.png";
 import threshertoothBladeUrl from "../assets/icons/threshertooth-blade.png";
 import thunderRingUrl from "../assets/icons/thunder-ring.png";
+import titansCleaveUrl from "../assets/icons/titans-cleave.png";
 import tollingReliquaryUrl from "../assets/icons/tolling-reliquary.png";
 import twinFangUrl from "../assets/icons/twin-fang.png";
 import vanguardUrl from "../assets/icons/vanguard.png";
 import verdigrisCarapaceUrl from "../assets/icons/verdigris-carapace.png";
 import veteransEdgeUrl from "../assets/icons/veterans-edge.png";
+import warbladeUrl from "../assets/icons/warblade.png";
 import warHymnUrl from "../assets/icons/war-hymn.png";
 import wardingLoreUrl from "../assets/icons/warding-lore.png";
 import wayfarersWardUrl from "../assets/icons/wayfarers-ward.png";
@@ -100,6 +104,7 @@ interface IconSource {
 /** Declared native-1× dimensions for every committed Equipment Base and Talent icon. */
 export const ICON_SOURCES = {
   "absolute-zero": { url: absoluteZeroUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
+  "aegis-wall": { url: aegisWallUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "aphelion-conduit": { url: aphelionConduitUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "arc-spark": { url: arcSparkUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "augerwire-longbow": { url: augerwireLongbowUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
@@ -109,6 +114,7 @@ export const ICON_SOURCES = {
   "berrybright-charm": { url: berrybrightCharmUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "black-oil-locket": { url: blackOilLocketUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "bramblesong-bow": { url: bramblesongBowUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
+  bulwark: { url: bulwarkUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "cinder-bloom": { url: cinderBloomUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "combineplate-harness": { url: combineplateHarnessUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "dawn-ascendant": { url: dawnAscendantUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
@@ -172,11 +178,13 @@ export const ICON_SOURCES = {
   "thornquill-blade": { url: thornquillBladeUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "threshertooth-blade": { url: threshertoothBladeUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "thunder-ring": { url: thunderRingUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
+  "titans-cleave": { url: titansCleaveUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "tolling-reliquary": { url: tollingReliquaryUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "twin-fang": { url: twinFangUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   vanguard: { url: vanguardUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "verdigris-carapace": { url: verdigrisCarapaceUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "veterans-edge": { url: veteransEdgeUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
+  warblade: { url: warbladeUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "war-hymn": { url: warHymnUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "warding-lore": { url: wardingLoreUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "wayfarers-ward": { url: wayfarersWardUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },

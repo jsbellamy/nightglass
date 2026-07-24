@@ -642,7 +642,7 @@ describe("Talents surface", () => {
     root.remove();
   });
 
-  it("stacks Talent Tier 1 and Tier 2 with tier gate, selection, and Tier-2 ability descriptions", () => {
+  it("stacks Talent Tier 1–3 with tier gate, selection, and Tier-2 ability descriptions", () => {
     const fullContent = buildContent();
     const root = document.createElement("div");
     const boot = createEngine(fullContent, undefined, LOOT_SEED);
@@ -659,11 +659,12 @@ describe("Talents surface", () => {
     surface.render(engine.snapshot(), legalityViewFromEngine(engine));
     const knight = knightSection(root);
     const tiers = knight.querySelectorAll("[data-talent-tier]");
-    expect(tiers).toHaveLength(2);
+    expect(tiers).toHaveLength(3);
     expect(tiers[0]?.getAttribute("data-talent-tier")).toBe("1");
     expect(tiers[1]?.getAttribute("data-talent-tier")).toBe("2");
-    expect(knight.querySelectorAll(".talent-stat-row .talent-cell")).toHaveLength(4);
-    expect(knight.querySelectorAll(".talent-ability-row .talent-cell")).toHaveLength(4);
+    expect(tiers[2]?.getAttribute("data-talent-tier")).toBe("3");
+    expect(knight.querySelectorAll(".talent-stat-row .talent-cell")).toHaveLength(6);
+    expect(knight.querySelectorAll(".talent-ability-row .talent-cell")).toHaveLength(6);
     expect(knight.querySelector('[data-talent-tier-gate="true"]')?.textContent).toBe(
       "Spend 6 points in Talent Tier 1 to unlock Talent Tier 2",
     );
@@ -679,7 +680,11 @@ describe("Talents surface", () => {
     }
     engine.allocateTalent("knight", "hold-the-line");
     surface.render(engine.snapshot(), legalityViewFromEngine(engine));
-    expect(knightSection(root).querySelector('[data-talent-tier-gate="true"]')).toBeNull();
+    const unlocked = knightSection(root);
+    expect(unlocked.querySelector('[data-talent-tier="2"] [data-talent-tier-gate="true"]')).toBeNull();
+    expect(
+      unlocked.querySelector('[data-talent-tier="3"] [data-talent-tier-gate="true"]'),
+    ).not.toBeNull();
 
     engine.allocateTalent("knight", "iron-discipline");
     surface.render(engine.snapshot(), legalityViewFromEngine(engine));
@@ -807,7 +812,7 @@ describe("Talents surface", () => {
     surface.destroy();
   });
 
-  it("renders two stacked Talent Tiers for every shipped Class", () => {
+  it("renders stacked Talent Tiers for every shipped Class", () => {
     const fullContent = buildContent();
     const boot = createEngine(fullContent, undefined, LOOT_SEED);
     boot.advanceBy(1);
@@ -822,9 +827,14 @@ describe("Talents surface", () => {
       });
       surface.render(engine.snapshot(), legalityViewFromEngine(engine));
       const section = root.querySelector<HTMLElement>(`[data-class-id="${classId}"]`);
-      expect(section?.querySelectorAll("[data-talent-tier]")).toHaveLength(2);
-      expect(section?.querySelectorAll(".talent-stat-row .talent-cell")).toHaveLength(4);
-      expect(section?.querySelectorAll(".talent-ability-row .talent-cell")).toHaveLength(4);
+      const expectedTiers = classId === "knight" ? 3 : 2;
+      expect(section?.querySelectorAll("[data-talent-tier]")).toHaveLength(expectedTiers);
+      expect(section?.querySelectorAll(".talent-stat-row .talent-cell")).toHaveLength(
+        expectedTiers * 2,
+      );
+      expect(section?.querySelectorAll(".talent-ability-row .talent-cell")).toHaveLength(
+        expectedTiers * 2,
+      );
       surface.destroy();
     }
   });
