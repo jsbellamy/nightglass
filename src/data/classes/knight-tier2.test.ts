@@ -101,7 +101,7 @@ describe("Knight Talent Tier 2 exports", () => {
       expect(shipped.abilities.some((ability) => ability.id === id)).toBe(true);
       expect(classKit.abilities.some((ability) => ability.id === id)).toBe(true);
     }
-    expect(classKit.abilities).toHaveLength(42);
+    expect(classKit.abilities).toHaveLength(44);
     expect(
       classKit.abilities.filter((ability) => ability.classId === "knight" && ability.slot === "talent"),
     ).toHaveLength(6);

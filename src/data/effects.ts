@@ -169,6 +169,20 @@ export const effectRecipes: Record<string, EffectRecipe> = {
     durationMs: 100,
     cuesMs: { release_projectile: 800 },
   },
+  "death-rain": {
+    stillKey: "arrow-bolt",
+    frames: "arrow-bolt",
+    anchor: "lane_travel",
+    durationMs: 100,
+    cuesMs: { release_projectile: 700 },
+  },
+  killshot: {
+    stillKey: "arrow-bolt",
+    frames: "arrow-bolt",
+    anchor: "lane_travel",
+    durationMs: 100,
+    cuesMs: { release_projectile: 900 },
+  },
 
   // Wizard
   "arc-spark": {

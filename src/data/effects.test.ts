@@ -32,7 +32,7 @@ describe("effect recipes", () => {
   it("covers every Class Kit ability id exactly once", () => {
     const kitIds = classKit.abilities.map((a) => a.id).sort();
     expect(CLASS_KIT_ABILITY_IDS.sort()).toEqual(kitIds);
-    expect(Object.keys(effectRecipes)).toHaveLength(42);
+    expect(Object.keys(effectRecipes)).toHaveLength(44);
   });
 
   it("uses only legal anchor kinds and never strike_self", () => {
@@ -90,6 +90,11 @@ describe("effect recipes", () => {
   it("maps Priest Talent Tier 3 abilities to the exact effect derivation families", () => {
     expect(effectRecipes["radiant-bulwark"]?.frames).toBe("heal-rise");
     expect(effectRecipes["solar-verdict"]?.frames).toBe("spell-bolt-light");
+  });
+
+  it("maps Hunter Talent Tier 3 abilities to the exact effect derivation families", () => {
+    expect(effectRecipes["death-rain"]?.frames).toBe("arrow-bolt");
+    expect(effectRecipes["killshot"]?.frames).toBe("arrow-bolt");
   });
 
   it("presents Twin Fang as one arrow-bolt while gameplay applies two damage effects", () => {

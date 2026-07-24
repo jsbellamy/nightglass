@@ -5,6 +5,7 @@ import {
   hunterClass,
   hunterTier2,
   hunterTier2Abilities,
+  hunterTier3,
 } from "./hunter";
 
 const TIER2_ABILITY_IDS = ["piercing-rain", "twin-fang"] as const;
@@ -71,7 +72,7 @@ describe("Hunter Talent Tier 2 exports", () => {
     expect(hunterClass.talentTiers).toBeUndefined();
 
     const hunter = buildContent().classes.find((entry) => entry.id === "hunter");
-    expect(hunter?.talentTiers).toEqual([hunterTier2]);
+    expect(hunter?.talentTiers).toEqual([hunterTier2, hunterTier3]);
     expect(hunter?.talents.abilityRow).toEqual(["heartseeker", "moonwire-trap"]);
 
     const contentAbilityIds = buildContent().abilities.map((ability) => ability.id);

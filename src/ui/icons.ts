@@ -17,6 +17,7 @@ import combineplateHarnessUrl from "../assets/icons/combineplate-harness.png";
 import cometFallUrl from "../assets/icons/comet-fall.png";
 import dawnAscendantUrl from "../assets/icons/dawn-ascendant.png";
 import dawnRecallUrl from "../assets/icons/dawn-recall.png";
+import deathRainUrl from "../assets/icons/death-rain.png";
 import devotionUrl from "../assets/icons/devotion.png";
 import dewlightFocusUrl from "../assets/icons/dewlight-focus.png";
 import drawWeightUrl from "../assets/icons/draw-weight.png";
@@ -40,9 +41,11 @@ import holdTheLineUrl from "../assets/icons/hold-the-line.png";
 import huskstringRecurveUrl from "../assets/icons/huskstring-recurve.png";
 import ironDisciplineUrl from "../assets/icons/iron-discipline.png";
 import judgmentUrl from "../assets/icons/judgment.png";
+import killshotUrl from "../assets/icons/killshot.png";
 import leafmailVestUrl from "../assets/icons/leafmail-vest.png";
 import leylineAttunementUrl from "../assets/icons/leyline-attunement.png";
 import mainspringRepeaterUrl from "../assets/icons/mainspring-repeater.png";
+import masterFletcherUrl from "../assets/icons/master-fletcher.png";
 import mendingLightUrl from "../assets/icons/mending-light.png";
 import moonpetalRelicUrl from "../assets/icons/moonpetal-relic.png";
 import moonwellUrl from "../assets/icons/moonwell.png";
@@ -83,6 +86,7 @@ import threshertoothBladeUrl from "../assets/icons/threshertooth-blade.png";
 import thunderRingUrl from "../assets/icons/thunder-ring.png";
 import titansCleaveUrl from "../assets/icons/titans-cleave.png";
 import tollingReliquaryUrl from "../assets/icons/tolling-reliquary.png";
+import trailhardenedUrl from "../assets/icons/trailhardened.png";
 import twinFangUrl from "../assets/icons/twin-fang.png";
 import vanguardUrl from "../assets/icons/vanguard.png";
 import verdigrisCarapaceUrl from "../assets/icons/verdigris-carapace.png";
@@ -129,6 +133,7 @@ export const ICON_SOURCES = {
   "comet-fall": { url: cometFallUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "dawn-ascendant": { url: dawnAscendantUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "dawn-recall": { url: dawnRecallUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
+  "death-rain": { url: deathRainUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   devotion: { url: devotionUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "dewlight-focus": { url: dewlightFocusUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "draw-weight": { url: drawWeightUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
@@ -152,9 +157,11 @@ export const ICON_SOURCES = {
   "huskstring-recurve": { url: huskstringRecurveUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "iron-discipline": { url: ironDisciplineUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   judgment: { url: judgmentUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
+  killshot: { url: killshotUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "leafmail-vest": { url: leafmailVestUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "leyline-attunement": { url: leylineAttunementUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "mainspring-repeater": { url: mainspringRepeaterUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
+  "master-fletcher": { url: masterFletcherUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "mending-light": { url: mendingLightUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "moonpetal-relic": { url: moonpetalRelicUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   moonwell: { url: moonwellUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
@@ -195,6 +202,7 @@ export const ICON_SOURCES = {
   "thunder-ring": { url: thunderRingUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "titans-cleave": { url: titansCleaveUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "tolling-reliquary": { url: tollingReliquaryUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
+  trailhardened: { url: trailhardenedUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "twin-fang": { url: twinFangUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   vanguard: { url: vanguardUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },
   "verdigris-carapace": { url: verdigrisCarapaceUrl, width: CONTENT_ICON_SIZE, height: CONTENT_ICON_SIZE },

@@ -4,6 +4,8 @@ import {
   hunterClass,
   hunterTier2,
   hunterTier2Abilities,
+  hunterTier3,
+  hunterTier3Abilities,
 } from "./classes/hunter";
 import {
   knightAbilities,
@@ -53,6 +55,7 @@ const CLASS_KIT_ABILITIES = [
   ...priestTier3Abilities,
   ...hunterAbilities,
   ...hunterTier2Abilities,
+  ...hunterTier3Abilities,
 ];
 
 const SHIPPED_ABILITIES = [...CLASS_KIT_ABILITIES, ...opponentAbilities];
@@ -68,7 +71,7 @@ const CLASS_KITS: ClassKitDef[] = [
   withTalentTiers(knightClass, [knightTier2, knightTier3]),
   withTalentTiers(wizardClass, [wizardTier2, wizardTier3]),
   withTalentTiers(priestClass, [priestTier2, priestTier3]),
-  withTalentTiers(hunterClass, [hunterTier2]),
+  withTalentTiers(hunterClass, [hunterTier2, hunterTier3]),
 ];
 
 export interface ClassKitSlice {

@@ -106,7 +106,7 @@ describe("Priest Talent Tier 3 exports", () => {
       expect(shipped.abilities.some((ability) => ability.id === id)).toBe(true);
       expect(classKit.abilities.some((ability) => ability.id === id)).toBe(true);
     }
-    expect(classKit.abilities).toHaveLength(42);
+    expect(classKit.abilities).toHaveLength(44);
     expect(
       classKit.abilities.filter((ability) => ability.classId === "priest" && ability.slot === "talent"),
     ).toHaveLength(6);
