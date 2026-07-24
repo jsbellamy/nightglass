@@ -1,4 +1,6 @@
 import type { Content } from "../core/types";
+import aphelionUrl from "../assets/sprites/aphelion.png";
+import astrolabeSpiderUrl from "../assets/sprites/astrolabe-spider.png";
 import boss1Url from "../assets/sprites/boss-1.png";
 import boss2Url from "../assets/sprites/boss-2.png";
 import boss3Url from "../assets/sprites/boss-3.png";
@@ -11,6 +13,11 @@ import priestUrl from "../assets/sprites/priest.png";
 import scarequackUrl from "../assets/sprites/scarequack.png";
 import theCombineUrl from "../assets/sprites/the-combine.png";
 import theFryerUrl from "../assets/sprites/the-fryer.png";
+import theTocsinUrl from "../assets/sprites/the-tocsin.png";
+import theUnwoundUrl from "../assets/sprites/the-unwound.png";
+import theVigilUrl from "../assets/sprites/the-vigil.png";
+import tickmothUrl from "../assets/sprites/tickmoth.png";
+import tollbatUrl from "../assets/sprites/tollbat.png";
 import wizardUrl from "../assets/sprites/wizard.png";
 import manifestJson from "../assets/sprites/manifest.json";
 
@@ -55,6 +62,13 @@ export const SPRITE_SOURCES = {
   "the-combine": { url: theCombineUrl },
   "the-fryer": { url: theFryerUrl },
   scarequack: { url: scarequackUrl },
+  tickmoth: { url: tickmothUrl },
+  tollbat: { url: tollbatUrl },
+  "astrolabe-spider": { url: astrolabeSpiderUrl },
+  "the-vigil": { url: theVigilUrl },
+  "the-tocsin": { url: theTocsinUrl },
+  "the-unwound": { url: theUnwoundUrl },
+  aphelion: { url: aphelionUrl },
 } as const satisfies Record<string, SpriteSource>;
 
 const KNOWN_SPRITE_KEYS = new Set<string>(Object.keys(SPRITE_SOURCES));
@@ -64,6 +78,9 @@ const ORDINARY_OPPONENT_SPRITE_KEYS = new Set([
   "pipcap",
   "burger-drake",
   "cornquacker",
+  "tickmoth",
+  "tollbat",
+  "astrolabe-spider",
 ]);
 const BOSS_SPRITE_KEYS = new Set([
   "boss-1",
@@ -72,6 +89,10 @@ const BOSS_SPRITE_KEYS = new Set([
   "the-combine",
   "the-fryer",
   "scarequack",
+  "the-vigil",
+  "the-tocsin",
+  "the-unwound",
+  "aphelion",
 ]);
 
 /** Test-fixture adapter frame — not a production body profile. */

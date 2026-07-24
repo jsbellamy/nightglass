@@ -98,6 +98,48 @@ check("Scarequack profile is Boss 160x72 facing left",
       and scarequack_profile.max_opaque_w == 160
       and scarequack_profile.max_opaque_h == 72
       and scarequack_profile.facing == "left")
+tickmoth_profile = A.body_profile_for_tag("tickmoth")
+check("Tickmoth profile is ordinary Opponent 30x68 facing left",
+      tickmoth_profile.role == "ordinary-opponent"
+      and tickmoth_profile.max_opaque_w == 30
+      and tickmoth_profile.max_opaque_h == 68
+      and tickmoth_profile.facing == "left")
+tollbat_profile = A.body_profile_for_tag("tollbat")
+check("Tollbat profile is ordinary Opponent 30x68 facing left",
+      tollbat_profile.role == "ordinary-opponent"
+      and tollbat_profile.max_opaque_w == 30
+      and tollbat_profile.max_opaque_h == 68
+      and tollbat_profile.facing == "left")
+astrolabe_spider_profile = A.body_profile_for_tag("astrolabe-spider")
+check("Astrolabe Spider profile is ordinary Opponent 30x68 facing left",
+      astrolabe_spider_profile.role == "ordinary-opponent"
+      and astrolabe_spider_profile.max_opaque_w == 30
+      and astrolabe_spider_profile.max_opaque_h == 68
+      and astrolabe_spider_profile.facing == "left")
+the_vigil_profile = A.body_profile_for_tag("the-vigil")
+check("The Vigil profile is Boss 160x72 facing left",
+      the_vigil_profile.role == "boss"
+      and the_vigil_profile.max_opaque_w == 160
+      and the_vigil_profile.max_opaque_h == 72
+      and the_vigil_profile.facing == "left")
+the_tocsin_profile = A.body_profile_for_tag("the-tocsin")
+check("The Tocsin profile is Boss 160x72 facing left",
+      the_tocsin_profile.role == "boss"
+      and the_tocsin_profile.max_opaque_w == 160
+      and the_tocsin_profile.max_opaque_h == 72
+      and the_tocsin_profile.facing == "left")
+the_unwound_profile = A.body_profile_for_tag("the-unwound")
+check("The Unwound profile is Boss 160x72 facing left",
+      the_unwound_profile.role == "boss"
+      and the_unwound_profile.max_opaque_w == 160
+      and the_unwound_profile.max_opaque_h == 72
+      and the_unwound_profile.facing == "left")
+aphelion_profile = A.body_profile_for_tag("aphelion")
+check("Aphelion profile is Boss 160x72 facing left",
+      aphelion_profile.role == "boss"
+      and aphelion_profile.max_opaque_w == 160
+      and aphelion_profile.max_opaque_h == 72
+      and aphelion_profile.facing == "left")
 _moonberry = A.load_runtime_palette("moonberry-16")
 _fowl = A.load_runtime_palette("fowl-harvest-24")
 for out_name, expected_id in [
@@ -114,6 +156,13 @@ for out_name, expected_id in [
     ("the-combine", "fowl-harvest-24"),
     ("the-fryer", "fowl-harvest-24"),
     ("scarequack", "fowl-harvest-24"),
+    ("tickmoth", "unwound-belfry-24"),
+    ("tollbat", "unwound-belfry-24"),
+    ("astrolabe-spider", "unwound-belfry-24"),
+    ("the-vigil", "unwound-belfry-24"),
+    ("the-tocsin", "unwound-belfry-24"),
+    ("the-unwound", "unwound-belfry-24"),
+    ("aphelion", "unwound-belfry-24"),
 ]:
     identity = A.ASSET_IDENTITIES[out_name]
     check(f"{out_name} selects palette {expected_id}",
@@ -306,6 +355,112 @@ check("Scarequack flexible opaque bounds fit the Boss 160x72 ceiling",
       and scare_measure["fitted_opaque_size"][1] <= scarequack_profile.max_opaque_h
       and scare_measure["clipped_sides"] == [],
       str(scare_measure))
+
+tickmoth_sidecar = _sidecar("tickmoth")
+tickmoth_measure = A.measure_candidate(RAW_DIR / "tickmoth.png", tag="tickmoth")
+check("Tickmoth archived raw uses flexible Unwound Belfry provenance",
+      tickmoth_sidecar.get("acquisition") == "flexible"
+      and tickmoth_sidecar.get("identity_profile", {}).get("role") == "ordinary-opponent"
+      and tickmoth_sidecar.get("facing") == "left"
+      and tickmoth_sidecar.get("palette") == "unwound-belfry-24@1",
+      str(tickmoth_sidecar))
+check("Tickmoth flexible opaque bounds fit the ordinary Opponent 30x68 ceiling",
+      tickmoth_measure["status"] == "advance"
+      and tickmoth_measure["fitted_opaque_size"][0] <= tickmoth_profile.max_opaque_w
+      and tickmoth_measure["fitted_opaque_size"][1] <= tickmoth_profile.max_opaque_h
+      and tickmoth_measure["clipped_sides"] == [],
+      str(tickmoth_measure))
+
+tollbat_sidecar = _sidecar("tollbat")
+tollbat_measure = A.measure_candidate(RAW_DIR / "tollbat.png", tag="tollbat")
+check("Tollbat archived raw uses flexible Unwound Belfry provenance",
+      tollbat_sidecar.get("acquisition") == "flexible"
+      and tollbat_sidecar.get("identity_profile", {}).get("role") == "ordinary-opponent"
+      and tollbat_sidecar.get("facing") == "left"
+      and tollbat_sidecar.get("palette") == "unwound-belfry-24@1",
+      str(tollbat_sidecar))
+check("Tollbat flexible opaque bounds fit the ordinary Opponent 30x68 ceiling",
+      tollbat_measure["status"] == "advance"
+      and tollbat_measure["fitted_opaque_size"][0] <= tollbat_profile.max_opaque_w
+      and tollbat_measure["fitted_opaque_size"][1] <= tollbat_profile.max_opaque_h
+      and tollbat_measure["clipped_sides"] == [],
+      str(tollbat_measure))
+
+astrolabe_spider_sidecar = _sidecar("astrolabe-spider")
+astrolabe_spider_measure = A.measure_candidate(
+    RAW_DIR / "astrolabe-spider.png", tag="astrolabe-spider")
+check("Astrolabe Spider archived raw uses flexible Unwound Belfry provenance",
+      astrolabe_spider_sidecar.get("acquisition") == "flexible"
+      and astrolabe_spider_sidecar.get("identity_profile", {}).get("role") == "ordinary-opponent"
+      and astrolabe_spider_sidecar.get("facing") == "left"
+      and astrolabe_spider_sidecar.get("palette") == "unwound-belfry-24@1",
+      str(astrolabe_spider_sidecar))
+check("Astrolabe Spider flexible opaque bounds fit the ordinary Opponent 30x68 ceiling",
+      astrolabe_spider_measure["status"] == "advance"
+      and astrolabe_spider_measure["fitted_opaque_size"][0] <= astrolabe_spider_profile.max_opaque_w
+      and astrolabe_spider_measure["fitted_opaque_size"][1] <= astrolabe_spider_profile.max_opaque_h
+      and astrolabe_spider_measure["clipped_sides"] == [],
+      str(astrolabe_spider_measure))
+
+the_vigil_sidecar = _sidecar("the-vigil")
+the_vigil_measure = A.measure_candidate(RAW_DIR / "the-vigil.png", tag="the-vigil")
+check("The Vigil archived raw uses flexible Unwound Belfry provenance",
+      the_vigil_sidecar.get("acquisition") == "flexible"
+      and the_vigil_sidecar.get("identity_profile", {}).get("role") == "boss"
+      and the_vigil_sidecar.get("facing") == "left"
+      and the_vigil_sidecar.get("palette") == "unwound-belfry-24@1",
+      str(the_vigil_sidecar))
+check("The Vigil flexible opaque bounds fit the Boss 160x72 ceiling",
+      the_vigil_measure["status"] == "advance"
+      and the_vigil_measure["fitted_opaque_size"][0] <= the_vigil_profile.max_opaque_w
+      and the_vigil_measure["fitted_opaque_size"][1] <= the_vigil_profile.max_opaque_h
+      and the_vigil_measure["clipped_sides"] == [],
+      str(the_vigil_measure))
+
+the_tocsin_sidecar = _sidecar("the-tocsin")
+the_tocsin_measure = A.measure_candidate(RAW_DIR / "the-tocsin.png", tag="the-tocsin")
+check("The Tocsin archived raw uses flexible Unwound Belfry provenance",
+      the_tocsin_sidecar.get("acquisition") == "flexible"
+      and the_tocsin_sidecar.get("identity_profile", {}).get("role") == "boss"
+      and the_tocsin_sidecar.get("facing") == "left"
+      and the_tocsin_sidecar.get("palette") == "unwound-belfry-24@1",
+      str(the_tocsin_sidecar))
+check("The Tocsin flexible opaque bounds fit the Boss 160x72 ceiling",
+      the_tocsin_measure["status"] == "advance"
+      and the_tocsin_measure["fitted_opaque_size"][0] <= the_tocsin_profile.max_opaque_w
+      and the_tocsin_measure["fitted_opaque_size"][1] <= the_tocsin_profile.max_opaque_h
+      and the_tocsin_measure["clipped_sides"] == [],
+      str(the_tocsin_measure))
+
+the_unwound_sidecar = _sidecar("the-unwound")
+the_unwound_measure = A.measure_candidate(RAW_DIR / "the-unwound.png", tag="the-unwound")
+check("The Unwound archived raw uses flexible Unwound Belfry provenance",
+      the_unwound_sidecar.get("acquisition") == "flexible"
+      and the_unwound_sidecar.get("identity_profile", {}).get("role") == "boss"
+      and the_unwound_sidecar.get("facing") == "left"
+      and the_unwound_sidecar.get("palette") == "unwound-belfry-24@1",
+      str(the_unwound_sidecar))
+check("The Unwound flexible opaque bounds fit the Boss 160x72 ceiling",
+      the_unwound_measure["status"] == "advance"
+      and the_unwound_measure["fitted_opaque_size"][0] <= the_unwound_profile.max_opaque_w
+      and the_unwound_measure["fitted_opaque_size"][1] <= the_unwound_profile.max_opaque_h
+      and the_unwound_measure["clipped_sides"] == [],
+      str(the_unwound_measure))
+
+aphelion_sidecar = _sidecar("aphelion")
+aphelion_measure = A.measure_candidate(RAW_DIR / "aphelion.png", tag="aphelion")
+check("Aphelion archived raw uses flexible Unwound Belfry provenance",
+      aphelion_sidecar.get("acquisition") == "flexible"
+      and aphelion_sidecar.get("identity_profile", {}).get("role") == "boss"
+      and aphelion_sidecar.get("facing") == "left"
+      and aphelion_sidecar.get("palette") == "unwound-belfry-24@1",
+      str(aphelion_sidecar))
+check("Aphelion flexible opaque bounds fit the Boss 160x72 ceiling",
+      aphelion_measure["status"] == "advance"
+      and aphelion_measure["fitted_opaque_size"][0] <= aphelion_profile.max_opaque_w
+      and aphelion_measure["fitted_opaque_size"][1] <= aphelion_profile.max_opaque_h
+      and aphelion_measure["clipped_sides"] == [],
+      str(aphelion_measure))
 
 boss3_sidecar = _sidecar("boss-3")
 boss3_measure = A.measure_candidate(RAW_DIR / "boss-3.png", tag="boss-3")
