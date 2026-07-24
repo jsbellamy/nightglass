@@ -10,7 +10,9 @@ Visual vocabulary: Unwound Belfry moonless belfry-night
   palette-exempt — not quantized to unwound-belfry-24
 Geometry: full battlefield band; near-flat ground in bottom fifth;
   detail in middle horizontal band; no characters/creatures/UI
-Review context: native 480×86 strip (step-6 subagent)
+Review context: native 480×112 Battle Tile with Party, five-opponent
+  stress case, health bars, damage numbers, and moonberry-glow effects
+  (tile-review-stopped-clock-court.png); runtime strip also recorded
 Validator: python3 pipeline/backdrops.py build + verify
 ```
 

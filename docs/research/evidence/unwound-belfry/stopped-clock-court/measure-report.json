@@ -4,9 +4,32 @@
     480,
     86
   ],
+  "raw_sha256": "a6723384193b87a41ba7bb0def4270bf05fd87ee13e8433d10028c5d0478bbae",
+  "reduction": {
+    "crop_box": [
+      0,
+      374,
+      1536,
+      649
+    ],
+    "crop_size": [
+      1536,
+      275
+    ],
+    "resample": "NEAREST",
+    "runtime_size": [
+      480,
+      86
+    ]
+  },
   "mean_luma": 14.66,
   "p90_luma": 28.57,
   "max_luma": 225.16,
   "bottom_fifth_mean_luma": 12.28,
-  "magenta_pixels": 0
+  "magenta_pixels": 0,
+  "health_bar_green_ref_luma": 168.01,
+  "byte_identity_verify": "PASS (pipeline/backdrops.py verify)",
+  "tile_review": "tile-review-stopped-clock-court.png",
+  "sparse_pixels_luma_gt_120": 12,
+  "note": "max_luma is a sparse ivory-dial peak; step-6 tile composite accepted (hotspots do not compete with bars)."
 }

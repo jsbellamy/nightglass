@@ -17,13 +17,15 @@ See [`contract.md`](./contract.md).
 | Runtime 480×86 | `src/assets/backdrops/stopped-clock-court.png` |
 | Contract declaration | [`contract.md`](./contract.md) |
 | Measure report | [`measure-report.json`](./measure-report.json) |
+| Native tile review | [`tile-review-stopped-clock-court.png`](./tile-review-stopped-clock-court.png) |
+| 4× tile review | [`tile-review-stopped-clock-court@4x.png`](./tile-review-stopped-clock-court@4x.png) |
 | Visual verdict | [`visual-review.md`](./visual-review.md) |
 
 ## Candidate log
 
 | Candidate | Asset class | Raw gates | Clipped sides | Measurement | Primary result | Next action |
 | --- | --- | --- | --- | --- | --- | --- |
-| c1 | backdrop | pass (PNG, 0 magenta, reduce 1536×1024→480×86) | n/a (scenery) | mean luma 14.66; bottom-fifth 12.28; magenta 0 | accept (step-6) | promote + ship |
+| c1 | backdrop | pass (PNG, 0 magenta, reduce 1536×1024→480×86) | n/a (scenery) | mean luma 14.66; bottom-fifth 12.28; magenta 0; sparse dial peak ~225 | accept (step-6 tile composite) | promote + ship |
 
 ## Style cohort (generation inputs)
 
@@ -51,5 +53,8 @@ Do not loop `npm run assets:verify` during acquisition.
 
 ## Review discipline
 
-Judge the native 480×86 runtime strip only (`src/assets/backdrops/stopped-clock-court.png`).
-Step-6 subagent verdict recorded in [`visual-review.md`](./visual-review.md).
+Judge the native tile composite first
+([`tile-review-stopped-clock-court.png`](./tile-review-stopped-clock-court.png));
+use the @4× sheet only to inspect ground-band flatness and feedback pop.
+Issue Proof C2 also authorizes the bare 480×86 runtime strip; both seams
+recorded an **accept** verdict in [`visual-review.md`](./visual-review.md).
