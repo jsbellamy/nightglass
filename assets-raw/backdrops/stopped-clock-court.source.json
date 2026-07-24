@@ -1,0 +1,48 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "prompt": "Ultra-wide panoramic moonless-belfry-night fantasy battlefield backdrop strip in a chunky, softly painted pixel-art style. Very low contrast and overall dark enough for bright combat sprites, 2-pixel health bars, damage numbers, and luminous effects to remain the strongest signals.\n\nSCENE: the Stopped-Clock Court, a moonless indigo plaza of dead street clocks at the foot of a great bell-tower. Rows of tarnished-brass pillar clocks and a shuttered clockmaker's shopfront stand with cracked candle-ivory dials, all hands frozen at different wrong hours. Verdigris-streaked cobbles, a dry fountain, and iron railings sit under a moonless indigo sky with cold-glass highlights where a moon should be. One dim alarm-red warning lamp and a low tarnished-brass lantern glow are the only warm accents.\n\nCOMPOSITION: designed for a short 480x86 crop. Pack the pillar clocks, shopfront, tower base, and horizon into the middle horizontal band. Keep a nearly flat, dark cobbled ground band across the bottom fifth so native-scale sprites stand cleanly. Keep the sky thin. Preserve open low-detail space across both combat halves. Nothing sharp, luminous, or high-contrast behind health bars.\n\nEnvironmental evidence may include a toppled clock, scattered gears, and a fallen bell, but show no creature or body. No moths, bats, spiders, owls, ravens, monsters, faces in the clocks, readable numerals as text, logos, watermark, UI, borders, vignette frame, focal object, fire, gore, or hot-magenta field.",
+  "raw_sha256": "a6723384193b87a41ba7bb0def4270bf05fd87ee13e8433d10028c5d0478bbae",
+  "asset_class": "backdrop",
+  "runtime_destination": "src/assets/backdrops/stopped-clock-court.png",
+  "direct_inputs": [
+    {
+      "path": "src/assets/backdrops/harvest-yard.png",
+      "role": "style reference",
+      "sha256": "7ea723aac4d3a71099ab92c551d7897638b19f74bb367ecc176328d9023b7ebd"
+    },
+    {
+      "path": "src/assets/backdrops/crooked-cornfield.png",
+      "role": "style reference",
+      "sha256": "3d8e94506f245536906d0503a1a3d584f858b988013cd5662655eb6d1f24bd5b"
+    },
+    {
+      "path": "src/assets/backdrops/last-stop-diner.png",
+      "role": "style reference",
+      "sha256": "932376f7fab40cef5c5b38310a274c2b66327dd0514fa20812ccf94b68cc2d6a"
+    }
+  ],
+  "candidate": "stopped-clock-court-c1",
+  "canonical_identity": "stopped-clock-court",
+  "source_resolution": [
+    1536,
+    1024
+  ],
+  "reduction": {
+    "crop_box": [
+      0,
+      374,
+      1536,
+      649
+    ],
+    "crop_size": [
+      1536,
+      275
+    ],
+    "resample": "NEAREST",
+    "runtime_size": [
+      480,
+      86
+    ]
+  }
+}
