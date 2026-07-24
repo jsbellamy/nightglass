@@ -32,12 +32,12 @@ describe("Fowl Harvest Stages 4–6", () => {
       throw new Error("missing Stage 4");
     }
 
-    expect(stage.waves[0].opponents).toEqual([
+    expect(stage.waves[0]!.opponents).toEqual([
       "burger-drake-s4-27a",
       "burger-drake-s4-27b",
       "burger-drake-s4-26",
     ]);
-    expect(stage.waves[1].opponents).toEqual([
+    expect(stage.waves[1]!.opponents).toEqual([
       "burger-drake-s4-20",
       "burger-drake-s4-20",
       "burger-drake-s4-20",
@@ -53,12 +53,12 @@ describe("Fowl Harvest Stages 4–6", () => {
       throw new Error("missing Stage 5");
     }
 
-    expect(stage.waves[0].opponents).toEqual([
+    expect(stage.waves[0]!.opponents).toEqual([
       "cornquacker-s5-34",
       "cornquacker-s5-33a",
       "cornquacker-s5-33b",
     ]);
-    expect(stage.waves[1].opponents).toEqual([
+    expect(stage.waves[1]!.opponents).toEqual([
       "cornquacker-s5-20",
       "cornquacker-s5-20",
       "cornquacker-s5-20",
@@ -75,13 +75,13 @@ describe("Fowl Harvest Stages 4–6", () => {
       throw new Error("missing Stage 6");
     }
 
-    expect(stage.waves[0].opponents).toEqual([
+    expect(stage.waves[0]!.opponents).toEqual([
       "burger-drake-s6-33",
       "burger-drake-s6-32",
       "cornquacker-s6-33",
       "cornquacker-s6-32",
     ]);
-    expect(stage.waves[1].opponents).toEqual([
+    expect(stage.waves[1]!.opponents).toEqual([
       "burger-drake-s6-26",
       "burger-drake-s6-26",
       "cornquacker-s6-26",

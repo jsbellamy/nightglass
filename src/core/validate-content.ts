@@ -13,12 +13,16 @@ import type {
 
 /** Per-Stage Character XP encounter budgets from issue #5 / vertical-slice-spec §7. */
 export const ENCOUNTER_BUDGETS = {
-  1: { wave1: 20, wave2: 20, boss: 60 },
-  2: { wave1: 30, wave2: 30, boss: 90 },
-  3: { wave1: 40, wave2: 40, boss: 120 },
-  4: { wave1: 80, wave2: 80, boss: 240 },
-  5: { wave1: 100, wave2: 100, boss: 300 },
-  6: { wave1: 130, wave2: 130, boss: 390 },
+  1: { waves: [20, 20], boss: 60 },
+  2: { waves: [30, 30], boss: 90 },
+  3: { waves: [40, 40], boss: 120 },
+  4: { waves: [80, 80], boss: 240 },
+  5: { waves: [100, 100], boss: 300 },
+  6: { waves: [130, 130], boss: 390 },
+  7: { waves: [160, 160], boss: 480 },
+  8: { waves: [190, 190], boss: 570 },
+  9: { waves: [260, 260], boss: 900 },
+  10: { waves: [], boss: 1500 },
 } as const;
 
 type BudgetedStageId = keyof typeof ENCOUNTER_BUDGETS;
@@ -254,23 +258,40 @@ export function validateContent(
     if (!budget) {
       violations.push(`stage ${stage.id} has no authored encounter budget`);
     } else {
-      violations.push(
-        ...waveBudgetViolations(stage.id, "wave 1", stage.waves[0], budget.wave1, opponentIds, content),
-      );
-      violations.push(
-        ...waveBudgetViolations(stage.id, "wave 2", stage.waves[1], budget.wave2, opponentIds, content),
-      );
+      if (stage.waves.length !== budget.waves.length) {
+        violations.push(
+          `stage ${stage.id} has ${stage.waves.length} waves, expected ${budget.waves.length}`,
+        );
+      } else {
+        for (let waveIndex = 0; waveIndex < stage.waves.length; waveIndex += 1) {
+          const waveLabel = `wave ${waveIndex + 1}`;
+          violations.push(
+            ...waveBudgetViolations(
+              stage.id,
+              waveLabel,
+              stage.waves[waveIndex]!,
+              budget.waves[waveIndex]!,
+              opponentIds,
+              content,
+            ),
+          );
+        }
+      }
       violations.push(
         ...waveBudgetViolations(stage.id, "boss", stage.boss, budget.boss, opponentIds, content),
       );
     }
 
-    violations.push(
-      ...bossSoloWaveViolations(stage.id, "wave 1", stage.waves[0], opponentById),
-    );
-    violations.push(
-      ...bossSoloWaveViolations(stage.id, "wave 2", stage.waves[1], opponentById),
-    );
+    for (let waveIndex = 0; waveIndex < stage.waves.length; waveIndex += 1) {
+      violations.push(
+        ...bossSoloWaveViolations(
+          stage.id,
+          `wave ${waveIndex + 1}`,
+          stage.waves[waveIndex]!,
+          opponentById,
+        ),
+      );
+    }
     violations.push(
       ...bossSoloWaveViolations(stage.id, "boss", stage.boss, opponentById),
     );

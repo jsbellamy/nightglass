@@ -232,6 +232,89 @@ describe("parseStoredSave", () => {
     expect(parsed.snapshot.progression.armory).toEqual(progression.armory);
   });
 
+  it.each([7, 8, 9, 10] as const)(
+    "exact-schema save accepts unlockedStage %i and itemLevel %i in armory",
+    (stage) => {
+      const progression = createDefaultProgression(testContent);
+      const raw = {
+        schemaVersion: SAVE_SCHEMA_VERSION,
+        savedAtMs: 0,
+        simNowMs: 0,
+        lootRngState: 0,
+        nextEventSeq: 1,
+        nextAttemptId: 1,
+        nextDropId: 1,
+        progression: {
+          ...progression,
+          unlockedStage: stage,
+          armory: [
+            {
+              dropId: 1,
+              baseId: "knight-blade",
+              itemLevel: stage,
+              rarity: "common",
+              affixes: [],
+              awardedAtMs: 0,
+              seen: false,
+              locked: false,
+              assignedTo: null,
+            },
+          ],
+        },
+        attempt: null,
+        pendingEdits: [],
+      };
+
+      const parsed = parseStoredSave(JSON.stringify(raw), testContent);
+      expect(parsed.kind).toBe("exact");
+      if (parsed.kind !== "exact") {
+        return;
+      }
+      expect(parsed.snapshot.progression.unlockedStage).toBe(stage);
+      expect(parsed.snapshot.progression.armory[0]?.itemLevel).toBe(stage);
+    },
+  );
+
+  it("exact-schema save round-trips Stage 9 progression and armory itemLevel", () => {
+    const progression = createDefaultProgression(testContent);
+    const raw = {
+      schemaVersion: SAVE_SCHEMA_VERSION,
+      savedAtMs: 0,
+      simNowMs: 0,
+      lootRngState: 0,
+      nextEventSeq: 1,
+      nextAttemptId: 1,
+      nextDropId: 1,
+      progression: {
+        ...progression,
+        unlockedStage: 9,
+        armory: [
+          {
+            dropId: 1,
+            baseId: "knight-blade",
+            itemLevel: 9,
+            rarity: "rare",
+            affixes: [],
+            awardedAtMs: 0,
+            seen: true,
+            locked: false,
+            assignedTo: null,
+          },
+        ],
+      },
+      attempt: null,
+      pendingEdits: [],
+    };
+
+    const parsed = parseStoredSave(JSON.stringify(raw), testContent);
+    expect(parsed.kind).toBe("exact");
+    if (parsed.kind !== "exact") {
+      return;
+    }
+    expect(parsed.snapshot.progression.unlockedStage).toBe(9);
+    expect(parsed.snapshot.progression.armory).toEqual(raw.progression.armory);
+  });
+
   it.each([4, 5, 6] as const)(
     "exact-schema save preserves unlockedStage %i and itemLevel %i in armory",
     (stage) => {
@@ -275,7 +358,7 @@ describe("parseStoredSave", () => {
     },
   );
 
-  it.each([0, 7, 1.5, "2", Number.NaN, Number.POSITIVE_INFINITY])(
+  it.each([0, 11, 1.5, "2", Number.NaN, Number.POSITIVE_INFINITY])(
     "rejects invalid unlockedStage %p to default Stage 1",
     (invalid) => {
       const progression = createDefaultProgression(testContent);
@@ -301,7 +384,7 @@ describe("parseStoredSave", () => {
     },
   );
 
-  it.each([0, 7, 1.5, "3", Number.NaN])(
+  it.each([0, 11, 1.5, "3", Number.NaN])(
     "drops armory entries with invalid itemLevel %p",
     (invalid) => {
       const progression = createDefaultProgression(testContent);

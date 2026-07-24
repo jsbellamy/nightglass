@@ -1,5 +1,5 @@
 export type ClassId = "knight" | "wizard" | "priest" | "hunter";
-export type StageId = 1 | 2 | 3 | 4 | 5 | 6;
+export type StageId = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
 export type ItemLevel = StageId;
 export type EquipmentTier = 1 | 2 | 3 | 4;
 export type DamageChannel = "physical" | "elemental";
@@ -107,7 +107,7 @@ export interface WaveDef {
 export interface StageDef {
   id: StageId;
   name: string;
-  waves: [WaveDef, WaveDef];
+  waves: readonly WaveDef[];
   boss: WaveDef;
   rarityOdds: [number, number, number, number];
   backdropKey: string;

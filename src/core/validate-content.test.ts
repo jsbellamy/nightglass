@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildContent } from "../data";
-import { validateContent } from "./validate-content";
+import { ENCOUNTER_BUDGETS, validateContent } from "./validate-content";
 import { fixtureContent, fourTierFixtureContent } from "./testing/fixture-content";
 import type { Content } from "./types";
 
@@ -186,6 +186,66 @@ describe("validateContent", () => {
     };
     expect(validateContent(gap)).toContain(
       "Content stages are not contiguous from 1: expected Stage 5, found Stage 6",
+    );
+  });
+
+  it("defines ENCOUNTER_BUDGETS entries 1–10 with waves and boss fields", () => {
+    for (let stageId = 1; stageId <= 10; stageId += 1) {
+      const budget = ENCOUNTER_BUDGETS[stageId as keyof typeof ENCOUNTER_BUDGETS];
+      expect(budget).toEqual(
+        expect.objectContaining({
+          waves: expect.any(Array),
+          boss: expect.any(Number),
+        }),
+      );
+    }
+    expect(ENCOUNTER_BUDGETS[10]).toEqual({ waves: [], boss: 1500 });
+  });
+
+  it("accepts a boss-only Stage with zero ordinary waves", () => {
+    const content: Content = {
+      ...fixtureContent,
+      opponents: [
+        ...fixtureContent.opponents,
+        {
+          id: "fixture-ten-boss",
+          name: "Fixture Ten Boss",
+          family: "test",
+          boss: true,
+          base: { maxHealth: 500, physical: 20, elemental: 0, armor: 15, elementalResistance: 15 },
+          abilityIds: ["boss-smash"],
+          xpAward: 1500,
+          spriteKey: "fixture-ten-boss",
+        },
+      ],
+      stages: [
+        {
+          id: 10,
+          name: "Boss Only Fixture",
+          waves: [],
+          boss: { opponents: ["fixture-ten-boss"] },
+          rarityOdds: [55, 35, 9, 1],
+          backdropKey: "fixture-belfry",
+        },
+      ],
+    };
+
+    expect(validateContent(content, { fixture: true })).toEqual([]);
+  });
+
+  it("rejects a Stage whose wave count does not match its authored budget", () => {
+    const content: Content = {
+      ...fixtureContent,
+      stages: [
+        {
+          ...fixtureContent.stages[0]!,
+          waves: [],
+        },
+      ],
+    };
+
+    expect(validateContent(content, { fixture: true })).toContain(
+      "stage 1 has 0 waves, expected 2",
     );
   });
 
