@@ -1,0 +1,20 @@
+{
+  "candidate": "c1",
+  "raw_size": [
+    1536,
+    1024
+  ],
+  "runtime_size": [
+    480,
+    86
+  ],
+  "magenta_hot_pixels": 0,
+  "whole_mean_luma": 16.84,
+  "whole_p90_luma": 31.78,
+  "bottom_fifth_mean_luma": 16.34,
+  "bottom_fifth_p90_luma": 29.43,
+  "opponent_midband_mean_luma": 16.64,
+  "opaque_fraction": 1.0,
+  "raw_sha256": "569adfc428967e4de7c7455c6096ca79ed6e54aaa035cca8cb4b0e74946d3604",
+  "runtime_sha256": "6d879da44861bd447dd7fe74696867cf0423fbd56601bc69ef82aedea28af898"
+}
