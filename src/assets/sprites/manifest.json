@@ -414,5 +414,37 @@
       "provider": "Cursor GenerateImage",
       "raw_sha256": "2c92a97aec8bdfb2ab819a33b0c2f0d4f2a897cb434b431e018dfa2b4f8feab9"
     }
+  },
+  "tickmoth": {
+    "action": "still",
+    "frame_size": [
+      30,
+      24
+    ],
+    "visual_bounds": [
+      0,
+      0,
+      30,
+      24
+    ],
+    "foot_anchor": [
+      15,
+      24
+    ],
+    "palette": "unwound-belfry-24",
+    "baseline_row": 23,
+    "total_ms": 1,
+    "frames": [
+      {
+        "name": "tickmoth",
+        "duration_ms": 1,
+        "sha256": "12ef99e835b4d26c4d3a71066e9bc6971b5b3f2431f4f3a5f874cce27724c4f0"
+      }
+    ],
+    "cues_ms": {},
+    "source": {
+      "provider": "Cursor GenerateImage",
+      "raw_sha256": "f8bf2708d05e494904bf50c328bc21025b0b59486150a76907f11009cfba506f"
+    }
   }
 }
