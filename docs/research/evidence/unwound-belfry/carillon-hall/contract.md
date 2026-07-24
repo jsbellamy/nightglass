@@ -9,7 +9,8 @@ Visual vocabulary: docs/unwound-belfry-theme.md §carillon-hall + §Environment 
   moonless belfry-night; palette-exempt scenery (not quantized to unwound-belfry-24)
 Geometry: full battlefield band; nearly flat plank-and-stone floor in bottom fifth;
   hanging bells / brass frame / ropes / stone arches in middle band
-Review context: native 480×86 strip (issue C2); optional Battle Tile stress composite
+Review context: Battle Tile native 1× with five-opponent stress case —
+  bars, damage numbers, moonberry-glow effects, and actor pools must pop
 Validator: python3 pipeline/backdrops.py build + verify; CI npm run assets:verify
 ```
 

@@ -32,10 +32,9 @@ No rejected candidates.
 | Provenance sidecar | `assets-raw/backdrops/carillon-hall.source.json` |
 | Runtime 480×86 | `src/assets/backdrops/carillon-hall.png` |
 | Measure report | [`measure-report.json`](./measure-report.json) |
-| Native 1× strip | [`runtime-1x.png`](./runtime-1x.png) |
-| Runtime 4× band | [`runtime@4x.png`](./runtime@4x.png) |
-| Native tile review | [`tile-review-carillon-hall.png`](./tile-review-carillon-hall.png) |
+| Native tile review (Step 6) | [`tile-review-carillon-hall.png`](./tile-review-carillon-hall.png) |
 | 4× tile review | [`tile-review-carillon-hall@4x.png`](./tile-review-carillon-hall@4x.png) |
+| Bare runtime 1× / 4× | [`runtime-1x.png`](./runtime-1x.png), [`runtime@4x.png`](./runtime@4x.png) |
 | Visual verdict | [`visual-review.md`](./visual-review.md) |
 
 ## Validator
