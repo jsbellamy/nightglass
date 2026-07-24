@@ -1,0 +1,48 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "prompt": "Ultra-wide panoramic moonless-belfry-night fantasy battlefield backdrop strip in a chunky, softly painted pixel-art style. Very low contrast and overall dark enough for bright combat sprites, 2-pixel health bars, damage numbers, and luminous effects to remain the strongest signals.\n\nSCENE: the Carillon Hall, the interior bell chamber of the tower where rows of cracked tarnished-bronze bells hang from a heavy brass frame on frayed ropes. Verdigris patina streaks the bells and beams; a broken keyboard-frame and slack bell-ropes hang between stone arches. Moonless indigo darkness fills the depth, cold-glass highlights catch on the bell shoulders, candle-ivory light pools from a low guttering candle, and one dim alarm-red beacon glows on the far wall.\n\nCOMPOSITION: designed for a short 480x86 crop. Pack the hanging bells, brass frame, ropes, and stone arches into the middle horizontal band. Keep a nearly flat, dark plank-and-stone floor band across the bottom fifth. Keep the ceiling depth thin and dark. Leave broad low-detail combat space on both halves. Bell highlights and candle glow must be muted, never glowing brighter than combat feedback.\n\nEnvironmental evidence may include a fallen clapper, snapped rope, and cracked bell, but show no creature or body. No bats, ravens, moths, monsters, faces, readable text, logos, watermark, UI, borders, vignette frame, focal object, fire, gore, or hot-magenta field.\n",
+  "raw_sha256": "77a40e347ce112f70c9dbb09f69b777d1a842d65c427030cc8ba20c4ec398e3f",
+  "asset_class": "backdrop",
+  "runtime_destination": "src/assets/backdrops/carillon-hall.png",
+  "direct_inputs": [
+    {
+      "path": "src/assets/backdrops/harvest-yard.png",
+      "role": "style reference",
+      "sha256": "7ea723aac4d3a71099ab92c551d7897638b19f74bb367ecc176328d9023b7ebd"
+    },
+    {
+      "path": "src/assets/backdrops/crooked-cornfield.png",
+      "role": "style reference",
+      "sha256": "3d8e94506f245536906d0503a1a3d584f858b988013cd5662655eb6d1f24bd5b"
+    },
+    {
+      "path": "src/assets/backdrops/last-stop-diner.png",
+      "role": "style reference",
+      "sha256": "932376f7fab40cef5c5b38310a274c2b66327dd0514fa20812ccf94b68cc2d6a"
+    }
+  ],
+  "candidate": "carillon-hall-candidate-a",
+  "canonical_identity": "carillon-hall",
+  "source_resolution": [
+    1536,
+    1024
+  ],
+  "reduction": {
+    "crop_box": [
+      0,
+      374,
+      1536,
+      649
+    ],
+    "crop_size": [
+      1536,
+      275
+    ],
+    "resample": "NEAREST",
+    "runtime_size": [
+      480,
+      86
+    ]
+  }
+}
