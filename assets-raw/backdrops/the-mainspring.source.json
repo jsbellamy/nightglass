@@ -1,0 +1,49 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "prompt": "Ultra-wide panoramic moonless-belfry-night fantasy battlefield backdrop strip in a chunky, softly painted pixel-art style. Very low contrast and overall dark enough for bright combat sprites, 2-pixel health bars, damage numbers, and luminous effects to remain the strongest signals.\n\nSCENE: the Mainspring, the great clock-heart chamber deep in the tower where enormous tarnished-brass gear-wheels, a giant coiled mainspring, and a slow pendulum fill the walls. Verdigris-streaked cogs interlock behind a broken movement-frame; cold-glass jewel-bearings catch faint light and a candle-ivory glow seeps between the gears. Moonless indigo shadow pools in the mechanism's depth, with one dim alarm-red gauge lamp among the works.\n\nCOMPOSITION: designed for a short 480x86 crop. Pack the great gear-wheels, mainspring coil, pendulum, and movement-frame into the middle horizontal band. Keep a nearly flat, dark iron-grate floor band across the bottom fifth for a very wide Boss. Keep the upper depth thin and dark. Preserve an especially broad low-detail clearing on the opponent half so a 160x72 Boss silhouette remains distinct. Nothing bright or sharp behind the Boss bar.\n\nEnvironmental evidence may include a stripped gear, a snapped spring, and a fallen weight, but show no complete clock-beast and no creature or body. No owls, ravens, moths, spiders, monsters, faces in the gears, readable text, logos, watermark, UI, borders, vignette frame, focal object, active sparks, fire, gore, or hot-magenta field.",
+  "raw_sha256": "569adfc428967e4de7c7455c6096ca79ed6e54aaa035cca8cb4b0e74946d3604",
+  "asset_class": "backdrop",
+  "runtime_destination": "src/assets/backdrops/the-mainspring.png",
+  "candidate": "c1",
+  "canonical_identity": "the-mainspring",
+  "theme": "unwound-belfry",
+  "direct_inputs": [
+    {
+      "path": "src/assets/backdrops/harvest-yard.png",
+      "role": "style reference",
+      "sha256": "7ea723aac4d3a71099ab92c551d7897638b19f74bb367ecc176328d9023b7ebd"
+    },
+    {
+      "path": "src/assets/backdrops/crooked-cornfield.png",
+      "role": "style reference",
+      "sha256": "3d8e94506f245536906d0503a1a3d584f858b988013cd5662655eb6d1f24bd5b"
+    },
+    {
+      "path": "src/assets/backdrops/last-stop-diner.png",
+      "role": "style reference",
+      "sha256": "932376f7fab40cef5c5b38310a274c2b66327dd0514fa20812ccf94b68cc2d6a"
+    }
+  ],
+  "source_resolution": [
+    1536,
+    1024
+  ],
+  "reduction": {
+    "crop_box": [
+      0,
+      374,
+      1536,
+      649
+    ],
+    "crop_size": [
+      1536,
+      275
+    ],
+    "resample": "NEAREST",
+    "runtime_size": [
+      480,
+      86
+    ]
+  }
+}
