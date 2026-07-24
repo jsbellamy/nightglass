@@ -791,11 +791,13 @@ check("complete body raw tags are lexicographically sorted",
       _discovered_body == tuple(sorted(_discovered_body)))
 check("production body bundles discovered in runtime-key order",
       A.default_build_raw_tags() == (
-          "astrolabe-spider", "boss", "boss-2", "boss-3", "burger-drake",
-          "cornquacker", "hunter", "knight", "pipcap", "priest", "scarequack",
-          "the-combine", "the-fryer", "the-tocsin", "the-unwound", "the-vigil",
-          "tickmoth", "tollbat", "wizard"),
+          "aphelion", "astrolabe-spider", "boss", "boss-2", "boss-3",
+          "burger-drake", "cornquacker", "hunter", "knight", "pipcap", "priest",
+          "scarequack", "the-combine", "the-fryer", "the-tocsin", "the-unwound",
+          "the-vigil", "tickmoth", "tollbat", "wizard"),
       str(A.default_build_raw_tags()))
+check("Aphelion complete body bundle is discovered",
+      "aphelion" in _discovered_body)
 check("Astrolabe-Spider complete body bundle is discovered",
       "astrolabe-spider" in _discovered_body)
 check("Burger Drake complete body bundle is discovered",

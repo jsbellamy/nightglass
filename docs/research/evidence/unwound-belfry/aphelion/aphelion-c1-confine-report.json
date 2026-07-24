@@ -1,0 +1,31 @@
+{
+  "tag": "aphelion",
+  "candidates": [
+    {
+      "candidate": "docs/research/evidence/unwound-belfry/aphelion/scratch/aphelion-c1-confine.png",
+      "tag": "aphelion",
+      "status": "advance",
+      "primary_failure": null,
+      "next_action": "advance to visual review",
+      "gates": [],
+      "clipped_sides": [],
+      "cursor_stamp_removed": false,
+      "opaque_bounds": [
+        0,
+        0,
+        1429,
+        736
+      ],
+      "fitted_opaque_size": [
+        139,
+        72
+      ],
+      "profile": {
+        "role": "boss",
+        "max_opaque_w": 160,
+        "max_opaque_h": 72,
+        "facing": "left"
+      }
+    }
+  ]
+}
