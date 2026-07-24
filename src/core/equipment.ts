@@ -80,7 +80,10 @@ export function tierForItemLevel(itemLevel: ItemLevel): EquipmentTier {
   if (itemLevel <= 5) {
     return 3;
   }
-  return 4;
+  if (itemLevel <= 6) {
+    return 4;
+  }
+  return 5;
 }
 
 function rollSlotCategory(lootRng: LootRng): [EquipmentSlotId, LootRng] {
@@ -169,6 +172,12 @@ function affixBandFor(
         throw new Error(`Missing Affix band for ${affixId} at Equipment Tier 4`);
       }
       return band.tier4;
+    }
+    case 5: {
+      if (!band.tier5) {
+        throw new Error(`Missing Affix band for ${affixId} at Equipment Tier 5`);
+      }
+      return band.tier5;
     }
     default:
       throw new Error(`Missing Affix band for ${affixId} at Equipment Tier ${tier}`);

@@ -410,7 +410,7 @@ function bossSoloWaveViolations(
 
 function authoredEquipmentTiers(bases: EquipmentBaseDef[]): EquipmentTier[] {
   const present = new Set(bases.map((base) => base.tier));
-  return ([1, 2, 3, 4] as const).filter((tier) => present.has(tier));
+  return ([1, 2, 3, 4, 5] as const).filter((tier) => present.has(tier));
 }
 
 function affixBandTierViolations(
@@ -424,7 +424,7 @@ function affixBandTierViolations(
     if (tier < 3) {
       continue;
     }
-    const field = tier === 3 ? "tier3" : "tier4";
+    const field = tier === 3 ? "tier3" : tier === 4 ? "tier4" : "tier5";
     for (const affixId of ALL_AFFIX_IDS) {
       const band = bands.find((entry) => entry.id === affixId);
       if (!band || band[field] === undefined) {

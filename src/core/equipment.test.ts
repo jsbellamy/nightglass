@@ -148,13 +148,15 @@ describe("Equipment Drop rolling", () => {
 });
 
 describe("tierForItemLevel", () => {
-  it("maps Item Levels 1–2/I, 3/II, 4–5/III, and 6/IV", () => {
+  it("maps Item Levels 1–2/I, 3/II, 4–5/III, 6/IV, and 7–10/V", () => {
     expect(tierForItemLevel(1)).toBe(1);
     expect(tierForItemLevel(2)).toBe(1);
     expect(tierForItemLevel(3)).toBe(2);
     expect(tierForItemLevel(4)).toBe(3);
     expect(tierForItemLevel(5)).toBe(3);
     expect(tierForItemLevel(6)).toBe(4);
+    expect(tierForItemLevel(7)).toBe(5);
+    expect(tierForItemLevel(10)).toBe(5);
   });
 });
 
