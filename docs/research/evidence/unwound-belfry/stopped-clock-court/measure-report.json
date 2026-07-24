@@ -1,0 +1,12 @@
+{
+  "key": "stopped-clock-court",
+  "runtime_size": [
+    480,
+    86
+  ],
+  "mean_luma": 14.66,
+  "p90_luma": 28.57,
+  "max_luma": 225.16,
+  "bottom_fifth_mean_luma": 12.28,
+  "magenta_pixels": 0
+}
