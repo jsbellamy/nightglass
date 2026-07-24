@@ -159,19 +159,30 @@ behavior remain authoritative unless a later issue changes them.
    where this contract explicitly allows (for example the Talent tree column and the
    **Available skills** strip).
 
-5. **Character header (Variant C).** Below the **Build | Stats** controls and above the
-   active view body, a single **Character header** row is the sole owner of **Level** and
-   available **Talent Points** for the rail-selected Character on **Build** and **Stats**.
-   The header also carries identity chrome agreed in implementation (for example Character
-   name and Formation position). **Stats** must **not** repeat Level or Talent Points in its
-   body; **Talents** must **not** duplicate Level or Talent Points above the tree.
+5. **Character header (Variant C).** The Character surface header is one row: on the left, a
+   stacked identity block with class **monogram** (first letter of the Character class label),
+   sentence-case eyebrow **Selected character**, prominent Character **name**, and a single
+   **subline** carrying **Level** · Formation **position** · available **Talent Points**; on
+   the right, **Build | Stats** tab controls. This header is the **sole owner** of **Level**
+   and available **Talent Points** for the rail-selected Character on **Build** and **Stats**.
+   **Stats** must **not** repeat Level or Talent Points in its body; **Talents** must **not**
+   duplicate Level or Talent Points above the tree.
+
+6. **Variant C prototype exclusions (non-normative).** The recovered Variant C reference
+   captures (`docs/research/evidence/character-variant-c/README.md`) include chrome that must
+   **not** ship: the floating bottom prototype variant switcher (`← C — Build board →`),
+   uppercase prototype eyebrows (for example `LOADOUT`, `TALENTS`), and illustrative Stats
+   body telemetry (crit, speed, utility, threat, mitigation, cooldown, or temporary combat
+   readouts). Use that README as the visual reading guide for what to preserve versus
+   prototype-only decoration; interaction rules in this contract remain authoritative.
 
 ### Text wireframe (illustrative)
 
 ```text
 ┌─ Character ────────────────────────────────────────────────────────────┐
-│ [ Build | Stats ]                                                      │
-│ Knight · Level 12 · 2 Talent Points available · Front                  │  ← Character header
+│ [K] Selected character                           [ Build | Stats ]       │  ← Character header
+│     Knight                                                             │
+│     Level 12 · Front · 2 Talent Points available                       │
 │  Build: Loadout (left) + Talents (right) — Variant C board             │
 │  Stats: XP progress + canonical five-stat breakdown only               │
 └────────────────────────────────────────────────────────────────────────┘
@@ -199,13 +210,17 @@ behavior remain authoritative unless a later issue changes them.
 
 ```text
 ┌─ Character › Build ──────────────────────────────────────────────────────┐
-│ [ Build | Stats ]                                                        │
-│ Knight · Level 12 · N Talent Points available · Front                    │
-├─ Loadout (compact) ─┬─ Talents (wider) ─────────────────────────────────┤
-│ Basic Attack        │ ┌ talent-tree-scroll ────────────────────────────┐ │
-│ Slots [ I ][ II ][ III ] │ TIER 1 … attached − | rank/max | + steppers   │ │
-│ Available skills ►  │ │ …                                               │ │
-│ [■][■][■][■] scroll │ └──────────────────────────────────────────────┘ │
+│ [K] Selected character                           [ Build | Stats ]       │
+│     Knight                                                             │
+│     Level 12 · Front · N Talent Points available                       │
+├─ Loadout ───────────┬─ Talents ────────────────────────────────────────┤
+│ Basic Attack   …    │ ┌ talent-tree-scroll ────────────────────────────┐ │
+│ ① Slot I     …      │ │ Talent Tier 1 · 6/6                             │ │
+│ ② Slot II    …      │ │ [icon Name − | 3/5 | +] [icon … − | 2/5 | +]  │ │
+│ ③ Slot III   …      │ │ [✓ pick A] [ pick B ]  (compact rows)         │ │
+│ Available skills    │ │           ║  gate connector                      │ │
+│ 10 · scroll         │ │ Talent Tier 2 — LOCKED …                        │ │
+│ [■][■][■][■] ►      │ └──────────────────────────────────────────────┘ │
 └─────────────────────┴──────────────────────────────────────────────────┘
 ```
 
@@ -261,13 +276,24 @@ behavior remain authoritative unless a later issue changes them.
    disclosure via the strip heading on hover/focus (rule 3). Full mechanical text appears
    only in the **Mechanical detail popover** (not inline sticky paragraphs).
 
+9. **Flat row chrome (Variant C).** **Basic Attack** and each Loadout slot render as compact
+   horizontal **flat rows** (not per-slot card shells). Slot marks use **circled roman
+   numerals** **I**, **II**, and **III**. Six-dot drag-handle chrome is **not** required;
+   drag-and-drop and select-then-slot remain available per rules above.
+
+10. **Overflow hint.** When the **Available skills** pool length exceeds **four**, show a
+    durable overflow count and scroll cue adjacent to the strip heading (for example
+    `10 · scroll`); hide the hint when the pool has four or fewer choices.
+
 ### Text wireframe (illustrative)
 
 ```text
 ┌─ Character › Build › Loadout column ────────────────────────────────────┐
-│ Basic Attack   [════ always available ════]                               │
-│ Slots          [ I ] [ II ] [ III ]   ← ordered Ability Loadout           │
-│ Available skills — Frost Lance (on hover/focus of icon)                   │
+│ Basic Attack   [icon + name — always available]                          │
+│ ① [ I ]  … slotted Ability or empty slot                                 │
+│ ② [ II ] …                                                               │
+│ ③ [ III ]…                                                               │
+│ Available skills — Frost Lance (on hover/focus of icon)   10 · scroll    │
 │                [A][B][C][D] ◄ horizontal scroll when >4 choices           │
 │ ┌ Applies at next Wave ──────────────────────────────────────────────┐   │  ← pending only
 └──────────────────────────────────────────────────────────────────────────┘
@@ -334,6 +360,14 @@ behavior remain authoritative unless a later issue changes them.
    second Level or Talent Point summary above the tree. Tests may still target
    `[data-talent-points="true"]` when wired to the header.
 
+10. **Compact tier chrome (Variant C).** Do **not** render visible **Stat Row** or **Ability
+    Row** section headings in the Talents column; **Stat Row** and **Ability Row** remain
+    domain terms in tier-gate and cascade rules above. Each **Talent Tier N** section keeps
+    its tier title (sentence case, for example **Talent Tier 1**); an optional compact
+    allocated/total helper on the tier title (for example `Talent Tier 1 · 6/6`) is allowed.
+    Ability Talent picks use **compact rows** with choose/− actions — not side-by-side choice
+    cards.
+
 ### Text wireframe (illustrative)
 
 ```text
@@ -341,11 +375,11 @@ behavior remain authoritative unless a later issue changes them.
 │ (Level / Talent Points owned by Character header above the board)        │
 │ ┌ Applies at next Wave ──────────────────────────────────────────────┐ │
 │ ┌─ talent-tree-scroll ───────────────────────────────────────────────┐ │
-│ │ TALENT TIER 1                                                       │ │
-│ │ Stat Row  [icon Name effect  − | 3/5 | +]  [icon …  − | 2/5 | +]   │ │
-│ │ Ability Row [✓ pick A] [  pick B ]                                 │ │
+│ │ Talent Tier 1 · 6/6                                                 │ │
+│ │ [icon Name effect  − | 3/5 | +]  [icon …  − | 2/5 | +]           │ │
+│ │ [✓ pick A] [  pick B ]  (compact Ability Talent rows)              │ │
 │ │           ║  gate connector                                         │ │
-│ │ TALENT TIER 2 — LOCKED …                                            │ │
+│ │ Talent Tier 2 — LOCKED …                                            │ │
 │ └─────────────────────────────────────────────────────────────────────┘ │
 └──────────────────────────────────────────────────────────────────────────┘
 ```
@@ -393,8 +427,9 @@ behavior remain authoritative unless a later issue changes them.
 
 ```text
 ┌─ Character › Stats ────────────────────────────────────────────────────┐
-│ [ Build | Stats ]                                                      │
-│ Knight · Level 12 · 2 Talent Points available · Front                    │  ← Character header
+│ [K] Selected character                           [ Build | Stats ]       │  ← Character header
+│     Knight                                                             │
+│     Level 12 · Front · 2 Talent Points available                       │
 │ XP ████████░░ toward Level 13                                          │
 │ VITALS                                                                 │
 │ Max Health      980   Base … · Equip … · Talent …                      │
