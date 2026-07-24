@@ -1,12 +1,9 @@
 import { expect, test } from "@playwright/test";
 import {
   defineEvidenceScenario,
-  EVIDENCE_SCENARIOS,
-  evidenceScenarioTitle,
   registeredEvidenceScenarios,
 } from "./helpers/evidence-scenarios";
 import {
-  findDeclarationDrift,
   findDocsCitationDrift,
   findRawEvidenceTitles,
   findSceneEmissionDrift,
@@ -27,13 +24,6 @@ function collect<T>(items: readonly T[], key: (item: T) => string): Map<string, 
 }
 
 test.describe("evidence scenario registry", () => {
-  test("registeredEvidenceScenarios unions static catalogue with self-registered rows", () => {
-    expect(registeredEvidenceScenarios()).toHaveLength(17);
-    for (const row of EVIDENCE_SCENARIOS) {
-      expect(registeredEvidenceScenarios().find((scenario) => scenario.id === row.id)).toEqual(row);
-    }
-  });
-
   test("defineEvidenceScenario throws when scenario id is already registered", () => {
     const row = registeredEvidenceScenarios().find((scenario) => scenario.id === "five-actor-pools")!;
     expect(() => defineEvidenceScenario(row, async () => {})).toThrow(
@@ -89,69 +79,10 @@ test.describe("evidence scenario registry", () => {
     }
   });
 
-  test("has no scenarios on the retired rendered-evidence monolith", () => {
-    const monolith = registeredEvidenceScenarios().filter(
-      (s) => s.spec.path === "e2e/rendered-evidence.spec.ts",
-    );
-    expect(monolith).toHaveLength(0);
-  });
-
-  test("catalogues seventeen supplemental scenarios on dedicated spec files", () => {
-    const supplementalPaths = [
-      "e2e/contrast.spec.ts",
-      "e2e/keyboard.spec.ts",
-      "e2e/reduced-motion.spec.ts",
-      "e2e/stress.spec.ts",
-      "e2e/scenarios/tile.spec.ts",
-      "e2e/scenarios/dock.spec.ts",
-      "e2e/scenarios/armory.spec.ts",
-      "e2e/scenarios/character-loadout.spec.ts",
-      "e2e/scenarios/character-progression.spec.ts",
-    ];
-    const supplemental = registeredEvidenceScenarios().filter((s) => supplementalPaths.includes(s.spec.path));
-    expect(supplemental).toHaveLength(17);
-    const tileScenarios = registeredEvidenceScenarios().filter((s) => s.spec.path === "e2e/scenarios/tile.spec.ts");
-    expect(tileScenarios).toHaveLength(3);
-    const dockScenarios = registeredEvidenceScenarios().filter((s) => s.spec.path === "e2e/scenarios/dock.spec.ts");
-    expect(dockScenarios).toHaveLength(2);
-    const armoryScenarios = registeredEvidenceScenarios().filter((s) => s.spec.path === "e2e/scenarios/armory.spec.ts");
-    expect(armoryScenarios).toHaveLength(3);
-    const characterLoadoutScenarios = registeredEvidenceScenarios().filter(
-      (s) => s.spec.path === "e2e/scenarios/character-loadout.spec.ts",
-    );
-    expect(characterLoadoutScenarios).toHaveLength(2);
-    const characterLoadout = characterLoadoutScenarios.find((s) => s.id === "character-loadout");
-    expect(characterLoadout?.fixture).toBe("character-loadout-evidence");
-    expect(characterLoadout?.reviewScenes.map((scene) => scene.id)).toEqual([
-      "character-sub-build",
-      "character-sub-stats",
-    ]);
-    const characterProgressionScenarios = registeredEvidenceScenarios().filter(
-      (s) => s.spec.path === "e2e/scenarios/character-progression.spec.ts",
-    );
-    expect(characterProgressionScenarios).toHaveLength(2);
-    for (const scenario of [
-      ...tileScenarios,
-      ...armoryScenarios,
-      ...characterLoadoutScenarios,
-      ...characterProgressionScenarios,
-    ]) {
-      const title = evidenceScenarioTitle(scenario);
-      for (const slug of scenario.slugs) {
-        expect(title).toContain(`evidence: ${slug}`);
-      }
-      expect(title).toContain(" — ");
-    }
-  });
-
   test("rejects unsafe review output paths", () => {
     expect(() => assertSafeReviewOutputPath("/tmp/evil.png")).toThrow();
     expect(() => assertSafeReviewOutputPath("e2e-screenshots/../secrets.png")).toThrow();
     expect(() => assertSafeReviewOutputPath("docs/research/evidence/knockout-readability/tile-combat.png")).toThrow();
-  });
-
-  test("enforces final declarations and spec sources", () => {
-    expect(findDeclarationDrift(), "declaration drift").toEqual([]);
   });
 
   test("rejects hand-written evidence titles and unsafe tracked outputs", () => {

@@ -35,7 +35,7 @@ named-scenario blind spot from the acceptance-evidence seams audit.)
 
 The **complete machine-readable catalogue** of `evidence:` slugs is
 `EVIDENCE_SLUG_CATALOG` in `e2e/helpers/evidence-scenarios.ts`, enforced by
-`e2e/scenario-registry.spec.ts`. `EVIDENCE_CITATION_ONLY_SLUGS` lists slugs
+`e2e/zz-scenario-registry.spec.ts`. `EVIDENCE_CITATION_ONLY_SLUGS` lists slugs
 proved outside Playwright titles; `EVIDENCE_REVIEW_ARTIFACT_ONLY_SLUGS` lists
 guide citations that intentionally never bind to a harness title (knockout
 readability). Authoring steps live in `docs/agents/e2e-authoring.md`.

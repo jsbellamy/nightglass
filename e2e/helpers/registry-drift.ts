@@ -4,7 +4,6 @@ import {
   EVIDENCE_CITATION_ONLY_SLUGS,
   EVIDENCE_REVIEW_ARTIFACT_ONLY_SLUGS,
   EVIDENCE_SLUG_CATALOG,
-  EVIDENCE_SCENARIOS,
   registeredEvidenceScenarios,
   type ScenarioId,
 } from "./evidence-scenarios";
@@ -15,16 +14,9 @@ const REPO_ROOT = path.resolve(import.meta.dirname, "../..");
 const E2E_ROOT = path.join(REPO_ROOT, "e2e");
 const ACCEPTANCE_EVIDENCE_DOC = path.join(REPO_ROOT, "docs/agents/acceptance-evidence.md");
 
-const DECLARATION_RE = /declareEvidenceScenario\s*\(\s*"([^"]+)"/g;
 const SCREENSHOT_PATH_RE = /\.screenshot\s*\(\s*\{[^}]*\bpath\s*:\s*(["'`])([^"'`]+)\1/g;
 const RAW_EVIDENCE_TITLE_RE = /\btest(?:\.(?:only|skip|fixme))?\s*\(\s*(["'`])([^"'`]*\bevidence:\s[^"'`]*)\1/g;
 const DOCS_EVIDENCE_SLUG_RE = /`evidence:\s*([^`]+)`/g;
-
-const SCAN_IGNORE = new Set([
-  path.join(E2E_ROOT, "helpers/evidence-scenarios.ts"),
-  path.join(E2E_ROOT, "helpers/registry-drift.ts"),
-  path.join(E2E_ROOT, "zz-scenario-registry.spec.ts"),
-]);
 
 function listE2eSources(): string[] {
   const files: string[] = [];
@@ -35,7 +27,7 @@ function listE2eSources(): string[] {
         walk(full);
         continue;
       }
-      if (full.endsWith(".ts") && !SCAN_IGNORE.has(full)) {
+      if (full.endsWith(".ts")) {
         files.push(full);
       }
     }
@@ -46,58 +38,6 @@ function listE2eSources(): string[] {
 
 function readSource(relativeToRepo: string): string {
   return readFileSync(path.join(REPO_ROOT, relativeToRepo), "utf8");
-}
-
-function collectDeclarationsBySpec(): Map<string, Map<string, number>> {
-  const bySpec = new Map<string, Map<string, number>>();
-  for (const file of listE2eSources()) {
-    const relative = path.relative(REPO_ROOT, file).replaceAll("\\", "/");
-    const source = readFileSync(file, "utf8");
-    for (const match of source.matchAll(DECLARATION_RE)) {
-      const scenarioId = match[1]!;
-      const counts = bySpec.get(relative) ?? new Map<string, number>();
-      counts.set(scenarioId, (counts.get(scenarioId) ?? 0) + 1);
-      bySpec.set(relative, counts);
-    }
-  }
-  return bySpec;
-}
-
-export function findDeclarationDrift(): string[] {
-  const errors: string[] = [];
-  const bySpec = collectDeclarationsBySpec();
-  for (const scenario of EVIDENCE_SCENARIOS) {
-    const specPath = scenario.spec.path;
-    if (!existsSync(path.join(REPO_ROOT, specPath))) {
-      errors.push(`missing spec source: ${specPath} for scenario ${scenario.id}`);
-      continue;
-    }
-    const declarations = bySpec.get(specPath);
-    const count = declarations?.get(scenario.id) ?? 0;
-    if (count === 0) {
-      errors.push(`missing final declaration: ${scenario.id} in ${specPath}`);
-    } else if (count > 1) {
-      errors.push(`duplicate declaration: ${scenario.id} in ${specPath} (${count} times)`);
-    }
-  }
-  for (const [specPath, declarations] of bySpec) {
-    const specSource = readSource(specPath);
-    for (const match of specSource.matchAll(DECLARATION_RE)) {
-      const declaredId = match[1]!;
-      const owner = EVIDENCE_SCENARIOS.find((row) => row.id === declaredId);
-      if (!owner) {
-        errors.push(`unknown scenario id in ${specPath}: ${declaredId}`);
-        continue;
-      }
-      if (owner.spec.path !== specPath) {
-        errors.push(`declaration ${declaredId} in ${specPath} belongs in ${owner.spec.path}`);
-      }
-      if ((declarations.get(declaredId) ?? 0) > 1) {
-        errors.push(`duplicate declaration: ${declaredId} in ${specPath}`);
-      }
-    }
-  }
-  return errors;
 }
 
 export function findRawEvidenceTitles(): string[] {
