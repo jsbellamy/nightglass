@@ -28,6 +28,7 @@ export interface ClassKitBasesContract {
 export const REVIEWED_XP_THRESHOLDS = [
   0, 100, 250, 450, 650, 850,
   1100, 1400, 2000, 2600, 3250, 3950,
+  4700, 5500, 6400, 7400, 8500, 9700,
 ] as const;
 
 /** Reviewed Level 1 bases and default Ability Loadouts. */

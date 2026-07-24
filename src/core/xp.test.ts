@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { XP_THRESHOLDS } from "../data/index";
 import { awardXp, levelFromXp, reserveXpAward } from "./xp";
 
 const THRESHOLDS = [0, 100, 250, 450, 650, 850];
@@ -14,6 +15,17 @@ describe("levelFromXp", () => {
     expect(levelFromXp(650, THRESHOLDS)).toBe(5);
     expect(levelFromXp(850, THRESHOLDS)).toBe(6);
     expect(levelFromXp(9999, THRESHOLDS)).toBe(6);
+  });
+
+  it("caps at Level 18 at the top shipped threshold", () => {
+    const thresholds = [...XP_THRESHOLDS];
+    for (let i = 1; i < thresholds.length; i++) {
+      expect(thresholds[i]).toBeGreaterThan(thresholds[i - 1]!);
+    }
+    expect(thresholds).toHaveLength(18);
+    expect(levelFromXp(9699, thresholds)).toBe(17);
+    expect(levelFromXp(9700, thresholds)).toBe(18);
+    expect(levelFromXp(99999, thresholds)).toBe(18);
   });
 });
 
