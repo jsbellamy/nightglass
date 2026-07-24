@@ -98,4 +98,26 @@ export const statuses: StatusEffectDef[] = [
     kind: "stun",
     durationMs: 1000,
   },
+  {
+    id: "corroded",
+    name: "Corroded",
+    kind: "debuff",
+    durationMs: 6000,
+    modifiers: { flat: { armor: -25, elementalResistance: -25 } },
+  },
+  {
+    id: "tolling",
+    name: "Tolling",
+    kind: "debuff",
+    durationMs: 5000,
+    tickEveryMs: 1000,
+    tickEffect: { kind: "damage", channel: "physical", coefficient: 0.25 },
+  },
+  {
+    id: "timeslip",
+    name: "Timeslip",
+    kind: "debuff",
+    durationMs: 6000,
+    modifiers: { percent: { physicalPower: -0.2, elementalPower: -0.2 } },
+  },
 ];

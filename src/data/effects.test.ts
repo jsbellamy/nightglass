@@ -115,9 +115,10 @@ describe("effect recipes", () => {
 describe("status glyphs", () => {
   const statusDir = join(dirname(fileURLToPath(import.meta.url)), "../assets/effects/status");
 
-  it("ships thirteen shape-distinct 7×7 glyphs", () => {
+  it("ships sixteen shape-distinct 7×7 glyphs", () => {
     const expected = [
       "braced",
+      "corroded",
       "exposed",
       "guarded",
       "hold-the-line",
@@ -129,6 +130,8 @@ describe("status glyphs", () => {
       "shaken",
       "sheltered",
       "stun",
+      "timeslip",
+      "tolling",
       "warded",
     ];
     expect(readdirSync(statusDir).filter((f) => f.endsWith(".png")).sort()).toEqual(

@@ -3,6 +3,10 @@ import {
   fowlHarvestOpponentAbilities,
   fowlHarvestOpponents,
 } from "./fowl-harvest-opponents";
+import {
+  unwoundBelfryOpponentAbilities,
+  unwoundBelfryOpponents,
+} from "./unwound-belfry-opponents";
 
 /**
  * Initial combat tuning for vertical-slice opponents (issue #40).
@@ -158,6 +162,7 @@ export const opponentAbilities: AbilityDef[] = [
     cooldownMs: 10_000,
   },
   ...fowlHarvestOpponentAbilities,
+  ...unwoundBelfryOpponentAbilities,
 ];
 
 function pipcap(
@@ -242,4 +247,5 @@ export const opponents: OpponentDef[] = [
     "boss-3",
   ),
   ...fowlHarvestOpponents,
+  ...unwoundBelfryOpponents,
 ];

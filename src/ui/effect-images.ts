@@ -14,6 +14,7 @@ export function effectImageUrl(relativePath: string): string {
 
 export const STATUS_EFFECT_GLYPH_IDS = [
   "braced",
+  "corroded",
   "exposed",
   "guarded",
   "hold-the-line",
@@ -25,6 +26,8 @@ export const STATUS_EFFECT_GLYPH_IDS = [
   "shaken",
   "sheltered",
   "stun",
+  "timeslip",
+  "tolling",
   "warded",
 ] as const;
 
