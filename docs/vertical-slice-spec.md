@@ -47,7 +47,7 @@ Offline Progress while the app is closed.
 
 ### Deferred by resolved decisions (per-section deferrals)
 
-Prestige/meta-progression, combat RNG of any kind, resources/mana, control
+Prestige/meta-progression, resources/mana, control
 effects beyond Stun, save migration chains, screen-reader support, per-Ability
 audio, automated performance regression testing, and Equipment crafting,
 selling, sets, or binding — each recorded with its owning section below.
@@ -289,7 +289,7 @@ compared to that fixture field-by-field.
   Stages cannot require a specific Class, Healing, Stun, or damage channel.
 - Two damage channels: Physical and Elemental. Hidden derived Powers:
   `Power = floor((base + flat bonuses) × (1 + summed percentage bonuses))`;
-  `raw = floor(Power × coefficient)`. Healing scales from Elemental Power. The
+  `raw = floor(Power × coefficient)`. Healing scales from Spell Power. The
   UI shows per-Ability raw results, never consolidated Power totals.
 - Levels grant no automatic statistics — each Level's power is its Talent Point
   plus Equipment progression.
@@ -343,7 +343,7 @@ bands, rarity odds; content data transcribes it directly).
   abandonment. Type selection: uniform slot category, then uniform Class for
   weapons. Rarity odds shift per Stage (S1 `55/35/9/1`, S2 `40/40/17/3`,
   S3 `25/45/24/6`).
-- **Loot RNG is a persisted stream separate from deterministic combat.** Pieces
+- **Loot RNG is a persisted stream separate from the combat stream.** Pieces
   are fully rolled and saved when awarded — reload cannot reroll; Offline
   Progress consumes the same stream; seeds are fixable for tests.
 - **Armory:** one shared, capacity-free collection including equipped pieces
