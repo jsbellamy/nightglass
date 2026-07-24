@@ -204,7 +204,7 @@ export const hunterClass: ClassKitDef = {
   id: "hunter",
   name: "Hunter",
   base: {
-    maxHealth: 120,
+    maxHealth: 156,
     physical: 15,
     elemental: 6,
     armor: 16,

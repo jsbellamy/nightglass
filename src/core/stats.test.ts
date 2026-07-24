@@ -47,13 +47,13 @@ describe("Character BaseStats from Class Kit and Talents", () => {
     expect(characterStats(knightKit, talentState)).toEqual(knightContract.base);
   });
 
-  it("derives Knight maxHealth after five Fortitude ranks (spec §6 % on reviewed 180 base)", () => {
+  it("derives Knight maxHealth after five Fortitude ranks (spec §6 % on reviewed 234 base)", () => {
     const talentState = emptyTalentState(knightKit);
     talentState.statRanks = { "k-fortitude": 5, "k-swordcraft": 0 };
     talentState.tierStates[0]!.statRanks = { "k-fortitude": 5, "k-swordcraft": 0 };
     const stats = characterStats(knightKit, talentState);
-    // floor(180 × (1 + 5 × 0.06)) per vertical-slice-spec.md §6 Power formula
-    expect(stats.maxHealth).toBe(234);
+    // floor(234 × (1 + 5 × 0.06)) per vertical-slice-spec.md §6 Power formula
+    expect(stats.maxHealth).toBe(304);
     expect(stats.physical).toBe(knightContract.base.physical);
   });
 
@@ -73,8 +73,8 @@ describe("Character BaseStats from Class Kit and Talents", () => {
     state.tierStates[1]!.statRanks = { "k2-fortitude": 2, "k2-swordcraft": 0 };
     state.statRanks = { ...state.tierStates[0]!.statRanks };
     const stats = characterStats(twoTierKnight, state);
-    // floor(180 × (1 + 3×0.06 + 2×0.04)) — spec §6 percent pool sums every rank
-    expect(stats.maxHealth).toBe(226);
+    // floor(234 × (1 + 3×0.06 + 2×0.04)) — spec §6 percent pool sums every rank
+    expect(stats.maxHealth).toBe(294);
     expect(stats.physical).toBe(knightContract.base.physical);
   });
 });

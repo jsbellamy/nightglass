@@ -201,7 +201,7 @@ export const wizardClass: ClassKitDef = {
   id: "wizard",
   name: "Wizard",
   base: {
-    maxHealth: 100,
+    maxHealth: 130,
     physical: 4,
     elemental: 16,
     armor: 10,

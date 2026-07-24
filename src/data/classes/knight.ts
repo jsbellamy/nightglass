@@ -206,7 +206,7 @@ export const knightClass: ClassKitDef = {
   id: "knight",
   name: "Knight",
   base: {
-    maxHealth: 180,
+    maxHealth: 234,
     physical: 14,
     elemental: 4,
     armor: 30,
