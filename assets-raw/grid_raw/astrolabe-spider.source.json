@@ -1,0 +1,37 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "e1f2a82ebeee6e3f4be17a3e34649bdb37829040bd800efa61dc0737a0f52d6f",
+  "acquisition": "flexible",
+  "identity_profile": {
+    "asset_class": "opponent",
+    "role": "ordinary-opponent",
+    "facing": "left"
+  },
+  "cursor_stamp_removed": false,
+  "identity": "astrolabe-spider",
+  "asset_class": "opponent",
+  "runtime_destination": "src/assets/sprites/astrolabe-spider.png",
+  "candidate": "astrolabe-spider-c1.png",
+  "facing": "left",
+  "role": "ordinary-opponent",
+  "palette": "unwound-belfry-24@1",
+  "style_references": [
+    {
+      "path": "src/assets/sprites/tickmoth.png",
+      "sha256": "0e8019a793ec7c18ec10711b9490f32193f01a60179e67e6a61c7948805e5840",
+      "role": "style"
+    },
+    {
+      "path": "src/assets/sprites/tollbat.png",
+      "sha256": "332cd1848440fa70e6e317ef4dbccb02077afcce2ecbf194e4ee0e18335a9577",
+      "role": "style"
+    },
+    {
+      "path": "src/assets/sprites/burger-drake.png",
+      "sha256": "c8a0e66c892465c9fa9355df19275a1c7385f10246286c4f11c2869272f9563f",
+      "role": "style"
+    }
+  ],
+  "prompt": "Single full-body Astrolabe-Spider ordinary opponent game sprite, strict side profile facing LEFT. A spider anatomically fused with a broken brass astrolabe. Its abdomen is the astrolabe: a flat verdigris-and-brass engraved disc etched with a faint zodiac ring and a broken rotating rule, tilted to read side-on as a thick coin-like body. The cephalothorax is a smaller brass hub; eight legs are slender jointed brass caliper-arms, some ending in fine pointer tips. The mutation is one living creature, not a spider standing on or holding an instrument.\n\nPreserve its uncanny absurd identity: a compact brass head-hub with a cluster of cold-glass eyes and one alarm-red sighting-lens, an engraved verdigris astrolabe-disc abdomen with a snapped alidade rule, and eight jointed caliper legs arranged in a low wide stance. Low, many-legged, unsettling silhouette. The eye cluster, astrolabe disc, broken rule, and the splayed caliper legs must remain distinct at native game scale.\n\nChunky simplified flat-colour Unwound Belfry pixel art matching Tickmoth and Tollbat in block size, selective moonless-indigo contour, and 55% absurd / 45% uncanny tone. Use only named unwound-belfry-24 colors: moonless indigos, tarnished brass, verdigris patina, candle ivory, cold glass, and a restrained alarm-red lens. No gore, wounds, exposed organs, realism, gradients, anti-aliasing, blur, or dithering.\n\nShow exactly one complete subject with generous empty clearance on every edge of an opaque flat solid magenta #ff00ff background. No shadow, floor, glow, web, sparkles, particles, Ability effect, text, watermark, scenery, UI, transparency, other object, or other subject.\n"
+}

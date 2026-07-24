@@ -1,0 +1,31 @@
+{
+  "tag": "astrolabe-spider",
+  "candidates": [
+    {
+      "candidate": "assets-raw/grid_raw/astrolabe-spider.png",
+      "tag": "astrolabe-spider",
+      "status": "advance",
+      "primary_failure": null,
+      "next_action": "advance to visual review",
+      "gates": [],
+      "clipped_sides": [],
+      "cursor_stamp_removed": false,
+      "opaque_bounds": [
+        0,
+        0,
+        1108,
+        571
+      ],
+      "fitted_opaque_size": [
+        30,
+        15
+      ],
+      "profile": {
+        "role": "ordinary-opponent",
+        "max_opaque_w": 30,
+        "max_opaque_h": 68,
+        "facing": "left"
+      }
+    }
+  ]
+}
