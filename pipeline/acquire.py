@@ -165,6 +165,34 @@ ASSET_IDENTITIES = {
         "asset_class": "opponent", "role": "boss", "facing": "left",
         "palette": "fowl-harvest-24",
     },
+    "tickmoth": {
+        "asset_class": "opponent", "role": "ordinary-opponent", "facing": "left",
+        "palette": "unwound-belfry-24",
+    },
+    "tollbat": {
+        "asset_class": "opponent", "role": "ordinary-opponent", "facing": "left",
+        "palette": "unwound-belfry-24",
+    },
+    "astrolabe-spider": {
+        "asset_class": "opponent", "role": "ordinary-opponent", "facing": "left",
+        "palette": "unwound-belfry-24",
+    },
+    "the-vigil": {
+        "asset_class": "opponent", "role": "boss", "facing": "left",
+        "palette": "unwound-belfry-24",
+    },
+    "the-tocsin": {
+        "asset_class": "opponent", "role": "boss", "facing": "left",
+        "palette": "unwound-belfry-24",
+    },
+    "the-unwound": {
+        "asset_class": "opponent", "role": "boss", "facing": "left",
+        "palette": "unwound-belfry-24",
+    },
+    "aphelion": {
+        "asset_class": "opponent", "role": "boss", "facing": "left",
+        "palette": "unwound-belfry-24",
+    },
 }
 
 # Interim raw tags that are known identities but must not enter default rebuild
@@ -180,6 +208,7 @@ LEGACY_MOONBERRY_IDENTITIES = frozenset({
 PALETTE_PATHS = {
     "moonberry-16": HERE / "palette.json",
     "fowl-harvest-24": HERE / "palettes" / "fowl-harvest-24.json",
+    "unwound-belfry-24": HERE / "palettes" / "unwound-belfry-24.json",
 }
 
 SIDECAR_SUFFIX = ".source.json"

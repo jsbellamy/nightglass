@@ -768,6 +768,23 @@ _fh_glow_overlap = set(_fh_rgbs) & _glow_rgbs
 check("fowl-harvest-24 RGB disjoint from moonberry-glow@1",
       not _fh_glow_overlap, str(_fh_glow_overlap))
 
+print("\nunwound-belfry-24 palette")
+_ub_path = HERE / "palettes" / "unwound-belfry-24.json"
+_ub = json.loads(_ub_path.read_text())
+_ub_colors = _ub["colors"]
+_ub_names = [entry["name"] for entry in _ub_colors]
+_ub_rgbs = [tuple(entry["rgb"]) for entry in _ub_colors]
+check("unwound-belfry-24 has exactly 24 named swatches", len(_ub_colors) == 24)
+check("unwound-belfry-24 color names are unique",
+      len(_ub_names) == len(set(_ub_names)))
+check("unwound-belfry-24 RGB values are unique",
+      len(_ub_rgbs) == len(set(_ub_rgbs)))
+check("unwound-belfry-24 excludes acquisition hot magenta",
+      (255, 0, 255) not in _ub_rgbs)
+_ub_glow_overlap = set(_ub_rgbs) & _glow_rgbs
+check("unwound-belfry-24 RGB disjoint from moonberry-glow@1",
+      not _ub_glow_overlap, str(_ub_glow_overlap))
+
 print("\nbody bundle discovery")
 _discovered_body = A.discover_complete_body_raw_tags()
 check("complete body raw tags are lexicographically sorted",
