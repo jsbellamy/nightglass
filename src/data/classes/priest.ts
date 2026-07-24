@@ -204,7 +204,7 @@ export const priestClass: ClassKitDef = {
   id: "priest",
   name: "Priest",
   base: {
-    maxHealth: 125,
+    maxHealth: 163,
     physical: 5,
     elemental: 13,
     armor: 15,

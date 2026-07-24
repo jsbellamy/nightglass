@@ -36,7 +36,7 @@ export const REVIEWED_CLASS_BASES: ClassKitBasesContract[] = [
   {
     id: "knight",
     base: {
-      maxHealth: 180,
+      maxHealth: 234,
       physical: 14,
       elemental: 4,
       armor: 30,
@@ -47,7 +47,7 @@ export const REVIEWED_CLASS_BASES: ClassKitBasesContract[] = [
   {
     id: "wizard",
     base: {
-      maxHealth: 100,
+      maxHealth: 130,
       physical: 4,
       elemental: 16,
       armor: 10,
@@ -58,7 +58,7 @@ export const REVIEWED_CLASS_BASES: ClassKitBasesContract[] = [
   {
     id: "priest",
     base: {
-      maxHealth: 125,
+      maxHealth: 163,
       physical: 5,
       elemental: 13,
       armor: 15,
@@ -69,7 +69,7 @@ export const REVIEWED_CLASS_BASES: ClassKitBasesContract[] = [
   {
     id: "hunter",
     base: {
-      maxHealth: 120,
+      maxHealth: 156,
       physical: 15,
       elemental: 6,
       armor: 16,

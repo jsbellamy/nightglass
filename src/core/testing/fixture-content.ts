@@ -322,7 +322,7 @@ export const fixtureContent: Content = {
       id: "knight",
       name: "Knight",
       base: {
-        maxHealth: 180,
+        maxHealth: 234,
         physical: 14,
         elemental: 4,
         armor: 30,
@@ -355,7 +355,7 @@ export const fixtureContent: Content = {
       id: "wizard",
       name: "Wizard",
       base: {
-        maxHealth: 100,
+        maxHealth: 130,
         physical: 4,
         elemental: 16,
         armor: 10,
