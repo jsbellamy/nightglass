@@ -606,5 +606,37 @@
       "provider": "Cursor GenerateImage",
       "raw_sha256": "ab42369a93b7c66dda08d407117754b7e97cda2ed1135346845b92838dfbbf6a"
     }
+  },
+  "aphelion": {
+    "action": "still",
+    "frame_size": [
+      139,
+      72
+    ],
+    "visual_bounds": [
+      0,
+      0,
+      139,
+      72
+    ],
+    "foot_anchor": [
+      69,
+      72
+    ],
+    "palette": "unwound-belfry-24",
+    "baseline_row": 71,
+    "total_ms": 1,
+    "frames": [
+      {
+        "name": "aphelion",
+        "duration_ms": 1,
+        "sha256": "df534e44a12ad905ecb0e1547b63614e0767e542db870f841acddaadfe1cc28d"
+      }
+    ],
+    "cues_ms": {},
+    "source": {
+      "provider": "Cursor GenerateImage",
+      "raw_sha256": "a0b199e55947cfa52669450e32891cfcf2bfaeffd3f721ea1bcc5e2f7b60a94e"
+    }
   }
 }
