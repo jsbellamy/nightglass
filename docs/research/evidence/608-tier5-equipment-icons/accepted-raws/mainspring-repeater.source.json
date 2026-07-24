@@ -1,0 +1,93 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "fb4a1da71a99f1b9bdb9199666cff36874f1045949d1298e6f12070d92032eae",
+  "asset_class": "interface",
+  "kind": "equipment-base-icon",
+  "runtime_destination": "src/assets/icons/mainspring-repeater.png",
+  "source_key": "mainspring-repeater",
+  "candidate": "mainspring-repeater-r1",
+  "palette": "unwound-belfry-24",
+  "palette_subset": [
+    "belfry-void",
+    "moonless-indigo",
+    "indigo-shadow",
+    "dusk-indigo",
+    "slate-indigo",
+    "brass-umber",
+    "tarnished-brass",
+    "old-brass",
+    "brass",
+    "brass-light",
+    "verdigris-deep",
+    "verdigris",
+    "verdigris-light",
+    "patina-pale",
+    "candle-ivory",
+    "alarm-red"
+  ],
+  "style_references": [
+    {
+      "path": "src/assets/icons/threshertooth-blade.png",
+      "sha256": "f33b41d0e383b1be7e1ce9b300253052974ac1ed484f903406b5092f7f86f509",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/combineplate-harness.png",
+      "sha256": "e3d34382e97ac4cb9099ec104223dd58cd53468bb0b475c436fba217551818ae",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/black-oil-locket.png",
+      "sha256": "a35a77e7abec53848bf521f4f51da503d6d983763ece9a26da402caa2838b6a1",
+      "role": "style_cohort"
+    }
+  ],
+  "prompt": "TRUE chunky pixel art inventory icon ONLY on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel one clean flat square block, no smaller detail, gradient, anti-aliasing, blur, or dithering. A single centered clockwork-fantasy item in three-quarter display angle: a hunter's mechanical repeater crossbow with a coiled brass mainspring drum at its heart and taut verdigris-metal limbs. Leave at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Use only Unwound Belfry colours \u2014 brass and tarnished-brass metal, verdigris patina, candle-ivory highlights, cold glass-teal accents, deep indigo shadows, one restrained alarm-red accent (8\u201312 flat colours). No brown or tan beyond brass, no cyan, no pure white, no pure black. Structural members at least 3 logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        292,
+        125,
+        1251,
+        878
+      ],
+      "pitch_x": {
+        "pitch": 39.566666666666315,
+        "score": 0.07803097627931607
+      },
+      "pitch_y": {
+        "pitch": 38.866666666666355,
+        "score": 0.06555586693594848
+      },
+      "grid": [
+        24,
+        19
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 248,
+      "far_cells": 7,
+      "far_fraction": 0.0282,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "moonless-indigo": 41,
+        "brass-light": 17,
+        "indigo-shadow": 40,
+        "brass-umber": 42,
+        "old-brass": 19,
+        "slate-indigo": 5,
+        "patina-pale": 4,
+        "tarnished-brass": 18,
+        "verdigris-light": 19,
+        "brass": 10,
+        "dusk-indigo": 13,
+        "alarm-red": 1,
+        "verdigris-deep": 5,
+        "verdigris": 10,
+        "candle-ivory": 4
+      }
+    }
+  },
+  "note": "#608 Tier-5 Unwound Belfry Equipment Base icon"
+}

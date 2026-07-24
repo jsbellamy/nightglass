@@ -1,0 +1,57 @@
+{
+  "recovered": {
+    "bbox": [
+      383,
+      58,
+      1158,
+      955
+    ],
+    "pitch_x": {
+      "pitch": 27.194444444444475,
+      "score": 0.15632297199228126
+    },
+    "pitch_y": {
+      "pitch": 26.89444444444447,
+      "score": 0.16167583443569739
+    },
+    "grid": [
+      24,
+      30
+    ],
+    "fit": {
+      "from": [
+        28,
+        34
+      ],
+      "to": [
+        24,
+        30
+      ],
+      "reason": "overshoot"
+    }
+  },
+  "ramp": {
+    "opaque_cells": 227,
+    "far_cells": 4,
+    "far_fraction": 0.0176,
+    "off_ramp_reject": false,
+    "quantize_histogram": {
+      "indigo-shadow": 50,
+      "candle-ivory": 4,
+      "brass": 41,
+      "tarnished-brass": 22,
+      "moonless-indigo": 28,
+      "brass-umber": 17,
+      "verdigris-deep": 15,
+      "verdigris": 16,
+      "brass-light": 9,
+      "dusk-indigo": 3,
+      "old-brass": 16,
+      "candle-ivory-deep": 1,
+      "slate-indigo": 1,
+      "alarm-ember": 1,
+      "patina-pale": 1,
+      "verdigris-light": 2
+    }
+  }
+}

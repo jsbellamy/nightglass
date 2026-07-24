@@ -559,6 +559,66 @@
     "source_family": "threshertooth-blade",
     "sha256": "f33b41d0e383b1be7e1ce9b300253052974ac1ed484f903406b5092f7f86f509"
   },
+  "aphelion-conduit": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "unwound-belfry-24",
+    "outline": "belfry-void",
+    "source_family": "aphelion-conduit",
+    "sha256": "645673ded1a1d2f19ae7bfbfa55f71c309f857cf59a8c0906781ce5b4d891807"
+  },
+  "escapement-greatsword": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "unwound-belfry-24",
+    "outline": "belfry-void",
+    "source_family": "escapement-greatsword",
+    "sha256": "f8305c252d9ff7679fcbdee09e36479854be0313e17d153f317c830630a81126"
+  },
+  "mainspring-repeater": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "unwound-belfry-24",
+    "outline": "belfry-void",
+    "source_family": "mainspring-repeater",
+    "sha256": "aaacfd911525b47bd10510ada416a9893897227ea5e0423a8a6ab3d1512d7331"
+  },
+  "stopped-hour-pendulum": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "unwound-belfry-24",
+    "outline": "belfry-void",
+    "source_family": "stopped-hour-pendulum",
+    "sha256": "83964c7a85bf76632bd8b5182e3ed4e80ea447e742181c86b4f3dd72cca942f8"
+  },
+  "tolling-reliquary": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "unwound-belfry-24",
+    "outline": "belfry-void",
+    "source_family": "tolling-reliquary",
+    "sha256": "e96069a56877dfe9babcdcba8c7f17b3d4c691eefb33ad765f2e6696146b895f"
+  },
+  "verdigris-carapace": {
+    "canvas": [
+      34,
+      34
+    ],
+    "palette": "unwound-belfry-24",
+    "outline": "belfry-void",
+    "source_family": "verdigris-carapace",
+    "sha256": "c3ef445c91c8c34fc5e145b202e7e506f222f9526fe71798bcf1004f5b7f89d5"
+  },
   "steel-cut": {
     "canvas": [
       34,

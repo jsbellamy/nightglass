@@ -1,0 +1,90 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "de17d6989a2caf21b5e18ecf0bc78dda3126f3b44bbdecd0d9896fd4e437058d",
+  "asset_class": "interface",
+  "kind": "equipment-base-icon",
+  "runtime_destination": "src/assets/icons/aphelion-conduit.png",
+  "source_key": "aphelion-conduit",
+  "candidate": "aphelion-conduit-r1",
+  "palette": "unwound-belfry-24",
+  "palette_subset": [
+    "belfry-void",
+    "moonless-indigo",
+    "indigo-shadow",
+    "dusk-indigo",
+    "brass-umber",
+    "tarnished-brass",
+    "old-brass",
+    "brass",
+    "brass-light",
+    "verdigris",
+    "verdigris-light",
+    "glass-teal",
+    "cold-glass",
+    "candle-ivory",
+    "candle-flame",
+    "alarm-ember"
+  ],
+  "style_references": [
+    {
+      "path": "src/assets/icons/threshertooth-blade.png",
+      "sha256": "f33b41d0e383b1be7e1ce9b300253052974ac1ed484f903406b5092f7f86f509",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/combineplate-harness.png",
+      "sha256": "e3d34382e97ac4cb9099ec104223dd58cd53468bb0b475c436fba217551818ae",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/black-oil-locket.png",
+      "sha256": "a35a77e7abec53848bf521f4f51da503d6d983763ece9a26da402caa2838b6a1",
+      "role": "style_cohort"
+    }
+  ],
+  "prompt": "TRUE chunky pixel art inventory icon ONLY on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel one clean flat square block, no smaller detail, gradient, anti-aliasing, blur, or dithering. A single centered clockwork-fantasy item in three-quarter display angle: a wizard's conduit-staff topped with a small brass orrery ring orbiting a cold glass-teal sphere, slender brass shaft. Leave at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Use only Unwound Belfry colours \u2014 brass and tarnished-brass metal, verdigris patina, candle-ivory highlights, cold glass-teal accents, deep indigo shadows, one restrained alarm-red accent (8\u201312 flat colours). No brown or tan beyond brass, no cyan, no pure white, no pure black. Structural members at least 3 logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        465,
+        63,
+        1142,
+        955
+      ],
+      "pitch_x": {
+        "pitch": 36.70555555555539,
+        "score": 0.10290743219587437
+      },
+      "pitch_y": {
+        "pitch": 37.05555555555537,
+        "score": 0.1297038360438066
+      },
+      "grid": [
+        18,
+        24
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 148,
+      "far_cells": 10,
+      "far_fraction": 0.0676,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "brass-umber": 36,
+        "brass-light": 10,
+        "tarnished-brass": 17,
+        "candle-ivory": 3,
+        "brass": 15,
+        "indigo-shadow": 26,
+        "alarm-ember": 1,
+        "old-brass": 6,
+        "dusk-indigo": 12,
+        "cold-glass": 1,
+        "verdigris-light": 12,
+        "verdigris": 9
+      }
+    }
+  },
+  "note": "#608 Tier-5 Unwound Belfry Equipment Base icon"
+}

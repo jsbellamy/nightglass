@@ -5,14 +5,29 @@ import { buildContent } from "./index";
 import { AFFIX_BANDS, EQUIPMENT_BASES, buildEquipmentSlice } from "./equipment";
 
 const EXPECTED_AFFIX_BANDS: AffixBandDef[] = [
-  { id: "flat-physical", tier1: [1, 2], tier2: [3, 5], tier3: [6, 9], tier4: [10, 14] },
-  { id: "flat-elemental", tier1: [1, 2], tier2: [3, 5], tier3: [6, 9], tier4: [10, 14] },
+  {
+    id: "flat-physical",
+    tier1: [1, 2],
+    tier2: [3, 5],
+    tier3: [6, 9],
+    tier4: [10, 14],
+    tier5: [15, 20],
+  },
+  {
+    id: "flat-elemental",
+    tier1: [1, 2],
+    tier2: [3, 5],
+    tier3: [6, 9],
+    tier4: [10, 14],
+    tier5: [15, 20],
+  },
   {
     id: "percent-physical-power",
     tier1: [4, 8],
     tier2: [8, 14],
     tier3: [14, 20],
     tier4: [20, 28],
+    tier5: [28, 38],
   },
   {
     id: "percent-elemental-power",
@@ -20,22 +35,39 @@ const EXPECTED_AFFIX_BANDS: AffixBandDef[] = [
     tier2: [8, 14],
     tier3: [14, 20],
     tier4: [20, 28],
+    tier5: [28, 38],
   },
-  { id: "flat-max-health", tier1: [6, 12], tier2: [14, 24], tier3: [28, 44], tier4: [46, 70] },
+  {
+    id: "flat-max-health",
+    tier1: [6, 12],
+    tier2: [14, 24],
+    tier3: [28, 44],
+    tier4: [46, 70],
+    tier5: [72, 104],
+  },
   {
     id: "percent-max-health",
     tier1: [4, 8],
     tier2: [8, 14],
     tier3: [14, 20],
     tier4: [20, 28],
+    tier5: [28, 38],
   },
-  { id: "flat-armor", tier1: [3, 6], tier2: [7, 12], tier3: [13, 20], tier4: [21, 30] },
+  {
+    id: "flat-armor",
+    tier1: [3, 6],
+    tier2: [7, 12],
+    tier3: [13, 20],
+    tier4: [21, 30],
+    tier5: [31, 42],
+  },
   {
     id: "flat-elemental-resistance",
     tier1: [3, 6],
     tier2: [7, 12],
     tier3: [13, 20],
     tier4: [21, 30],
+    tier5: [31, 42],
   },
 ];
 
@@ -248,6 +280,58 @@ const EXPECTED_BASES: EquipmentBaseDef[] = [
     guaranteed: { flat: { maxHealth: 44 } },
     iconKey: "black-oil-locket",
   },
+  {
+    id: "escapement-greatsword",
+    name: "Escapement Greatsword",
+    slot: "weapon",
+    tier: 5,
+    weaponClass: "knight",
+    guaranteed: { flat: { physical: 16 } },
+    iconKey: "escapement-greatsword",
+  },
+  {
+    id: "aphelion-conduit",
+    name: "Aphelion Conduit",
+    slot: "weapon",
+    tier: 5,
+    weaponClass: "wizard",
+    guaranteed: { flat: { elemental: 16 } },
+    iconKey: "aphelion-conduit",
+  },
+  {
+    id: "tolling-reliquary",
+    name: "Tolling Reliquary",
+    slot: "weapon",
+    tier: 5,
+    weaponClass: "priest",
+    guaranteed: { flat: { elemental: 16 } },
+    iconKey: "tolling-reliquary",
+  },
+  {
+    id: "mainspring-repeater",
+    name: "Mainspring Repeater",
+    slot: "weapon",
+    tier: 5,
+    weaponClass: "hunter",
+    guaranteed: { flat: { physical: 16 } },
+    iconKey: "mainspring-repeater",
+  },
+  {
+    id: "verdigris-carapace",
+    name: "Verdigris Carapace",
+    slot: "armor",
+    tier: 5,
+    guaranteed: { flat: { armor: 30 } },
+    iconKey: "verdigris-carapace",
+  },
+  {
+    id: "stopped-hour-pendulum",
+    name: "Stopped-Hour Pendulum",
+    slot: "charm",
+    tier: 5,
+    guaranteed: { flat: { maxHealth: 60 } },
+    iconKey: "stopped-hour-pendulum",
+  },
 ];
 
 function baseById(id: string): EquipmentBaseDef {
@@ -266,9 +350,9 @@ describe("assembled Equipment content", () => {
     expect(validateContent(content, { fixture: true })).toEqual([]);
   });
 
-  it("defines 24 Equipment Bases: 6 per tier, one per slot/class combination", () => {
-    expect(slice.equipmentBases).toHaveLength(24);
-    for (const tier of [1, 2, 3, 4] as const) {
+  it("defines 30 Equipment Bases: 6 per tier, one per slot/class combination", () => {
+    expect(slice.equipmentBases).toHaveLength(30);
+    for (const tier of [1, 2, 3, 4, 5] as const) {
       const tierBases = slice.equipmentBases.filter((base) => base.tier === tier);
       expect(tierBases).toHaveLength(6);
       for (const classId of ["knight", "wizard", "priest", "hunter"] as const) {
@@ -294,7 +378,7 @@ describe("assembled Equipment content", () => {
 });
 
 describe("Equipment Bases from issue #8", () => {
-  it("ships all 24 bases exactly as tabled", () => {
+  it("ships all 30 bases exactly as tabled", () => {
     expect(EQUIPMENT_BASES).toEqual(EXPECTED_BASES);
   });
 
@@ -332,6 +416,15 @@ describe("Equipment Bases from issue #8", () => {
     expect(baseById("augerwire-longbow").guaranteed).toEqual({ flat: { physical: 12 } });
     expect(baseById("combineplate-harness").guaranteed).toEqual({ flat: { armor: 22 } });
     expect(baseById("black-oil-locket").guaranteed).toEqual({ flat: { maxHealth: 44 } });
+  });
+
+  it("pins Tier V guaranteed statistics", () => {
+    expect(baseById("escapement-greatsword").guaranteed).toEqual({ flat: { physical: 16 } });
+    expect(baseById("aphelion-conduit").guaranteed).toEqual({ flat: { elemental: 16 } });
+    expect(baseById("tolling-reliquary").guaranteed).toEqual({ flat: { elemental: 16 } });
+    expect(baseById("mainspring-repeater").guaranteed).toEqual({ flat: { physical: 16 } });
+    expect(baseById("verdigris-carapace").guaranteed).toEqual({ flat: { armor: 30 } });
+    expect(baseById("stopped-hour-pendulum").guaranteed).toEqual({ flat: { maxHealth: 60 } });
   });
 });
 

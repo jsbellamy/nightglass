@@ -1,0 +1,91 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "1939a3ab0cf908b16588b490e6588e0ec2c6e44375e7257f8fcda5825ea22206",
+  "asset_class": "interface",
+  "kind": "equipment-base-icon",
+  "runtime_destination": "src/assets/icons/tolling-reliquary.png",
+  "source_key": "tolling-reliquary",
+  "candidate": "tolling-reliquary-r1",
+  "palette": "unwound-belfry-24",
+  "palette_subset": [
+    "belfry-void",
+    "moonless-indigo",
+    "indigo-shadow",
+    "dusk-indigo",
+    "brass-umber",
+    "tarnished-brass",
+    "old-brass",
+    "brass",
+    "brass-light",
+    "verdigris",
+    "verdigris-light",
+    "candle-ivory-deep",
+    "candle-ivory",
+    "candle-flame",
+    "alarm-red"
+  ],
+  "style_references": [
+    {
+      "path": "src/assets/icons/threshertooth-blade.png",
+      "sha256": "f33b41d0e383b1be7e1ce9b300253052974ac1ed484f903406b5092f7f86f509",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/combineplate-harness.png",
+      "sha256": "e3d34382e97ac4cb9099ec104223dd58cd53468bb0b475c436fba217551818ae",
+      "role": "style_cohort"
+    },
+    {
+      "path": "src/assets/icons/black-oil-locket.png",
+      "sha256": "a35a77e7abec53848bf521f4f51da503d6d983763ece9a26da402caa2838b6a1",
+      "role": "style_cohort"
+    }
+  ],
+  "prompt": "TRUE chunky pixel art inventory icon ONLY on an exact 32\u00d732 logical pixel grid rendered large; every logical pixel one clean flat square block, no smaller detail, gradient, anti-aliasing, blur, or dithering. A single centered clockwork-fantasy item in three-quarter display angle: a priest's reliquary hand-bell, a brass bell mouth with candle-ivory inlay panels on a short wrapped handle. Leave at least two full magenta cells of clearance on every edge. Flat solid magenta #ff00ff background, nothing else in frame. Use only Unwound Belfry colours \u2014 brass and tarnished-brass metal, verdigris patina, candle-ivory highlights, cold glass-teal accents, deep indigo shadows, one restrained alarm-red accent (8\u201312 flat colours). No brown or tan beyond brass, no cyan, no pure white, no pure black. Structural members at least 3 logical pixels thick. No shadow, glow, sparkle, particles, text, watermark, or transparency.",
+  "ingest": {
+    "recovered": {
+      "bbox": [
+        381,
+        100,
+        1086,
+        951
+      ],
+      "pitch_x": {
+        "pitch": 32.766666666666744,
+        "score": 0.25725802340065423
+      },
+      "pitch_y": {
+        "pitch": 32.71666666666675,
+        "score": 0.26114594113551104
+      },
+      "grid": [
+        22,
+        26
+      ]
+    },
+    "ramp": {
+      "opaque_cells": 224,
+      "far_cells": 5,
+      "far_fraction": 0.0223,
+      "off_ramp_reject": false,
+      "quantize_histogram": {
+        "indigo-shadow": 54,
+        "tarnished-brass": 35,
+        "brass": 14,
+        "brass-umber": 35,
+        "candle-ivory-deep": 9,
+        "old-brass": 22,
+        "candle-flame": 7,
+        "verdigris-light": 9,
+        "candle-ivory": 7,
+        "alarm-red": 1,
+        "verdigris": 15,
+        "dusk-indigo": 10,
+        "brass-light": 5,
+        "moonless-indigo": 1
+      }
+    }
+  },
+  "note": "#608 Tier-5 Unwound Belfry Equipment Base icon"
+}
