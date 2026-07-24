@@ -41,9 +41,9 @@ CI `assets` job is the authoritative full-catalog byte-identity proof after push
 
 Judge at native 1× first (`tile-review-the-mainspring.png`); use
 `tile-review-the-mainspring@4x.png` and `runtime@4x.png` only to inspect
-ground-band flatness and feedback pop. `runtime@4x.png` is an extra
-nearest-neighbour band inspect sheet (out-of-manifest vs the issue's evidence
-README) kept for ground-band evidence only.
+ground-band flatness and feedback pop. `runtime@4x.png` is an optional
+nearest-neighbour band inspect sheet beyond the issue Touches list, kept for
+ground-band evidence only.
 
 Style cohort refs (`harvest-yard`, `crooked-cornfield`, `last-stop-diner`) guided
 strip composition and soft pixel-paint treatment, not Fowl Harvest palette match.
