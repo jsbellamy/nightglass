@@ -1,0 +1,24 @@
+{
+  "key": "carillon-hall",
+  "candidate": "carillon-hall-candidate-a",
+  "raw_size": [
+    1536,
+    1024
+  ],
+  "runtime_size": [
+    480,
+    86
+  ],
+  "raw_sha256": "77a40e347ce112f70c9dbb09f69b777d1a842d65c427030cc8ba20c4ec398e3f",
+  "runtime_sha256": "91640fd51081b7cb2aef0d733962737d4a6f0451c4b74416e8d156c0e521d785",
+  "runtime_bytes": 90635,
+  "magenta_pixels": 0,
+  "luma": {
+    "mean_whole": 10.98,
+    "mean_top_fifth": 13.43,
+    "mean_mid_fifth": 9.08,
+    "mean_bottom_fifth": 11.41,
+    "max_whole": 243.12,
+    "p90_whole": 26.34
+  }
+}
