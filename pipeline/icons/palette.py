@@ -9,6 +9,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 PALETTE_PATHS = {
     "moonberry-16": ROOT / "pipeline" / "palette.json",
     "fowl-harvest-24": ROOT / "pipeline" / "palettes" / "fowl-harvest-24.json",
+    "unwound-belfry-24": ROOT / "pipeline" / "palettes" / "unwound-belfry-24.json",
 }
 
 DEFAULT_SOURCE_PALETTE_ID = "moonberry-16"
@@ -21,6 +22,7 @@ SOURCE_LOCAL_OUTLINE_RGB: tuple[int, int, int] = (58, 6, 20)
 OUTLINE_SWATCH_BY_PALETTE: dict[str, str] = {
     "moonberry-16": "contour-plum-deepest",
     "fowl-harvest-24": "oil-ink",
+    "unwound-belfry-24": "belfry-void",
 }
 
 INK_SWATCHES_BY_PALETTE: dict[str, frozenset[str]] = {
@@ -36,6 +38,13 @@ INK_SWATCHES_BY_PALETTE: dict[str, frozenset[str]] = {
             "oil-ink",
             "crow-black",
             "bruise-plum",
+        }
+    ),
+    "unwound-belfry-24": frozenset(
+        {
+            "belfry-void",
+            "moonless-indigo",
+            "indigo-shadow",
         }
     ),
 }
