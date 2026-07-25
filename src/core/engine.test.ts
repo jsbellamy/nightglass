@@ -3,6 +3,7 @@ import { createEngine } from "./engine";
 import type { EngineEvent } from "./events";
 import { partyEntityId } from "./entity-id";
 import type { DropInstance, Snapshot } from "./snapshot";
+import { content as productionContent } from "../data";
 import { statuses as shippedStatuses } from "../data/statuses";
 import { wizardTier2Abilities } from "../data/classes/wizard";
 import { effectiveLoadout, effectiveTalentState } from "./pending-edits";
@@ -411,6 +412,84 @@ describe("chunk-equivalence advancement", () => {
   });
 });
 
+describe("Initiative Roll at encounter start", () => {
+  it("survives snapshot round-trip on combatRngState", () => {
+    const engine = createEngine(engineContent, undefined, LOOT_SEED, fixtureNow);
+    engine.advanceBy(1);
+    const saved = engine.snapshot();
+    const combatRngBefore = saved.combatRngState;
+    expect(combatRngBefore).not.toBe(saved.lootRngState);
+
+    const reloaded = createEngine(engineContent, saved, LOOT_SEED, fixtureNow);
+    expect(reloaded.snapshot().combatRngState).toBe(combatRngBefore);
+  });
+
+  it("assigns initiativeReadyAtMs in [simNowMs, simNowMs + 600] and not all equal for shared-period combatants", () => {
+    const engine = createEngine(engineContent, undefined, LOOT_SEED, fixtureNow);
+    const snap = engine.snapshot();
+    const attempt = snap.attempt;
+    expect(attempt).not.toBeNull();
+    const simNowMs = snap.simNowMs;
+    const initiativeValues = attempt!.combatants.map(
+      (combatant) => combatant.initiativeReadyAtMs,
+    );
+    for (const readyAtMs of initiativeValues) {
+      expect(readyAtMs).toBeGreaterThanOrEqual(simNowMs);
+      expect(readyAtMs).toBeLessThanOrEqual(simNowMs + 600);
+    }
+    expect(new Set(initiativeValues).size).toBeGreaterThan(1);
+  });
+
+  it("emits no action-started before a combatant's initiativeReadyAtMs", () => {
+    const engine = createEngine(engineContent, undefined, LOOT_SEED, fixtureNow);
+    const readyByEntity = new Map(
+      engine
+        .snapshot()
+        .attempt!.combatants.map((combatant) => [
+          combatant.entityId,
+          combatant.initiativeReadyAtMs,
+        ]),
+    );
+    const events = driveBy(engine, 5_000, 1);
+    for (const event of events) {
+      if (event.type !== "action-started") {
+        continue;
+      }
+      const readyAtMs = readyByEntity.get(event.entityId);
+      if (readyAtMs === undefined) {
+        continue;
+      }
+      expect(event.atMs).toBeGreaterThanOrEqual(readyAtMs);
+    }
+  });
+
+  it("desynchronizes Stage 1 Wave 1 Pipcaps so three do not share one action-started timestamp", () => {
+    const engine = createEngine(productionContent, undefined, LOOT_SEED, fixtureNow);
+    const pipcapIds = new Set(["pipcap-1-7a", "pipcap-1-7b", "pipcap-1-6"]);
+    const entityByDefId = new Map(
+      engine
+        .snapshot()
+        .attempt!.combatants.filter((combatant) => pipcapIds.has(combatant.defId))
+        .map((combatant) => [combatant.defId, combatant.entityId]),
+    );
+    const events = driveBy(engine, 20_000, 1);
+    const startedAtByDefId = new Map<string, number>();
+    for (const event of events) {
+      if (event.type !== "action-started") {
+        continue;
+      }
+      for (const [defId, entityId] of entityByDefId) {
+        if (event.entityId === entityId && !startedAtByDefId.has(defId)) {
+          startedAtByDefId.set(defId, event.atMs);
+        }
+      }
+    }
+    const timestamps = [...startedAtByDefId.values()];
+    expect(timestamps).toHaveLength(3);
+    expect(new Set(timestamps).size).toBeGreaterThan(1);
+  });
+});
+
 function eventsWithoutDropAwards(events: EngineEvent[]): EngineEvent[] {
   return events.filter((event) => event.type !== "drop-awarded");
 }
@@ -645,6 +724,7 @@ describe("Party Defeat and Retry", () => {
         health: 0,
         maxHealth: 180,
         knockedOut: true,
+        initiativeReadyAtMs: 0,
         action: null,
         cooldownReadyAtMs: {},
         statuses: [],
@@ -656,6 +736,7 @@ describe("Party Defeat and Retry", () => {
         health: 0,
         maxHealth: 100,
         knockedOut: true,
+        initiativeReadyAtMs: 0,
         action: null,
         cooldownReadyAtMs: {},
         statuses: [],
@@ -667,6 +748,7 @@ describe("Party Defeat and Retry", () => {
         health: 1,
         maxHealth: 180,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: null,
         cooldownReadyAtMs: {},
         statuses: [],
@@ -678,6 +760,7 @@ describe("Party Defeat and Retry", () => {
         health: 40,
         maxHealth: 40,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: null,
         cooldownReadyAtMs: {},
         statuses: [],
@@ -960,6 +1043,7 @@ describe("Stage 3 clear auto-retry", () => {
         health: 180,
         maxHealth: 180,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: null,
         cooldownReadyAtMs: {},
         statuses: [],
@@ -971,6 +1055,7 @@ describe("Stage 3 clear auto-retry", () => {
         health: 100,
         maxHealth: 100,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: null,
         cooldownReadyAtMs: {},
         statuses: [],
@@ -982,6 +1067,7 @@ describe("Stage 3 clear auto-retry", () => {
         health: 180,
         maxHealth: 180,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: null,
         cooldownReadyAtMs: {},
         statuses: [],
@@ -993,6 +1079,7 @@ describe("Stage 3 clear auto-retry", () => {
         health: 1,
         maxHealth: 200,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: null,
         cooldownReadyAtMs: {},
         statuses: [],
@@ -1070,6 +1157,7 @@ describe("full combat rules", () => {
         health: 180,
         maxHealth: 180,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: {
           abilityId: "k-pommel",
           startedAtMs: 0,
@@ -1088,6 +1176,7 @@ describe("full combat rules", () => {
         health: 100,
         maxHealth: 100,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: null,
         cooldownReadyAtMs: {},
         statuses: [],
@@ -1099,6 +1188,7 @@ describe("full combat rules", () => {
         health: 110,
         maxHealth: 110,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: null,
         cooldownReadyAtMs: {},
         statuses: [],
@@ -1110,6 +1200,7 @@ describe("full combat rules", () => {
         health: 40,
         maxHealth: 40,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: null,
         cooldownReadyAtMs: {},
         statuses: [],
@@ -1145,6 +1236,7 @@ describe("full combat rules", () => {
         health: 180,
         maxHealth: 180,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: {
           abilityId: "k-sweep",
           startedAtMs: 0,
@@ -1163,6 +1255,7 @@ describe("full combat rules", () => {
         health: 100,
         maxHealth: 100,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: null,
         cooldownReadyAtMs: {},
         statuses: [],
@@ -1174,6 +1267,7 @@ describe("full combat rules", () => {
         health: 110,
         maxHealth: 110,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: null,
         cooldownReadyAtMs: {},
         statuses: [],
@@ -1185,6 +1279,7 @@ describe("full combat rules", () => {
         health: 50,
         maxHealth: 50,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: null,
         cooldownReadyAtMs: {},
         statuses: [],
@@ -1221,6 +1316,7 @@ describe("full combat rules", () => {
         health: 180,
         maxHealth: 180,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: {
           abilityId: "k-pommel",
           startedAtMs: 0,
@@ -1239,6 +1335,7 @@ describe("full combat rules", () => {
         health: 100,
         maxHealth: 100,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: null,
         cooldownReadyAtMs: {},
         statuses: [],
@@ -1250,6 +1347,7 @@ describe("full combat rules", () => {
         health: 110,
         maxHealth: 110,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: null,
         cooldownReadyAtMs: {},
         statuses: [],
@@ -1261,6 +1359,7 @@ describe("full combat rules", () => {
         health: 200,
         maxHealth: 200,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: null,
         cooldownReadyAtMs: {},
         statuses: [],
@@ -1301,6 +1400,7 @@ describe("full combat rules", () => {
         health: 180,
         maxHealth: 180,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: {
           abilityId: "k-shield-brace",
           startedAtMs: 0,
@@ -1319,6 +1419,7 @@ describe("full combat rules", () => {
         health: 100,
         maxHealth: 100,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: null,
         cooldownReadyAtMs: {},
         statuses: [],
@@ -1330,6 +1431,7 @@ describe("full combat rules", () => {
         health: 110,
         maxHealth: 110,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: null,
         cooldownReadyAtMs: {},
         statuses: [],
@@ -1341,6 +1443,7 @@ describe("full combat rules", () => {
         health: 40,
         maxHealth: 40,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: null,
         cooldownReadyAtMs: {},
         statuses: [],
@@ -1377,6 +1480,7 @@ describe("full combat rules", () => {
         health: 180,
         maxHealth: 180,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: {
           abilityId: "k-pommel",
           startedAtMs: 0,
@@ -1395,6 +1499,7 @@ describe("full combat rules", () => {
         health: 100,
         maxHealth: 100,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: null,
         cooldownReadyAtMs: {},
         statuses: [],
@@ -1406,6 +1511,7 @@ describe("full combat rules", () => {
         health: 110,
         maxHealth: 110,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: null,
         cooldownReadyAtMs: {},
         statuses: [],
@@ -1417,6 +1523,7 @@ describe("full combat rules", () => {
         health: 0,
         maxHealth: 40,
         knockedOut: true,
+        initiativeReadyAtMs: 0,
         action: null,
         cooldownReadyAtMs: {},
         statuses: [],
@@ -1451,6 +1558,7 @@ describe("full combat rules", () => {
         health: 110,
         maxHealth: 110,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: {
           abilityId: "p-moonwell",
           startedAtMs: 0,
@@ -1469,6 +1577,7 @@ describe("full combat rules", () => {
         health: 175,
         maxHealth: 180,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: null,
         cooldownReadyAtMs: {},
         statuses: [],
@@ -1480,6 +1589,7 @@ describe("full combat rules", () => {
         health: 100,
         maxHealth: 100,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: null,
         cooldownReadyAtMs: {},
         statuses: [],
@@ -1491,6 +1601,7 @@ describe("full combat rules", () => {
         health: 40,
         maxHealth: 40,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: null,
         cooldownReadyAtMs: {},
         statuses: [],
@@ -1524,6 +1635,7 @@ describe("full combat rules", () => {
         health: 5,
         maxHealth: 180,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: {
           abilityId: "k-sweep",
           startedAtMs: 0,
@@ -1542,6 +1654,7 @@ describe("full combat rules", () => {
         health: 100,
         maxHealth: 100,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: null,
         cooldownReadyAtMs: {},
         statuses: [],
@@ -1553,6 +1666,7 @@ describe("full combat rules", () => {
         health: 110,
         maxHealth: 110,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: null,
         cooldownReadyAtMs: {},
         statuses: [],
@@ -1564,6 +1678,7 @@ describe("full combat rules", () => {
         health: 40,
         maxHealth: 40,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: {
           abilityId: "grunt-attack",
           startedAtMs: 0,
@@ -1608,6 +1723,7 @@ describe("full combat rules", () => {
         health: 110,
         maxHealth: 110,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: {
           abilityId: "p-resurgence",
           startedAtMs: 0,
@@ -1626,6 +1742,7 @@ describe("full combat rules", () => {
         health: 0,
         maxHealth: 180,
         knockedOut: true,
+        initiativeReadyAtMs: 0,
         action: null,
         cooldownReadyAtMs: {},
         statuses: [],
@@ -1637,6 +1754,7 @@ describe("full combat rules", () => {
         health: 0,
         maxHealth: 100,
         knockedOut: true,
+        initiativeReadyAtMs: 0,
         action: null,
         cooldownReadyAtMs: {},
         statuses: [],
@@ -1648,6 +1766,7 @@ describe("full combat rules", () => {
         health: 40,
         maxHealth: 40,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: null,
         cooldownReadyAtMs: {},
         statuses: [],
@@ -1685,6 +1804,7 @@ describe("full combat rules", () => {
         health: 6,
         maxHealth: 180,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: {
           abilityId: "knight-basic",
           startedAtMs: 0,
@@ -1703,6 +1823,7 @@ describe("full combat rules", () => {
         health: 100,
         maxHealth: 100,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: null,
         cooldownReadyAtMs: {},
         statuses: [],
@@ -1714,6 +1835,7 @@ describe("full combat rules", () => {
         health: 110,
         maxHealth: 110,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: null,
         cooldownReadyAtMs: {},
         statuses: [],
@@ -1725,6 +1847,7 @@ describe("full combat rules", () => {
         health: 13,
         maxHealth: 40,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: {
           abilityId: "grunt-attack",
           startedAtMs: 0,
@@ -1801,6 +1924,7 @@ describe("full combat rules", () => {
         health: 180,
         maxHealth: 180,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: {
           abilityId: "k-pommel",
           startedAtMs: 0,
@@ -1819,6 +1943,7 @@ describe("full combat rules", () => {
         health: 100,
         maxHealth: 100,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: null,
         cooldownReadyAtMs: {},
         statuses: [],
@@ -1830,6 +1955,7 @@ describe("full combat rules", () => {
         health: 110,
         maxHealth: 110,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: null,
         cooldownReadyAtMs: {},
         statuses: [],
@@ -1841,6 +1967,7 @@ describe("full combat rules", () => {
         health: 40,
         maxHealth: 40,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: {
           abilityId: "grunt-attack",
           startedAtMs: 0,
@@ -1930,6 +2057,7 @@ describe("full combat rules", () => {
         health: 180,
         maxHealth: 180,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: null,
         cooldownReadyAtMs: {},
         statuses: [{ statusId: "braced", expiresAtMs: 1000 }],
@@ -1941,6 +2069,7 @@ describe("full combat rules", () => {
         health: 100,
         maxHealth: 100,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: null,
         cooldownReadyAtMs: {},
         statuses: [],
@@ -1952,6 +2081,7 @@ describe("full combat rules", () => {
         health: 110,
         maxHealth: 110,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: null,
         cooldownReadyAtMs: {},
         statuses: [],
@@ -1963,6 +2093,7 @@ describe("full combat rules", () => {
         health: 40,
         maxHealth: 40,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: null,
         cooldownReadyAtMs: {},
         statuses: [],
@@ -2004,6 +2135,7 @@ describe("full combat rules", () => {
         health: 110,
         maxHealth: 110,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: {
           abilityId: "p-moonwell",
           startedAtMs: 0,
@@ -2022,6 +2154,7 @@ describe("full combat rules", () => {
         health: 120,
         maxHealth: 180,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: null,
         cooldownReadyAtMs: {},
         statuses: [],
@@ -2033,6 +2166,7 @@ describe("full combat rules", () => {
         health: 100,
         maxHealth: 100,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: null,
         cooldownReadyAtMs: {},
         statuses: [],
@@ -2044,6 +2178,7 @@ describe("full combat rules", () => {
         health: 40,
         maxHealth: 40,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: null,
         cooldownReadyAtMs: {},
         statuses: [],
@@ -2123,6 +2258,7 @@ describe("full combat rules", () => {
         health: 180,
         maxHealth: 180,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: {
           abilityId: "k-pommel",
           startedAtMs: 0,
@@ -2141,6 +2277,7 @@ describe("full combat rules", () => {
         health: 100,
         maxHealth: 100,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: {
           abilityId: "w-frost",
           startedAtMs: 0,
@@ -2159,6 +2296,7 @@ describe("full combat rules", () => {
         health: 110,
         maxHealth: 110,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: {
           abilityId: "p-smite",
           startedAtMs: 0,
@@ -2177,6 +2315,7 @@ describe("full combat rules", () => {
         health: 40,
         maxHealth: 40,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: null,
         cooldownReadyAtMs: {},
         statuses: [],
@@ -2257,6 +2396,7 @@ describe("progression", () => {
         health: 180,
         maxHealth: 180,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: null,
         cooldownReadyAtMs: {},
         statuses: [],
@@ -2268,6 +2408,7 @@ describe("progression", () => {
         health: 100,
         maxHealth: 100,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: null,
         cooldownReadyAtMs: {},
         statuses: [],
@@ -2279,6 +2420,7 @@ describe("progression", () => {
         health: 110,
         maxHealth: 110,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: null,
         cooldownReadyAtMs: {},
         statuses: [],
@@ -2290,6 +2432,7 @@ describe("progression", () => {
         health: 1,
         maxHealth: 40,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: null,
         cooldownReadyAtMs: {},
         statuses: [],
@@ -2821,6 +2964,7 @@ describe("Equipment and Drops", () => {
         health: 180,
         maxHealth: 180,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: {
           abilityId: "knight-basic",
           startedAtMs: 0,
@@ -2839,6 +2983,7 @@ describe("Equipment and Drops", () => {
         health: 100,
         maxHealth: 100,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: null,
         cooldownReadyAtMs: {},
         statuses: [],
@@ -2850,6 +2995,7 @@ describe("Equipment and Drops", () => {
         health: 110,
         maxHealth: 110,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: null,
         cooldownReadyAtMs: {},
         statuses: [],
@@ -2861,6 +3007,7 @@ describe("Equipment and Drops", () => {
         health: 40,
         maxHealth: 40,
         knockedOut: false,
+        initiativeReadyAtMs: 0,
         action: null,
         cooldownReadyAtMs: {},
         statuses: [],

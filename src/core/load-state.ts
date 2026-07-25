@@ -1,4 +1,5 @@
 import type { DropInstance, ProgressionState, Snapshot, AttemptState } from "./snapshot";
+import { initialCombatRngState } from "./rng";
 import {
   defaultTalentsForClasses,
   emptyTalentState,
@@ -9,7 +10,7 @@ import {
 import type { ClassId, ClassKitDef, Content, EquipmentSlotId, ItemLevel, StageId, TalentTierDef } from "./types";
 
 /** Matches `SCHEMA_VERSION` in engine.ts — single integer save schema for the slice. */
-export const SAVE_SCHEMA_VERSION = 1;
+export const SAVE_SCHEMA_VERSION = 2;
 
 const CLASS_IDS = new Set<ClassId>(["knight", "wizard", "priest", "hunter"]);
 const STAGE_IDS = new Set<StageId>([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
@@ -375,6 +376,7 @@ function isExactSnapshot(raw: Record<string, unknown>): boolean {
     !isFiniteNumber(field(raw, "savedAtMs")) ||
     !isFiniteNumber(field(raw, "simNowMs")) ||
     !isFiniteNumber(field(raw, "lootRngState")) ||
+    !isFiniteNumber(field(raw, "combatRngState")) ||
     !isFiniteNumber(field(raw, "nextEventSeq")) ||
     !isFiniteNumber(field(raw, "nextAttemptId")) ||
     !isFiniteNumber(field(raw, "nextDropId")) ||
@@ -392,6 +394,13 @@ function loadPendingEdits(raw: unknown): Snapshot["pendingEdits"] {
   return structuredClone(raw) as Snapshot["pendingEdits"];
 }
 
+function recoverCombatRngState(raw: unknown): number {
+  if (isFiniteNumber(raw)) {
+    return raw >>> 0;
+  }
+  return initialCombatRngState(undefined);
+}
+
 function buildSnapshotFromRaw(
   raw: Record<string, unknown>,
   progression: ProgressionState,
@@ -403,6 +412,7 @@ function buildSnapshotFromRaw(
     savedAtMs: loadPositiveInt(field(raw, "savedAtMs"), 0),
     simNowMs: loadPositiveInt(field(raw, "simNowMs"), 0),
     lootRngState: loadPositiveInt(field(raw, "lootRngState"), 0),
+    combatRngState: recoverCombatRngState(field(raw, "combatRngState")),
     nextEventSeq: Math.max(1, loadPositiveInt(field(raw, "nextEventSeq"), 1)),
     nextAttemptId: Math.max(1, loadPositiveInt(field(raw, "nextAttemptId"), 1)),
     nextDropId: Math.max(1, loadPositiveInt(field(raw, "nextDropId"), 1)),

@@ -47,6 +47,7 @@ export interface CombatantState {
   health: number;
   maxHealth: number;
   knockedOut: boolean;
+  initiativeReadyAtMs: number;
   action: CombatActionState | null;
   cooldownReadyAtMs: Record<string, number>;
   statuses: ActiveStatus[];
@@ -90,6 +91,7 @@ export interface Snapshot {
   savedAtMs: number;
   simNowMs: number;
   lootRngState: number;
+  combatRngState: number;
   nextEventSeq: number;
   nextAttemptId: number;
   nextDropId: number;

@@ -2,7 +2,7 @@ import { createEngine, SCHEMA_VERSION, type Engine } from "../engine";
 import type { EngineEvent } from "../events";
 import { opponentEntityId } from "../entity-id";
 import { createDefaultProgression } from "../load-state";
-import { initialLootRngState } from "../rng";
+import { initialCombatRngState, initialLootRngState } from "../rng";
 import type {
   AttemptState,
   CombatantState,
@@ -77,6 +77,7 @@ function makeOpponentCombatants(
       health: opponent.base.maxHealth,
       maxHealth: opponent.base.maxHealth,
       knockedOut: false,
+      initiativeReadyAtMs: 0,
       action: null,
       cooldownReadyAtMs: {},
       statuses: [],
@@ -208,6 +209,7 @@ class Builder implements ScenarioBuilder {
       savedAtMs: 0,
       simNowMs: 0,
       lootRngState: initialLootRngState(),
+      combatRngState: initialCombatRngState(),
       nextEventSeq: 1,
       nextAttemptId: 1,
       nextDropId: Math.max(1, this.state.dropCount + 1),
