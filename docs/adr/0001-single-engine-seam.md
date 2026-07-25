@@ -46,7 +46,7 @@ read-only queries and must not mutate state or bypass advancement.
 - Large `engine.test.ts` is expected; prefer extending the seam tests over reaching
   into private helpers.
 - Legality predicates remain read-only queries; they must not mutate state or
-  bypass `advanceBy` / `advanceOffline`.
+  bypass `advanceBy` / `advanceOffline` / `advanceOfflineSummary`.
 - `advanceOfflineSummary` is the sanctioned widening for Offline Progress boot:
   callers need stage-clear totals without subscribing to the full Presentation
   Event vocabulary, so the Engine may return a folded result on that path only.

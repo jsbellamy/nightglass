@@ -734,8 +734,29 @@ describe("advanceOfflineSummary", () => {
 
   it("throws on non-integer and negative elapsedMs like advanceOffline", () => {
     const engine = createEngine(engineContent, undefined, LOOT_SEED, fixtureNow);
-    expect(() => engine.advanceOfflineSummary(-1)).toThrow(/non-negative integer/);
-    expect(() => engine.advanceOfflineSummary(1.5)).toThrow(/non-negative integer/);
+    expect(() => engine.advanceOfflineSummary(-1)).toThrow(
+      "advanceOfflineSummary expects a non-negative integer ms, got -1",
+    );
+    expect(() => engine.advanceOfflineSummary(1.5)).toThrow(
+      "advanceOfflineSummary expects a non-negative integer ms, got 1.5",
+    );
+  });
+
+  it("is chunk-neutral: many small calls match one large call", () => {
+    const oneMs = createEngine(engineContent, undefined, LOOT_SEED, fixtureNow);
+    let oneMsStages = 0;
+    let remaining = DURATION_MS;
+    while (remaining > 0) {
+      const step = Math.min(1, remaining);
+      oneMsStages += oneMs.advanceOfflineSummary(step).stagesCleared;
+      remaining -= step;
+    }
+
+    const single = createEngine(engineContent, undefined, LOOT_SEED, fixtureNow);
+    const singleAdvance = single.advanceOfflineSummary(DURATION_MS);
+
+    expect(oneMsStages).toBe(singleAdvance.stagesCleared);
+    expect(stable(oneMs.snapshot())).toBe(stable(single.snapshot()));
   });
 
   it("delivers pending boot events exactly once on each path", () => {
