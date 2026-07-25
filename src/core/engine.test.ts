@@ -3711,70 +3711,31 @@ describe("adaptive Basic Attack Element", () => {
     ),
   };
 
-  it("reports the resolved Element on impact for a Fire-adapted Basic Attack", () => {
-    const saved = scenario(fireWizardContent)
+  function snapshotWithFireWizardBasicImpact(simNowMs: number): Snapshot {
+    const snap = scenario(fireWizardContent)
       .withParty(["wizard", "knight", "priest"], "knight")
       .build();
-    saved.lootRngState = LOOT_SEED;
-    saved.simNowMs = 450;
-    saved.attempt!.combatants = [
-      {
-        entityId: partyEntityId("wizard", 1),
-        side: "party",
-        defId: "wizard",
-        health: 130,
-        maxHealth: 130,
-        knockedOut: false,
-        initiativeReadyAtMs: 0,
-        action: {
-          abilityId: "wizard-basic",
-          startedAtMs: 0,
-          impactAtMs: 450,
-          endsAtMs: 1200,
-          targetIds: ["opp:1:0"],
-          impactResolved: false,
-        },
-        cooldownReadyAtMs: {},
-        statuses: [],
-      },
-      {
-        entityId: partyEntityId("knight", 0),
-        side: "party",
-        defId: "knight",
-        health: 180,
-        maxHealth: 180,
-        knockedOut: false,
-        initiativeReadyAtMs: 10_000,
-        action: null,
-        cooldownReadyAtMs: {},
-        statuses: [],
-      },
-      {
-        entityId: partyEntityId("priest", 2),
-        side: "party",
-        defId: "priest",
-        health: 110,
-        maxHealth: 110,
-        knockedOut: false,
-        initiativeReadyAtMs: 10_000,
-        action: null,
-        cooldownReadyAtMs: {},
-        statuses: [],
-      },
-      {
-        entityId: "opp:1:0",
-        side: "opponent",
-        defId: "fixture-grunt",
-        health: 40,
-        maxHealth: 40,
-        knockedOut: false,
-        initiativeReadyAtMs: 10_000,
-        action: null,
-        cooldownReadyAtMs: {},
-        statuses: [],
-      },
-    ];
+    snap.lootRngState = LOOT_SEED;
+    snap.simNowMs = simNowMs;
+    const wizard = snap.attempt!.combatants.find((entry) => entry.defId === "wizard");
+    const opponent = snap.attempt!.combatants.find((entry) => entry.side === "opponent");
+    if (!wizard || !opponent) {
+      throw new Error("missing wizard or opponent");
+    }
+    stunCombatants(snap, simNowMs, [wizard.entityId]);
+    wizard.action = {
+      abilityId: "wizard-basic",
+      startedAtMs: 0,
+      impactAtMs: simNowMs,
+      endsAtMs: simNowMs + 750,
+      targetIds: [opponent.entityId],
+      impactResolved: false,
+    };
+    return snap;
+  }
 
+  it("reports the resolved Element on impact for a Fire-adapted Basic Attack", () => {
+    const saved = snapshotWithFireWizardBasicImpact(450);
     const engine = createEngine(fireWizardContent, saved, LOOT_SEED);
     const events = engine.advanceBy(0);
     const impact = events.find(
