@@ -353,11 +353,24 @@ bands, rarity odds; content data transcribes it directly).
   side-by-side from a Character's slot with statistic deltas and resulting raw
   Ability changes — no aggregate score, no auto-equip. Equipped and Locked
   pieces cannot be discarded; bulk Discard confirms, listing Rare/Epic
-  selections explicitly.
+  selections explicitly. A per-Item-Level **Sweep** discards every unequipped,
+  unlocked piece at one Item Level behind the same confirm, listing Rare/Epic
+  pieces explicitly.
+- **Salvage:** ten unequipped, unlocked pieces of one Rarity → one newly rolled
+  Drop at the next Rarity (Common→Uncommon, Uncommon→Rare, Rare→Epic); Epic is
+  never an eligible input. **Auto-fill** stages the ten from the *lowest*
+  Rarity holding at least ten eligible pieces, taking highest Item Level first
+  and breaking ties oldest-first; **Salvage** consumes them. The produced piece
+  takes the **lowest** Item Level among the ten consumed, and rolls its slot,
+  weapon Class, Equipment Base, and Affixes from the persisted loot stream —
+  only Rarity and Item Level are pinned, so a reload cannot reroll it. Unseen
+  and Rare/Epic pieces are eligible; Lock is the only protection beyond being
+  equipped. Salvage awards no Drop notification: the Armory tray shows the
+  produced piece and it enters the Armory Unseen.
 - Drops never pause combat or open a modal: a status-line `Drop · <Rarity>`
   notification, an Armory-tab badge, and an Unseen marker. Characters start with empty
-  slots. **No** binding, sets, requirements, selling, salvage, crafting,
-  upgrading, or Affix rerolling.
+  slots. **No** binding, sets, requirements, selling, crafting, upgrading, or
+  Affix rerolling.
 
 ---
 
