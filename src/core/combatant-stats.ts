@@ -4,15 +4,19 @@ import { equipmentModifiersForLoadout } from "./equipment";
 import type { AttemptState, CombatantState, ProgressionState } from "./snapshot";
 import { characterStats } from "./stats";
 import { emptyTalentState } from "./talents";
-import type { ClassId } from "./types";
+import type { BaseStats, ClassId } from "./types";
 
-export function statsForCombatant(
+export interface StatLedger {
+  statsFor(combatant: CombatantState): BaseStats;
+  invalidate(classId: ClassId): void;
+}
+
+function baseStatsForCombatant(
   index: ContentIndex,
   combatant: CombatantState,
   progression: ProgressionState,
   attempt: AttemptState | null,
-): ReturnType<typeof effectiveStats> {
-  let base;
+): BaseStats {
   if (combatant.side === "party") {
     const classId = combatant.defId as ClassId;
     const classKit = index.classesById.get(classId);
@@ -26,13 +30,52 @@ export function statsForCombatant(
       progression.armory,
       index.content,
     );
-    base = characterStats(classKit, talentState, equipmentMods);
-  } else {
-    const opponent = index.opponentsById.get(combatant.defId);
-    if (!opponent) {
-      throw new Error(`Missing opponent ${combatant.defId}`);
-    }
-    base = opponent.base;
+    return characterStats(classKit, talentState, equipmentMods);
   }
+
+  const opponent = index.opponentsById.get(combatant.defId);
+  if (!opponent) {
+    throw new Error(`Missing opponent ${combatant.defId}`);
+  }
+  return opponent.base;
+}
+
+export function createStatLedger(
+  index: ContentIndex,
+  progression: ProgressionState,
+  attempt: AttemptState | null,
+): StatLedger {
+  const baseByEntityId = new Map<string, BaseStats>();
+
+  function statsFor(combatant: CombatantState): BaseStats {
+    let base = baseByEntityId.get(combatant.entityId);
+    if (!base) {
+      base = baseStatsForCombatant(index, combatant, progression, attempt);
+      baseByEntityId.set(combatant.entityId, base);
+    }
+    return effectiveStats(base, combatant.statuses, index.statusesById);
+  }
+
+  function invalidate(classId: ClassId): void {
+    if (!attempt) {
+      return;
+    }
+    for (const combatant of attempt.combatants) {
+      if (combatant.side === "party" && combatant.defId === classId) {
+        baseByEntityId.delete(combatant.entityId);
+      }
+    }
+  }
+
+  return { statsFor, invalidate };
+}
+
+export function statsForCombatant(
+  index: ContentIndex,
+  combatant: CombatantState,
+  progression: ProgressionState,
+  attempt: AttemptState | null,
+): ReturnType<typeof effectiveStats> {
+  const base = baseStatsForCombatant(index, combatant, progression, attempt);
   return effectiveStats(base, combatant.statuses, index.statusesById);
 }
