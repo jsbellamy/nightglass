@@ -766,5 +766,37 @@
       "provider": "Cursor GenerateImage",
       "raw_sha256": "3214dacdd69f34b0d9c9aae533570b04be7bb9afa1c6bef9e14b751de1133bf6"
     }
+  },
+  "milkshake-mallard": {
+    "action": "still",
+    "frame_size": [
+      29,
+      68
+    ],
+    "visual_bounds": [
+      0,
+      0,
+      29,
+      68
+    ],
+    "foot_anchor": [
+      14,
+      68
+    ],
+    "palette": "fowl-harvest-24",
+    "baseline_row": 67,
+    "total_ms": 1,
+    "frames": [
+      {
+        "name": "milkshake-mallard",
+        "duration_ms": 1,
+        "sha256": "9314043d57108031aff8c28c8fddc74b57de13ae5b8906bd6c4dd32fe1e83e02"
+      }
+    ],
+    "cues_ms": {},
+    "source": {
+      "provider": "Cursor GenerateImage",
+      "raw_sha256": "985c4c599a54775d0c97abfeb0612eed7333442995ddf6340d00d85efca22f3e"
+    }
   }
 }
