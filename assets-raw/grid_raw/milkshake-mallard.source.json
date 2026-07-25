@@ -1,0 +1,32 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "985c4c599a54775d0c97abfeb0612eed7333442995ddf6340d00d85efca22f3e",
+  "acquisition": "flexible",
+  "identity_profile": {
+    "asset_class": "opponent",
+    "role": "ordinary-opponent",
+    "facing": "left"
+  },
+  "cursor_stamp_removed": false,
+  "identity": "milkshake-mallard",
+  "asset_class": "opponent",
+  "runtime_destination": "src/assets/sprites/milkshake-mallard.png",
+  "candidate": "milkshake-mallard-c1.png",
+  "facing": "left",
+  "role": "ordinary-opponent",
+  "palette": "fowl-harvest-24@1",
+  "style_references": [
+    {
+      "path": "src/assets/sprites/burger-drake.png",
+      "sha256": "c8a0e66c892465c9fa9355df19275a1c7385f10246286c4f11c2869272f9563f",
+      "role": "style"
+    },
+    {
+      "path": "src/assets/sprites/cornquacker.png",
+      "sha256": "326ec503bc95de96ab98ce82e54e91ca32577ee5d92eebdcb608bcb50a59a8ca",
+      "role": "style"
+    }
+  ],
+  "prompt": "Single full-body Milkshake Mallard ordinary opponent game sprite, strict side profile facing LEFT. A tall mutant golden-yellow duck anatomically fused with a diner milkshake cup. Its torso is the cup: a tall smooth tapering diner-cream vessel banded with a restrained condiment-red stripe forms the whole body, a thick swirl of pale cream spills over the rim as a drooping collar around the neck, and a bent diner-teal straw rises from the back of the skull like a crest. The mutation is one living creature, not a duck standing in, holding, or drinking from a cup.\n\nPreserve its absurd unsettling identity: an oversized orange duck bill projecting clearly to the left, one narrowed visible condiment-red eye, the bent teal straw crest, the tall smooth cream cup torso with its red band, the drooping spilled-cream collar, one small yellow wing laid against the cup, and two complete orange webbed feet. Tall, narrow, smooth-sided silhouette with a slight forward lean. The bill, eye, straw crest, cup band, spill collar, wing, and both feet must remain distinct at native game scale.\n\nChunky simplified flat-colour Fowl Harvest rural-mutation pixel art matching the accepted Burger Drake and Cornquacker in block size, selective oil-black / bruise-plum contour, saturation discipline, and 70% absurd / 30% unsettling tone. Use only named fowl-harvest-24 colors: duck and yolk golds, beak orange, diner cream, restrained diner teal, condiment red, and oily near-black. No gore, wounds, exposed organs, realism, gradients, anti-aliasing, blur, or dithering.\n\nShow exactly one complete subject with generous empty clearance on every edge of an opaque flat solid magenta #ff00ff background. No shadow, floor, glow, drips, splashes, sparkles, particles, Ability effect, text, watermark, scenery, UI, transparency, other drink, or other subject.\n"
+}
