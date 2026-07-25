@@ -494,12 +494,19 @@ export function affixToModifier(affix: { id: AffixId; value: number }): StatModi
   }
 }
 
-export function dropStatModifiers(drop: DropInstance, content: Content): StatModifiers[] {
-  const base = content.equipmentBases.find((entry) => entry.id === drop.baseId);
+export function dropStatModifiers(
+  drop: DropInstance,
+  equipmentBasesById: Map<string, EquipmentBaseDef>,
+): StatModifiers[] {
+  const base = equipmentBasesById.get(drop.baseId);
   if (!base) {
     throw new Error(`Missing Equipment Base ${drop.baseId}`);
   }
   return [base.guaranteed, ...drop.affixes.map(affixToModifier)];
+}
+
+function equipmentBasesMapFromContent(content: Content): Map<string, EquipmentBaseDef> {
+  return new Map(content.equipmentBases.map((entry) => [entry.id, entry]));
 }
 
 export function equipmentModifiersForLoadout(
@@ -507,6 +514,7 @@ export function equipmentModifiersForLoadout(
   armory: DropInstance[],
   content: Content,
 ): StatModifiers[] {
+  const equipmentBasesById = equipmentBasesMapFromContent(content);
   const modifiers: StatModifiers[] = [];
   for (const slot of SLOT_CATEGORIES) {
     const dropId = loadout[slot];
@@ -517,7 +525,7 @@ export function equipmentModifiersForLoadout(
     if (!drop) {
       throw new Error(`Missing Drop ${dropId} in Armory`);
     }
-    modifiers.push(...dropStatModifiers(drop, content));
+    modifiers.push(...dropStatModifiers(drop, equipmentBasesById));
   }
   return modifiers;
 }
@@ -547,11 +555,11 @@ export function findDrop(armory: DropInstance[], dropId: number): DropInstance |
 
 export function equipViolation(
   drop: DropInstance,
-  content: Content,
+  equipmentBasesById: Map<string, EquipmentBaseDef>,
   classId: ClassId,
   slot: EquipmentSlotId,
 ): string | null {
-  const base = content.equipmentBases.find((entry) => entry.id === drop.baseId);
+  const base = equipmentBasesById.get(drop.baseId);
   if (!base) {
     return `Missing Equipment Base ${drop.baseId}`;
   }
@@ -570,7 +578,7 @@ export function canEquipToSlot(
   classId: ClassId,
   slot: EquipmentSlotId,
 ): boolean {
-  return equipViolation(drop, content, classId, slot) === null;
+  return equipViolation(drop, equipmentBasesMapFromContent(content), classId, slot) === null;
 }
 
 export function validateEquip(
@@ -579,7 +587,7 @@ export function validateEquip(
   classId: ClassId,
   slot: EquipmentSlotId,
 ): void {
-  const violation = equipViolation(drop, content, classId, slot);
+  const violation = equipViolation(drop, equipmentBasesMapFromContent(content), classId, slot);
   if (violation) {
     throw new Error(violation);
   }

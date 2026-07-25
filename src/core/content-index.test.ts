@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { chooseAbilityForCombatant, indexContent } from "./content-index";
+import {
+  basicAbilityFor,
+  candidatesFor,
+  chooseAbilityForCombatant,
+  indexContent,
+} from "./content-index";
+import {
+  opponentAbilityCandidates,
+  partyAbilityCandidates,
+} from "./combat";
 import { opponentEntityId, partyEntityId } from "./entity-id";
 import { createDefaultProgression } from "./load-state";
 import type { CombatantState } from "./snapshot";
@@ -63,6 +72,81 @@ describe("indexContent", () => {
     expect(index.statusesById.get("stun")).toBe(
       fixtureContent.statuses.find((entry) => entry.id === "stun"),
     );
+    expect(index.equipmentBasesById.get("fixture-blade")).toBe(
+      fixtureContent.equipmentBases.find((entry) => entry.id === "fixture-blade"),
+    );
+  });
+
+  it("registers interim Strike Abilities in abilitiesById", () => {
+    const index = indexContent(fixtureContent);
+    const interim = index.abilitiesById.get("fixture-boss-basic-interim");
+    expect(interim?.id).toBe("fixture-boss-basic-interim");
+    expect(interim?.name).toBe("Strike");
+  });
+});
+
+describe("basicAbilityFor", () => {
+  const index = indexContent(fixtureContent);
+
+  it("returns the authored Basic Attack for an Opponent that has one", () => {
+    const grunt = opponentCombatant("fixture-grunt");
+    const ability = basicAbilityFor(index, grunt);
+    expect(ability.id).toBe("grunt-attack");
+    expect(ability.slot).toBe("basic");
+  });
+
+  it("returns the interim Strike for an Opponent without an authored Basic Attack", () => {
+    const boss = opponentCombatant("fixture-boss");
+    const ability = basicAbilityFor(index, boss);
+    expect(ability.id).toBe("fixture-boss-basic-interim");
+    expect(ability.name).toBe("Strike");
+  });
+
+  it("returns the same object identity across two calls for one Opponent", () => {
+    const boss = opponentCombatant("fixture-boss");
+    expect(basicAbilityFor(index, boss)).toBe(basicAbilityFor(index, boss));
+  });
+});
+
+describe("candidatesFor", () => {
+  const index = indexContent(fixtureContent);
+  const progression = createDefaultProgression(fixtureContent);
+  const abilitiesById = index.abilitiesById;
+
+  it("matches partyAbilityCandidates order for a Party Member", () => {
+    const knight = partyCombatant("knight", "front");
+    const loadout = progression.loadouts.knight;
+    const classKit = index.classesById.get("knight")!;
+    const expected = partyAbilityCandidates(
+      fixtureContent,
+      classKit,
+      loadout,
+      abilitiesById,
+    );
+    const actual = candidatesFor(index, knight, progression.loadouts);
+    expect(actual.map((ability) => ability.id)).toEqual(expected.map((ability) => ability.id));
+  });
+
+  it("matches opponentAbilityCandidates order for an Opponent", () => {
+    const boss = opponentCombatant("fixture-boss");
+    const opponent = index.opponentsById.get("fixture-boss")!;
+    const expected = opponentAbilityCandidates(fixtureContent, opponent, abilitiesById);
+    const actual = candidatesFor(index, boss, progression.loadouts);
+    expect(actual.map((ability) => ability.id)).toEqual(expected.map((ability) => ability.id));
+  });
+
+  it("returns the same array identity for repeated calls with the same Loadout tuple", () => {
+    const knight = partyCombatant("knight", "front");
+    const first = candidatesFor(index, knight, progression.loadouts);
+    const second = candidatesFor(index, knight, progression.loadouts);
+    expect(first).toBe(second);
+  });
+
+  it("returns the same array identity for repeated Opponent candidate lookups", () => {
+    const boss = opponentCombatant("fixture-boss");
+    const first = candidatesFor(index, boss, progression.loadouts);
+    const second = candidatesFor(index, boss, progression.loadouts);
+    expect(first).toBe(second);
   });
 });
 

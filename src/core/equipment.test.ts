@@ -6,6 +6,7 @@ import {
   assignDrop,
   discardDrops,
   dropStatModifiers,
+  equipViolation,
   nextRarity,
   rollDrop,
   rollSalvageDrop,
@@ -15,6 +16,7 @@ import {
   snapshotEquipmentLoadouts,
   tierForItemLevel,
 } from "./equipment";
+import { indexContent } from "./content-index";
 import type { DropInstance } from "./snapshot";
 import { fixtureContent, fourTierFixtureContent } from "./testing/fixture-content";
 import type { AffixId, ClassId, ItemLevel } from "./types";
@@ -604,9 +606,84 @@ describe("Armory assignment", () => {
   });
 });
 
+describe("Equipment Base lookup", () => {
+  const equipmentBasesById = indexContent(fixtureContent).equipmentBasesById;
+
+  it("resolves guaranteed and Affix modifiers for a known Drop", () => {
+    const drop: DropInstance = {
+      dropId: 1,
+      baseId: "fixture-armor",
+      itemLevel: 1,
+      rarity: "common",
+      affixes: [{ id: "flat-armor", value: 3 }],
+      awardedAtMs: 1,
+      seen: false,
+      locked: false,
+      assignedTo: null,
+    };
+    expect(dropStatModifiers(drop, equipmentBasesById)).toEqual([
+      { flat: { armor: 4 } },
+      { flat: { armor: 3 } },
+    ]);
+  });
+
+  it("throws when the Equipment Base is missing from the index", () => {
+    const drop: DropInstance = {
+      dropId: 2,
+      baseId: "missing-base",
+      itemLevel: 1,
+      rarity: "common",
+      affixes: [],
+      awardedAtMs: 1,
+      seen: false,
+      locked: false,
+      assignedTo: null,
+    };
+    expect(() => dropStatModifiers(drop, equipmentBasesById)).toThrow(
+      "Missing Equipment Base missing-base",
+    );
+  });
+
+  it("returns null when a Drop is compatible with a Class and slot", () => {
+    const drop: DropInstance = {
+      dropId: 3,
+      baseId: "fixture-blade",
+      itemLevel: 1,
+      rarity: "common",
+      affixes: [],
+      awardedAtMs: 1,
+      seen: false,
+      locked: false,
+      assignedTo: null,
+    };
+    expect(equipViolation(drop, equipmentBasesById, "knight", "weapon")).toBeNull();
+  });
+
+  it("reports slot and Class violations without throwing", () => {
+    const drop: DropInstance = {
+      dropId: 4,
+      baseId: "fixture-blade",
+      itemLevel: 1,
+      rarity: "common",
+      affixes: [],
+      awardedAtMs: 1,
+      seen: false,
+      locked: false,
+      assignedTo: null,
+    };
+    expect(equipViolation(drop, equipmentBasesById, "knight", "armor")).toBe(
+      "Drop 4 is not compatible with slot armor",
+    );
+    expect(equipViolation(drop, equipmentBasesById, "wizard", "weapon")).toBe(
+      "Weapon Drop 4 is restricted to Class knight",
+    );
+  });
+});
+
 describe("critical hit affixes", () => {
   it("maps a flat-crit-chance roll of 7 to +0.07 Critical Chance (C7)", () => {
     const content = buildContent();
+    const equipmentBasesById = indexContent(content).equipmentBasesById;
     const knightBase = content.classes.find((entry) => entry.id === "knight")!.base;
     const modifiers = dropStatModifiers(
       {
@@ -620,7 +697,7 @@ describe("critical hit affixes", () => {
         locked: false,
         assignedTo: null,
       },
-      content,
+      equipmentBasesById,
     );
     const stats = applyStatModifiers(knightBase, modifiers);
     expect(stats.critChance).toBeCloseTo(knightBase.critChance + 0.07);

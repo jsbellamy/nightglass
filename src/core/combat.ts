@@ -317,14 +317,7 @@ export function partyBasicAbility(content: Content, classKit: ClassKitDef): Abil
   return ability;
 }
 
-export function opponentBasicAbility(content: Content, opponent: OpponentDef): AbilityDef {
-  for (const abilityId of opponent.abilityIds) {
-    const ability = content.abilities.find((entry) => entry.id === abilityId);
-    if (ability?.slot === "basic") {
-      return ability;
-    }
-  }
-
+export function interimStrikeAbility(opponent: OpponentDef): AbilityDef {
   return {
     id: `${opponent.id}-basic-interim`,
     name: "Strike",
@@ -336,6 +329,17 @@ export function opponentBasicAbility(content: Content, opponent: OpponentDef): A
     recoveryMs: 600,
     cooldownMs: 0,
   };
+}
+
+export function opponentBasicAbility(content: Content, opponent: OpponentDef): AbilityDef {
+  for (const abilityId of opponent.abilityIds) {
+    const ability = content.abilities.find((entry) => entry.id === abilityId);
+    if (ability?.slot === "basic") {
+      return ability;
+    }
+  }
+
+  return interimStrikeAbility(opponent);
 }
 
 export function livingCombatants(combatants: CombatantState[]): CombatantState[] {
