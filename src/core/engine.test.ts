@@ -3284,22 +3284,20 @@ describe("salvage command", () => {
   const salvageBatchIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
 
   function armoryWithTenCommons() {
-    return cloneSnapshot(
-      scenario(fixtureContent)
-        .withArmory([
-          { rarity: "common", itemLevel: 3 },
-          { rarity: "common", itemLevel: 3 },
-          { rarity: "common", itemLevel: 2 },
-          { rarity: "common", itemLevel: 2 },
-          { rarity: "common", itemLevel: 2 },
-          { rarity: "common", itemLevel: 2 },
-          { rarity: "common", itemLevel: 2 },
-          { rarity: "common", itemLevel: 2 },
-          { rarity: "common", itemLevel: 2 },
-          { rarity: "common", itemLevel: 1 },
-        ])
-        .build(),
-    );
+    return scenario(fixtureContent)
+      .withArmory([
+        { rarity: "common", itemLevel: 3 },
+        { rarity: "common", itemLevel: 3 },
+        { rarity: "common", itemLevel: 2 },
+        { rarity: "common", itemLevel: 2 },
+        { rarity: "common", itemLevel: 2 },
+        { rarity: "common", itemLevel: 2 },
+        { rarity: "common", itemLevel: 2 },
+        { rarity: "common", itemLevel: 2 },
+        { rarity: "common", itemLevel: 2 },
+        { rarity: "common", itemLevel: 1 },
+      ])
+      .build();
   }
 
   it.each([
@@ -3325,8 +3323,11 @@ describe("salvage command", () => {
       label: "equipped Drop",
       dropIds: salvageBatchIds,
       arrange: () => {
-        const saved = armoryWithTenCommons();
-        saved.progression.armory[0]!.assignedTo = { classId: "knight", slot: "weapon" };
+        const saved = cloneSnapshot(armoryWithTenCommons());
+        saved.progression.armory[0] = {
+          ...saved.progression.armory[0]!,
+          assignedTo: { classId: "knight", slot: "weapon" },
+        };
         return saved;
       },
       message: "Cannot salvage equipped Drop 1",
@@ -3335,8 +3336,11 @@ describe("salvage command", () => {
       label: "Locked Drop",
       dropIds: salvageBatchIds,
       arrange: () => {
-        const saved = armoryWithTenCommons();
-        saved.progression.armory[4]!.locked = true;
+        const saved = cloneSnapshot(armoryWithTenCommons());
+        saved.progression.armory[4] = {
+          ...saved.progression.armory[4]!,
+          locked: true,
+        };
         return saved;
       },
       message: "Cannot salvage Locked Drop 5",
@@ -4547,14 +4551,20 @@ describe("copy-on-write Armory", () => {
   });
 
   it("copy-on-writes awardEncounterDrops without mutating a prior Snapshot", () => {
-    const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
+    const engine = createEngine(fixtureContent, armorySnapshot(2), LOOT_SEED);
     const before = engine.snapshot();
+    const otherRefsBefore = new Map(
+      before.progression.armory.map((drop) => [drop.dropId, drop] as const),
+    );
     const dropIds = dropIdsWhileClearingEncounter(engine, 2);
     const after = engine.snapshot();
     const awardedId = dropIds[0]!;
     const awarded = after.progression.armory.find((drop) => drop.dropId === awardedId);
     expect(awarded).toBeDefined();
     expect(before.progression.armory).not.toContain(awarded);
+    for (const [dropId, ref] of otherRefsBefore) {
+      expect(after.progression.armory.find((drop) => drop.dropId === dropId)).toBe(ref);
+    }
     expect(stable(before)).toBe(stable(before));
   });
 
@@ -4603,29 +4613,41 @@ describe("copy-on-write Armory", () => {
   });
 
   it("copy-on-writes salvage without mutating a prior Snapshot", () => {
-    const saved = scenario(fixtureContent)
-      .withArmory(Array.from({ length: 12 }, () => ({ rarity: "common" as const })))
-      .build();
+    const saved = cloneSnapshot(
+      scenario(fixtureContent)
+        .withArmory(Array.from({ length: 12 }, () => ({ rarity: "common" as const })))
+        .build(),
+    );
     saved.lootRngState = LOOT_SEED;
     saved.nextDropId = 13;
     const engine = createEngine(fixtureContent, saved, LOOT_SEED);
     const before = engine.snapshot();
-    const otherRefsBefore = new Map(
-      before.progression.armory
-        .filter((drop) => drop.dropId > 10)
-        .map((drop) => [drop.dropId, drop] as const),
-    );
+    const survivorRef = before.progression.armory.find((drop) => drop.dropId === 11);
+    const removedRef = before.progression.armory.find((drop) => drop.dropId === 1);
 
     engine.salvage([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
 
     const after = engine.snapshot();
-    for (const [dropId, ref] of otherRefsBefore) {
-      const afterDrop = after.progression.armory.find((drop) => drop.dropId === dropId);
-      if (afterDrop) {
-        expect(afterDrop).toBe(ref);
-      }
-    }
+    expect(after.progression.armory.find((drop) => drop.dropId === 11)).toBe(survivorRef);
+    expect(after.progression.armory.find((drop) => drop.dropId === 12)).toBe(
+      before.progression.armory.find((drop) => drop.dropId === 12),
+    );
+    expect(after.progression.armory.some((drop) => drop.dropId === 1)).toBe(false);
+    expect(after.progression.armory.find((drop) => drop.dropId === 13)).not.toBe(removedRef);
+    expect(before.progression.armory).toContain(removedRef);
     expect(stable(before)).toBe(stable(before));
+  });
+
+  it("marks many unseen Drops seen in one command", () => {
+    const saved = armorySnapshot(20);
+    const engine = createEngine(fixtureContent, saved, LOOT_SEED);
+    const unseenIds = engine.snapshot().progression.armory.map((drop) => drop.dropId);
+
+    engine.markSeen(unseenIds);
+
+    const after = engine.snapshot();
+    expect(after.progression.armory.every((drop) => drop.seen)).toBe(true);
+    expect(after.progression.armory).toHaveLength(unseenIds.length);
   });
 
   it("reloads from a frozen Snapshot and can equip, discard, and Salvage", () => {
