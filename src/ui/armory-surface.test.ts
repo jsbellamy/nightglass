@@ -5,7 +5,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { createEngine } from "../core/engine";
-import { selectSalvageBatch } from "../core/equipment";
+import { selectSalvageBatch, selectSalvageBatchForRarity } from "../core/equipment";
 import { cloneSnapshot, type DropInstance, type Snapshot } from "../core/snapshot";
 import type { ClassId, Content } from "../core/types";
 import { fixtureContent } from "../core/testing/fixture-content";
@@ -1148,46 +1148,55 @@ describe("Armory surface", () => {
     });
   });
 
-  function pressSalvageAutofill(root: HTMLElement): void {
-    root.querySelector<HTMLButtonElement>('[data-salvage-autofill="true"]')?.click();
+  function openSalvagePane(root: HTMLElement): void {
+    root.querySelector<HTMLButtonElement>('[data-armory-salvage-open="true"]')?.click();
   }
 
-  describe.skip("salvage tray (M2)", () => {
-    it("renders a persistent tray with enabled Auto-fill for twelve eligible Commons", () => {
+  function pressSalvageFill(root: HTMLElement): void {
+    root.querySelector<HTMLButtonElement>('[data-salvage-fill="true"]')?.click();
+  }
+
+  describe("salvage pane", () => {
+    it("opens with rarity chips and an enabled Fill control for twelve eligible Commons", () => {
       const root = document.createElement("div");
       const selected = { current: "knight" as ClassId };
       const snapshot = armorySnapshot(commonSalvageDrops(12));
       const surface = mountWithSelection(root, selected);
       renderArmory(surface, snapshot);
 
-      expect(root.querySelector('[data-salvage-tray="true"]')).not.toBeNull();
-      expect(root.querySelector(".armory-salvage-tray")).not.toBeNull();
-      const autofill = root.querySelector<HTMLButtonElement>('[data-salvage-autofill="true"]');
-      expect(autofill?.disabled).toBe(false);
-      expect(autofill?.textContent).toBe("Auto-fill · 10 Common");
+      openSalvagePane(root);
+      renderArmory(surface, snapshot);
+
+      expect(root.querySelector('[data-salvage-pane="true"]')).not.toBeNull();
+      const commonChip = root.querySelector<HTMLButtonElement>('[data-salvage-rarity-pick="common"]');
+      expect(commonChip?.getAttribute("aria-pressed")).toBe("true");
+      expect(commonChip?.textContent).toContain("12/10");
+      expect(root.querySelector<HTMLButtonElement>('[data-salvage-fill="true"]')?.disabled).toBe(false);
       expect(root.querySelector('[data-salvage-unavailable="true"]')).toBeNull();
 
       surface.destroy();
     });
 
-    it("disables Auto-fill with the unavailable copy for three eligible pieces", () => {
+    it("disables Fill when the selected Rarity has fewer than ten eligible pieces", () => {
       const root = document.createElement("div");
       const selected = { current: "knight" as ClassId };
       const snapshot = armorySnapshot(commonSalvageDrops(3));
       const surface = mountWithSelection(root, selected);
       renderArmory(surface, snapshot);
 
-      const autofill = root.querySelector<HTMLButtonElement>('[data-salvage-autofill="true"]');
-      expect(autofill?.disabled).toBe(true);
-      expect(autofill?.textContent).toBe("Auto-fill · 10 pieces");
-      expect(root.querySelector('[data-salvage-unavailable="true"]')?.textContent).toBe(
-        "No Rarity has ten unequipped, unlocked pieces yet.",
-      );
+      openSalvagePane(root);
+      renderArmory(surface, snapshot);
+
+      const fill = root.querySelector<HTMLButtonElement>('[data-salvage-fill="true"]');
+      expect(fill?.disabled).toBe(true);
+      expect(
+        root.querySelector<HTMLButtonElement>('[data-salvage-rarity-pick="common"]')?.textContent,
+      ).toContain("3/10");
 
       surface.destroy();
     });
 
-    it("stages ten tiles with the mixed Item Level summary after Auto-fill", () => {
+    it("stages ten tiles with the mixed Item Level summary after Fill", () => {
       const root = document.createElement("div");
       const selected = { current: "knight" as ClassId };
       const armory = commonSalvageDrops(12);
@@ -1195,13 +1204,15 @@ describe("Armory surface", () => {
       const surface = mountWithSelection(root, selected);
       renderArmory(surface, snapshot);
 
-      pressSalvageAutofill(root);
+      openSalvagePane(root);
+      renderArmory(surface, snapshot);
+      pressSalvageFill(root);
       renderArmory(surface, snapshot);
 
       expect(root.querySelector('[data-salvage-summary="true"]')?.textContent).toBe(
         "10 Common → 1 Uncommon · Item Level 1",
       );
-      const batch = selectSalvageBatch(armory);
+      const batch = selectSalvageBatchForRarity(armory, "common");
       expect(batch).not.toBeNull();
       for (const dropId of batch!.dropIds) {
         const tile = root.querySelector<HTMLElement>(`.equipment-card[data-drop-id="${dropId}"]`);
@@ -1210,6 +1221,7 @@ describe("Armory surface", () => {
         expect(tile?.querySelector(`[data-discard-select="${dropId}"]`)).toBeNull();
       }
       expect(root.querySelectorAll('[data-salvage-staged="true"]').length).toBe(10);
+      expect(root.querySelectorAll('[data-salvage-slot="true"]').length).toBe(10);
 
       surface.destroy();
     });
@@ -1222,11 +1234,13 @@ describe("Armory surface", () => {
       const snapshot = armorySnapshot(armory);
       const surface = mountWithSelection(root, selected, (command) => commands.push(command));
       renderArmory(surface, snapshot);
-      pressSalvageAutofill(root);
+      openSalvagePane(root);
+      renderArmory(surface, snapshot);
+      pressSalvageFill(root);
       renderArmory(surface, snapshot);
 
       root.querySelector<HTMLButtonElement>('[data-salvage-confirm="true"]')?.click();
-      const batch = selectSalvageBatch(armory);
+      const batch = selectSalvageBatchForRarity(armory, "common");
       expect(commands).toEqual([{ cmd: "salvage", args: [batch!.dropIds] }]);
       expect(root.querySelectorAll('[data-salvage-staged="true"]').length).toBe(0);
       expect(root.querySelector('[data-salvage-confirm="true"]')).toBeNull();
@@ -1241,7 +1255,9 @@ describe("Armory surface", () => {
       const snapshot = armorySnapshot(commonSalvageDrops(12));
       const surface = mountWithSelection(root, selected, (command) => commands.push(command));
       renderArmory(surface, snapshot);
-      pressSalvageAutofill(root);
+      openSalvagePane(root);
+      renderArmory(surface, snapshot);
+      pressSalvageFill(root);
       renderArmory(surface, snapshot);
 
       root.querySelector<HTMLButtonElement>('[data-salvage-cancel="true"]')?.click();
@@ -1250,6 +1266,7 @@ describe("Armory surface", () => {
       expect(commands).toEqual([]);
       expect(root.querySelectorAll('[data-salvage-staged="true"]').length).toBe(0);
       expect(root.querySelector('[data-salvage-summary="true"]')).toBeNull();
+      expect(root.querySelector('[data-salvage-pane="true"]')).not.toBeNull();
 
       surface.destroy();
     });
@@ -1259,10 +1276,12 @@ describe("Armory surface", () => {
       const selected = { current: "knight" as ClassId };
       const armory = commonSalvageDrops(12);
       const snapshotA = armorySnapshot(armory);
-      const batch = selectSalvageBatch(armory)!;
+      const batch = selectSalvageBatchForRarity(armory, "common")!;
       const surface = mountWithSelection(root, selected);
       renderArmory(surface, snapshotA);
-      pressSalvageAutofill(root);
+      openSalvagePane(root);
+      renderArmory(surface, snapshotA);
+      pressSalvageFill(root);
       renderArmory(surface, snapshotA);
       root.querySelector<HTMLButtonElement>('[data-salvage-confirm="true"]')?.click();
 
@@ -1294,7 +1313,9 @@ describe("Armory surface", () => {
       const snapshotA = armorySnapshot(armory);
       const surface = mountWithSelection(root, selected);
       renderArmory(surface, snapshotA);
-      pressSalvageAutofill(root);
+      openSalvagePane(root);
+      renderArmory(surface, snapshotA);
+      pressSalvageFill(root);
       renderArmory(surface, snapshotA);
       root.querySelector<HTMLButtonElement>('[data-salvage-confirm="true"]')?.click();
 
@@ -1309,11 +1330,13 @@ describe("Armory surface", () => {
       const selected = { current: "knight" as ClassId };
       const armory = commonSalvageDrops(12);
       const snapshotA = armorySnapshot(armory);
-      const batch = selectSalvageBatch(armory)!;
+      const batch = selectSalvageBatchForRarity(armory, "common")!;
       const equippedId = batch.dropIds[0]!;
       const surface = mountWithSelection(root, selected);
       renderArmory(surface, snapshotA);
-      pressSalvageAutofill(root);
+      openSalvagePane(root);
+      renderArmory(surface, snapshotA);
+      pressSalvageFill(root);
       renderArmory(surface, snapshotA);
 
       const snapshotB = cloneSnapshot(snapshotA);

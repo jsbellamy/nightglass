@@ -49,7 +49,9 @@ export {
   canEquipToSlot,
   equipViolation,
   nextRarity,
+  salvageEligibleAtRarity,
   selectSalvageBatch,
+  selectSalvageBatchForRarity,
 } from "../core/equipment";
 
 export {

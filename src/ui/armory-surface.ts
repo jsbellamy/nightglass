@@ -9,7 +9,11 @@ import {
   filterArmoryDrops,
   formatRarityLabel,
   isCompatibleWithSlot,
+  nextRarity,
+  RARITY_LABELS,
   rareOrEpicDropNames,
+  salvageEligibleAtRarity,
+  selectSalvageBatchForRarity,
   SLOT_LABELS,
   sortArmoryDrops,
 } from "./equipment-format";
@@ -53,6 +57,12 @@ type SalvagePendingResult = {
   expectedRarity: Rarity;
   expectedItemLevel: ItemLevel;
 };
+
+type SalvageStageMeta = {
+  rarity: Rarity;
+};
+
+const SALVAGE_INPUT_RARITIES = ["common", "uncommon", "rare"] as const satisfies readonly Rarity[];
 
 type StateFilterId = "all" | "unseen" | "locked";
 
@@ -113,7 +123,10 @@ export function mountArmorySurface(
   let selectedDiscard = new Set<number>();
   let discardConfirmOpen = false;
   let actionMode: ArmoryActionMode | null = null;
+  let salvagePickRarity: Rarity | null = null;
+  let salvageFilled = false;
   let stagedSalvageIds = new Set<number>();
+  let stagedSalvageMeta: SalvageStageMeta | null = null;
   let pendingSalvageResult: SalvagePendingResult | null = null;
   let salvageResultDropId: number | null = null;
   let activeDrag: ArmoryDragSource | null = null;
@@ -174,6 +187,31 @@ export function mountArmorySurface(
 
   function clearSalvageStaging(): void {
     stagedSalvageIds = new Set();
+    stagedSalvageMeta = null;
+    salvageFilled = false;
+  }
+
+  function clearSalvageFill(): void {
+    clearSalvageStaging();
+  }
+
+  function resetSalvagePaneState(): void {
+    salvagePickRarity = null;
+    clearSalvageFill();
+  }
+
+  function defaultSalvagePickRarity(armory: readonly DropInstance[]): Rarity {
+    for (const rarity of SALVAGE_INPUT_RARITIES) {
+      if (salvageEligibleAtRarity(armory, rarity).length >= 10) {
+        return rarity;
+      }
+    }
+    for (const rarity of SALVAGE_INPUT_RARITIES) {
+      if (salvageEligibleAtRarity(armory, rarity).length > 0) {
+        return rarity;
+      }
+    }
+    return "common";
   }
 
   function setPaneLayout(layout: "full" | "compact"): void {
@@ -193,7 +231,7 @@ export function mountArmorySurface(
 
   function closeActionPane(): void {
     actionMode = null;
-    clearSalvageStaging();
+    resetSalvagePaneState();
     clearSalvageResult();
     setPaneLayout("full");
     delete detailEl.dataset["armoryActionMode"];
@@ -206,8 +244,11 @@ export function mountArmorySurface(
       return;
     }
     actionMode = mode;
-    clearSalvageStaging();
+    resetSalvagePaneState();
     clearSalvageResult();
+    if (mode === "salvage" && lastSnapshot) {
+      salvagePickRarity = defaultSalvagePickRarity(lastSnapshot.progression.armory);
+    }
     setPaneLayout("compact");
     detailEl.dataset["armoryActionMode"] = mode;
   }
@@ -229,42 +270,26 @@ export function mountArmorySurface(
     snapshot: ReadonlySnapshot,
     mode: ArmoryActionMode,
   ): HTMLElement {
-    const shell = el("div", { class: "armory-action-pane" });
-    const title = mode === "salvage" ? "Salvage" : "Discard";
-    shell.append(el("h3", { class: "armory-action-pane-title", text: title }));
-
     if (mode === "salvage") {
-      shell.append(
-        el("p", {
-          class: "armory-action-pane-hint",
-          text: "Choose a Rarity, then fill ten slots to review the batch.",
-        }),
-      );
-    } else {
-      shell.append(
-        el("p", {
-          class: "armory-action-pane-hint",
-          text: "Choose an Item Level, then fill from tier to review the batch.",
-        }),
-      );
+      return renderSalvagePane(snapshot);
     }
+    return renderDiscardTierPlaceholder(snapshot);
+  }
 
-    if (salvageResultDropId !== null && mode === "salvage") {
-      const resultDrop = dropById(snapshot.progression.armory, salvageResultDropId);
-      if (resultDrop) {
-        const base = equipmentBaseForDrop(resultDrop, content);
-        const card = el("div", {
-          class: `armory-salvage-result rarity-${resultDrop.rarity}`,
-          data: { salvageResult: String(resultDrop.dropId) },
-        });
-        card.append(
-          createEquipmentIconElement(base.iconKey, "content", { ariaLabel: base.name }),
-        );
-        card.append(el("span", { class: "armory-salvage-result-name", text: base.name }));
-        shell.append(card);
-      }
-    }
+  function renderDiscardTierPlaceholder(_snapshot: ReadonlySnapshot): HTMLElement {
+    const shell = el("div", { class: "armory-action-pane" });
+    shell.append(el("h3", { class: "armory-action-pane-title", text: "Discard" }));
+    shell.append(
+      el("p", {
+        class: "armory-action-pane-hint",
+        text: "Choose an Item Level, then fill from tier to review the batch.",
+      }),
+    );
+    shell.append(renderActionPaneClose());
+    return shell;
+  }
 
+  function renderActionPaneClose(): HTMLElement {
     const close = el("button", {
       class: "armory-action-close focus-ring",
       data: { armoryActionClose: "true" },
@@ -277,9 +302,224 @@ export function mountArmorySurface(
         render(lastSnapshot);
       }
     });
-    shell.append(el("div", { class: "armory-detail-actions" }, [close]));
+    return el("div", { class: "armory-detail-actions" }, [close]);
+  }
 
-    return shell;
+  function renderSalvagePane(snapshot: ReadonlySnapshot): HTMLElement {
+    const armory = snapshot.progression.armory;
+    const pickRarity = salvagePickRarity ?? defaultSalvagePickRarity(armory);
+    salvagePickRarity = pickRarity;
+
+    const pane = el("div", {
+      class: "armory-action-pane armory-salvage-pane",
+      data: { salvagePane: "true" },
+    });
+    pane.append(el("h3", { class: "armory-action-pane-title", text: "Salvage" }));
+
+    const picker = el("div", {
+      class: "armory-salvage-picker",
+      props: { role: "group" },
+      aria: { label: "Salvage rarity" },
+    });
+    for (const rarity of SALVAGE_INPUT_RARITIES) {
+      const count = salvageEligibleAtRarity(armory, rarity).length;
+      const chip = el("button", {
+        class: `armory-salvage-rarity-chip rarity-${rarity} focus-ring`,
+        data: { salvageRarityPick: rarity },
+        props: { type: "button", disabled: count === 0 },
+        aria: { pressed: pickRarity === rarity ? "true" : "false" },
+        text: `${RARITY_LABELS[rarity]} ${count}/10`,
+      });
+      bindPressable(chip, () => {
+        salvagePickRarity = rarity;
+        clearSalvageFill();
+        if (lastSnapshot) {
+          render(lastSnapshot);
+        }
+      });
+      picker.append(chip);
+    }
+    pane.append(picker);
+
+    const eligibleCount = salvageEligibleAtRarity(armory, pickRarity).length;
+    const fill = el("button", {
+      class: "armory-salvage-fill focus-ring",
+      data: { salvageFill: "true" },
+      props: { type: "button", disabled: eligibleCount < 10 },
+      text: "Fill 10 slots",
+    });
+    bindPressable(fill, () => {
+      if (!salvagePickRarity) {
+        return;
+      }
+      clearSalvageResult();
+      const batch = selectSalvageBatchForRarity([...armory], salvagePickRarity);
+      if (batch) {
+        stagedSalvageIds = new Set(batch.dropIds);
+        stagedSalvageMeta = { rarity: batch.rarity };
+        salvageFilled = true;
+      } else {
+        clearSalvageFill();
+      }
+      if (lastSnapshot) {
+        render(lastSnapshot);
+      }
+    });
+
+    const fillRowChildren: HTMLElement[] = [fill];
+    if (salvageFilled) {
+      const clearFill = el("button", {
+        class: "armory-salvage-clear-fill focus-ring",
+        data: { salvageClearFill: "true" },
+        props: { type: "button" },
+        text: "Clear",
+      });
+      bindPressable(clearFill, () => {
+        clearSalvageFill();
+        if (lastSnapshot) {
+          render(lastSnapshot);
+        }
+      });
+      fillRowChildren.push(clearFill);
+    }
+    pane.append(el("div", { class: "armory-salvage-fill-row" }, fillRowChildren));
+
+    const stagedDrops = salvageFilled
+      ? [...stagedSalvageIds]
+          .map((dropId) => dropById(armory, dropId))
+          .filter((entry): entry is DropInstance => entry !== undefined)
+      : [];
+
+    if (salvageFilled && stagedSalvageMeta && stagedDrops.length === 10) {
+      const fromRarity = stagedSalvageMeta.rarity;
+      const toRarity = nextRarity(fromRarity);
+      const minItemLevel = Math.min(...stagedDrops.map((entry) => entry.itemLevel)) as ItemLevel;
+      if (toRarity) {
+        pane.append(
+          el("p", {
+            class: "armory-salvage-summary",
+            data: { salvageSummary: "true" },
+            text: `10 ${RARITY_LABELS[fromRarity]} → 1 ${RARITY_LABELS[toRarity]} · Item Level ${minItemLevel}`,
+          }),
+        );
+      }
+    }
+
+    const slotGrid = el("div", {
+      class: "armory-salvage-slot-grid",
+      aria: { label: "Salvage slots" },
+    });
+    for (let index = 0; index < 10; index += 1) {
+      const stagedDrop = stagedDrops[index];
+      if (stagedDrop) {
+        const base = equipmentBaseForDrop(stagedDrop, content);
+        const slot = el("div", {
+          class: `armory-salvage-slot filled rarity-${stagedDrop.rarity}`,
+          data: { salvageSlot: "true", dropId: String(stagedDrop.dropId) },
+          aria: { label: base.name },
+        });
+        slot.append(
+          createEquipmentIconElement(base.iconKey, "content", { ariaLabel: base.name }),
+        );
+        slot.append(
+          el("span", { class: "armory-salvage-slot-il", text: `IL ${stagedDrop.itemLevel}` }),
+        );
+        slotGrid.append(slot);
+      } else {
+        slotGrid.append(
+          el("div", {
+            class: "armory-salvage-slot empty",
+            data: { salvageSlot: "true" },
+            text: String(index + 1),
+          }),
+        );
+      }
+    }
+    if (salvageFilled && stagedSalvageMeta) {
+      const outcomeRarity = nextRarity(stagedSalvageMeta.rarity);
+      if (outcomeRarity) {
+        slotGrid.append(
+          el("div", {
+            class: `armory-salvage-slot outcome rarity-${outcomeRarity}`,
+            data: { salvageOutcomeSlot: "true" },
+            aria: { label: `Outcome ${RARITY_LABELS[outcomeRarity]}` },
+          }, [
+            el("span", { class: "armory-salvage-slot-q", text: "?" }),
+            el("span", {
+              class: "armory-salvage-slot-il",
+              text: RARITY_LABELS[outcomeRarity],
+            }),
+          ]),
+        );
+      }
+    }
+    pane.append(slotGrid);
+
+    if (salvageResultDropId !== null) {
+      const resultDrop = dropById(armory, salvageResultDropId);
+      if (resultDrop) {
+        const base = equipmentBaseForDrop(resultDrop, content);
+        const card = el("div", {
+          class: `armory-salvage-result rarity-${resultDrop.rarity}`,
+          data: { salvageResult: String(resultDrop.dropId) },
+        });
+        card.append(
+          createEquipmentIconElement(base.iconKey, "content", { ariaLabel: base.name }),
+        );
+        card.append(el("span", { class: "armory-salvage-result-name", text: base.name }));
+        pane.append(card);
+      }
+    }
+
+    if (salvageFilled && stagedSalvageMeta && stagedDrops.length === 10) {
+      const confirm = el("button", {
+        class: "armory-salvage-confirm focus-ring",
+        data: { salvageConfirm: "true" },
+        props: { type: "button" },
+        text: "Salvage",
+      });
+      bindPressable(confirm, () => {
+        const dropIds = [...stagedSalvageIds];
+        const consumed = dropIds
+          .map((dropId) => dropById(snapshot.progression.armory, dropId))
+          .filter((entry): entry is DropInstance => entry !== undefined);
+        const upgradedRarity = nextRarity(stagedSalvageMeta!.rarity);
+        if (!upgradedRarity || consumed.length !== 10) {
+          return;
+        }
+        pendingSalvageResult = {
+          beforeIds: new Set(snapshot.progression.armory.map((entry) => entry.dropId)),
+          consumedDropIds: dropIds,
+          expectedRarity: upgradedRarity,
+          expectedItemLevel: Math.min(...consumed.map((entry) => entry.itemLevel)) as ItemLevel,
+        };
+        publish({ cmd: "salvage", args: [dropIds] });
+        clearSalvageFill();
+        if (lastSnapshot) {
+          render(lastSnapshot);
+        }
+      });
+
+      const cancel = el("button", {
+        class: "armory-salvage-cancel focus-ring",
+        data: { salvageCancel: "true" },
+        props: { type: "button" },
+        text: "Cancel",
+      });
+      bindPressable(cancel, () => {
+        clearSalvageFill();
+        clearSalvageResult();
+        if (lastSnapshot) {
+          render(lastSnapshot);
+        }
+      });
+
+      pane.append(el("div", { class: "armory-salvage-actions" }, [confirm, cancel]));
+    } else {
+      pane.append(renderActionPaneClose());
+    }
+
+    return pane;
   }
 
   function syncStagedSalvage(armory: readonly DropInstance[]): void {

@@ -8,9 +8,22 @@ import type {
   ItemLevel,
   Rarity,
 } from "../core/types";
-import { affixToModifier, formatStatModifierPerRank, CLASS_LABELS, nextRarity, selectSalvageBatch } from "./snapshot-view";
+import {
+  affixToModifier,
+  formatStatModifierPerRank,
+  CLASS_LABELS,
+  nextRarity,
+  salvageEligibleAtRarity,
+  selectSalvageBatch,
+  selectSalvageBatchForRarity,
+} from "./snapshot-view";
 
-export { nextRarity, selectSalvageBatch };
+export {
+  nextRarity,
+  salvageEligibleAtRarity,
+  selectSalvageBatch,
+  selectSalvageBatchForRarity,
+};
 
 export const RARITY_LABELS: Record<Rarity, string> = {
   common: "Common",
