@@ -734,5 +734,37 @@
       "provider": "Cursor GenerateImage",
       "raw_sha256": "8b59921d3732efa585b48dc697053f78a1939391f973d4cc2689062ff2183974"
     }
+  },
+  "dewsnail": {
+    "action": "still",
+    "frame_size": [
+      30,
+      16
+    ],
+    "visual_bounds": [
+      0,
+      0,
+      30,
+      16
+    ],
+    "foot_anchor": [
+      15,
+      16
+    ],
+    "palette": "moonberry-16",
+    "baseline_row": 15,
+    "total_ms": 1,
+    "frames": [
+      {
+        "name": "dewsnail",
+        "duration_ms": 1,
+        "sha256": "08eba41942c0a639c8cfe8ce2999eb094d5ae7832a96c48cd285e5b260cf5465"
+      }
+    ],
+    "cues_ms": {},
+    "source": {
+      "provider": "Cursor GenerateImage",
+      "raw_sha256": "3214dacdd69f34b0d9c9aae533570b04be7bb9afa1c6bef9e14b751de1133bf6"
+    }
   }
 }
