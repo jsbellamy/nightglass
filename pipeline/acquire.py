@@ -38,6 +38,8 @@ import zlib
 from dataclasses import dataclass
 from typing import Iterable
 
+import numpy as np
+
 from PIL import Image
 
 HERE = pathlib.Path(__file__).parent
@@ -511,32 +513,40 @@ def _within_key(pixel: tuple[int, int, int, int]) -> bool:
     return pixel[3] < ALPHA_CUT or _within_magenta(pixel)
 
 
+def _rgba_array(src: Image.Image) -> np.ndarray:
+    """(h, w, 4) int16 view of an RGBA image, wide enough for signed deltas."""
+    return np.asarray(src.convert("RGBA"), dtype=np.int16)
+
+
+def _magenta_mask(rgba: np.ndarray) -> np.ndarray:
+    """Vectorized `_within_magenta` over a whole (h, w, 4) array."""
+    return ((np.abs(rgba[:, :, 0] - MAGENTA[0]) <= KEY_TOLERANCE)
+            & (np.abs(rgba[:, :, 1] - MAGENTA[1]) <= KEY_TOLERANCE)
+            & (np.abs(rgba[:, :, 2] - MAGENTA[2]) <= KEY_TOLERANCE))
+
+
 def _foreground_mask(
     src: Image.Image,
     *,
     ignore_stamp: bool,
-) -> tuple[list[bool], bool, tuple[int, int, int, int]]:
-    """Row-major foreground mask; optional Cursor stamp at (0, height-1)."""
-    w, h = src.size
-    pixels = list(src.getdata())
+) -> tuple[np.ndarray, bool, tuple[int, int, int, int]]:
+    """(h, w) bool foreground mask; optional Cursor stamp at (0, height-1)."""
+    h = src.size[1]
+    rgba = _rgba_array(src)
+    keyed = (rgba[:, :, 3] < ALPHA_CUT) | _magenta_mask(rgba)
+    fg = ~keyed
     stamp_removed = False
-    fg: list[bool] = []
-    for i, pixel in enumerate(pixels):
-        x, y = i % w, i // w
-        if ignore_stamp and x == 0 and y == h - 1:
-            if pixel[3] >= ALPHA_CUT and not _within_magenta(pixel):
-                stamp_removed = True
-            fg.append(False)
-            continue
-        fg.append(not _within_key(pixel))
-    points = [(i % w, i // w) for i, opaque in enumerate(fg) if opaque]
-    if not points:
+    if ignore_stamp:
+        stamp_removed = bool(fg[h - 1, 0])
+        fg[h - 1, 0] = False
+    ys, xs = np.nonzero(fg)
+    if xs.size == 0:
         raise ValueError(f"{src}: magenta key removed the entire image")
-    xs, ys = zip(*points)
-    return fg, stamp_removed, (min(xs), min(ys), max(xs), max(ys))
+    return fg, stamp_removed, (int(xs.min()), int(ys.min()),
+                               int(xs.max()), int(ys.max()))
 
 
-def _key(raw_path: pathlib.Path) -> tuple[Image.Image, list[bool], tuple[int, int, int, int]]:
+def _key(raw_path: pathlib.Path) -> tuple[Image.Image, np.ndarray, tuple[int, int, int, int]]:
     src = Image.open(raw_path).convert("RGBA")
     fg, _, bbox = _foreground_mask(src, ignore_stamp=False)
     return src, fg, bbox
@@ -544,7 +554,7 @@ def _key(raw_path: pathlib.Path) -> tuple[Image.Image, list[bool], tuple[int, in
 
 def _key_for_measurement(
     raw_path: pathlib.Path,
-) -> tuple[Image.Image, list[bool], tuple[int, int, int, int], bool]:
+) -> tuple[Image.Image, np.ndarray, tuple[int, int, int, int], bool]:
     src = Image.open(raw_path).convert("RGBA")
     fg, stamp_removed, bbox = _foreground_mask(src, ignore_stamp=True)
     return src, fg, bbox, stamp_removed
@@ -561,18 +571,16 @@ def candidate_gates(raw_path: pathlib.Path) -> list[str]:
     except (OSError, ValueError) as error:
         return [f"{raw_path.name}: unreadable candidate: {error}"]
     w, h = src.size
-    px = src.load()
-    border = []
-    for y in range(h):
-        for x in range(w):
-            if x < 2 or x >= w - 2 or y < 2 or y >= h - 2:
-                if x == 0 and y == h - 1:
-                    continue
-                border.append(px[x, y])
-    keyed = sum(pixel[3] >= ALPHA_CUT and _within_magenta(pixel) for pixel in border)
-    if not border or keyed / len(border) < 0.95:
+    rgba = _rgba_array(src)
+    rows = np.arange(h)[:, None]
+    cols = np.arange(w)[None, :]
+    border_mask = (cols < 2) | (cols >= w - 2) | (rows < 2) | (rows >= h - 2)
+    border_mask[h - 1, 0] = False
+    border = int(border_mask.sum())
+    keyed = int(((rgba[:, :, 3] >= ALPHA_CUT) & _magenta_mask(rgba) & border_mask).sum())
+    if not border or keyed / border < 0.95:
         errs.append(f"{raw_path.name}: border is not a flat {MAGENTA!r} chroma key "
-                    f"({keyed}/{len(border)} pixels within tolerance {KEY_TOLERANCE})")
+                    f"({keyed}/{border} pixels within tolerance {KEY_TOLERANCE})")
     return errs
 
 
@@ -595,31 +603,25 @@ def raw_gates(raw_path: pathlib.Path) -> list[str]:
     return errs
 
 
-def _axis_extent(fg: list[bool], w: int, h: int, axis: str) -> tuple[int, int]:
-    occupied = []
-    for y in range(h):
-        for x in range(w):
-            if fg[y * w + x]:
-                occupied.append(x if axis == "x" else y)
-    return min(occupied), max(occupied)
+def _axis_extent(fg: np.ndarray, w: int, h: int, axis: str) -> tuple[int, int]:
+    occupied = np.nonzero(fg.any(axis=0 if axis == "x" else 1))[0]
+    return int(occupied.min()), int(occupied.max())
 
 
-def _edge_profile(src: Image.Image, fg: list[bool], axis: str) -> list[float]:
-    w, h = src.size
-    pixels = list(src.getdata())
-    length = w if axis == "x" else h
-    other = h if axis == "x" else w
+def _edge_profile(src: Image.Image, fg: np.ndarray, axis: str) -> list[float]:
+    """Per-column (or per-row) sum of |RGB| deltas across foreground-only pairs."""
+    rgb = _rgba_array(src)[:, :, :3].astype(np.int32)
+    length = src.size[0] if axis == "x" else src.size[1]
+    if axis == "x":
+        delta = np.abs(rgb[:, 1:, :] - rgb[:, :-1, :]).sum(axis=2)
+        paired = fg[:, 1:] & fg[:, :-1]
+        energy = np.where(paired, delta, 0).sum(axis=0)
+    else:
+        delta = np.abs(rgb[1:, :, :] - rgb[:-1, :, :]).sum(axis=2)
+        paired = fg[1:, :] & fg[:-1, :]
+        energy = np.where(paired, delta, 0).sum(axis=1)
     profile = [0.0] * length
-    for a in range(1, length):
-        energy = 0
-        for b in range(other):
-            x, y = (a, b) if axis == "x" else (b, a)
-            x0, y0 = (a - 1, b) if axis == "x" else (b, a - 1)
-            if not fg[y * w + x] or not fg[y0 * w + x0]:
-                continue
-            p1, p0 = pixels[y * w + x], pixels[y0 * w + x0]
-            energy += abs(p1[0] - p0[0]) + abs(p1[1] - p0[1]) + abs(p1[2] - p0[2])
-        profile[a] = energy
+    profile[1:] = energy.tolist()
     return profile
 
 
@@ -700,7 +702,7 @@ def sample_cells(src: Image.Image, fg: list[bool], bbox: tuple[int, int, int, in
                     if not (0 <= x < w and 0 <= y < h):
                         continue
                     total += 1
-                    if fg[y * w + x]:
+                    if fg[y, x]:
                         colors.append(px[x, y][:3])
             if not total or len(colors) / total < .5:
                 row.append(None)
@@ -912,18 +914,15 @@ def recover_grid(
 
 def _crop_foreground_rgba(
     src: Image.Image,
-    fg: list[bool],
+    fg: np.ndarray,
     bbox: tuple[int, int, int, int],
 ) -> Image.Image:
     x0, y0, x1, y1 = bbox
-    w, h = src.size
-    cropped = Image.new("RGBA", (x1 - x0 + 1, y1 - y0 + 1), (0, 0, 0, 0))
-    spx, dpx = src.load(), cropped.load()
-    for y in range(y0, y1 + 1):
-        for x in range(x0, x1 + 1):
-            if fg[y * w + x]:
-                dpx[x - x0, y - y0] = spx[x, y]
-    return cropped
+    window = (slice(y0, y1 + 1), slice(x0, x1 + 1))
+    keep = fg[window]
+    out = np.zeros((y1 - y0 + 1, x1 - x0 + 1, 4), dtype=np.uint8)
+    out[keep] = _rgba_array(src)[window][keep].astype(np.uint8)
+    return Image.fromarray(out, "RGBA")
 
 
 def _resize_to_fit(img: Image.Image, max_w: int, max_h: int) -> Image.Image:
