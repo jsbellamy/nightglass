@@ -1,0 +1,37 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "8b59921d3732efa585b48dc697053f78a1939391f973d4cc2689062ff2183974",
+  "acquisition": "flexible",
+  "identity_profile": {
+    "asset_class": "opponent",
+    "role": "ordinary-opponent",
+    "facing": "left"
+  },
+  "cursor_stamp_removed": false,
+  "identity": "huskbeetle",
+  "asset_class": "opponent",
+  "runtime_destination": "src/assets/sprites/huskbeetle.png",
+  "candidate": "huskbeetle-c1.png",
+  "facing": "left",
+  "role": "ordinary-opponent",
+  "palette": "moonberry-16@1",
+  "style_references": [
+    {
+      "path": "src/assets/sprites/pipcap.png",
+      "sha256": "9fc03d2c05604818e2b45fb30d50186a9c53062777c9008fa677a65ce4da54d2",
+      "role": "style"
+    },
+    {
+      "path": "src/assets/sprites/brambling.png",
+      "sha256": "5add87c3d42694cda0da0e328635bab67183e0d8b5308090a76910c3a69c8fe5",
+      "role": "style"
+    },
+    {
+      "path": "src/assets/sprites/lanternmoth.png",
+      "sha256": "84ba9ce126f9dd22c74b611f5d53768ad9b294e946861d8c2f174b5e97e492fd",
+      "role": "style"
+    }
+  ],
+  "prompt": "Single full-body Huskbeetle ordinary opponent game sprite, strict side profile facing LEFT. A broad low orchard beetle whose wing-cases have been replaced by the split husk of a fallen moonberry. A domed berry-red husk shell, cracked open along its length with the torn rind edges curling upward, forms the whole back; a squat sage-green beetle body carries it on six short thick legs, and blunt mandibles jut forward beneath a low armoured brow. The mutation is one living creature, not a beetle sheltering under a piece of fruit rind.\n\nPreserve its enchanted wrong identity: a low armoured head with blunt forward mandibles and two short antennae, the cracked domed berry husk shell with curled rind edges and a pale cream inner seam, a squat sage body, and six short thick legs planted wide. Low, wide, domed silhouette that hugs the ground. Mandibles, the husk crack, the rind curl, and all six legs must remain distinct at native game scale.\n\nChunky simplified flat-colour Moonberry storybook night-garden pixel art with large readable shapes, selective contour-plum outline, and only named moonberry-16 colors: contour plums, berry reds, twilight slate, mint and sage greens, cream-gold and cream. Tone is 60% enchanted and 40% wrong. No gore, wounds, exposed organs, realism, gradients, anti-aliasing, blur, or dithering.\n\nShow exactly one complete subject with generous empty clearance on every edge of an opaque flat solid magenta #ff00ff background. No shadow, floor, glow, juice droplets, sparkles, particles, Ability effect, text, watermark, scenery, UI, transparency, other fruit, or other subject.\n"
+}

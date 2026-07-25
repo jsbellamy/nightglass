@@ -991,7 +991,7 @@ check("complete body raw tags are lexicographically sorted",
 check("production body bundles discovered in runtime-key order",
       A.default_build_raw_tags() == (
           "aphelion", "astrolabe-spider", "boss", "boss-2", "boss-3", "brambling",
-          "burger-drake", "cornquacker", "hunter", "knight", "lanternmoth", "pipcap",
+          "burger-drake", "cornquacker", "hunter", "huskbeetle", "knight", "lanternmoth", "pipcap",
           "priest", "scarequack", "the-combine", "the-fryer", "the-tocsin",
           "the-unwound", "the-vigil", "tickmoth", "tollbat", "wizard"),
       str(A.default_build_raw_tags()))
