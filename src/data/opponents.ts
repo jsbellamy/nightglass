@@ -19,6 +19,10 @@ const PIPCAP_1_STATS: BaseStats = {
   spell: 0,
   armor: 4,
   elementalResistance: 4,
+  firePower: 0,
+  frostPower: 0,
+  lightningPower: 0,
+  lightPower: 0,
 };
 
 const PIPCAP_2_STATS: BaseStats = {
@@ -27,6 +31,10 @@ const PIPCAP_2_STATS: BaseStats = {
   spell: 0,
   armor: 7,
   elementalResistance: 7,
+  firePower: 0,
+  frostPower: 0,
+  lightningPower: 0,
+  lightPower: 0,
 };
 
 const PIPCAP_3_STATS: BaseStats = {
@@ -35,6 +43,10 @@ const PIPCAP_3_STATS: BaseStats = {
   spell: 0,
   armor: 10,
   elementalResistance: 10,
+  firePower: 0,
+  frostPower: 0,
+  lightningPower: 0,
+  lightPower: 0,
 };
 
 const BOSS_1_STATS: BaseStats = {
@@ -43,6 +55,10 @@ const BOSS_1_STATS: BaseStats = {
   spell: 6,
   armor: 12,
   elementalResistance: 12,
+  firePower: 0,
+  frostPower: 0,
+  lightningPower: 0,
+  lightPower: 0,
 };
 
 const BOSS_2_STATS: BaseStats = {
@@ -51,6 +67,10 @@ const BOSS_2_STATS: BaseStats = {
   spell: 10,
   armor: 16,
   elementalResistance: 16,
+  firePower: 0,
+  frostPower: 0,
+  lightningPower: 0,
+  lightPower: 0,
 };
 
 const BOSS_3_STATS: BaseStats = {
@@ -59,6 +79,10 @@ const BOSS_3_STATS: BaseStats = {
   spell: 14,
   armor: 20,
   elementalResistance: 20,
+  firePower: 0,
+  frostPower: 0,
+  lightningPower: 0,
+  lightPower: 0,
 };
 
 export const opponentAbilities: AbilityDef[] = [

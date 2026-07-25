@@ -71,6 +71,10 @@ const emptyTarget = {
     spell: 0,
     armor: 0,
     elementalResistance: 0,
+    firePower: 0,
+    frostPower: 0,
+    lightningPower: 0,
+    lightPower: 0,
   },
   health: 100,
   maxHealth: 100,
@@ -80,7 +84,7 @@ const emptyTarget = {
 
 describe("damage mitigation at impact", () => {
   it("uses max(1, floor(raw × 100 / (100 + mitigation))) with mitigation clamped ≥ 0", () => {
-    const actor = { ...emptyTarget.stats, physical: 100, spell: 0 };
+    const actor = { ...emptyTarget.stats, physical: 100, spell: 0, firePower: 0, frostPower: 0, lightningPower: 0, lightPower: 0 };
     const mitigated = (raw: number, mitigation: number) =>
       resolveEffect(
         { kind: "damage", channel: "physical", coefficient: raw / 100 },
@@ -102,6 +106,10 @@ describe("damage mitigation at impact", () => {
       spell: 100,
       armor: 0,
       elementalResistance: 0,
+      firePower: 0,
+      frostPower: 0,
+      lightningPower: 0,
+      lightPower: 0,
     };
     const targetStats: BaseStats = {
       maxHealth: 200,
@@ -109,6 +117,10 @@ describe("damage mitigation at impact", () => {
       spell: 0,
       armor: 200,
       elementalResistance: 5,
+      firePower: 0,
+      frostPower: 0,
+      lightningPower: 0,
+      lightPower: 0,
     };
     const outcome = resolveEffect(
       { kind: "damage", channel: "elemental", coefficient: 1 },
@@ -132,7 +144,46 @@ describe("Power math", () => {
     spell: 16,
     armor: 30,
     elementalResistance: 12,
+    firePower: 0,
+    frostPower: 0,
+    lightningPower: 0,
+    lightPower: 0,
   };
+
+  it("pools Spell and Element Power for elemental damage with worked numbers", () => {
+    const stats = applyStatModifiers(
+      {
+        maxHealth: 100,
+        physical: 0,
+        spell: 100,
+        armor: 0,
+        elementalResistance: 0,
+        firePower: 0,
+        frostPower: 0,
+        lightningPower: 0,
+        lightPower: 0,
+      },
+      [
+        { flat: { firePower: 20 } },
+        { percent: { spellPower: 0.1 } },
+        { percent: { firePower: 0.1 } },
+      ],
+    );
+
+    expect(
+      previewEffectRaw(
+        { kind: "damage", channel: "elemental", element: "fire", coefficient: 1 },
+        stats,
+      ),
+    ).toBe(144);
+    expect(
+      previewEffectRaw(
+        { kind: "damage", channel: "elemental", element: "frost", coefficient: 1 },
+        stats,
+      ),
+    ).toBe(110);
+    expect(previewEffectRaw({ kind: "heal", coefficient: 1 }, stats)).toBe(110);
+  });
 
   it("applies floor((base + flat) × (1 + summed%)) before floor(Power × coefficient)", () => {
     const stats = applyStatModifiers(base, [
@@ -402,7 +453,7 @@ describe("healing", () => {
   it("ignores mitigation and cannot overheal", () => {
     const outcome = resolveEffect(
       { kind: "heal", coefficient: 0.8 },
-      { maxHealth: 100, physical: 0, spell: 14, armor: 0, elementalResistance: 0 },
+      { maxHealth: 100, physical: 0, spell: 14, armor: 0, elementalResistance: 0, firePower: 0, frostPower: 0, lightningPower: 0, lightPower: 0 },
       { ...emptyTarget, health: 95, maxHealth: 100 },
       statusesById,
     );
@@ -414,6 +465,10 @@ describe("healing", () => {
         spell: 14,
         armor: 0,
         elementalResistance: 0,
+        firePower: 0,
+        frostPower: 0,
+        lightningPower: 0,
+        lightPower: 0,
       }),
     ).toBe(11);
   });

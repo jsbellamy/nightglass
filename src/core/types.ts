@@ -16,6 +16,10 @@ export interface BaseStats {
   spell: number;
   armor: number;
   elementalResistance: number;
+  firePower: number;
+  frostPower: number;
+  lightningPower: number;
+  lightPower: number;
 }
 
 export type AbilityTargeting =
@@ -28,7 +32,18 @@ export type AbilityTargeting =
 
 export interface StatModifiers {
   flat?: Partial<BaseStats>;
-  percent?: Partial<Record<"maxHealth" | "physicalPower" | "spellPower", number>>;
+  percent?: Partial<
+    Record<
+      | "maxHealth"
+      | "physicalPower"
+      | "spellPower"
+      | "firePower"
+      | "frostPower"
+      | "lightningPower"
+      | "lightPower",
+      number
+    >
+  >;
 }
 
 export interface StatusEffectDef {
@@ -120,6 +135,14 @@ export type AffixId =
   | "percent-physical-power"
   | "flat-spell"
   | "percent-spell-power"
+  | "flat-fire"
+  | "percent-fire-power"
+  | "flat-frost"
+  | "percent-frost-power"
+  | "flat-lightning"
+  | "percent-lightning-power"
+  | "flat-light"
+  | "percent-light-power"
   | "flat-max-health"
   | "percent-max-health"
   | "flat-armor"

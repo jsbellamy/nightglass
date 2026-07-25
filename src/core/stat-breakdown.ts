@@ -10,7 +10,11 @@ export type CharacterStatKey =
   | "physical"
   | "spell"
   | "armor"
-  | "elementalResistance";
+  | "elementalResistance"
+  | "firePower"
+  | "frostPower"
+  | "lightningPower"
+  | "lightPower";
 
 export interface ModifierContribution {
   flat: number;
@@ -19,7 +23,16 @@ export interface ModifierContribution {
 
 export interface CharacterStatBreakdownLine {
   key: CharacterStatKey;
-  label: "Max Health" | "Physical Power" | "Spell Power" | "Armor" | "Elemental Resistance";
+  label:
+    | "Max Health"
+    | "Physical Power"
+    | "Spell Power"
+    | "Armor"
+    | "Elemental Resistance"
+    | "Fire Power"
+    | "Frost Power"
+    | "Lightning Power"
+    | "Light Power";
   base: number;
   equipment: ModifierContribution;
   talents: ModifierContribution;
@@ -73,6 +86,38 @@ const STAT_LINE_DEFS: StatLineDef[] = [
     baseKey: "elementalResistance",
     flatKey: "elementalResistance",
     totalKey: "elementalResistance",
+  },
+  {
+    key: "firePower",
+    label: "Fire Power",
+    baseKey: "firePower",
+    flatKey: "firePower",
+    percentKey: "firePower",
+    totalKey: "firePower",
+  },
+  {
+    key: "frostPower",
+    label: "Frost Power",
+    baseKey: "frostPower",
+    flatKey: "frostPower",
+    percentKey: "frostPower",
+    totalKey: "frostPower",
+  },
+  {
+    key: "lightningPower",
+    label: "Lightning Power",
+    baseKey: "lightningPower",
+    flatKey: "lightningPower",
+    percentKey: "lightningPower",
+    totalKey: "lightningPower",
+  },
+  {
+    key: "lightPower",
+    label: "Light Power",
+    baseKey: "lightPower",
+    flatKey: "lightPower",
+    percentKey: "lightPower",
+    totalKey: "lightPower",
   },
 ];
 
@@ -145,7 +190,11 @@ export function statsDifferFromCommittedCombat(
     effective.physical !== committed.physical ||
     effective.spell !== committed.spell ||
     effective.armor !== committed.armor ||
-    effective.elementalResistance !== committed.elementalResistance
+    effective.elementalResistance !== committed.elementalResistance ||
+    effective.firePower !== committed.firePower ||
+    effective.frostPower !== committed.frostPower ||
+    effective.lightningPower !== committed.lightningPower ||
+    effective.lightPower !== committed.lightPower
   );
 }
 

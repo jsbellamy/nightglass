@@ -6,18 +6,36 @@ import type {
   ClassKitDef,
   Content,
   DamageChannel,
+  Element,
   OpponentDef,
   StatusEffectDef,
   StatModifiers,
 } from "./types";
 import type { ActiveStatus, CombatantState } from "./snapshot";
 
+interface PowerComponents {
+  spellFlat: number;
+  spellPercent: number;
+  elementFlats: Record<Element, number>;
+  elementPercents: Record<Element, number>;
+}
+
+const powerComponentsByStats = new WeakMap<BaseStats, PowerComponents>();
+
 export function applyStatModifiers(
   base: BaseStats,
   modifiers: StatModifiers[],
 ): BaseStats {
   const flat: Partial<BaseStats> = {};
-  const percent = { maxHealth: 0, physicalPower: 0, spellPower: 0 };
+  const percent = {
+    maxHealth: 0,
+    physicalPower: 0,
+    spellPower: 0,
+    firePower: 0,
+    frostPower: 0,
+    lightningPower: 0,
+    lightPower: 0,
+  };
 
   for (const modifier of modifiers) {
     if (modifier.flat) {
@@ -33,22 +51,53 @@ export function applyStatModifiers(
       percent.maxHealth += modifier.percent.maxHealth ?? 0;
       percent.physicalPower += modifier.percent.physicalPower ?? 0;
       percent.spellPower += modifier.percent.spellPower ?? 0;
+      percent.firePower += modifier.percent.firePower ?? 0;
+      percent.frostPower += modifier.percent.frostPower ?? 0;
+      percent.lightningPower += modifier.percent.lightningPower ?? 0;
+      percent.lightPower += modifier.percent.lightPower ?? 0;
     }
   }
 
   const physical = base.physical + (flat.physical ?? 0);
-  const spell = base.spell + (flat.spell ?? 0);
+  const spellFlat = base.spell + (flat.spell ?? 0);
   const maxHealth = base.maxHealth + (flat.maxHealth ?? 0);
   const armor = base.armor + (flat.armor ?? 0);
   const elementalResistance = base.elementalResistance + (flat.elementalResistance ?? 0);
+  const fireFlat = base.firePower + (flat.firePower ?? 0);
+  const frostFlat = base.frostPower + (flat.frostPower ?? 0);
+  const lightningFlat = base.lightningPower + (flat.lightningPower ?? 0);
+  const lightFlat = base.lightPower + (flat.lightPower ?? 0);
 
-  return {
+  const result: BaseStats = {
     maxHealth: Math.floor(maxHealth * (1 + percent.maxHealth)),
     physical: Math.floor(physical * (1 + percent.physicalPower)),
-    spell: Math.floor(spell * (1 + percent.spellPower)),
+    spell: Math.floor(spellFlat * (1 + percent.spellPower)),
     armor: Math.max(0, armor),
     elementalResistance: Math.max(0, elementalResistance),
+    firePower: Math.floor(fireFlat * (1 + percent.firePower)),
+    frostPower: Math.floor(frostFlat * (1 + percent.frostPower)),
+    lightningPower: Math.floor(lightningFlat * (1 + percent.lightningPower)),
+    lightPower: Math.floor(lightFlat * (1 + percent.lightPower)),
   };
+
+  powerComponentsByStats.set(result, {
+    spellFlat,
+    spellPercent: percent.spellPower,
+    elementFlats: {
+      fire: fireFlat,
+      frost: frostFlat,
+      lightning: lightningFlat,
+      light: lightFlat,
+    },
+    elementPercents: {
+      fire: percent.firePower,
+      frost: percent.frostPower,
+      lightning: percent.lightningPower,
+      light: percent.lightPower,
+    },
+  });
+
+  return result;
 }
 
 export function effectiveStats(
@@ -101,7 +150,7 @@ export function resolveEffect(
   switch (effect.kind) {
     case "damage": {
       const channel = effect.channel ?? "physical";
-      const power = powerForStats(actorStats, channel);
+      const power = powerForStats(actorStats, channel, effect.element);
       const raw = rawDamageFromEffect(power, effect);
       const amount = mitigateDamage(raw, mitigationForChannel(target.stats, channel));
       return {
@@ -174,7 +223,7 @@ export function resolveEffect(
 export function previewEffectRaw(effect: AbilityEffect, actorStats: BaseStats): number | null {
   if (effect.kind === "damage") {
     const channel = effect.channel ?? "physical";
-    return rawDamageFromEffect(powerForStats(actorStats, channel), effect);
+    return rawDamageFromEffect(powerForStats(actorStats, channel, effect.element), effect);
   }
   if (effect.kind === "heal" || effect.kind === "revive") {
     return healAmount(powerForStats(actorStats, "elemental"), effect);
@@ -182,8 +231,25 @@ export function previewEffectRaw(effect: AbilityEffect, actorStats: BaseStats): 
   return null;
 }
 
-function powerForStats(stats: BaseStats, channel: DamageChannel): number {
-  return channel === "physical" ? stats.physical : stats.spell;
+function powerForStats(
+  stats: BaseStats,
+  channel: DamageChannel,
+  element?: Element,
+): number {
+  if (channel === "physical") {
+    return stats.physical;
+  }
+
+  const components = powerComponentsByStats.get(stats);
+  if (!components || !element) {
+    return stats.spell;
+  }
+
+  const elementFlat = components.elementFlats[element];
+  const elementPercent = components.elementPercents[element];
+  return Math.floor(
+    (components.spellFlat + elementFlat) * (1 + components.spellPercent + elementPercent),
+  );
 }
 
 function mitigateDamage(raw: number, mitigation: number): number {
