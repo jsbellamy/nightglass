@@ -4,6 +4,7 @@ import type { DropInstance } from "../core/snapshot";
 import {
   filterArmoryDrops,
   formatAffix,
+  formatDropStatLines,
   formatRarityLabel,
   equipmentBaseInitials,
   rareOrEpicDropNames,
@@ -199,6 +200,20 @@ const NEW_AFFIX_IDS = [
   "flat-crit-chance",
   "flat-crit-damage",
 ] as const;
+
+describe("formatDropStatLines", () => {
+  it("lists guaranteed stat then rolled Affix lines", () => {
+    const lines = formatDropStatLines(
+      drop({
+        dropId: 1,
+        baseId: "fixture-blade",
+        affixes: [{ id: "flat-crit-chance", value: 0.07 }],
+      }),
+      fixtureContent,
+    );
+    expect(lines).toEqual(["+2 Physical Power", "+7% Critical Chance"]);
+  });
+});
 
 describe("formatAffix", () => {
   it.each(NEW_AFFIX_IDS)("formats %s as readable text", (id) => {

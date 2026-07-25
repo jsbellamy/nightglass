@@ -20,6 +20,7 @@ export const EVIDENCE_SLUG_CATALOG = [
   "dock-navigation-ownership",
   "armory-collection-unequipped",
   "armory-comparison-popover",
+  "armory-item-detail-popover",
   "armory-drag-equip-unequip",
   "armory-density-no-outer-scroll",
   "armory-salvage-pane",

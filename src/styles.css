@@ -2204,6 +2204,11 @@ html.dock-window body {
   padding-left: 16px;
 }
 
+.armory-item-stat-list {
+  margin: 0;
+  padding-left: 16px;
+}
+
 .armory-compare-empty {
   margin: 0;
   color: var(--dock-text-muted, #d8d0bf);

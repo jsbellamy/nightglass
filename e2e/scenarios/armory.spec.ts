@@ -91,6 +91,100 @@ test.describe("Armory evidence scenarios", () => {
 
   defineEvidenceScenario(
     {
+      id: "armory-item-detail",
+      slugs: ["armory-item-detail-popover"],
+      spec: {
+        id: "rendered-evidence:armory-item-detail",
+        path: "e2e/scenarios/armory.spec.ts",
+      },
+      fixture: "isolated-dock",
+      reviewScenes: [],
+      summary:
+        "worn-strip and salvage action-pane item-detail popover at dock size (item stats, no compare delta)",
+    },
+    async ({ browser }) => {
+    const session = await openEvidenceSession(browser, ARMORY_SESSION.preset, {
+      dockSnapshot: armorySalvageSnapshot(),
+      seedEngineLegality: true,
+    });
+    const dock = session.dock;
+    if (!dock) {
+      throw new Error("isolated-dock session must include a Dock page");
+    }
+
+    await dock.click('[data-dock-tab="armory"]');
+    await dock.waitForSelector('[data-armory-worn-strip="true"]');
+
+    const weaponSlot = dock.locator('[data-worn-slot="weapon"]');
+    await weaponSlot.hover();
+    await expect(dock.locator('[data-armory-compare-popover="true"]:not([hidden])')).toBeVisible();
+
+    const wornDetail = await dock.evaluate(() => {
+      const host = document.querySelector<HTMLElement>(".armory-body--compare-host");
+      const pop = document.querySelector<HTMLElement>('[data-armory-compare-popover="true"]');
+      const worn = document.querySelector<HTMLElement>('[data-worn-slot="weapon"]');
+      if (!host || !pop || !worn) {
+        return null;
+      }
+      const hostBox = host.getBoundingClientRect();
+      const popBox = pop.getBoundingClientRect();
+      return {
+        mode: pop.dataset["popoverMode"],
+        pointerEvents: getComputedStyle(pop).pointerEvents,
+        fitsHost:
+          popBox.left >= hostBox.left - 1 &&
+          popBox.right <= hostBox.right + 1 &&
+          popBox.top >= hostBox.top - 1 &&
+          popBox.bottom <= hostBox.bottom + 1,
+        hasItemStats: pop.querySelector('[data-item-stats="true"]') !== null,
+        hasCompareTable: pop.querySelector('[data-stat-deltas="true"]') !== null,
+        describedBy: worn.getAttribute("aria-describedby"),
+      };
+    });
+    expect(wornDetail).not.toBeNull();
+    expect(wornDetail!.mode).toBe("detail");
+    expect(wornDetail!.pointerEvents).toBe("none");
+    expect(wornDetail!.fitsHost).toBe(true);
+    expect(wornDetail!.hasItemStats).toBe(true);
+    expect(wornDetail!.hasCompareTable).toBe(false);
+    expect(wornDetail!.describedBy).toMatch(/armory-item-desc-/);
+
+    await dock.click('[data-armory-salvage-open="true"]');
+    await dock.waitForSelector('[data-salvage-pane="true"]');
+    await dock.click('[data-salvage-fill="true"]');
+    await dock.waitForSelector('[data-salvage-slot][data-compare-anchor-drop-id]');
+
+    const salvageSlot = dock.locator('[data-salvage-slot][data-compare-anchor-drop-id]').first();
+    await salvageSlot.hover();
+    await expect(dock.locator('[data-armory-compare-popover="true"]:not([hidden])')).toBeVisible();
+
+    const salvageDetail = await dock.evaluate(() => {
+      const pop = document.querySelector<HTMLElement>('[data-armory-compare-popover="true"]');
+      const slot = document.querySelector<HTMLElement>(
+        '[data-salvage-slot][data-compare-anchor-drop-id]',
+      );
+      if (!pop || !slot) {
+        return null;
+      }
+      return {
+        mode: pop.dataset["popoverMode"],
+        hasItemStats: pop.querySelector('[data-item-stats="true"]') !== null,
+        hasCompareTable: pop.querySelector('[data-stat-deltas="true"]') !== null,
+        describedBy: slot.getAttribute("aria-describedby"),
+      };
+    });
+    expect(salvageDetail).not.toBeNull();
+    expect(salvageDetail!.mode).toBe("detail");
+    expect(salvageDetail!.hasItemStats).toBe(true);
+    expect(salvageDetail!.hasCompareTable).toBe(false);
+    expect(salvageDetail!.describedBy).toMatch(/armory-item-desc-/);
+
+    await closeEvidenceSession(session);
+  },
+  );
+
+  defineEvidenceScenario(
+    {
       id: "armory-drag-density",
       slugs: ["armory-drag-equip-unequip", "armory-density-no-outer-scroll"],
       spec: {

@@ -19,6 +19,7 @@ import {
 } from "./engine-legality";
 import {
   filterArmoryDrops,
+  formatDropStatLines,
   type ArmoryFilters,
 } from "./equipment-format";
 import { previewEquip, rosterClassIds } from "./snapshot-view";
@@ -118,6 +119,27 @@ function pendingHunterInSnapshot(armory: DropInstance[]): Snapshot {
 }
 
 describe("Armory surface", () => {
+  function commonSalvageDrops(count: number, startId = 100): DropInstance[] {
+    const bases = ["fixture-blade", "fixture-armor", "fixture-charm"] as const;
+    return Array.from({ length: count }, (_, index) =>
+      drop({
+        dropId: startId + index,
+        baseId: bases[index % bases.length]!,
+        rarity: "common",
+        itemLevel: ((index % 3) + 1) as 1 | 2 | 3,
+        awardedAtMs: 20_000 - index,
+      }),
+    );
+  }
+
+  function openSalvagePane(root: HTMLElement): void {
+    root.querySelector<HTMLButtonElement>('[data-armory-salvage-open="true"]')?.click();
+  }
+
+  function pressSalvageFill(root: HTMLElement): void {
+    root.querySelector<HTMLButtonElement>('[data-salvage-fill="true"]')?.click();
+  }
+
   it("does not render a compact horizontal Character selector", () => {
     const root = document.createElement("div");
     const selected = { current: "knight" as ClassId };
@@ -904,6 +926,204 @@ describe("Armory surface", () => {
     root.remove();
   });
 
+  it("keeps compare popover coordinates stable across four Snapshot pumps", async () => {
+    const root = document.createElement("div");
+    document.body.append(root);
+    const selected = { current: "knight" as ClassId };
+    const snapshot = armorySnapshot([
+      drop({ dropId: 1, baseId: "fixture-blade-ii", itemLevel: 3, rarity: "rare", seen: false }),
+    ]);
+    const surface = mountWithSelection(root, selected);
+    renderArmory(surface, snapshot);
+
+    const tile = root.querySelector<HTMLElement>('.equipment-card[data-drop-id="1"]')!;
+    tile.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+
+    const popover = root.querySelector<HTMLElement>('[data-armory-compare-popover="true"]')!;
+    const left = popover.style.left;
+    const top = popover.style.top;
+
+    for (let index = 0; index < 4; index += 1) {
+      const pumped = structuredClone(snapshot);
+      pumped.progression.armory = pumped.progression.armory.map((entry) =>
+        entry.dropId === 1 ? { ...entry, seen: true } : entry,
+      );
+      renderArmory(surface, pumped);
+      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    }
+
+    expect(popover.hidden).toBe(false);
+    expect(popover.style.left).toBe(left);
+    expect(popover.style.top).toBe(top);
+
+    surface.destroy();
+    root.remove();
+  });
+
+  describe("item-detail popover", () => {
+    it("evidence: armory-item-detail-popover opens on worn-slot hover with item stats only", () => {
+      const root = document.createElement("div");
+      document.body.append(root);
+      const selected = { current: "knight" as ClassId };
+      const equipped = drop({
+        dropId: 1,
+        baseId: "fixture-blade-ii",
+        itemLevel: 3,
+        rarity: "rare",
+        affixes: [{ id: "flat-crit-chance", value: 0.07 }],
+        assignedTo: { classId: "knight", slot: "weapon" },
+      });
+      const snapshot = armorySnapshot([equipped]);
+      const surface = mountWithSelection(root, selected);
+      renderArmory(surface, snapshot);
+
+      const worn = root.querySelector<HTMLElement>('[data-worn-slot="weapon"]')!;
+      worn.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
+
+      const popover = root.querySelector<HTMLElement>('[data-armory-compare-popover="true"]');
+      expect(popover?.hidden).toBe(false);
+      expect(popover?.dataset["popoverMode"]).toBe("detail");
+      expect(popover?.querySelector('[data-stat-deltas="true"]')).toBeNull();
+      expect(popover?.querySelector('[data-item-stats="true"]')).not.toBeNull();
+      expect(
+        [...(popover?.querySelectorAll("[data-item-stats='true'] li") ?? [])].map(
+          (item) => item.textContent,
+        ),
+      ).toEqual(formatDropStatLines(equipped, fixtureContent));
+      expect(worn.getAttribute("aria-describedby")).toMatch(/armory-item-desc-1/);
+
+      surface.destroy();
+      root.remove();
+    });
+
+    it("keeps the item-detail popover open across a Snapshot pump on a worn slot", () => {
+      const root = document.createElement("div");
+      document.body.append(root);
+      const selected = { current: "knight" as ClassId };
+      const snapshot = armorySnapshot([
+        drop({
+          dropId: 1,
+          baseId: "fixture-blade-ii",
+          itemLevel: 3,
+          rarity: "rare",
+          assignedTo: { classId: "knight", slot: "weapon" },
+        }),
+      ]);
+      const surface = mountWithSelection(root, selected);
+      renderArmory(surface, snapshot);
+
+      const worn = root.querySelector<HTMLElement>('[data-worn-slot="weapon"]')!;
+      worn.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
+      expect(root.querySelector('[data-item-stats="true"]')).not.toBeNull();
+
+      const pumped = structuredClone(snapshot);
+      pumped.progression.armory = pumped.progression.armory.map((entry) =>
+        entry.dropId === 1 ? { ...entry, seen: true } : entry,
+      );
+      renderArmory(surface, pumped);
+
+      expect(root.querySelector<HTMLElement>('[data-armory-compare-popover="true"]')?.hidden).toBe(
+        false,
+      );
+      expect(root.querySelector('[data-item-stats="true"]')).not.toBeNull();
+
+      surface.destroy();
+      root.remove();
+    });
+
+    it("does not re-anchor an open salvage-slot item-detail popover to the collection grid on pump", () => {
+      const root = document.createElement("div");
+      document.body.append(root);
+      const selected = { current: "knight" as ClassId };
+      const armory = commonSalvageDrops(12);
+      const snapshot = armorySnapshot(armory);
+      const surface = mountWithSelection(root, selected);
+      renderArmory(surface, snapshot);
+      openSalvagePane(root);
+      renderArmory(surface, snapshot);
+      pressSalvageFill(root);
+      renderArmory(surface, snapshot);
+
+      const batch = selectSalvageBatchForRarity(armory, "common");
+      expect(batch).not.toBeNull();
+      const stagedDropId = batch!.dropIds[0]!;
+      const slot = root.querySelector<HTMLElement>(
+        `[data-salvage-slot][data-compare-anchor-drop-id="${stagedDropId}"]`,
+      )!;
+      slot.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
+
+      renderArmory(surface, structuredClone(snapshot));
+
+      const popover = root.querySelector<HTMLElement>('[data-armory-compare-popover="true"]');
+      expect(popover?.dataset["compareAnchorKind"]).toBe("salvage-slot");
+      expect(slot.getAttribute("aria-describedby")).toMatch(/armory-item-desc-/);
+      expect(
+        root
+          .querySelector<HTMLElement>(`.equipment-card[data-drop-id="${stagedDropId}"]`)
+          ?.getAttribute("aria-describedby"),
+      ).toBeNull();
+
+      surface.destroy();
+      root.remove();
+    });
+
+    it("opens item detail on a filled salvage slot after Fill", () => {
+      const root = document.createElement("div");
+      document.body.append(root);
+      const selected = { current: "knight" as ClassId };
+      const armory = commonSalvageDrops(12);
+      const snapshot = armorySnapshot(armory);
+      const surface = mountWithSelection(root, selected);
+      renderArmory(surface, snapshot);
+      openSalvagePane(root);
+      renderArmory(surface, snapshot);
+      pressSalvageFill(root);
+      renderArmory(surface, snapshot);
+
+      const slot = root.querySelector<HTMLElement>('[data-salvage-slot][data-compare-anchor-drop-id]')!;
+      slot.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
+
+      const popover = root.querySelector<HTMLElement>('[data-armory-compare-popover="true"]');
+      expect(popover?.dataset["popoverMode"]).toBe("detail");
+      expect(popover?.querySelector('[data-stat-deltas="true"]')).toBeNull();
+      expect(popover?.querySelector('[data-item-stats="true"]')).not.toBeNull();
+
+      surface.destroy();
+      root.remove();
+    });
+
+    it("opens item detail on a discard-tier staged row after Fill", () => {
+      const root = document.createElement("div");
+      document.body.append(root);
+      const selected = { current: "knight" as ClassId };
+      const snapshot = armorySnapshot([
+        drop({ dropId: 201, baseId: "fixture-blade", itemLevel: 3, rarity: "common" }),
+        drop({ dropId: 202, baseId: "fixture-armor", itemLevel: 3, rarity: "common" }),
+      ]);
+      const surface = mountWithSelection(root, selected);
+      renderArmory(surface, snapshot);
+
+      root.querySelector<HTMLButtonElement>('[data-armory-discard-tier-open="true"]')?.click();
+      renderArmory(surface, snapshot);
+      root.querySelector<HTMLButtonElement>('[data-discard-tier-pick="3"]')?.click();
+      renderArmory(surface, snapshot);
+      root.querySelector<HTMLButtonElement>('[data-discard-tier-fill="true"]')?.click();
+      renderArmory(surface, snapshot);
+
+      const row = root.querySelector<HTMLElement>('[data-discard-tier-row][data-compare-anchor-drop-id]')!;
+      row.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
+
+      const popover = root.querySelector<HTMLElement>('[data-armory-compare-popover="true"]');
+      expect(popover?.dataset["popoverMode"]).toBe("detail");
+      expect(popover?.querySelector('[data-item-stats="true"]')).not.toBeNull();
+      expect(popover?.querySelector('[data-stat-deltas="true"]')).toBeNull();
+
+      surface.destroy();
+      root.remove();
+    });
+  });
+
   it("renders comparison popover Equipment rows matching previewEquip for a Character pending into the Party", () => {
     const root = document.createElement("div");
     document.body.append(root);
@@ -1013,19 +1233,6 @@ describe("Armory surface", () => {
     surface.destroy();
     root.remove();
   });
-
-  function commonSalvageDrops(count: number, startId = 100): DropInstance[] {
-    const bases = ["fixture-blade", "fixture-armor", "fixture-charm"] as const;
-    return Array.from({ length: count }, (_, index) =>
-      drop({
-        dropId: startId + index,
-        baseId: bases[index % bases.length]!,
-        rarity: "common",
-        itemLevel: ((index % 3) + 1) as 1 | 2 | 3,
-        awardedAtMs: 20_000 - index,
-      }),
-    );
-  }
 
   describe("bulk action pane shell", () => {
     it("renders peer Salvage and Discard toolbar buttons without the legacy tray or sweep controls", () => {
@@ -1150,14 +1357,6 @@ describe("Armory surface", () => {
       surface.destroy();
     });
   });
-
-  function openSalvagePane(root: HTMLElement): void {
-    root.querySelector<HTMLButtonElement>('[data-armory-salvage-open="true"]')?.click();
-  }
-
-  function pressSalvageFill(root: HTMLElement): void {
-    root.querySelector<HTMLButtonElement>('[data-salvage-fill="true"]')?.click();
-  }
 
   describe("salvage pane", () => {
     it("opens with rarity chips and an enabled Fill control for twelve eligible Commons", () => {

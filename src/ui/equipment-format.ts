@@ -91,6 +91,12 @@ export function formatGuaranteedStat(base: EquipmentBaseDef): string {
   return formatStatModifierPerRank(base.guaranteed);
 }
 
+/** Guaranteed stat plus rolled Affix lines for item-detail popovers (no character delta). */
+export function formatDropStatLines(drop: DropInstance, content: Content): string[] {
+  const base = equipmentBaseForDrop(drop, content);
+  return [formatGuaranteedStat(base), ...drop.affixes.map((affix) => formatAffix(affix))];
+}
+
 export function formatAssignment(
   assignedTo: DropInstance["assignedTo"],
 ): string | null {

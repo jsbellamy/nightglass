@@ -17,6 +17,7 @@ import {
   sortArmoryDrops,
   discardTierDropsAtItemLevel,
   discardTierItemLevels,
+  formatDropStatLines,
 } from "./equipment-format";
 import { bindPressable } from "./keyboard";
 import { EMPTY_ENGINE_LEGALITY, type EngineLegalityView } from "./engine-legality";
@@ -68,6 +69,8 @@ const SALVAGE_INPUT_RARITIES = ["common", "uncommon", "rare"] as const satisfies
 type StateFilterId = "all" | "unseen" | "locked";
 
 type ArmoryActionMode = "salvage" | "discard-tier";
+
+type PopoverAnchorKind = "grid" | "worn" | "salvage-slot" | "discard-row" | "salvage-result";
 
 
 function equippedDropId(
@@ -417,8 +420,12 @@ export function mountArmorySurface(
         const base = equipmentBaseForDrop(entry, content);
         const preciousRow = entry.rarity === "rare" || entry.rarity === "epic";
         const row = el("div", {
-          class: `armory-discard-tier-row${preciousRow ? ` priority rarity-${entry.rarity}` : ""}`,
-          data: { discardTierRow: "true" },
+          class: `armory-discard-tier-row focus-ring${preciousRow ? ` priority rarity-${entry.rarity}` : ""}`,
+          data: {
+            discardTierRow: "true",
+            compareAnchorDropId: String(entry.dropId),
+          },
+          props: { tabIndex: 0 },
         });
         row.append(
           createEquipmentIconElement(base.iconKey, "content", { ariaLabel: base.name }),
@@ -438,6 +445,7 @@ export function mountArmorySurface(
             text: RARITY_LABELS[entry.rarity],
           }),
         );
+        bindEquipmentPopover(entry, row, bodyEl, "detail", "discard-row");
         list.append(row);
       }
       pane.append(list);
@@ -619,8 +627,12 @@ export function mountArmorySurface(
       if (stagedDrop) {
         const base = equipmentBaseForDrop(stagedDrop, content);
         const slot = el("div", {
-          class: `armory-salvage-slot filled rarity-${stagedDrop.rarity}`,
-          data: { salvageSlot: "true", dropId: String(stagedDrop.dropId) },
+          class: `armory-salvage-slot filled rarity-${stagedDrop.rarity} focus-ring`,
+          data: {
+            salvageSlot: "true",
+            compareAnchorDropId: String(stagedDrop.dropId),
+          },
+          props: { tabIndex: 0 },
           aria: { label: base.name },
         });
         slot.append(
@@ -629,6 +641,7 @@ export function mountArmorySurface(
         slot.append(
           el("span", { class: "armory-salvage-slot-il", text: `IL ${stagedDrop.itemLevel}` }),
         );
+        bindEquipmentPopover(stagedDrop, slot, bodyEl, "detail", "salvage-slot");
         slotGrid.append(slot);
       } else {
         slotGrid.append(
@@ -665,13 +678,18 @@ export function mountArmorySurface(
       if (resultDrop) {
         const base = equipmentBaseForDrop(resultDrop, content);
         const card = el("div", {
-          class: `armory-salvage-result rarity-${resultDrop.rarity}`,
-          data: { salvageResult: String(resultDrop.dropId) },
+          class: `armory-salvage-result rarity-${resultDrop.rarity} focus-ring`,
+          data: {
+            salvageResult: String(resultDrop.dropId),
+            compareAnchorDropId: String(resultDrop.dropId),
+          },
+          props: { tabIndex: 0 },
         });
         card.append(
           createEquipmentIconElement(base.iconKey, "content", { ariaLabel: base.name }),
         );
         card.append(el("span", { class: "armory-salvage-result-name", text: base.name }));
+        bindEquipmentPopover(resultDrop, card, bodyEl, "detail", "salvage-result");
         pane.append(card);
       }
     }
@@ -824,7 +842,20 @@ export function mountArmorySurface(
   function hideComparePopover(): void {
     comparePopover.hidden = true;
     comparePopover.replaceChildren();
+    comparePopover.style.visibility = "";
     delete comparePopover.dataset["compareDropId"];
+    delete comparePopover.dataset["popoverMode"];
+    delete comparePopover.dataset["compareAnchorKind"];
+    delete comparePopover.dataset["compareAnchorSlot"];
+  }
+
+  function rememberPopoverAnchor(kind: PopoverAnchorKind, wornSlot?: EquipmentSlotId): void {
+    comparePopover.dataset["compareAnchorKind"] = kind;
+    if (wornSlot) {
+      comparePopover.dataset["compareAnchorSlot"] = wornSlot;
+    } else {
+      delete comparePopover.dataset["compareAnchorSlot"];
+    }
   }
 
   function openCompareDropId(): number | null {
@@ -834,6 +865,35 @@ export function mountArmorySurface(
     }
     const dropId = Number(raw);
     return Number.isFinite(dropId) ? dropId : null;
+  }
+
+  function findPopoverAnchor(dropId: number): HTMLElement | null {
+    const kind = (comparePopover.dataset["compareAnchorKind"] ?? "grid") as PopoverAnchorKind;
+    switch (kind) {
+      case "worn": {
+        const slot = comparePopover.dataset["compareAnchorSlot"];
+        if (!slot) {
+          return null;
+        }
+        return root.querySelector<HTMLElement>(
+          `[data-worn-slot="${slot}"][data-compare-anchor-drop-id="${dropId}"]`,
+        );
+      }
+      case "salvage-slot":
+        return root.querySelector<HTMLElement>(
+          `[data-salvage-slot][data-compare-anchor-drop-id="${dropId}"]`,
+        );
+      case "discard-row":
+        return root.querySelector<HTMLElement>(
+          `[data-discard-tier-row][data-compare-anchor-drop-id="${dropId}"]`,
+        );
+      case "salvage-result":
+        return root.querySelector<HTMLElement>(`[data-salvage-result="${dropId}"]`);
+      default:
+        return root.querySelector<HTMLElement>(
+          `.armory-grid .equipment-card[data-drop-id="${dropId}"]`,
+        );
+    }
   }
 
   function clearDragHighlights(host: HTMLElement): void {
@@ -1089,6 +1149,7 @@ export function mountArmorySurface(
     const descId = `armory-compare-desc-${drop.dropId}`;
     comparePopover.replaceChildren();
     comparePopover.id = descId;
+    comparePopover.dataset["popoverMode"] = "compare";
 
     const meta = el("div", { class: "armory-compare-meta" }, [
       el("p", { class: "armory-compare-name", text: base.name }),
@@ -1165,11 +1226,41 @@ export function mountArmorySurface(
     return descId;
   }
 
+  function fillItemDetailPopover(drop: DropInstance): string {
+    const base = equipmentBaseForDrop(drop, content);
+    const descId = `armory-item-desc-${drop.dropId}`;
+    comparePopover.replaceChildren();
+    comparePopover.id = descId;
+    comparePopover.dataset["popoverMode"] = "detail";
+
+    const meta = el("div", { class: "armory-compare-meta" }, [
+      el("p", { class: "armory-compare-name", text: base.name }),
+      el("p", {
+        class: "armory-compare-meta-line",
+        text: `${formatRarityLabel(drop.rarity)} · Tier ${base.tier} · Item Level ${drop.itemLevel}${drop.locked ? " · Locked" : ""}`,
+      }),
+    ]);
+    comparePopover.append(meta);
+
+    const statList = el("ul", {
+      class: "armory-item-stat-list",
+      data: { itemStats: "true" },
+    });
+    for (const line of formatDropStatLines(drop, content)) {
+      statList.append(el("li", { text: line }));
+    }
+    comparePopover.append(statList);
+
+    return descId;
+  }
+
   function showComparePopover(
     snapshot: ReadonlySnapshot,
     drop: DropInstance,
     anchor: HTMLElement,
     host: HTMLElement,
+    anchorKind: PopoverAnchorKind,
+    wornSlot?: EquipmentSlotId,
   ): void {
     const classId = options.getSelectedClassId();
     if (!classId) {
@@ -1178,9 +1269,102 @@ export function mountArmorySurface(
     }
     markDropSeen(drop.dropId);
     comparePopover.dataset["compareDropId"] = String(drop.dropId);
+    rememberPopoverAnchor(anchorKind, wornSlot);
     const descId = fillComparePopover(snapshot, drop, classId);
     anchor.setAttribute("aria-describedby", descId);
     positionComparePopover(anchor, host);
+  }
+
+  function showItemDetailPopover(
+    _snapshot: ReadonlySnapshot,
+    drop: DropInstance,
+    anchor: HTMLElement,
+    host: HTMLElement,
+    anchorKind: PopoverAnchorKind,
+    wornSlot?: EquipmentSlotId,
+  ): void {
+    markDropSeen(drop.dropId);
+    comparePopover.dataset["compareDropId"] = String(drop.dropId);
+    rememberPopoverAnchor(anchorKind, wornSlot);
+    const descId = fillItemDetailPopover(drop);
+    anchor.setAttribute("aria-describedby", descId);
+    positionComparePopover(anchor, host);
+  }
+
+  function refreshOpenPopover(snapshot: ReadonlySnapshot, host: HTMLElement): void {
+    const dropId = openCompareDropId();
+    if (dropId === null) {
+      return;
+    }
+    const drop = dropById(snapshot.progression.armory, dropId);
+    const anchor = findPopoverAnchor(dropId);
+    if (!drop || !anchor) {
+      hideComparePopover();
+      return;
+    }
+    const mode = comparePopover.dataset["popoverMode"] ?? "compare";
+    comparePopover.style.visibility = "hidden";
+    const descId =
+      mode === "detail"
+        ? fillItemDetailPopover(drop)
+        : (() => {
+            const classId = options.getSelectedClassId();
+            if (!classId) {
+              hideComparePopover();
+              return null;
+            }
+            return fillComparePopover(snapshot, drop, classId);
+          })();
+    if (!descId) {
+      return;
+    }
+    anchor.setAttribute("aria-describedby", descId);
+    const place = () => {
+      const currentAnchor = findPopoverAnchor(dropId);
+      if (!currentAnchor || openCompareDropId() !== dropId) {
+        return;
+      }
+      positionComparePopover(currentAnchor, host);
+    };
+    place();
+    requestAnimationFrame(place);
+  }
+
+  function bindEquipmentPopover(
+    drop: DropInstance,
+    anchor: HTMLElement,
+    host: HTMLElement,
+    mode: "compare" | "detail",
+    anchorKind: PopoverAnchorKind,
+    wornSlot?: EquipmentSlotId,
+  ): void {
+    anchor.dataset["compareAnchorDropId"] = String(drop.dropId);
+    const open = () => {
+      const snapshot = lastSnapshot;
+      const current = snapshot
+        ? dropById(snapshot.progression.armory, drop.dropId)
+        : undefined;
+      if (snapshot && current) {
+        if (mode === "compare") {
+          showComparePopover(snapshot, current, anchor, host, anchorKind, wornSlot);
+        } else {
+          showItemDetailPopover(snapshot, current, anchor, host, anchorKind, wornSlot);
+        }
+      }
+    };
+    const maybeClose = () => {
+      if (anchor.matches(":hover") || anchor.contains(document.activeElement)) {
+        return;
+      }
+      if (openCompareDropId() === drop.dropId) {
+        anchor.removeAttribute("aria-describedby");
+        hideComparePopover();
+      }
+    };
+    anchor.addEventListener("mouseenter", open);
+    anchor.addEventListener("mouseleave", maybeClose);
+    anchor.addEventListener("focusin", open);
+    anchor.addEventListener("focusout", maybeClose);
   }
 
   function bindComparePopover(
@@ -1188,30 +1372,7 @@ export function mountArmorySurface(
     tile: HTMLElement,
     host: HTMLElement,
   ): void {
-    const open = () => {
-      // Re-read the drop from the current Snapshot: this tile node can be reused across
-      // renders while the Character's stats (and so the preview deltas) have moved on.
-      const snapshot = lastSnapshot;
-      const current = snapshot
-        ? dropById(snapshot.progression.armory, drop.dropId)
-        : undefined;
-      if (snapshot && current) {
-        showComparePopover(snapshot, current, tile, host);
-      }
-    };
-    const maybeClose = () => {
-      if (tile.matches(":hover") || tile.contains(document.activeElement)) {
-        return;
-      }
-      if (openCompareDropId() === drop.dropId) {
-        tile.removeAttribute("aria-describedby");
-        hideComparePopover();
-      }
-    };
-    tile.addEventListener("mouseenter", open);
-    tile.addEventListener("mouseleave", maybeClose);
-    tile.addEventListener("focusin", open);
-    tile.addEventListener("focusout", maybeClose);
+    bindEquipmentPopover(drop, tile, host, "compare", "grid");
   }
 
   function appendContentTierIcon(container: HTMLElement, iconKey: string, name: string): void {
@@ -1291,6 +1452,7 @@ export function mountArmorySurface(
       }
       if (drop && classId) {
         bindWornSlotDrag(classId, slot, drop, button);
+        bindEquipmentPopover(drop, button, bodyEl, "detail", "worn", slot);
       }
       strip.append(button);
     }
@@ -1659,18 +1821,7 @@ export function mountArmorySurface(
     const compareDropId = openCompareDropId();
     const compareHost = root.querySelector<HTMLElement>(".armory-body--compare-host");
     if (compareDropId !== null && compareHost && snapshot) {
-      const drop = dropById(snapshot.progression.armory, compareDropId);
-      const classId = options.getSelectedClassId();
-      const anchor = root.querySelector<HTMLElement>(
-        `.armory-grid .equipment-card[data-drop-id="${compareDropId}"]`,
-      );
-      if (drop && classId && anchor) {
-        const descId = fillComparePopover(snapshot, drop, classId);
-        anchor.setAttribute("aria-describedby", descId);
-        positionComparePopover(anchor, compareHost);
-      } else if (!anchor) {
-        hideComparePopover();
-      }
+      refreshOpenPopover(snapshot, compareHost);
     }
   }
 
