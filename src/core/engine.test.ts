@@ -3700,3 +3700,53 @@ describe("Presentation Event vocabulary", () => {
     }
   });
 });
+
+describe("adaptive Basic Attack Element", () => {
+  const fireWizardContent: Content = {
+    ...fixtureContent,
+    classes: fixtureContent.classes.map((classKit) =>
+      classKit.id === "wizard"
+        ? { ...classKit, base: { ...classKit.base, firePower: 5 } }
+        : classKit,
+    ),
+  };
+
+  function snapshotWithFireWizardBasicImpact(simNowMs: number): Snapshot {
+    const snap = scenario(fireWizardContent)
+      .withParty(["wizard", "knight", "priest"], "knight")
+      .build();
+    snap.lootRngState = LOOT_SEED;
+    snap.simNowMs = simNowMs;
+    const wizard = snap.attempt!.combatants.find((entry) => entry.defId === "wizard");
+    const opponent = snap.attempt!.combatants.find((entry) => entry.side === "opponent");
+    if (!wizard || !opponent) {
+      throw new Error("missing wizard or opponent");
+    }
+    stunCombatants(snap, simNowMs, [wizard.entityId]);
+    wizard.action = {
+      abilityId: "wizard-basic",
+      startedAtMs: 0,
+      impactAtMs: simNowMs,
+      endsAtMs: simNowMs + 750,
+      targetIds: [opponent.entityId],
+      impactResolved: false,
+    };
+    return snap;
+  }
+
+  it("reports the resolved Element on impact for a Fire-adapted Basic Attack", () => {
+    const saved = snapshotWithFireWizardBasicImpact(450);
+    const engine = createEngine(fireWizardContent, saved, LOOT_SEED);
+    const events = engine.advanceBy(0);
+    const impact = events.find(
+      (event): event is Extract<EngineEvent, { type: "impact" }> =>
+        event.type === "impact" && event.abilityId === "wizard-basic",
+    );
+    expect(impact?.results[0]).toMatchObject({
+      kind: "damage",
+      channel: "elemental",
+      element: "fire",
+      amount: 20,
+    });
+  });
+});

@@ -219,6 +219,36 @@ export function resolveEffect(
   }
 }
 
+const ELEMENT_POWER_BY_ELEMENT: Array<{ element: Element; stat: keyof BaseStats }> = [
+  { element: "fire", stat: "firePower" },
+  { element: "frost", stat: "frostPower" },
+  { element: "lightning", stat: "lightningPower" },
+  { element: "light", stat: "lightPower" },
+];
+
+export function adaptiveElementForBasic(
+  effect: AbilityEffect,
+  actorStats: BaseStats,
+): Element | undefined {
+  if (effect.kind !== "damage" || (effect.channel ?? "physical") !== "elemental") {
+    return effect.element;
+  }
+  if (!effect.element) {
+    return undefined;
+  }
+
+  const candidates = ELEMENT_POWER_BY_ELEMENT.map(({ element, stat }) => ({
+    element,
+    power: actorStats[stat],
+  }));
+  const maxPower = Math.max(...candidates.map((candidate) => candidate.power));
+  const leaders = candidates.filter((candidate) => candidate.power === maxPower);
+  if (leaders.length !== 1) {
+    return effect.element;
+  }
+  return leaders[0]!.element;
+}
+
 /** Pre-mitigation damage or heal amount for UI tooltips (actor Power only). */
 export function previewEffectRaw(effect: AbilityEffect, actorStats: BaseStats): number | null {
   if (effect.kind === "damage") {

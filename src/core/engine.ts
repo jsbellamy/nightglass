@@ -1,4 +1,5 @@
 import {
+  adaptiveElementForBasic,
   chooseFirstValidAbility,
   combatantById,
   effectiveStats,
@@ -792,8 +793,18 @@ function resolveImpacts(
       let projectedHealth = preTargetHealth;
 
       for (const effect of ability.effects) {
+        const resolvedEffect =
+          ability.slot === "basic" &&
+          effect.kind === "damage" &&
+          (effect.channel ?? "physical") === "elemental" &&
+          effect.element
+            ? {
+                ...effect,
+                element: adaptiveElementForBasic(effect, actorStats) ?? effect.element,
+              }
+            : effect;
         const outcome = resolveEffect(
-          effect,
+          resolvedEffect,
           actorStats,
           {
             stats: targetStats,
