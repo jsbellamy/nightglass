@@ -48,6 +48,8 @@ export {
   affixToModifier,
   canEquipToSlot,
   equipViolation,
+  nextRarity,
+  selectSalvageBatch,
 } from "../core/equipment";
 
 export {

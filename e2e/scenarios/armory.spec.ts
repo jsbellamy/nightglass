@@ -3,7 +3,7 @@ import { NIGHTGLASS_BUS_CHANNEL } from "../../src/ui/bus";
 import { closeEvidenceSession, openEvidenceSession } from "../helpers/evidence-session";
 import { defineEvidenceScenario } from "../helpers/evidence-scenarios";
 import { captureReviewScene } from "../helpers/review-scenes";
-import { armoryReviewSnapshot } from "../helpers/snapshots";
+import { armoryReviewSnapshot, armorySalvageSnapshot } from "../helpers/snapshots";
 
 const ARMORY_SESSION = {
   preset: "isolated-dock" as const,
@@ -192,6 +192,104 @@ test.describe("Armory evidence scenarios", () => {
     });
     expect(layoutAfterDrag?.panelScrollable).toBe(false);
     expect(layoutAfterDrag?.bodyScrollable).toBe(false);
+
+    await closeEvidenceSession(session);
+  },
+  );
+
+  defineEvidenceScenario(
+    {
+      id: "armory-salvage",
+      slugs: ["armory-salvage-tray"],
+      spec: {
+        id: "rendered-evidence:armory-salvage",
+        path: "e2e/scenarios/armory.spec.ts",
+      },
+      fixture: "isolated-dock",
+      reviewScenes: [],
+      summary:
+        "persistent salvage tray with Auto-fill summary and salvage bus command at dock size",
+    },
+    async ({ browser }) => {
+    const session = await openEvidenceSession(browser, ARMORY_SESSION.preset, {
+      dockSnapshot: armorySalvageSnapshot(),
+      seedEngineLegality: true,
+    });
+    const dock = session.dock;
+    if (!dock) {
+      throw new Error("isolated-dock session must include a Dock page");
+    }
+
+    await dock.click('[data-dock-tab="armory"]');
+    await dock.waitForSelector('[data-salvage-tray="true"]');
+
+    const trayReady = await dock.evaluate(() => {
+      const autofill = document.querySelector<HTMLButtonElement>('[data-salvage-autofill="true"]');
+      return {
+        trayVisible: document.querySelector('[data-salvage-tray="true"]') !== null,
+        autofillEnabled: autofill !== null && !autofill.disabled,
+        autofillLabel: autofill?.textContent ?? null,
+      };
+    });
+    expect(trayReady.trayVisible).toBe(true);
+    expect(trayReady.autofillEnabled).toBe(true);
+    expect(trayReady.autofillLabel).toBe("Auto-fill · 10 Common");
+
+    await dock.click('[data-salvage-autofill="true"]');
+
+    const stagedLayout = await dock.evaluate(() => {
+      const panel = document.querySelector<HTMLElement>('[data-dock-panel="armory"]');
+      const body = document.querySelector<HTMLElement>(".armory-body--compare-host");
+      const summary = document.querySelector<HTMLElement>('[data-salvage-summary="true"]');
+      if (!panel || !body || !summary) {
+        return null;
+      }
+      return {
+        summaryText: summary.textContent,
+        stagedCount: document.querySelectorAll('[data-salvage-staged="true"]').length,
+        panelScrollable: panel.scrollHeight > panel.clientHeight + 1,
+        bodyScrollable: body.scrollHeight > body.clientHeight + 1,
+      };
+    });
+    expect(stagedLayout).not.toBeNull();
+    expect(stagedLayout!.summaryText).toBe("10 Common → 1 Uncommon · Item Level 1");
+    expect(stagedLayout!.stagedCount).toBe(10);
+    expect(stagedLayout!.panelScrollable).toBe(false);
+    expect(stagedLayout!.bodyScrollable).toBe(false);
+
+    await dock.evaluate((channelName) => {
+      const w = window as unknown as { __ngCmdLog?: unknown[]; __ngCmdSpy?: BroadcastChannel };
+      w.__ngCmdLog = [];
+      w.__ngCmdSpy?.close();
+      const channel = new BroadcastChannel(channelName);
+      channel.onmessage = (event: MessageEvent<{ type: string; command?: unknown }>) => {
+        if (event.data.type === "command") {
+          w.__ngCmdLog?.push(event.data.command);
+        }
+      };
+      w.__ngCmdSpy = channel;
+    }, NIGHTGLASS_BUS_CHANNEL);
+
+    await dock.click('[data-salvage-confirm="true"]');
+
+    const commands = await dock.evaluate(() => {
+      const w = window as unknown as { __ngCmdLog?: unknown[] };
+      return w.__ngCmdLog ?? [];
+    });
+    expect(commands.some((command) => {
+      if (
+        typeof command === "object" &&
+        command !== null &&
+        "cmd" in command &&
+        command.cmd === "salvage" &&
+        "args" in command &&
+        Array.isArray(command.args) &&
+        Array.isArray(command.args[0])
+      ) {
+        return command.args[0].length === 10;
+      }
+      return false;
+    })).toBe(true);
 
     await closeEvidenceSession(session);
   },
