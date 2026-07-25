@@ -40,10 +40,12 @@ export {
   type AbilityRawDisplay,
   type EquipPreview,
   type StatDeltaLine,
+  type StatLabel,
   type StatLine,
 } from "../core/equipment-preview";
 
 export {
+  affixToModifier,
   canEquipToSlot,
   equipViolation,
 } from "../core/equipment";

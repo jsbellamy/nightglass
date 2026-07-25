@@ -1,12 +1,13 @@
 import type { DropInstance } from "../core/snapshot";
 import type {
+  AffixId,
   ClassId,
   Content,
   EquipmentBaseDef,
   EquipmentSlotId,
   Rarity,
 } from "../core/types";
-import { formatStatModifierPerRank, CLASS_LABELS } from "./snapshot-view";
+import { affixToModifier, formatStatModifierPerRank, CLASS_LABELS } from "./snapshot-view";
 
 export const RARITY_LABELS: Record<Rarity, string> = {
   common: "Common",
@@ -66,56 +67,8 @@ export function equipmentBaseForDrop(
   return base;
 }
 
-function formatAffixAmount(amount: number, asPercent: boolean): string {
-  const rounded = asPercent ? Math.round(amount * 100) : amount;
-  if (rounded === 0) {
-    return asPercent ? "+0%" : "+0";
-  }
-  const prefix = rounded > 0 ? `+${rounded}` : String(rounded);
-  return asPercent ? `${prefix}%` : prefix;
-}
-
-export function formatAffix(affix: { id: string; value: number }): string {
-  switch (affix.id) {
-    case "flat-physical":
-      return formatStatModifierPerRank({ flat: { physical: affix.value } });
-    case "flat-spell":
-      return formatStatModifierPerRank({ flat: { spell: affix.value } });
-    case "flat-max-health":
-      return formatStatModifierPerRank({ flat: { maxHealth: affix.value } });
-    case "flat-armor":
-      return formatStatModifierPerRank({ flat: { armor: affix.value } });
-    case "flat-elemental-resistance":
-      return formatStatModifierPerRank({ flat: { elementalResistance: affix.value } });
-    case "percent-physical-power":
-      return formatStatModifierPerRank({ percent: { physicalPower: affix.value } });
-    case "percent-spell-power":
-      return formatStatModifierPerRank({ percent: { spellPower: affix.value } });
-    case "percent-max-health":
-      return formatStatModifierPerRank({ percent: { maxHealth: affix.value } });
-    case "flat-fire":
-      return `${formatAffixAmount(affix.value, false)} Fire`;
-    case "percent-fire-power":
-      return `${formatAffixAmount(affix.value, true)} Fire`;
-    case "flat-frost":
-      return `${formatAffixAmount(affix.value, false)} Frost`;
-    case "percent-frost-power":
-      return `${formatAffixAmount(affix.value, true)} Frost`;
-    case "flat-lightning":
-      return `${formatAffixAmount(affix.value, false)} Lightning`;
-    case "percent-lightning-power":
-      return `${formatAffixAmount(affix.value, true)} Lightning`;
-    case "flat-light":
-      return `${formatAffixAmount(affix.value, false)} Light`;
-    case "percent-light-power":
-      return `${formatAffixAmount(affix.value, true)} Light`;
-    case "flat-crit-chance":
-      return `${formatAffixAmount(affix.value, true)} Critical Chance`;
-    case "flat-crit-damage":
-      return `${formatAffixAmount(affix.value, true)} Critical Damage`;
-    default:
-      return affix.id;
-  }
+export function formatAffix(affix: { id: AffixId; value: number }): string {
+  return formatStatModifierPerRank(affixToModifier(affix));
 }
 
 export function formatGuaranteedStat(base: EquipmentBaseDef): string {
