@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { indexContent } from "./content-index";
 import { dropStatModifiers } from "./equipment";
 import { createEngine, SCHEMA_VERSION } from "./engine";
 import {
@@ -54,9 +55,15 @@ describe("legacy affix id migration", () => {
     const loadedDrop = parsed.snapshot.progression.armory[0]!;
     expect(loadedDrop.affixes).toEqual([{ id: "flat-spell", value: affixValue }]);
 
-    const migratedModifiers = dropStatModifiers(loadedDrop, testContent);
+    const migratedModifiers = dropStatModifiers(
+      loadedDrop,
+      indexContent(testContent).equipmentBasesById,
+    );
     const nativeDrop = { ...legacyDrop, affixes: [{ id: "flat-spell" as const, value: affixValue }] };
-    const nativeModifiers = dropStatModifiers(nativeDrop, testContent);
+    const nativeModifiers = dropStatModifiers(
+      nativeDrop,
+      indexContent(testContent).equipmentBasesById,
+    );
     expect(migratedModifiers).toEqual(nativeModifiers);
   });
 });
