@@ -60,9 +60,15 @@ describe("effect recipes", () => {
 
   it("points frames at a manifest derivation with matching durationMs", () => {
     for (const [id, recipe] of Object.entries(effectRecipes)) {
-      const entry = manifest[recipe.frames] as { total_ms: number } | undefined;
-      expect(entry, `${id} frames ref ${recipe.frames}`).toBeDefined();
-      expect(recipe.durationMs).toBe(entry!.total_ms);
+      const frameFamilies = [recipe.frames];
+      if (recipe.framesByElement) {
+        frameFamilies.push(...Object.values(recipe.framesByElement));
+      }
+      for (const frames of frameFamilies) {
+        const entry = manifest[frames] as { total_ms: number } | undefined;
+        expect(entry, `${id} frames ref ${frames}`).toBeDefined();
+        expect(recipe.durationMs).toBe(entry!.total_ms);
+      }
     }
   });
 

@@ -9,6 +9,7 @@ export type EngineEvent = { seq: number; atMs: number } & (
       abilityId: string;
       impactAtMs: number;
       targetIds: string[];
+      element?: Element;
     }
   | {
       type: "impact";
