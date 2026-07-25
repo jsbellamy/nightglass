@@ -1,162 +1,66 @@
 {
-  "knight": {
+  "aphelion": {
     "action": "still",
     "frame_size": [
-      32,
-      48
+      139,
+      72
     ],
     "visual_bounds": [
       0,
-      3,
-      32,
-      48
+      0,
+      139,
+      72
     ],
     "foot_anchor": [
-      16,
-      48
+      69,
+      72
     ],
-    "palette": "moonberry-16",
-    "baseline_row": 47,
+    "palette": "unwound-belfry-24",
+    "baseline_row": 71,
     "total_ms": 1,
     "frames": [
       {
-        "name": "knight",
+        "name": "aphelion",
         "duration_ms": 1,
-        "sha256": "9c688d45db8be2a8fd9c47b8811b258194a273d188411796065f8f3f8e0c8176"
-      }
-    ],
-    "cues_ms": {},
-    "source": {
-      "provider": "OpenAI built-in image generation",
-      "raw_sha256": "9dfcdd69592cec858d9ff4d53429a2a3b48815918f4b463083e7201d69546cb5"
-    }
-  },
-  "wizard": {
-    "action": "still",
-    "frame_size": [
-      32,
-      48
-    ],
-    "visual_bounds": [
-      1,
-      3,
-      30,
-      48
-    ],
-    "foot_anchor": [
-      16,
-      48
-    ],
-    "palette": "moonberry-16",
-    "baseline_row": 47,
-    "total_ms": 1,
-    "frames": [
-      {
-        "name": "wizard",
-        "duration_ms": 1,
-        "sha256": "4c35d3c84435b4d3651b38bb5dc90d98df0dd2b38f10120451ee9a6cce9a3dc1"
-      }
-    ],
-    "cues_ms": {},
-    "source": {
-      "provider": "OpenAI built-in image generation",
-      "raw_sha256": "cf390b253ea5b422f35ce667ae499d1a78e3d5be006552d20df740cd4c63d833"
-    }
-  },
-  "priest": {
-    "action": "still",
-    "frame_size": [
-      32,
-      48
-    ],
-    "visual_bounds": [
-      2,
-      2,
-      29,
-      48
-    ],
-    "foot_anchor": [
-      16,
-      48
-    ],
-    "palette": "moonberry-16",
-    "baseline_row": 47,
-    "total_ms": 1,
-    "frames": [
-      {
-        "name": "priest",
-        "duration_ms": 1,
-        "sha256": "8b6da0ea8b74aea52e20d9a493409300f76fac9e2606265c2c53430c6892b065"
+        "sha256": "df534e44a12ad905ecb0e1547b63614e0767e542db870f841acddaadfe1cc28d"
       }
     ],
     "cues_ms": {},
     "source": {
       "provider": "Cursor GenerateImage",
-      "raw_sha256": "34712fbd19213319951ec00330e88242de4a6ba7b5b0822a43eb90a80478d635"
+      "raw_sha256": "a0b199e55947cfa52669450e32891cfcf2bfaeffd3f721ea1bcc5e2f7b60a94e"
     }
   },
-  "hunter": {
-    "action": "still",
-    "frame_size": [
-      40,
-      46
-    ],
-    "visual_bounds": [
-      0,
-      0,
-      40,
-      46
-    ],
-    "foot_anchor": [
-      20,
-      46
-    ],
-    "palette": "moonberry-16",
-    "baseline_row": 45,
-    "total_ms": 1,
-    "frames": [
-      {
-        "name": "hunter",
-        "duration_ms": 1,
-        "sha256": "ab8a42558724cf7d1007965c5d4aace303b7ee8709abb3ada4177af8b7744178"
-      }
-    ],
-    "cues_ms": {},
-    "source": {
-      "provider": "Cursor GenerateImage",
-      "raw_sha256": "7e828a24f02ec992ba65c98d61d3ef1fe617abb3f71754ce1af7d4facb4ae622"
-    }
-  },
-  "pipcap": {
+  "astrolabe-spider": {
     "action": "still",
     "frame_size": [
       30,
-      32
+      15
     ],
     "visual_bounds": [
       0,
       0,
       30,
-      32
+      15
     ],
     "foot_anchor": [
       15,
-      32
+      15
     ],
-    "palette": "moonberry-16",
-    "baseline_row": 31,
+    "palette": "unwound-belfry-24",
+    "baseline_row": 14,
     "total_ms": 1,
     "frames": [
       {
-        "name": "pipcap",
+        "name": "astrolabe-spider",
         "duration_ms": 1,
-        "sha256": "4bd576700223d6af0913db208e42093036d890a74f699d4d010e94974e029ad1"
+        "sha256": "fc85147fd88b55b6b41d5fbabb55c6fa5a2743674ae9d6a73a47f8d322404a51"
       }
     ],
     "cues_ms": {},
     "source": {
       "provider": "Cursor GenerateImage",
-      "raw_sha256": "3f4d7a89cb61e562974056a96eb83db6de1d87c2e970085b123ffa56381b1cb1"
+      "raw_sha256": "e1f2a82ebeee6e3f4be17a3e34649bdb37829040bd800efa61dc0737a0f52d6f"
     }
   },
   "boss-1": {
@@ -255,6 +159,38 @@
       "raw_sha256": "30e3b6d081726c00761455c3b65e0e0649d57bcbadea8f22a96c302f96896b3d"
     }
   },
+  "brambling": {
+    "action": "still",
+    "frame_size": [
+      30,
+      61
+    ],
+    "visual_bounds": [
+      0,
+      0,
+      30,
+      61
+    ],
+    "foot_anchor": [
+      15,
+      61
+    ],
+    "palette": "moonberry-16",
+    "baseline_row": 60,
+    "total_ms": 1,
+    "frames": [
+      {
+        "name": "brambling",
+        "duration_ms": 1,
+        "sha256": "c657daa723552a12de88bfc3e466eb7e958a01bff629c5d5ab84ef0e697bba6c"
+      }
+    ],
+    "cues_ms": {},
+    "source": {
+      "provider": "Cursor GenerateImage",
+      "raw_sha256": "f90b6152fe0862683b7027348219b57ebe08b071655b6d4daf5316adc4552937"
+    }
+  },
   "burger-drake": {
     "action": "still",
     "frame_size": [
@@ -317,6 +253,262 @@
     "source": {
       "provider": "Cursor GenerateImage",
       "raw_sha256": "49a52bf80afa9398295245413b2b9c54f7625cc423b55a0c96f7d9e8f52f6267"
+    }
+  },
+  "dewsnail": {
+    "action": "still",
+    "frame_size": [
+      30,
+      16
+    ],
+    "visual_bounds": [
+      0,
+      0,
+      30,
+      16
+    ],
+    "foot_anchor": [
+      15,
+      16
+    ],
+    "palette": "moonberry-16",
+    "baseline_row": 15,
+    "total_ms": 1,
+    "frames": [
+      {
+        "name": "dewsnail",
+        "duration_ms": 1,
+        "sha256": "08eba41942c0a639c8cfe8ce2999eb094d5ae7832a96c48cd285e5b260cf5465"
+      }
+    ],
+    "cues_ms": {},
+    "source": {
+      "provider": "Cursor GenerateImage",
+      "raw_sha256": "3214dacdd69f34b0d9c9aae533570b04be7bb9afa1c6bef9e14b751de1133bf6"
+    }
+  },
+  "hunter": {
+    "action": "still",
+    "frame_size": [
+      40,
+      46
+    ],
+    "visual_bounds": [
+      0,
+      0,
+      40,
+      46
+    ],
+    "foot_anchor": [
+      20,
+      46
+    ],
+    "palette": "moonberry-16",
+    "baseline_row": 45,
+    "total_ms": 1,
+    "frames": [
+      {
+        "name": "hunter",
+        "duration_ms": 1,
+        "sha256": "ab8a42558724cf7d1007965c5d4aace303b7ee8709abb3ada4177af8b7744178"
+      }
+    ],
+    "cues_ms": {},
+    "source": {
+      "provider": "Cursor GenerateImage",
+      "raw_sha256": "7e828a24f02ec992ba65c98d61d3ef1fe617abb3f71754ce1af7d4facb4ae622"
+    }
+  },
+  "huskbeetle": {
+    "action": "still",
+    "frame_size": [
+      30,
+      14
+    ],
+    "visual_bounds": [
+      0,
+      0,
+      30,
+      14
+    ],
+    "foot_anchor": [
+      15,
+      14
+    ],
+    "palette": "moonberry-16",
+    "baseline_row": 13,
+    "total_ms": 1,
+    "frames": [
+      {
+        "name": "huskbeetle",
+        "duration_ms": 1,
+        "sha256": "3c65bed86f648de3c918744dea6ad4903f926cae7ae6fabe68b224803e306d3d"
+      }
+    ],
+    "cues_ms": {},
+    "source": {
+      "provider": "Cursor GenerateImage",
+      "raw_sha256": "8b59921d3732efa585b48dc697053f78a1939391f973d4cc2689062ff2183974"
+    }
+  },
+  "knight": {
+    "action": "still",
+    "frame_size": [
+      32,
+      48
+    ],
+    "visual_bounds": [
+      0,
+      3,
+      32,
+      48
+    ],
+    "foot_anchor": [
+      16,
+      48
+    ],
+    "palette": "moonberry-16",
+    "baseline_row": 47,
+    "total_ms": 1,
+    "frames": [
+      {
+        "name": "knight",
+        "duration_ms": 1,
+        "sha256": "9c688d45db8be2a8fd9c47b8811b258194a273d188411796065f8f3f8e0c8176"
+      }
+    ],
+    "cues_ms": {},
+    "source": {
+      "provider": "OpenAI built-in image generation",
+      "raw_sha256": "9dfcdd69592cec858d9ff4d53429a2a3b48815918f4b463083e7201d69546cb5"
+    }
+  },
+  "lanternmoth": {
+    "action": "still",
+    "frame_size": [
+      30,
+      29
+    ],
+    "visual_bounds": [
+      0,
+      0,
+      30,
+      29
+    ],
+    "foot_anchor": [
+      15,
+      29
+    ],
+    "palette": "moonberry-16",
+    "baseline_row": 28,
+    "total_ms": 1,
+    "frames": [
+      {
+        "name": "lanternmoth",
+        "duration_ms": 1,
+        "sha256": "5e91651a50c2413d2a636fe5f759c5c1a0c6a136f2828aa6f5a8b8896cf49575"
+      }
+    ],
+    "cues_ms": {},
+    "source": {
+      "provider": "Cursor GenerateImage",
+      "raw_sha256": "8e19f3590e86c31e1200d28adff4a2ce43f7540c5f0e5ce04364bce3afcef95e"
+    }
+  },
+  "pipcap": {
+    "action": "still",
+    "frame_size": [
+      30,
+      32
+    ],
+    "visual_bounds": [
+      0,
+      0,
+      30,
+      32
+    ],
+    "foot_anchor": [
+      15,
+      32
+    ],
+    "palette": "moonberry-16",
+    "baseline_row": 31,
+    "total_ms": 1,
+    "frames": [
+      {
+        "name": "pipcap",
+        "duration_ms": 1,
+        "sha256": "4bd576700223d6af0913db208e42093036d890a74f699d4d010e94974e029ad1"
+      }
+    ],
+    "cues_ms": {},
+    "source": {
+      "provider": "Cursor GenerateImage",
+      "raw_sha256": "3f4d7a89cb61e562974056a96eb83db6de1d87c2e970085b123ffa56381b1cb1"
+    }
+  },
+  "priest": {
+    "action": "still",
+    "frame_size": [
+      32,
+      48
+    ],
+    "visual_bounds": [
+      2,
+      2,
+      29,
+      48
+    ],
+    "foot_anchor": [
+      16,
+      48
+    ],
+    "palette": "moonberry-16",
+    "baseline_row": 47,
+    "total_ms": 1,
+    "frames": [
+      {
+        "name": "priest",
+        "duration_ms": 1,
+        "sha256": "8b6da0ea8b74aea52e20d9a493409300f76fac9e2606265c2c53430c6892b065"
+      }
+    ],
+    "cues_ms": {},
+    "source": {
+      "provider": "Cursor GenerateImage",
+      "raw_sha256": "34712fbd19213319951ec00330e88242de4a6ba7b5b0822a43eb90a80478d635"
+    }
+  },
+  "scarequack": {
+    "action": "still",
+    "frame_size": [
+      51,
+      72
+    ],
+    "visual_bounds": [
+      0,
+      0,
+      51,
+      72
+    ],
+    "foot_anchor": [
+      25,
+      72
+    ],
+    "palette": "fowl-harvest-24",
+    "baseline_row": 71,
+    "total_ms": 1,
+    "frames": [
+      {
+        "name": "scarequack",
+        "duration_ms": 1,
+        "sha256": "9c49e53063a4416dbffd15f28d7e3f5d6ebadb6343ceadcb21eb072ecead112d"
+      }
+    ],
+    "cues_ms": {},
+    "source": {
+      "provider": "Cursor GenerateImage",
+      "raw_sha256": "2c92a97aec8bdfb2ab819a33b0c2f0d4f2a897cb434b431e018dfa2b4f8feab9"
     }
   },
   "the-combine": {
@@ -383,36 +575,100 @@
       "raw_sha256": "c99d6f53403da5efdfdce764610304e1deeff1eb9d86c3f53c35ecc54fbbbc8d"
     }
   },
-  "scarequack": {
+  "the-tocsin": {
     "action": "still",
     "frame_size": [
-      51,
+      125,
       72
     ],
     "visual_bounds": [
       0,
       0,
-      51,
-      72
+      125,
+      71
     ],
     "foot_anchor": [
-      25,
+      62,
       72
     ],
-    "palette": "fowl-harvest-24",
+    "palette": "unwound-belfry-24",
     "baseline_row": 71,
     "total_ms": 1,
     "frames": [
       {
-        "name": "scarequack",
+        "name": "the-tocsin",
         "duration_ms": 1,
-        "sha256": "9c49e53063a4416dbffd15f28d7e3f5d6ebadb6343ceadcb21eb072ecead112d"
+        "sha256": "35320b6f10ee6280c3a33b5c6e2302003a35a10305791fa65bad1a07a2189876"
       }
     ],
     "cues_ms": {},
     "source": {
       "provider": "Cursor GenerateImage",
-      "raw_sha256": "2c92a97aec8bdfb2ab819a33b0c2f0d4f2a897cb434b431e018dfa2b4f8feab9"
+      "raw_sha256": "856e250b990260edad8193dd25851d6c2a658feef03577be797d6e56c6504f6d"
+    }
+  },
+  "the-unwound": {
+    "action": "still",
+    "frame_size": [
+      134,
+      72
+    ],
+    "visual_bounds": [
+      0,
+      1,
+      134,
+      72
+    ],
+    "foot_anchor": [
+      67,
+      72
+    ],
+    "palette": "unwound-belfry-24",
+    "baseline_row": 71,
+    "total_ms": 1,
+    "frames": [
+      {
+        "name": "the-unwound",
+        "duration_ms": 1,
+        "sha256": "d5da019b044acff95eaa89ffbfaa35521c423bcb445bfa8e9cdceeb7d71f3a7b"
+      }
+    ],
+    "cues_ms": {},
+    "source": {
+      "provider": "Cursor GenerateImage",
+      "raw_sha256": "ab42369a93b7c66dda08d407117754b7e97cda2ed1135346845b92838dfbbf6a"
+    }
+  },
+  "the-vigil": {
+    "action": "still",
+    "frame_size": [
+      94,
+      72
+    ],
+    "visual_bounds": [
+      0,
+      0,
+      94,
+      72
+    ],
+    "foot_anchor": [
+      47,
+      72
+    ],
+    "palette": "unwound-belfry-24",
+    "baseline_row": 71,
+    "total_ms": 1,
+    "frames": [
+      {
+        "name": "the-vigil",
+        "duration_ms": 1,
+        "sha256": "95d5efb12ee821395fa9ad6b156538f15d47176589b4367de29152528c484c42"
+      }
+    ],
+    "cues_ms": {},
+    "source": {
+      "provider": "Cursor GenerateImage",
+      "raw_sha256": "b17dec493a093b6565b320609d1c9b8841554f22551744fd5508f5457e62c683"
     }
   },
   "tickmoth": {
@@ -479,260 +735,36 @@
       "raw_sha256": "5d2d90d0b09c67f8762521712ef9e33201e8081621bd42a8567cf9c2335bf861"
     }
   },
-  "astrolabe-spider": {
+  "wizard": {
     "action": "still",
     "frame_size": [
-      30,
-      15
+      32,
+      48
     ],
     "visual_bounds": [
-      0,
-      0,
-      30,
-      15
-    ],
-    "foot_anchor": [
-      15,
-      15
-    ],
-    "palette": "unwound-belfry-24",
-    "baseline_row": 14,
-    "total_ms": 1,
-    "frames": [
-      {
-        "name": "astrolabe-spider",
-        "duration_ms": 1,
-        "sha256": "fc85147fd88b55b6b41d5fbabb55c6fa5a2743674ae9d6a73a47f8d322404a51"
-      }
-    ],
-    "cues_ms": {},
-    "source": {
-      "provider": "Cursor GenerateImage",
-      "raw_sha256": "e1f2a82ebeee6e3f4be17a3e34649bdb37829040bd800efa61dc0737a0f52d6f"
-    }
-  },
-  "the-vigil": {
-    "action": "still",
-    "frame_size": [
-      94,
-      72
-    ],
-    "visual_bounds": [
-      0,
-      0,
-      94,
-      72
-    ],
-    "foot_anchor": [
-      47,
-      72
-    ],
-    "palette": "unwound-belfry-24",
-    "baseline_row": 71,
-    "total_ms": 1,
-    "frames": [
-      {
-        "name": "the-vigil",
-        "duration_ms": 1,
-        "sha256": "95d5efb12ee821395fa9ad6b156538f15d47176589b4367de29152528c484c42"
-      }
-    ],
-    "cues_ms": {},
-    "source": {
-      "provider": "Cursor GenerateImage",
-      "raw_sha256": "b17dec493a093b6565b320609d1c9b8841554f22551744fd5508f5457e62c683"
-    }
-  },
-  "the-tocsin": {
-    "action": "still",
-    "frame_size": [
-      125,
-      72
-    ],
-    "visual_bounds": [
-      0,
-      0,
-      125,
-      71
-    ],
-    "foot_anchor": [
-      62,
-      72
-    ],
-    "palette": "unwound-belfry-24",
-    "baseline_row": 71,
-    "total_ms": 1,
-    "frames": [
-      {
-        "name": "the-tocsin",
-        "duration_ms": 1,
-        "sha256": "35320b6f10ee6280c3a33b5c6e2302003a35a10305791fa65bad1a07a2189876"
-      }
-    ],
-    "cues_ms": {},
-    "source": {
-      "provider": "Cursor GenerateImage",
-      "raw_sha256": "856e250b990260edad8193dd25851d6c2a658feef03577be797d6e56c6504f6d"
-    }
-  },
-  "the-unwound": {
-    "action": "still",
-    "frame_size": [
-      134,
-      72
-    ],
-    "visual_bounds": [
-      0,
       1,
-      134,
-      72
-    ],
-    "foot_anchor": [
-      67,
-      72
-    ],
-    "palette": "unwound-belfry-24",
-    "baseline_row": 71,
-    "total_ms": 1,
-    "frames": [
-      {
-        "name": "the-unwound",
-        "duration_ms": 1,
-        "sha256": "d5da019b044acff95eaa89ffbfaa35521c423bcb445bfa8e9cdceeb7d71f3a7b"
-      }
-    ],
-    "cues_ms": {},
-    "source": {
-      "provider": "Cursor GenerateImage",
-      "raw_sha256": "ab42369a93b7c66dda08d407117754b7e97cda2ed1135346845b92838dfbbf6a"
-    }
-  },
-  "aphelion": {
-    "action": "still",
-    "frame_size": [
-      139,
-      72
-    ],
-    "visual_bounds": [
-      0,
-      0,
-      139,
-      72
-    ],
-    "foot_anchor": [
-      69,
-      72
-    ],
-    "palette": "unwound-belfry-24",
-    "baseline_row": 71,
-    "total_ms": 1,
-    "frames": [
-      {
-        "name": "aphelion",
-        "duration_ms": 1,
-        "sha256": "df534e44a12ad905ecb0e1547b63614e0767e542db870f841acddaadfe1cc28d"
-      }
-    ],
-    "cues_ms": {},
-    "source": {
-      "provider": "Cursor GenerateImage",
-      "raw_sha256": "a0b199e55947cfa52669450e32891cfcf2bfaeffd3f721ea1bcc5e2f7b60a94e"
-    }
-  },
-  "brambling": {
-    "action": "still",
-    "frame_size": [
+      3,
       30,
-      61
-    ],
-    "visual_bounds": [
-      0,
-      0,
-      30,
-      61
+      48
     ],
     "foot_anchor": [
-      15,
-      61
+      16,
+      48
     ],
     "palette": "moonberry-16",
-    "baseline_row": 60,
+    "baseline_row": 47,
     "total_ms": 1,
     "frames": [
       {
-        "name": "brambling",
+        "name": "wizard",
         "duration_ms": 1,
-        "sha256": "c657daa723552a12de88bfc3e466eb7e958a01bff629c5d5ab84ef0e697bba6c"
+        "sha256": "4c35d3c84435b4d3651b38bb5dc90d98df0dd2b38f10120451ee9a6cce9a3dc1"
       }
     ],
     "cues_ms": {},
     "source": {
-      "provider": "Cursor GenerateImage",
-      "raw_sha256": "f90b6152fe0862683b7027348219b57ebe08b071655b6d4daf5316adc4552937"
-    }
-  },
-  "lanternmoth": {
-    "action": "still",
-    "frame_size": [
-      30,
-      29
-    ],
-    "visual_bounds": [
-      0,
-      0,
-      30,
-      29
-    ],
-    "foot_anchor": [
-      15,
-      29
-    ],
-    "palette": "moonberry-16",
-    "baseline_row": 28,
-    "total_ms": 1,
-    "frames": [
-      {
-        "name": "lanternmoth",
-        "duration_ms": 1,
-        "sha256": "5e91651a50c2413d2a636fe5f759c5c1a0c6a136f2828aa6f5a8b8896cf49575"
-      }
-    ],
-    "cues_ms": {},
-    "source": {
-      "provider": "Cursor GenerateImage",
-      "raw_sha256": "8e19f3590e86c31e1200d28adff4a2ce43f7540c5f0e5ce04364bce3afcef95e"
-    }
-  },
-  "huskbeetle": {
-    "action": "still",
-    "frame_size": [
-      30,
-      14
-    ],
-    "visual_bounds": [
-      0,
-      0,
-      30,
-      14
-    ],
-    "foot_anchor": [
-      15,
-      14
-    ],
-    "palette": "moonberry-16",
-    "baseline_row": 13,
-    "total_ms": 1,
-    "frames": [
-      {
-        "name": "huskbeetle",
-        "duration_ms": 1,
-        "sha256": "3c65bed86f648de3c918744dea6ad4903f926cae7ae6fabe68b224803e306d3d"
-      }
-    ],
-    "cues_ms": {},
-    "source": {
-      "provider": "Cursor GenerateImage",
-      "raw_sha256": "8b59921d3732efa585b48dc697053f78a1939391f973d4cc2689062ff2183974"
+      "provider": "OpenAI built-in image generation",
+      "raw_sha256": "cf390b253ea5b422f35ce667ae499d1a78e3d5be006552d20df740cd4c63d833"
     }
   }
 }

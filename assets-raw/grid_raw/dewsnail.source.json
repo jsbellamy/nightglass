@@ -1,0 +1,42 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "3214dacdd69f34b0d9c9aae533570b04be7bb9afa1c6bef9e14b751de1133bf6",
+  "acquisition": "flexible",
+  "identity_profile": {
+    "asset_class": "opponent",
+    "role": "ordinary-opponent",
+    "facing": "left"
+  },
+  "cursor_stamp_removed": false,
+  "identity": "dewsnail",
+  "asset_class": "opponent",
+  "runtime_destination": "src/assets/sprites/dewsnail.png",
+  "candidate": "dewsnail-c1.png",
+  "facing": "left",
+  "role": "ordinary-opponent",
+  "palette": "moonberry-16@1",
+  "style_references": [
+    {
+      "path": "src/assets/sprites/pipcap.png",
+      "sha256": "9fc03d2c05604818e2b45fb30d50186a9c53062777c9008fa677a65ce4da54d2",
+      "role": "style"
+    },
+    {
+      "path": "src/assets/sprites/brambling.png",
+      "sha256": "5add87c3d42694cda0da0e328635bab67183e0d8b5308090a76910c3a69c8fe5",
+      "role": "style"
+    },
+    {
+      "path": "src/assets/sprites/lanternmoth.png",
+      "sha256": "84ba9ce126f9dd22c74b611f5d53768ad9b294e946861d8c2f174b5e97e492fd",
+      "role": "style"
+    },
+    {
+      "path": "src/assets/sprites/huskbeetle.png",
+      "sha256": "7693dd123050ec05decf79d81e0172efcfc7a41e1725d61c31490a36081820dc",
+      "role": "style"
+    }
+  ],
+  "prompt": "Single full-body Dewsnail ordinary opponent game sprite, strict side profile facing LEFT. A garden snail whose shell has set into a tight spiral of condensed dew shot through with a berry-juice swirl. The spiral shell reads as smooth pale mint with a single berry-red swirl band tracing its whorl to a clear centre; a long soft twilight-slate foot stretches forward beneath it with a rippled trailing edge, and two tall eye-stalks with cream tips rise from a blunt head. The mutation is one living creature, not a snail carrying a glass ornament.\n\nPreserve its enchanted wrong identity: two tall eye-stalks with cream tips, a blunt soft head, the smooth mint spiral shell with its berry swirl band and clear whorl centre, and a long low slate foot with a rippled trailing edge. Low, rounded, coiled silhouette on a long horizontal base. The eye-stalks, whorl spiral, swirl band, and rippled foot edge must remain distinct at native game scale.\n\nChunky simplified flat-colour Moonberry storybook night-garden pixel art with large readable shapes, selective contour-plum outline, and only named moonberry-16 colors: contour plums, berry reds, twilight slate, mint and sage greens, cream-gold and cream. Tone is 60% enchanted and 40% wrong. No gore, wounds, exposed organs, realism, gradients, anti-aliasing, blur, or dithering.\n\nShow exactly one complete subject with generous empty clearance on every edge of an opaque flat solid magenta #ff00ff background. No shadow, floor, glow, slime trail, water droplets, sparkles, particles, Ability effect, text, watermark, scenery, UI, transparency, other mollusc, or other subject.\n"
+}
