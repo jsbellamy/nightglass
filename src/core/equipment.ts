@@ -271,54 +271,170 @@ function rollAffixes(
   return [affixes, rng];
 }
 
-export function rollDrop(input: RollDropInput): RollDropResult {
-  let lootRng = input.lootRng;
-
-  const [slot, afterSlot] = rollSlotCategory(lootRng);
-  lootRng = afterSlot;
+function rollDropPrefix(lootRng: LootRng): [
+  { slot: EquipmentSlotId; weaponClass?: ClassId | undefined },
+  LootRng,
+] {
+  let rng = lootRng;
+  const [slot, afterSlot] = rollSlotCategory(rng);
+  rng = afterSlot;
 
   let weaponClass: ClassId | undefined;
   if (slot === "weapon") {
-    const [pickedClass, afterClass] = rollClass(lootRng);
+    const [pickedClass, afterClass] = rollClass(rng);
     weaponClass = pickedClass;
-    lootRng = afterClass;
+    rng = afterClass;
   }
 
+  return [{ slot, weaponClass }, rng];
+}
+
+function completeDropRoll(input: {
+  content: Content;
+  itemLevel: ItemLevel;
+  rarity: Rarity;
+  lootRng: LootRng;
+  dropId: number;
+  awardedAtMs: number;
+  slot: EquipmentSlotId;
+  weaponClass?: ClassId | undefined;
+}): RollDropResult {
   const tier = tierForItemLevel(input.itemLevel);
-  const base = findEquipmentBase(input.content.equipmentBases, slot, tier, weaponClass);
-
-  const [rarity, afterRarity] = rollRarity(lootRng, input.stage.rarityOdds);
-  lootRng = afterRarity;
-
-  let resolvedRarity = rarity;
-  if (input.uncommonFloor && resolvedRarity === "common") {
-    resolvedRarity = "uncommon";
-  }
+  const base = findEquipmentBase(
+    input.content.equipmentBases,
+    input.slot,
+    tier,
+    input.weaponClass,
+  );
 
   const [affixes, afterAffixes] = rollAffixes(
-    lootRng,
+    input.lootRng,
     input.content,
-    slot,
+    input.slot,
     tier,
-    resolvedRarity,
-    weaponClass,
+    input.rarity,
+    input.weaponClass,
   );
-  lootRng = afterAffixes;
 
   return {
     drop: {
       dropId: input.dropId,
       baseId: base.id,
       itemLevel: input.itemLevel,
-      rarity: resolvedRarity,
+      rarity: input.rarity,
       affixes,
       awardedAtMs: input.awardedAtMs,
       seen: false,
       locked: false,
       assignedTo: null,
     },
-    lootRng,
+    lootRng: afterAffixes,
   };
+}
+
+export function rollDrop(input: RollDropInput): RollDropResult {
+  const [prefix, afterPrefix] = rollDropPrefix(input.lootRng);
+
+  const [rarity, afterRarity] = rollRarity(afterPrefix, input.stage.rarityOdds);
+
+  let resolvedRarity = rarity;
+  if (input.uncommonFloor && resolvedRarity === "common") {
+    resolvedRarity = "uncommon";
+  }
+
+  return completeDropRoll({
+    content: input.content,
+    itemLevel: input.itemLevel,
+    rarity: resolvedRarity,
+    lootRng: afterRarity,
+    dropId: input.dropId,
+    awardedAtMs: input.awardedAtMs,
+    slot: prefix.slot,
+    weaponClass: prefix.weaponClass,
+  });
+}
+
+export function nextRarity(rarity: Rarity): Rarity | null {
+  switch (rarity) {
+    case "common":
+      return "uncommon";
+    case "uncommon":
+      return "rare";
+    case "rare":
+      return "epic";
+    case "epic":
+      return null;
+    default:
+      throw new Error(`Unknown Rarity ${String(rarity)}`);
+  }
+}
+
+export const SALVAGE_BATCH_SIZE = 10;
+
+export function selectSalvageBatch(
+  armory: DropInstance[],
+): { rarity: Rarity; dropIds: number[] } | null {
+  const eligible = armory.filter(
+    (drop) => drop.assignedTo === null && !drop.locked && drop.rarity !== "epic",
+  );
+
+  const byRarity = new Map<Rarity, DropInstance[]>();
+  for (const drop of eligible) {
+    const group = byRarity.get(drop.rarity) ?? [];
+    group.push(drop);
+    byRarity.set(drop.rarity, group);
+  }
+
+  for (const rarity of RARITIES) {
+    if (rarity === "epic") {
+      continue;
+    }
+    const group = byRarity.get(rarity);
+    if (!group || group.length < SALVAGE_BATCH_SIZE) {
+      continue;
+    }
+
+    const sorted = [...group].sort((left, right) => {
+      if (left.itemLevel !== right.itemLevel) {
+        return right.itemLevel - left.itemLevel;
+      }
+      if (left.awardedAtMs !== right.awardedAtMs) {
+        return left.awardedAtMs - right.awardedAtMs;
+      }
+      return left.dropId - right.dropId;
+    });
+
+    return {
+      rarity,
+      dropIds: sorted.slice(0, SALVAGE_BATCH_SIZE).map((drop) => drop.dropId),
+    };
+  }
+
+  return null;
+}
+
+export interface RollSalvageDropInput {
+  content: Content;
+  itemLevel: ItemLevel;
+  rarity: Rarity;
+  lootRng: LootRng;
+  dropId: number;
+  awardedAtMs: number;
+}
+
+export function rollSalvageDrop(input: RollSalvageDropInput): RollDropResult {
+  const [prefix, afterPrefix] = rollDropPrefix(input.lootRng);
+
+  return completeDropRoll({
+    content: input.content,
+    itemLevel: input.itemLevel,
+    rarity: input.rarity,
+    lootRng: afterPrefix,
+    dropId: input.dropId,
+    awardedAtMs: input.awardedAtMs,
+    slot: prefix.slot,
+    weaponClass: prefix.weaponClass,
+  });
 }
 
 /** The one Affix → statistic mapping. Display formatters read it rather than restating it. */

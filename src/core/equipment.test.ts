@@ -1,12 +1,16 @@
 import { describe, expect, it } from "vitest";
 import { buildContent } from "../data";
-import { initialLootRngState } from "./rng";
+import { initialLootRngState, mulberry32Step } from "./rng";
 import { applyStatModifiers } from "./combat";
 import {
   assignDrop,
   discardDrops,
   dropStatModifiers,
+  nextRarity,
   rollDrop,
+  rollSalvageDrop,
+  SALVAGE_BATCH_SIZE,
+  selectSalvageBatch,
   snapshotEquipmentLoadouts,
   tierForItemLevel,
 } from "./equipment";
@@ -146,6 +150,132 @@ describe("Equipment Drop rolling", () => {
     expect(withFloor.drop.itemLevel).toBe(withoutFloor.drop.itemLevel);
     expect(withFloor.drop.rarity).toBe("uncommon");
     expect(withFloor.drop.affixes).toHaveLength(1);
+  });
+});
+
+describe("salvage equipment rules", () => {
+  it("maps each Rarity to the next Rarity on the salvage ladder", () => {
+    expect(nextRarity("common")).toBe("uncommon");
+    expect(nextRarity("uncommon")).toBe("rare");
+    expect(nextRarity("rare")).toBe("epic");
+    expect(nextRarity("epic")).toBeNull();
+  });
+
+  it("selects the lowest qualifying Rarity batch by Item Level, age, and Drop id", () => {
+    const base = fixtureContent.equipmentBases[0]!;
+    const armory: DropInstance[] = [
+      {
+        dropId: 1,
+        baseId: base.id,
+        itemLevel: 1,
+        rarity: "common",
+        affixes: [],
+        awardedAtMs: 100,
+        seen: false,
+        locked: false,
+        assignedTo: null,
+      },
+      {
+        dropId: 2,
+        baseId: base.id,
+        itemLevel: 3,
+        rarity: "common",
+        affixes: [],
+        awardedAtMs: 200,
+        seen: false,
+        locked: false,
+        assignedTo: null,
+      },
+      {
+        dropId: 3,
+        baseId: base.id,
+        itemLevel: 3,
+        rarity: "common",
+        affixes: [],
+        awardedAtMs: 150,
+        seen: false,
+        locked: false,
+        assignedTo: null,
+      },
+      ...Array.from({ length: 8 }, (_, index) => ({
+        dropId: index + 4,
+        baseId: base.id,
+        itemLevel: 2 as ItemLevel,
+        rarity: "common" as const,
+        affixes: [],
+        awardedAtMs: 300 + index,
+        seen: false,
+        locked: false,
+        assignedTo: null,
+      })),
+      ...Array.from({ length: 12 }, (_, index) => ({
+        dropId: index + 12,
+        baseId: base.id,
+        itemLevel: 1 as ItemLevel,
+        rarity: "uncommon" as const,
+        affixes: [],
+        awardedAtMs: 500 + index,
+        seen: false,
+        locked: false,
+        assignedTo: null,
+      })),
+    ];
+
+    expect(selectSalvageBatch(armory)).toEqual({
+      rarity: "common",
+      dropIds: [3, 2, 4, 5, 6, 7, 8, 9, 10, 11],
+    });
+    expect(SALVAGE_BATCH_SIZE).toBe(10);
+  });
+
+  it("rolls salvage Drops from the loot stream without drawing Rarity", () => {
+    const lootRng = { state: initialLootRngState(LOOT_SEED) };
+    const salvage = rollSalvageDrop({
+      content: fixtureContent,
+      itemLevel: 1,
+      rarity: "uncommon",
+      lootRng,
+      dropId: 42,
+      awardedAtMs: 4200,
+    });
+
+    expect(salvage.drop).toEqual({
+      dropId: 42,
+      baseId: "fixture-armor",
+      itemLevel: 1,
+      rarity: "uncommon",
+      affixes: [{ id: "flat-elemental-resistance", value: 2 }],
+      awardedAtMs: 4200,
+      seen: false,
+      locked: false,
+      assignedTo: null,
+    });
+
+    const prefixOnly = rollSalvageDrop({
+      content: fixtureContent,
+      itemLevel: 1,
+      rarity: "common",
+      lootRng: { state: initialLootRngState(LOOT_SEED) },
+      dropId: 1,
+      awardedAtMs: 100,
+    });
+    let affixStream = prefixOnly.lootRng.state;
+    for (let draw = 0; draw < 2; draw += 1) {
+      const [, next] = mulberry32Step(affixStream);
+      affixStream = next;
+    }
+    expect(affixStream).toBe(salvage.lootRng.state);
+
+    const encounterRoll = rollDrop({
+      content: fixtureContent,
+      stage: STAGE,
+      itemLevel: 1,
+      lootRng: { state: initialLootRngState(LOOT_SEED) },
+      dropId: 42,
+      awardedAtMs: 4200,
+    });
+    expect(encounterRoll.drop.baseId).toBe(salvage.drop.baseId);
+    expect(encounterRoll.lootRng.state).not.toBe(salvage.lootRng.state);
   });
 });
 

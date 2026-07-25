@@ -10,8 +10,16 @@ import type {
   ProgressionState,
   Snapshot,
 } from "../snapshot";
-import type { ClassId, Content, StageId } from "../types";
+import type { ClassId, Content, ItemLevel, Rarity, StageId } from "../types";
 import { fixtureContent } from "./fixture-content";
+
+export interface ArmoryDropSpec {
+  count?: number;
+  rarity?: Rarity;
+  itemLevel?: ItemLevel;
+  locked?: boolean;
+  baseId?: string;
+}
 
 export interface ScenarioBuilder {
   atStage(stage: StageId): ScenarioBuilder;
@@ -19,6 +27,7 @@ export interface ScenarioBuilder {
   withXp(classId: ClassId, xp: number): ScenarioBuilder;
   withParty(members: [ClassId, ClassId, ClassId], reserve: ClassId): ScenarioBuilder;
   withDrops(count: number): ScenarioBuilder;
+  withArmory(specs: ArmoryDropSpec[]): ScenarioBuilder;
   knockedOut(classId: ClassId): ScenarioBuilder;
   withOpponentsAtOneHealth(): ScenarioBuilder;
   /** A valid Snapshot at the current SCHEMA_VERSION. */
@@ -31,7 +40,7 @@ interface ScenarioState {
   party: [ClassId, ClassId, ClassId] | null;
   reserve: ClassId | null;
   xp: Partial<Record<ClassId, number>>;
-  dropCount: number;
+  armorySpecs: ArmoryDropSpec[];
   knockedOut: ClassId[];
   opponentsAtOneHealth: boolean;
 }
@@ -115,24 +124,30 @@ function applyKnockouts(attempt: AttemptState, classIds: ClassId[]): void {
   }
 }
 
-function makeDrops(content: Content, count: number): DropInstance[] {
-  const base = content.equipmentBases[0];
-  if (!base) {
+function expandArmorySpecs(content: Content, specs: ArmoryDropSpec[]): DropInstance[] {
+  const defaultBase = content.equipmentBases[0];
+  if (!defaultBase) {
     throw new Error("Content must define at least one Equipment Base");
   }
+
   const drops: DropInstance[] = [];
-  for (let i = 0; i < count; i += 1) {
-    drops.push({
-      dropId: i + 1,
-      baseId: base.id,
-      itemLevel: 1,
-      rarity: "common",
-      affixes: [],
-      awardedAtMs: 1,
-      seen: false,
-      locked: false,
-      assignedTo: null,
-    });
+  let dropIndex = 0;
+  for (const spec of specs) {
+    const count = spec.count ?? 1;
+    for (let index = 0; index < count; index += 1) {
+      dropIndex += 1;
+      drops.push({
+        dropId: dropIndex,
+        baseId: spec.baseId ?? defaultBase.id,
+        itemLevel: spec.itemLevel ?? 1,
+        rarity: spec.rarity ?? "common",
+        affixes: [],
+        awardedAtMs: dropIndex,
+        seen: false,
+        locked: spec.locked ?? false,
+        assignedTo: null,
+      });
+    }
   }
   return drops;
 }
@@ -152,7 +167,7 @@ class Builder implements ScenarioBuilder {
     party: null,
     reserve: null,
     xp: {},
-    dropCount: 0,
+    armorySpecs: [],
     knockedOut: [],
     opponentsAtOneHealth: false,
   };
@@ -181,7 +196,11 @@ class Builder implements ScenarioBuilder {
   }
 
   withDrops(count: number): ScenarioBuilder {
-    this.state.dropCount = count;
+    return this.withArmory([{ count }]);
+  }
+
+  withArmory(specs: ArmoryDropSpec[]): ScenarioBuilder {
+    this.state.armorySpecs.push(...specs);
     return this;
   }
 
@@ -212,7 +231,8 @@ class Builder implements ScenarioBuilder {
       progression.unlockedStage,
       this.state.stage,
     ) as StageId;
-    progression.armory = makeDrops(this.content, this.state.dropCount);
+    progression.armory = expandArmorySpecs(this.content, this.state.armorySpecs);
+    const armoryDropCount = progression.armory.length;
 
     const seed: Snapshot = {
       schemaVersion: SCHEMA_VERSION,
@@ -222,7 +242,7 @@ class Builder implements ScenarioBuilder {
       combatRngState: initialCombatRngState(),
       nextEventSeq: 1,
       nextAttemptId: 1,
-      nextDropId: Math.max(1, this.state.dropCount + 1),
+      nextDropId: Math.max(1, armoryDropCount + 1),
       progression,
       attempt: null,
       pendingEdits: [],
