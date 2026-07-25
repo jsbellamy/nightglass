@@ -140,6 +140,10 @@ _Avoid_: favorite, pinned item
 Newly awarded Equipment the player has not yet opened in the Armory. It remains fully owned and usable; opening it clears the marker.
 _Avoid_: unclaimed item, unread drop
 
+**Salvage**:
+Consuming ten unequipped, unlocked Equipment pieces of one Rarity to produce one newly rolled Drop at the next Rarity. The produced piece takes the lowest Item Level among the ten consumed; its Equipment Base and Affixes roll normally. Epic Equipment cannot be Salvaged.
+_Avoid_: scrap, dismantle, disenchant, breakdown
+
 **Weapon**:
 A Class-specific Equipment piece occupying the Weapon slot: Knight blade, Wizard focus, Priest relic, or Hunter bow.
 _Avoid_: main hand, class item
