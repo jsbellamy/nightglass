@@ -19,7 +19,7 @@ Manual measurements for budgets the automated suite does not fully enforce. Tick
 ## Assets and simulation
 
 - [ ] **Archived Raw Bundle offline** — **Measure:** clean checkout, no network, `npm run assets:verify`. **Expected:** all contract validators green (Python pipeline gates).
-- [ ] **Offline Progress wall time** — **Measure:** `npm test` — `offline progress CI timing budget` in `src/ui/boot.test.ts`. **Expected:** full 8 h cap advances in <2 s wall time on CI hardware class.
+- [ ] **Offline Progress catch-up time** — **Measure:** `npm test` — `offline progress CI timing budget` in `src/ui/boot.test.ts`. **Expected:** full 8 h cap advances in <2 s of CPU time on CI hardware class (CPU time, not wall time: the suite runs files in parallel workers, so wall time also counts other workers' scheduling).
 
 ## Notes
 

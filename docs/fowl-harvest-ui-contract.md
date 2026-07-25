@@ -268,8 +268,10 @@ behavior remain authoritative unless a later issue changes them.
 
 7. **Pending Edit.** Ability Loadout edits during a Stage Attempt follow Engine **Pending
    Edit** rules. When pending, show `pendingMarker()` with `[data-pending-kind="loadout"]`
-   and class `pending-marker pending-wave` (“Applies at next Wave”). Surface **effective**
-   Loadout in the UI; combat uses committed state until the Wave or Boss boundary.
+   and class `pending-marker pending-wave` (“Applies at next Wave”), hosted in the
+   always-present `pendingSlot()` so the marker appearing never reflows the surface.
+   Surface **effective** Loadout in the UI; combat uses committed state until the Wave or
+   Boss boundary.
 
 8. **Mechanical copy.** Slotted Abilities and Basic Attack may show name and icon where the
    compact layout requires it; **Available skills** strip tiles are **icon-only** with name
@@ -353,7 +355,9 @@ behavior remain authoritative unless a later issue changes them.
 8. **Pending Edit versus combat.** The tree reflects **effective** Talent state (pending
    edits applied in the Snapshot view). When a pending Talent edit exists, show
    `pendingMarker()` with `[data-pending-kind="talent"]` and class
-   `pending-marker pending-wave` (“Applies at next Wave”).
+   `pending-marker pending-wave` (“Applies at next Wave”), hosted in the always-present
+   `pendingSlot()`. Allocating a rank mid-Wave must not move the tree: the marker appearing
+   may not shift the rank steppers out from under the pointer.
 
 9. **No duplicate progression chrome.** Level and available Talent Points live only in the
    **Character header** (Character workspace rule 5). The Talents column must **not** render a

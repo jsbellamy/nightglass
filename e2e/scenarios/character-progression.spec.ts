@@ -232,7 +232,20 @@ test.describe("Character progression evidence scenarios", () => {
       ),
     ).toHaveText("−");
 
-    for (let i = 0; i < 5; i++) {
+    // The pending marker appears on the first allocation of the Attempt. It must
+    // not reflow the tree: it used to push every row 35px down, sliding the
+    // stepper the player just clicked out from under the pointer.
+    const stepperTop = () =>
+      allocate.evaluate((el) => Math.round(el.getBoundingClientRect().top));
+    const stepperTopBefore = await stepperTop();
+
+    await allocate.click();
+    await expect(dock.locator('[data-class-id="knight"] [data-pending-kind="talent"]')).toBeVisible();
+    expect(await stepperTop(), "pending marker does not shift the rank stepper").toBe(
+      stepperTopBefore,
+    );
+
+    for (let i = 0; i < 4; i++) {
       await allocate.click();
     }
     await expect(

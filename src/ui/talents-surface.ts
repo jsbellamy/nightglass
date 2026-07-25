@@ -19,7 +19,7 @@ import {
   type ClassTalentState,
   type TierTalentState,
 } from "./snapshot-view";
-import { el, mountSurfaceShell, pendingMarker } from "./surface-shell";
+import { el, mountSurfaceShell, pendingMarker, pendingSlot } from "./surface-shell";
 import { mountMechanicalPopoverController } from "./mechanical-popover";
 
 export interface TalentsSurface {
@@ -621,11 +621,12 @@ export function mountTalentsSurface(
         }),
       ];
 
+      let talentMarker: HTMLElement | null = null;
       if (hasPending) {
-        const marker = pendingMarker();
-        marker.dataset["pendingKind"] = "talent";
-        sectionChildren.push(marker);
+        talentMarker = pendingMarker();
+        talentMarker.dataset["pendingKind"] = "talent";
       }
+      sectionChildren.push(pendingSlot(talentMarker));
 
       sectionChildren.push(treeHost);
 

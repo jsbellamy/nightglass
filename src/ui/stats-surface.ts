@@ -10,7 +10,7 @@ import {
   type CharacterStatKey,
   type ModifierContribution,
 } from "./snapshot-view";
-import { el, mountSurfaceShell, pendingMarker } from "./surface-shell";
+import { el, mountSurfaceShell, pendingMarker, pendingSlot } from "./surface-shell";
 
 export interface StatsSurface {
   render(snapshot: ReadonlySnapshot | null, legality?: EngineLegalityView): void;
@@ -186,11 +186,12 @@ export function mountStatsSurface(root: HTMLElement, options: StatsSurfaceOption
         ]),
       ];
 
+      let statsMarker: HTMLElement | null = null;
       if (showPending) {
-        const marker = pendingMarker();
-        marker.dataset["pendingKind"] = "stats";
-        sectionChildren.push(marker);
+        statsMarker = pendingMarker();
+        statsMarker.dataset["pendingKind"] = "stats";
       }
+      sectionChildren.push(pendingSlot(statsMarker));
 
       sectionChildren.push(
         el(
