@@ -14,7 +14,9 @@ export type CharacterStatKey =
   | "firePower"
   | "frostPower"
   | "lightningPower"
-  | "lightPower";
+  | "lightPower"
+  | "critChance"
+  | "critDamage";
 
 export interface ModifierContribution {
   flat: number;
@@ -32,7 +34,9 @@ export interface CharacterStatBreakdownLine {
     | "Fire Power"
     | "Frost Power"
     | "Lightning Power"
-    | "Light Power";
+    | "Light Power"
+    | "Critical Chance"
+    | "Critical Damage";
   base: number;
   equipment: ModifierContribution;
   talents: ModifierContribution;
@@ -119,6 +123,20 @@ const STAT_LINE_DEFS: StatLineDef[] = [
     percentKey: "lightPower",
     totalKey: "lightPower",
   },
+  {
+    key: "critChance",
+    label: "Critical Chance",
+    baseKey: "critChance",
+    flatKey: "critChance",
+    totalKey: "critChance",
+  },
+  {
+    key: "critDamage",
+    label: "Critical Damage",
+    baseKey: "critDamage",
+    flatKey: "critDamage",
+    totalKey: "critDamage",
+  },
 ];
 
 function sumContribution(
@@ -194,7 +212,9 @@ export function statsDifferFromCommittedCombat(
     effective.firePower !== committed.firePower ||
     effective.frostPower !== committed.frostPower ||
     effective.lightningPower !== committed.lightningPower ||
-    effective.lightPower !== committed.lightPower
+    effective.lightPower !== committed.lightPower ||
+    effective.critChance !== committed.critChance ||
+    effective.critDamage !== committed.critDamage
   );
 }
 

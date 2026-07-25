@@ -51,6 +51,8 @@ const ALL_AFFIX_IDS: AffixId[] = [
   "percent-max-health",
   "flat-armor",
   "flat-elemental-resistance",
+  "flat-crit-chance",
+  "flat-crit-damage",
 ];
 
 const CLASS_IDS: ClassId[] = ["knight", "wizard", "priest", "hunter"];

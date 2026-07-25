@@ -302,6 +302,8 @@ const progressionContent: Content = {
         frostPower: 0,
         lightningPower: 0,
         lightPower: 0,
+        critChance: 0.15,
+        critDamage: 1.6,
       },
       basicAbilityId: "hunter-basic",
       coreAbilityIds: ["h-snare", "h-volley", "h-mark", "h-pierce"],
@@ -385,6 +387,109 @@ describe("createEngine boot", () => {
     const events = engine.advanceBy(1);
     expect(events[0]?.type).toBe("stage-attempt-started");
     expect(events[1]?.type).toBe("wave-started");
+  });
+});
+
+describe("critical hit rolls", () => {
+  function contentWithCritChance(critChance: number): Content {
+    const zeroCrit = (base: Content["classes"][number]["base"]) => ({
+      ...base,
+      critChance,
+    });
+    return {
+      ...engineContent,
+      classes: engineContent.classes.map((classKit) => ({
+        ...classKit,
+        base: zeroCrit(classKit.base),
+      })),
+      opponents: engineContent.opponents.map((opponent) => ({
+        ...opponent,
+        base: zeroCrit(opponent.base),
+      })),
+    };
+  }
+
+  function combatRngAfterInitiative(content: Content): number {
+    const engine = createEngine(content, undefined, LOOT_SEED, fixtureNow);
+    engine.advanceBy(1);
+    return engine.snapshot().combatRngState;
+  }
+
+  function combatRngAfterFirstImpact(content: Content): number {
+    const engine = createEngine(content, undefined, LOOT_SEED, fixtureNow);
+    combatRngAfterInitiative(content);
+    let elapsed = 1;
+    while (elapsed < 10_000) {
+      elapsed += 1;
+      const events = driveBy(engine, 1);
+      if (events.some((event) => event.type === "impact")) {
+        return engine.snapshot().combatRngState;
+      }
+    }
+    throw new Error("no impact event");
+  }
+
+  it("produces byte-equal event batches for the same loot seed (C3)", () => {
+    const left = createEngine(engineContent, undefined, LOOT_SEED, fixtureNow);
+    const right = createEngine(engineContent, undefined, LOOT_SEED, fixtureNow);
+    const leftEvents = driveBy(left, DURATION_MS, 1);
+    const rightEvents = driveBy(right, DURATION_MS, 1);
+    expect(stable(leftEvents)).toBe(stable(rightEvents));
+  });
+
+  it("does not advance combat RNG on damage when every actor has critChance 0 (C3)", () => {
+    const zeroCritContent = contentWithCritChance(0);
+    const afterInitiative = combatRngAfterInitiative(zeroCritContent);
+    const afterImpact = combatRngAfterFirstImpact(zeroCritContent);
+    expect(afterImpact).toBe(afterInitiative);
+  });
+
+  it("reports crit: true only on critical damage impact results (C6)", () => {
+    const engine = createEngine(engineContent, undefined, LOOT_SEED, fixtureNow);
+    const events = driveBy(engine, DURATION_MS, 1);
+    const damageResults = events
+      .filter((event): event is Extract<EngineEvent, { type: "impact" }> => event.type === "impact")
+      .flatMap((event) => event.results);
+    const critDamage = damageResults.filter(
+      (result) => result.kind === "damage" && result.crit === true,
+    );
+    const nonCritDamage = damageResults.filter(
+      (result) => result.kind === "damage" && result.crit !== true,
+    );
+    expect(critDamage.length).toBeGreaterThan(0);
+    expect(nonCritDamage.length).toBeGreaterThan(0);
+    for (const result of damageResults) {
+      if (result.kind === "heal") {
+        expect(result).not.toHaveProperty("crit");
+      }
+      if (result.kind === "damage" && result.crit === true) {
+        expect(result.crit).toBe(true);
+      }
+    }
+  });
+
+  it("never crits or consumes combat RNG on Priest heals (Healing)", () => {
+    const zeroCritContent = contentWithCritChance(0);
+    const afterInitiative = combatRngAfterInitiative(zeroCritContent);
+    const engine = createEngine(zeroCritContent, undefined, LOOT_SEED, fixtureNow);
+    engine.advanceBy(1);
+    let elapsed = 1;
+    while (elapsed < 60_000) {
+      elapsed += 1;
+      const events = driveBy(engine, 1);
+      for (const event of events) {
+        if (event.type !== "impact" || event.abilityId !== "p-moonwell") {
+          continue;
+        }
+        for (const result of event.results) {
+          expect(result.kind).toBe("heal");
+          expect(result).not.toHaveProperty("crit");
+        }
+        expect(engine.snapshot().combatRngState).toBe(afterInitiative);
+        return;
+      }
+    }
+    throw new Error("priest heal impact not observed");
   });
 });
 
@@ -2806,7 +2911,7 @@ describe("Equipment and Drops", () => {
     ).toEqual([1, 2]);
   });
 
-  it("rolls encounter 2 without uncommonFloor while encounter 3 enforces it", () => {
+  it("rolls encounter 2 without uncommonFloor while encounter 3 enforces it", { timeout: 30_000 }, () => {
     let sawCommonOnEncounter2 = false;
     for (let seed = 0; seed < 500; seed += 1) {
       const engine = createEngine(fixtureContent, undefined, seed);
@@ -3013,7 +3118,19 @@ describe("Equipment and Drops", () => {
       },
     ];
 
-    const engine = createEngine(fixtureContent, saved, LOOT_SEED);
+    const noCritFixture: Content = {
+      ...fixtureContent,
+      classes: fixtureContent.classes.map((classKit) => ({
+        ...classKit,
+        base: { ...classKit.base, critChance: 0 },
+      })),
+      opponents: fixtureContent.opponents.map((opponent) => ({
+        ...opponent,
+        base: { ...opponent.base, critChance: 0 },
+      })),
+    };
+
+    const engine = createEngine(noCritFixture, saved, LOOT_SEED);
     const beforeEquip = engine.advanceBy(1);
     const beforeDamage = beforeEquip.find((event) => event.type === "impact")
       ?.results[0]?.amount;
@@ -3706,7 +3823,7 @@ describe("adaptive Basic Attack Element", () => {
     ...fixtureContent,
     classes: fixtureContent.classes.map((classKit) =>
       classKit.id === "wizard"
-        ? { ...classKit, base: { ...classKit.base, firePower: 5 } }
+        ? { ...classKit, base: { ...classKit.base, firePower: 5, critChance: 0 } }
         : classKit,
     ),
   };

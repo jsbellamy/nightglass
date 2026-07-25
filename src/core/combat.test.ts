@@ -76,12 +76,94 @@ const emptyTarget = {
     frostPower: 0,
     lightningPower: 0,
     lightPower: 0,
+    critChance: 0.05,
+    critDamage: 1.5,
   },
   health: 100,
   maxHealth: 100,
   knockedOut: false,
   statuses: [] as const,
 };
+
+describe("critical hits", () => {
+  const critActor: BaseStats = {
+    maxHealth: 100,
+    physical: 100,
+    spell: 0,
+    armor: 0,
+    elementalResistance: 0,
+    firePower: 0,
+    frostPower: 0,
+    lightningPower: 0,
+    lightPower: 0,
+    critChance: 0.5,
+    critDamage: 1.5,
+  };
+  const armoredTarget = {
+    ...emptyTarget,
+    stats: { ...emptyTarget.stats, armor: 100 },
+  };
+
+  it("multiplies raw damage before mitigation on a crit (C4)", () => {
+    const crit = resolveEffect(
+      { kind: "damage", channel: "physical", coefficient: 1 },
+      critActor,
+      armoredTarget,
+      statusesById,
+      true,
+    );
+    const normal = resolveEffect(
+      { kind: "damage", channel: "physical", coefficient: 1 },
+      critActor,
+      armoredTarget,
+      statusesById,
+      false,
+    );
+    expect(crit.damageDetail?.amount).toBe(75);
+    expect(normal.damageDetail?.amount).toBe(50);
+    expect(crit.damageDetail?.crit).toBe(true);
+    expect(normal.damageDetail?.crit).toBe(false);
+  });
+});
+
+describe("critical chance and damage statistics", () => {
+  const base: BaseStats = {
+    maxHealth: 100,
+    physical: 10,
+    spell: 0,
+    armor: 0,
+    elementalResistance: 0,
+    firePower: 0,
+    frostPower: 0,
+    lightningPower: 0,
+    lightPower: 0,
+    critChance: 0.5,
+    critDamage: 1.5,
+  };
+
+  it("clamps effective Critical Chance to [0, 1] (C1)", () => {
+    expect(applyStatModifiers(base, [{ flat: { critChance: -1 } }]).critChance).toBe(0);
+    expect(applyStatModifiers(base, [{ flat: { critChance: 1 } }]).critChance).toBe(1);
+  });
+
+  it("floors effective Critical Damage at 1 (C1)", () => {
+    expect(applyStatModifiers(base, [{ flat: { critDamage: -1 } }]).critDamage).toBe(1);
+  });
+});
+
+describe("previewEffectRaw critical preview", () => {
+  it("shows non-critical raw damage even when critChance is 1 (C5)", () => {
+    const stats: BaseStats = {
+      ...emptyTarget.stats,
+      physical: 100,
+      critChance: 1,
+      critDamage: 1.5,
+    };
+    expect(
+      previewEffectRaw({ kind: "damage", channel: "physical", coefficient: 1 }, stats),
+    ).toBe(100);
+  });
+});
 
 describe("damage mitigation at impact", () => {
   it("uses max(1, floor(raw × 100 / (100 + mitigation))) with mitigation clamped ≥ 0", () => {
@@ -111,6 +193,8 @@ describe("damage mitigation at impact", () => {
       frostPower: 0,
       lightningPower: 0,
       lightPower: 0,
+      critChance: 0.05,
+      critDamage: 1.5,
     };
     const targetStats: BaseStats = {
       maxHealth: 200,
@@ -122,6 +206,8 @@ describe("damage mitigation at impact", () => {
       frostPower: 0,
       lightningPower: 0,
       lightPower: 0,
+      critChance: 0.05,
+      critDamage: 1.5,
     };
     const outcome = resolveEffect(
       { kind: "damage", channel: "elemental", coefficient: 1 },
@@ -149,6 +235,8 @@ describe("Power math", () => {
     frostPower: 0,
     lightningPower: 0,
     lightPower: 0,
+    critChance: 0.05,
+    critDamage: 1.5,
   };
 
   it("pools Spell and Element Power for elemental damage with worked numbers", () => {
@@ -163,6 +251,8 @@ describe("Power math", () => {
         frostPower: 0,
         lightningPower: 0,
         lightPower: 0,
+        critChance: 0.05,
+        critDamage: 1.5,
       },
       [
         { flat: { firePower: 20 } },
@@ -226,6 +316,8 @@ const zeroElementPowerStats: BaseStats = {
   frostPower: 0,
   lightningPower: 0,
   lightPower: 0,
+  critChance: 0.10,
+  critDamage: 1.7,
 };
 
 describe("adaptiveElementForBasic", () => {
@@ -526,9 +618,22 @@ describe("healing", () => {
   it("ignores mitigation and cannot overheal", () => {
     const outcome = resolveEffect(
       { kind: "heal", coefficient: 0.8 },
-      { maxHealth: 100, physical: 0, spell: 14, armor: 0, elementalResistance: 0, firePower: 0, frostPower: 0, lightningPower: 0, lightPower: 0 },
+      {
+        maxHealth: 100,
+        physical: 0,
+        spell: 14,
+        armor: 0,
+        elementalResistance: 0,
+        firePower: 0,
+        frostPower: 0,
+        lightningPower: 0,
+        lightPower: 0,
+        critChance: 1,
+        critDamage: 2,
+      },
       { ...emptyTarget, health: 95, maxHealth: 100 },
       statusesById,
+      true,
     );
     expect(outcome.healDetail?.amount).toBe(5);
     expect(
@@ -542,6 +647,8 @@ describe("healing", () => {
         frostPower: 0,
         lightningPower: 0,
         lightPower: 0,
+        critChance: 1,
+        critDamage: 2,
       }),
     ).toBe(11);
   });

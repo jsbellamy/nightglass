@@ -21,6 +21,7 @@ export type EngineEvent = { seq: number; atMs: number } & (
         element?: Element;
         amount: number;
         healthAfter: number;
+        crit?: boolean;
       }[];
     }
   | { type: "status-applied"; entityId: string; statusId: string; expiresAtMs: number }

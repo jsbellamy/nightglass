@@ -29,6 +29,8 @@ const DEFENSIVE_AFFIXES: AffixId[] = [
   "percent-max-health",
   "flat-armor",
   "flat-elemental-resistance",
+  "flat-crit-chance",
+  "flat-crit-damage",
 ];
 
 const ALL_AFFIXES: AffixId[] = [
@@ -220,7 +222,12 @@ function rollBandValue(
   uniform: number,
 ): number {
   const [min, max] = band;
-  if (affixId.includes("percent") && min >= 1) {
+  if (
+    (affixId.includes("percent") ||
+      affixId === "flat-crit-chance" ||
+      affixId === "flat-crit-damage") &&
+    min >= 1
+  ) {
     const rolled = min + Math.floor(uniform * (max - min + 1));
     return rolled / 100;
   }
@@ -348,6 +355,10 @@ function affixToModifier(affix: { id: AffixId; value: number }): StatModifiers {
       return { flat: { armor: affix.value } };
     case "flat-elemental-resistance":
       return { flat: { elementalResistance: affix.value } };
+    case "flat-crit-chance":
+      return { flat: { critChance: affix.value } };
+    case "flat-crit-damage":
+      return { flat: { critDamage: affix.value } };
     default:
       throw new Error(`Unknown Affix ${String(affix.id)}`);
   }

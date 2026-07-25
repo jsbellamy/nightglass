@@ -210,6 +210,8 @@ export const wizardClass: ClassKitDef = {
     frostPower: 0,
     lightningPower: 0,
     lightPower: 0,
+    critChance: 0.10,
+    critDamage: 1.7,
   },
   basicAbilityId: "arc-spark",
   coreAbilityIds: ["cinder-bloom", "frost-lance", "prism-ward", "thunder-ring"],

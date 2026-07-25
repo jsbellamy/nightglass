@@ -130,6 +130,22 @@ export const AFFIX_BANDS: AffixBandDef[] = [
     tier4: [21, 30],
     tier5: [31, 42],
   },
+  {
+    id: "flat-crit-chance",
+    tier1: [2, 4],
+    tier2: [4, 7],
+    tier3: [7, 10],
+    tier4: [10, 14],
+    tier5: [14, 19],
+  },
+  {
+    id: "flat-crit-damage",
+    tier1: [5, 10],
+    tier2: [10, 17],
+    tier3: [17, 25],
+    tier4: [25, 35],
+    tier5: [35, 48],
+  },
 ];
 
 /** Equipment Bases from issue #41 (display names authored; numbers from issue #8). */

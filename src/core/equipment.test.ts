@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { buildContent } from "../data";
 import { initialLootRngState } from "./rng";
+import { applyStatModifiers } from "./combat";
 import {
   assignDrop,
   discardDrops,
+  dropStatModifiers,
   rollDrop,
   snapshotEquipmentLoadouts,
   tierForItemLevel,
@@ -463,5 +465,60 @@ describe("Armory assignment", () => {
       wizard: {},
       priest: {},
     });
+  });
+});
+
+describe("critical hit affixes", () => {
+  it("maps a flat-crit-chance roll of 7 to +0.07 Critical Chance (C7)", () => {
+    const content = buildContent();
+    const knightBase = content.classes.find((entry) => entry.id === "knight")!.base;
+    const modifiers = dropStatModifiers(
+      {
+        dropId: 99,
+        baseId: "leafmail-vest",
+        itemLevel: 1,
+        rarity: "uncommon",
+        affixes: [{ id: "flat-crit-chance", value: 0.07 }],
+        awardedAtMs: 1,
+        seen: false,
+        locked: false,
+        assignedTo: null,
+      },
+      content,
+    );
+    const stats = applyStatModifiers(knightBase, modifiers);
+    expect(stats.critChance).toBeCloseTo(knightBase.critChance + 0.07);
+  });
+
+  it("can roll crit affixes from every equipment slot pool (C7)", () => {
+    const content = buildContent();
+    const found: Record<"weapon" | "armor" | "charm", boolean> = {
+      weapon: false,
+      armor: false,
+      charm: false,
+    };
+    for (let seed = 1; seed < 50_000; seed += 1) {
+      const rolled = rollDrop({
+        content,
+        stage: content.stages[0]!,
+        itemLevel: 6,
+        lootRng: { state: initialLootRngState(seed) },
+        dropId: seed,
+        awardedAtMs: seed,
+        uncommonFloor: true,
+      });
+      const base = content.equipmentBases.find((entry) => entry.id === rolled.drop.baseId)!;
+      const hasCritAffix = rolled.drop.affixes.some(
+        (affix) => affix.id === "flat-crit-chance" || affix.id === "flat-crit-damage",
+      );
+      if (!hasCritAffix) {
+        continue;
+      }
+      found[base.slot] = true;
+      if (found.weapon && found.armor && found.charm) {
+        return;
+      }
+    }
+    expect(found).toEqual({ weapon: true, armor: true, charm: true });
   });
 });
