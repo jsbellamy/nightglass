@@ -274,7 +274,8 @@ function statusIconKey(entityId: string, statusId: string): string {
 
 function damageNumberKey(entry: MergedDamageNumber): string {
   const channel = entry.channel ?? "";
-  return `${entry.targetId}:${entry.stableAtMs}:${entry.kind}:${channel}`;
+  const crit = entry.crit ? "1" : "0";
+  return `${entry.targetId}:${entry.stableAtMs}:${entry.kind}:${channel}:${crit}`;
 }
 
 function setImageSrcIfChanged(img: HTMLImageElement, url: string): void {
@@ -353,6 +354,7 @@ export function createPresentation(options: PresentationOptions): Presentation {
               ...(result.channel !== undefined ? { channel: result.channel } : {}),
               amount: result.amount,
               atMs: event.atMs,
+              ...(result.kind === "damage" && result.crit ? { crit: true } : {}),
             });
             if (result.kind === "damage") {
               activeHurts.set(result.targetId, { entityId: result.targetId, startedAtMs: event.atMs });
@@ -724,7 +726,7 @@ export function createPresentation(options: PresentationOptions): Presentation {
         damageLayer.append(float);
       }
       float.className = `${damageNumberClass(entry)} floating`;
-      float.textContent = formatDamageNumber(entry.amount, entry.kind);
+      float.textContent = formatDamageNumber(entry.amount, entry.kind, entry.crit);
       float.style.left = `${anchor.footX + DAMAGE_FLOAT_FOOT_OFFSET_X}px`;
       float.style.bottom = `${anchor.frameHeight + anchor.floorY + DAMAGE_FLOAT_ABOVE_FRAME_PX}px`;
     }

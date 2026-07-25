@@ -109,6 +109,28 @@ async function readCooldownPipState(
   });
 }
 
+type CriticalDamageSample = {
+  text: string;
+  bounds: Rect;
+  fontSize: number;
+  fontWeight: number;
+  baseFontSize: number;
+  baseFontWeight: number;
+};
+
+function assertDamageNumberInsideTile(tileRoot: Rect, sample: CriticalDamageSample): void {
+  expect(sample.bounds.w, "damage number width").toBeGreaterThan(0);
+  expect(sample.bounds.h, "damage number height").toBeGreaterThan(0);
+  expect(sample.bounds.x, "damage number inside tile").toBeGreaterThanOrEqual(tileRoot.x - 0.5);
+  expect(sample.bounds.y, "damage number inside tile").toBeGreaterThanOrEqual(tileRoot.y - 0.5);
+  expect(sample.bounds.x + sample.bounds.w, "damage number inside tile").toBeLessThanOrEqual(
+    tileRoot.x + tileRoot.w + 0.5,
+  );
+  expect(sample.bounds.y + sample.bounds.h, "damage number inside tile").toBeLessThanOrEqual(
+    tileRoot.y + tileRoot.h + 0.5,
+  );
+}
+
 function assertCombatantsFitTile(combatants: Rect[]): void {
   const collisions: string[] = [];
   for (let i = 0; i < combatants.length; i++) {
@@ -174,6 +196,7 @@ test.describe("Battle Tile evidence scenarios", () => {
         "aa-contrast",
         "effect-image-loading",
         "cooldown-pips",
+        "critical-hit-readability",
       ],
       spec: {
         id: "rendered-evidence:tile-baseline-combat",
@@ -321,6 +344,51 @@ test.describe("Battle Tile evidence scenarios", () => {
     });
     expect(cooldownEvidence?.partial, "used ability slot shows partial pip fill").toBe(true);
     expect(cooldownEvidence?.fullUnused, "unused slot stays full").toBe(true);
+
+    let criticalEvidence: CriticalDamageSample | null = null;
+    await advanceUntil(tile, async () => {
+      const payload = await tile.evaluate(() => {
+        const r = (el: Element | null): Rect => {
+          if (!el) {
+            return { x: 0, y: 0, w: 0, h: 0 };
+          }
+          const bounds = el.getBoundingClientRect();
+          return { x: bounds.x, y: bounds.y, w: bounds.width, h: bounds.height };
+        };
+        const criticalEl = document.querySelector<HTMLElement>(".damage-number.critical");
+        if (!criticalEl) {
+          return null;
+        }
+        const style = getComputedStyle(criticalEl);
+        const critical: CriticalDamageSample = {
+          text: criticalEl.textContent ?? "",
+          bounds: r(criticalEl),
+          fontSize: Number.parseFloat(style.fontSize),
+          fontWeight: Number.parseInt(style.fontWeight, 10),
+          baseFontSize: 8,
+          baseFontWeight: 800,
+        };
+        document.querySelector(".battlefield")?.classList.add("reduced-motion");
+        const retained = document.querySelector<HTMLElement>(".damage-number.critical");
+        return {
+          tileRoot: r(document.querySelector(".battle-tile")),
+          critical,
+          reducedMotionText: retained?.textContent ?? "",
+        };
+      });
+      if (!payload) {
+        return false;
+      }
+      assertDamageNumberInsideTile(payload.tileRoot, payload.critical);
+      expect(payload.reducedMotionText.endsWith("!"), "critical glyph retained under reduced motion").toBe(
+        true,
+      );
+      criticalEvidence = payload.critical;
+      return true;
+    });
+    expect(criticalEvidence?.text.endsWith("!"), "critical damage suffix").toBe(true);
+    expect(criticalEvidence?.fontSize, "critical font size").toBeGreaterThan(8);
+    expect(criticalEvidence?.fontWeight, "critical font weight").toBeGreaterThan(800);
 
     const reducedMotionPips = await tile.evaluate(() => {
       const battlefield = document.querySelector(".battlefield");
