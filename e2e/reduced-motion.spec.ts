@@ -31,7 +31,7 @@ test.describe("accessibility reduced motion", () => {
   defineEvidenceScenario(
     {
       id: "reduced-motion",
-      slugs: ["reduced-motion"],
+      slugs: ["reduced-motion", "cooldown-pips"],
       spec: { id: "reduced-motion:reduced-motion", path: "e2e/reduced-motion.spec.ts" },
       fixture: "reduced-motion-live-tile",
       reviewScenes: [],
@@ -60,6 +60,8 @@ test.describe("accessibility reduced motion", () => {
     expect(reducedState.reducedClass).toBe(true);
     expect(reducedState.pools).toBeGreaterThan(0);
     expect(reducedState.maxOffset).toBe(0);
+    const reducedPipCount = await reducedTile.locator(".party-zone .cooldown-pip").count();
+    expect(reducedPipCount, "cooldown pips visible under reduced motion").toBe(9);
 
     await reduced.finish();
 

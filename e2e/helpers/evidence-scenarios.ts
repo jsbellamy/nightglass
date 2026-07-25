@@ -13,6 +13,7 @@ export const EVIDENCE_SLUG_CATALOG = [
   "native-1x-scaling",
   "aa-contrast",
   "effect-image-loading",
+  "cooldown-pips",
   "cross-webview-delivery",
   "dock-surfaces",
   "dock-navigation-ownership",
