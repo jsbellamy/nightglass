@@ -827,6 +827,7 @@ describe("Battle Tile renderer", () => {
           health: 180,
           maxHealth: 200,
           knockedOut: false,
+          initiativeReadyAtMs: 0,
           action: null,
           cooldownReadyAtMs: {},
           statuses: [],
