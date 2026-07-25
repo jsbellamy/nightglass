@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { AbilityDef, OpponentDef } from "../core/types";
 import { opponentAbilityCandidates } from "../core/combat";
+import { validateContent } from "../core/validate-content";
 import { buildContent } from "./index";
 import { opponentAbilities, opponents as shippedOpponents } from "./opponents";
 
@@ -19,9 +20,40 @@ const EXPECTED_OPPONENT_IDS = [
   "cornquacker-s6-33",
   "cornquacker-s6-32",
   "cornquacker-s6-26",
+  "milkshake-mallard-s4-27",
+  "milkshake-mallard-s4-20",
+  "balewaddle-s4-26",
+  "pie-widgeon-s4-20",
+  "milkshake-mallard-s5-20",
+  "balewaddle-s5-33",
+  "balewaddle-s5-20",
+  "pie-widgeon-s5-33",
+  "pie-widgeon-s5-20",
+  "milkshake-mallard-s6-32",
+  "balewaddle-s6-32",
+  "balewaddle-s6-26",
+  "pie-widgeon-s6-26",
   "the-fryer",
   "scarequack",
   "the-combine",
+] as const;
+
+const NEW_FOWL_FAMILIES = ["milkshake-mallard", "balewaddle", "pie-widgeon"] as const;
+
+const NEW_OPPONENT_IDS = [
+  "milkshake-mallard-s4-27",
+  "milkshake-mallard-s4-20",
+  "balewaddle-s4-26",
+  "pie-widgeon-s4-20",
+  "milkshake-mallard-s5-20",
+  "balewaddle-s5-33",
+  "balewaddle-s5-20",
+  "pie-widgeon-s5-33",
+  "pie-widgeon-s5-20",
+  "milkshake-mallard-s6-32",
+  "balewaddle-s6-32",
+  "balewaddle-s6-26",
+  "pie-widgeon-s6-26",
 ] as const;
 
 function abilityById(abilities: AbilityDef[], id: string): AbilityDef {
@@ -394,6 +426,155 @@ describe("Fowl Harvest Opponents", () => {
     ]);
   });
 
+  it("keeps new ordinary families, flags, and sprite keys on spec", async () => {
+    const { fowlHarvestOpponents } = await import("./fowl-harvest-opponents");
+
+    for (const id of NEW_OPPONENT_IDS) {
+      const opponent = opponentById(fowlHarvestOpponents, id);
+      expect(opponent.boss).toBe(false);
+      expect(opponent.family).toBe(opponent.spriteKey);
+      expect(NEW_FOWL_FAMILIES).toContain(opponent.spriteKey);
+    }
+  });
+
+  it("reuses shipped stat blocks for new families without per-family variation", async () => {
+    const { fowlHarvestOpponents } = await import("./fowl-harvest-opponents");
+
+    const burgerS4 = opponentById(fowlHarvestOpponents, "burger-drake-s4-27a").base;
+    const cornS5 = opponentById(fowlHarvestOpponents, "cornquacker-s5-34").base;
+    const burgerS6 = opponentById(fowlHarvestOpponents, "burger-drake-s6-33").base;
+    const cornS6 = opponentById(fowlHarvestOpponents, "cornquacker-s6-33").base;
+
+    for (const id of [
+      "milkshake-mallard-s4-27",
+      "milkshake-mallard-s4-20",
+      "balewaddle-s4-26",
+      "pie-widgeon-s4-20",
+    ]) {
+      expect(opponentById(fowlHarvestOpponents, id).base).toBe(burgerS4);
+    }
+
+    for (const id of [
+      "milkshake-mallard-s5-20",
+      "balewaddle-s5-33",
+      "balewaddle-s5-20",
+      "pie-widgeon-s5-33",
+      "pie-widgeon-s5-20",
+    ]) {
+      expect(opponentById(fowlHarvestOpponents, id).base).toBe(cornS5);
+    }
+
+    expect(opponentById(fowlHarvestOpponents, "milkshake-mallard-s6-32").base).toBe(burgerS6);
+    expect(opponentById(fowlHarvestOpponents, "pie-widgeon-s6-26").base).toBe(burgerS6);
+
+    for (const id of ["balewaddle-s6-32", "balewaddle-s6-26"]) {
+      expect(opponentById(fowlHarvestOpponents, id).base).toBe(cornS6);
+    }
+  });
+
+  it("authors approved kits for new families with core before basic and cooldown slots on spec", async () => {
+    const { fowlHarvestOpponentAbilities, fowlHarvestOpponents } = await import(
+      "./fowl-harvest-opponents"
+    );
+
+    expect(abilityById(fowlHarvestOpponentAbilities, "milkshake-mallard-brainfreeze")).toMatchObject({
+      name: "Brainfreeze",
+      slot: "core",
+      classId: "knight",
+      targeting: { kind: "closest-opponent" },
+      windUpMs: 470,
+      recoveryMs: 690,
+      cooldownMs: 8_500,
+      effects: [
+        { kind: "damage", channel: "elemental", element: "frost", coefficient: 0.9 },
+        { kind: "apply-status", statusId: "timeslip" },
+      ],
+    });
+    expect(abilityById(fowlHarvestOpponentAbilities, "milkshake-mallard-straw-jab")).toMatchObject({
+      name: "Straw Jab",
+      slot: "basic",
+      classId: "knight",
+      targeting: { kind: "closest-opponent" },
+      windUpMs: 410,
+      recoveryMs: 670,
+      cooldownMs: 0,
+      effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
+    });
+
+    expect(abilityById(fowlHarvestOpponentAbilities, "balewaddle-chaff-burst")).toMatchObject({
+      name: "Chaff Burst",
+      slot: "core",
+      classId: "knight",
+      targeting: { kind: "all-opponents" },
+      windUpMs: 590,
+      recoveryMs: 710,
+      cooldownMs: 9_000,
+      effects: [
+        { kind: "damage", channel: "physical", coefficient: 0.55 },
+        { kind: "apply-status", statusId: "shaken" },
+      ],
+    });
+    expect(abilityById(fowlHarvestOpponentAbilities, "balewaddle-bale-bump")).toMatchObject({
+      name: "Bale Bump",
+      slot: "basic",
+      classId: "knight",
+      targeting: { kind: "closest-opponent" },
+      windUpMs: 440,
+      recoveryMs: 690,
+      cooldownMs: 0,
+      effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
+    });
+
+    expect(abilityById(fowlHarvestOpponentAbilities, "pie-widgeon-scalding-slice")).toMatchObject({
+      name: "Scalding Slice",
+      slot: "core",
+      classId: "knight",
+      targeting: { kind: "closest-opponent" },
+      windUpMs: 460,
+      recoveryMs: 680,
+      cooldownMs: 8_000,
+      effects: [
+        { kind: "damage", channel: "elemental", element: "fire", coefficient: 0.85 },
+        { kind: "apply-status", statusId: "scalded" },
+      ],
+    });
+    expect(abilityById(fowlHarvestOpponentAbilities, "pie-widgeon-crust-peck")).toMatchObject({
+      name: "Crust Peck",
+      slot: "basic",
+      classId: "knight",
+      targeting: { kind: "closest-opponent" },
+      windUpMs: 430,
+      recoveryMs: 660,
+      cooldownMs: 0,
+      effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
+    });
+
+    for (const ability of fowlHarvestOpponentAbilities.filter((entry) =>
+      entry.id.startsWith("milkshake-mallard-") ||
+      entry.id.startsWith("balewaddle-") ||
+      entry.id.startsWith("pie-widgeon-"),
+    )) {
+      if (ability.slot === "core") {
+        expect(ability.cooldownMs).toBeGreaterThan(0);
+      } else {
+        expect(ability.cooldownMs).toBe(0);
+      }
+    }
+
+    expect(opponentById(fowlHarvestOpponents, "milkshake-mallard-s4-27").abilityIds).toEqual([
+      "milkshake-mallard-brainfreeze",
+      "milkshake-mallard-straw-jab",
+    ]);
+    expect(opponentById(fowlHarvestOpponents, "balewaddle-s5-33").abilityIds).toEqual([
+      "balewaddle-chaff-burst",
+      "balewaddle-bale-bump",
+    ]);
+    expect(opponentById(fowlHarvestOpponents, "pie-widgeon-s6-26").abilityIds).toEqual([
+      "pie-widgeon-scalding-slice",
+      "pie-widgeon-crust-peck",
+    ]);
+  });
+
   it("lists specials before the authored Basic in opponentAbilityCandidates", async () => {
     const { fowlHarvestOpponentAbilities, fowlHarvestOpponents } = await import(
       "./fowl-harvest-opponents"
@@ -419,7 +600,7 @@ describe("Fowl Harvest Opponents", () => {
     }
   });
 
-  it("is wired into shipped opponents and abilities", async () => {
+  it("is wired into shipped opponents and abilities without validateContent violations", async () => {
     const { fowlHarvestOpponentAbilities, fowlHarvestOpponents } = await import(
       "./fowl-harvest-opponents"
     );
@@ -435,5 +616,6 @@ describe("Fowl Harvest Opponents", () => {
     expect(
       opponentAbilities.every((ability) => assembled.abilities.some((entry) => entry.id === ability.id)),
     ).toBe(true);
+    expect(validateContent(assembled)).toEqual([]);
   });
 });

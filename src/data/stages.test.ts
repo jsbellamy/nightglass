@@ -59,6 +59,9 @@ const MOONBERRY_OPPONENT_IDS = [
 const FOWL_SPRITE_KEYS = [
   "burger-drake",
   "cornquacker",
+  "milkshake-mallard",
+  "balewaddle",
+  "pie-widgeon",
   "the-fryer",
   "scarequack",
   "the-combine",
