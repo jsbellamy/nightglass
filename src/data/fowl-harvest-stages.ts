@@ -7,14 +7,14 @@ export const fowlHarvestStages: StageDef[] = [
     name: "Last Stop Diner",
     waves: [
       {
-        opponents: ["burger-drake-s4-27a", "burger-drake-s4-27b", "burger-drake-s4-26"],
+        opponents: ["burger-drake-s4-27a", "milkshake-mallard-s4-27", "balewaddle-s4-26"],
       },
       {
         opponents: [
           "burger-drake-s4-20",
           "burger-drake-s4-20",
-          "burger-drake-s4-20",
-          "burger-drake-s4-20",
+          "pie-widgeon-s4-20",
+          "milkshake-mallard-s4-20",
         ],
       },
     ],
@@ -27,15 +27,15 @@ export const fowlHarvestStages: StageDef[] = [
     name: "Crooked Cornfield",
     waves: [
       {
-        opponents: ["cornquacker-s5-34", "cornquacker-s5-33a", "cornquacker-s5-33b"],
+        opponents: ["cornquacker-s5-34", "balewaddle-s5-33", "pie-widgeon-s5-33"],
       },
       {
         opponents: [
           "cornquacker-s5-20",
           "cornquacker-s5-20",
-          "cornquacker-s5-20",
-          "cornquacker-s5-20",
-          "cornquacker-s5-20",
+          "milkshake-mallard-s5-20",
+          "balewaddle-s5-20",
+          "pie-widgeon-s5-20",
         ],
       },
     ],
@@ -50,18 +50,18 @@ export const fowlHarvestStages: StageDef[] = [
       {
         opponents: [
           "burger-drake-s6-33",
-          "burger-drake-s6-32",
           "cornquacker-s6-33",
-          "cornquacker-s6-32",
+          "milkshake-mallard-s6-32",
+          "balewaddle-s6-32",
         ],
       },
       {
         opponents: [
+          "pie-widgeon-s6-26",
+          "pie-widgeon-s6-26",
+          "cornquacker-s6-26",
           "burger-drake-s6-26",
-          "burger-drake-s6-26",
-          "cornquacker-s6-26",
-          "cornquacker-s6-26",
-          "cornquacker-s6-26",
+          "balewaddle-s6-26",
         ],
       },
     ],

@@ -25,7 +25,7 @@ describe("Fowl Harvest Stages 4–6", () => {
     ]);
   });
 
-  it("Stage 4 is three Burger Drakes, four Burger Drakes, then solo The Fryer", async () => {
+  it("Stage 4 draws from the five-family pool, then solo The Fryer", async () => {
     const { fowlHarvestStages } = await import("./fowl-harvest-stages");
     const stage = fowlHarvestStages.find((entry) => entry.id === 4);
     if (!stage) {
@@ -34,19 +34,19 @@ describe("Fowl Harvest Stages 4–6", () => {
 
     expect(stage.waves[0]!.opponents).toEqual([
       "burger-drake-s4-27a",
-      "burger-drake-s4-27b",
-      "burger-drake-s4-26",
+      "milkshake-mallard-s4-27",
+      "balewaddle-s4-26",
     ]);
     expect(stage.waves[1]!.opponents).toEqual([
       "burger-drake-s4-20",
       "burger-drake-s4-20",
-      "burger-drake-s4-20",
-      "burger-drake-s4-20",
+      "pie-widgeon-s4-20",
+      "milkshake-mallard-s4-20",
     ]);
     expect(stage.boss.opponents).toEqual(["the-fryer"]);
   });
 
-  it("Stage 5 is three Cornquackers, five Cornquackers, then solo Scarequack", async () => {
+  it("Stage 5 draws from the five-family pool, then solo Scarequack", async () => {
     const { fowlHarvestStages } = await import("./fowl-harvest-stages");
     const stage = fowlHarvestStages.find((entry) => entry.id === 5);
     if (!stage) {
@@ -55,20 +55,20 @@ describe("Fowl Harvest Stages 4–6", () => {
 
     expect(stage.waves[0]!.opponents).toEqual([
       "cornquacker-s5-34",
-      "cornquacker-s5-33a",
-      "cornquacker-s5-33b",
+      "balewaddle-s5-33",
+      "pie-widgeon-s5-33",
     ]);
     expect(stage.waves[1]!.opponents).toEqual([
       "cornquacker-s5-20",
       "cornquacker-s5-20",
-      "cornquacker-s5-20",
-      "cornquacker-s5-20",
-      "cornquacker-s5-20",
+      "milkshake-mallard-s5-20",
+      "balewaddle-s5-20",
+      "pie-widgeon-s5-20",
     ]);
     expect(stage.boss.opponents).toEqual(["scarequack"]);
   });
 
-  it("Stage 6 is mixed Burger and Corn waves then solo The Combine", async () => {
+  it("Stage 6 draws from the five-family pool, then solo The Combine", async () => {
     const { fowlHarvestStages } = await import("./fowl-harvest-stages");
     const stage = fowlHarvestStages.find((entry) => entry.id === 6);
     if (!stage) {
@@ -77,18 +77,39 @@ describe("Fowl Harvest Stages 4–6", () => {
 
     expect(stage.waves[0]!.opponents).toEqual([
       "burger-drake-s6-33",
-      "burger-drake-s6-32",
       "cornquacker-s6-33",
-      "cornquacker-s6-32",
+      "milkshake-mallard-s6-32",
+      "balewaddle-s6-32",
     ]);
     expect(stage.waves[1]!.opponents).toEqual([
+      "pie-widgeon-s6-26",
+      "pie-widgeon-s6-26",
+      "cornquacker-s6-26",
       "burger-drake-s6-26",
-      "burger-drake-s6-26",
-      "cornquacker-s6-26",
-      "cornquacker-s6-26",
-      "cornquacker-s6-26",
+      "balewaddle-s6-26",
     ]);
     expect(stage.boss.opponents).toEqual(["the-combine"]);
+  });
+
+  it("Stages 4–6 ordinary waves use at least three families with no family exceeding half the slots", () => {
+    const content = buildContent();
+    const opponentById = new Map(content.opponents.map((opponent) => [opponent.id, opponent]));
+
+    for (const stage of fowlHarvestStages) {
+      for (const wave of stage.waves) {
+        const familyCounts = new Map<string, number>();
+        for (const opponentId of wave.opponents) {
+          const opponent = opponentById.get(opponentId);
+          if (!opponent) {
+            throw new Error(`missing opponent ${opponentId}`);
+          }
+          familyCounts.set(opponent.family, (familyCounts.get(opponent.family) ?? 0) + 1);
+        }
+        expect(familyCounts.size).toBeGreaterThanOrEqual(3);
+        const maxFamilySlots = Math.max(...familyCounts.values());
+        expect(maxFamilySlots).toBeLessThanOrEqual(wave.opponents.length / 2);
+      }
+    }
   });
 
   it("gives every Boss a solo encounter and rarity odds that sum to 100", async () => {
