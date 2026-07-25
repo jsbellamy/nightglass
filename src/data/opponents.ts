@@ -14,7 +14,7 @@ import {
  */
 
 const PIPCAP_1_STATS: BaseStats = {
-  maxHealth: 55,
+  maxHealth: 72,
   physical: 9,
   elemental: 0,
   armor: 4,
@@ -22,7 +22,7 @@ const PIPCAP_1_STATS: BaseStats = {
 };
 
 const PIPCAP_2_STATS: BaseStats = {
-  maxHealth: 95,
+  maxHealth: 124,
   physical: 13,
   elemental: 0,
   armor: 7,
@@ -30,7 +30,7 @@ const PIPCAP_2_STATS: BaseStats = {
 };
 
 const PIPCAP_3_STATS: BaseStats = {
-  maxHealth: 140,
+  maxHealth: 182,
   physical: 18,
   elemental: 0,
   armor: 10,
@@ -38,7 +38,7 @@ const PIPCAP_3_STATS: BaseStats = {
 };
 
 const BOSS_1_STATS: BaseStats = {
-  maxHealth: 420,
+  maxHealth: 546,
   physical: 16,
   elemental: 6,
   armor: 12,
@@ -46,7 +46,7 @@ const BOSS_1_STATS: BaseStats = {
 };
 
 const BOSS_2_STATS: BaseStats = {
-  maxHealth: 700,
+  maxHealth: 910,
   physical: 22,
   elemental: 10,
   armor: 16,
@@ -54,7 +54,7 @@ const BOSS_2_STATS: BaseStats = {
 };
 
 const BOSS_3_STATS: BaseStats = {
-  maxHealth: 1050,
+  maxHealth: 1365,
   physical: 28,
   elemental: 14,
   armor: 20,

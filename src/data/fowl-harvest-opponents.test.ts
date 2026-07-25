@@ -106,7 +106,7 @@ describe("Fowl Harvest Opponents", () => {
     };
 
     const burgerS4 = {
-      maxHealth: 190,
+      maxHealth: 247,
       physical: 22,
       elemental: 20,
       armor: 12,
@@ -117,7 +117,7 @@ describe("Fowl Harvest Opponents", () => {
     }
 
     const cornS5 = {
-      maxHealth: 240,
+      maxHealth: 312,
       physical: 28,
       elemental: 8,
       armor: 17,
@@ -128,7 +128,7 @@ describe("Fowl Harvest Opponents", () => {
     }
 
     const burgerS6 = {
-      maxHealth: 300,
+      maxHealth: 390,
       physical: 26,
       elemental: 30,
       armor: 22,
@@ -139,7 +139,7 @@ describe("Fowl Harvest Opponents", () => {
     }
 
     const cornS6 = {
-      maxHealth: 320,
+      maxHealth: 416,
       physical: 34,
       elemental: 10,
       armor: 24,
@@ -150,21 +150,21 @@ describe("Fowl Harvest Opponents", () => {
     }
 
     expectStats("the-fryer", {
-      maxHealth: 1500,
+      maxHealth: 1950,
       physical: 34,
       elemental: 32,
       armor: 25,
       elementalResistance: 28,
     });
     expectStats("scarequack", {
-      maxHealth: 2100,
+      maxHealth: 2730,
       physical: 42,
       elemental: 18,
       armor: 32,
       elementalResistance: 30,
     });
     expectStats("the-combine", {
-      maxHealth: 3000,
+      maxHealth: 3900,
       physical: 52,
       elemental: 24,
       armor: 38,

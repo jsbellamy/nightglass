@@ -116,7 +116,7 @@ describe("Unwound Belfry Opponents", () => {
     };
 
     const tickmothS7 = {
-      maxHealth: 340,
+      maxHealth: 442,
       physical: 30,
       elemental: 34,
       armor: 20,
@@ -127,7 +127,7 @@ describe("Unwound Belfry Opponents", () => {
     }
 
     expectStats("tickmoth-s8-38", {
-      maxHealth: 400,
+      maxHealth: 520,
       physical: 34,
       elemental: 40,
       armor: 24,
@@ -135,7 +135,7 @@ describe("Unwound Belfry Opponents", () => {
     });
 
     const tickmothS9 = {
-      maxHealth: 560,
+      maxHealth: 728,
       physical: 44,
       elemental: 52,
       armor: 30,
@@ -146,7 +146,7 @@ describe("Unwound Belfry Opponents", () => {
     }
 
     const tollbatS7 = {
-      maxHealth: 430,
+      maxHealth: 559,
       physical: 42,
       elemental: 16,
       armor: 30,
@@ -157,7 +157,7 @@ describe("Unwound Belfry Opponents", () => {
     }
 
     const tollbatS8 = {
-      maxHealth: 500,
+      maxHealth: 650,
       physical: 48,
       elemental: 18,
       armor: 34,
@@ -168,7 +168,7 @@ describe("Unwound Belfry Opponents", () => {
     }
 
     expectStats("tollbat-s9-60", {
-      maxHealth: 680,
+      maxHealth: 884,
       physical: 60,
       elemental: 24,
       armor: 42,
@@ -176,7 +176,7 @@ describe("Unwound Belfry Opponents", () => {
     });
 
     const spiderS8 = {
-      maxHealth: 520,
+      maxHealth: 676,
       physical: 36,
       elemental: 30,
       armor: 36,
@@ -187,7 +187,7 @@ describe("Unwound Belfry Opponents", () => {
     }
 
     const spiderS9 = {
-      maxHealth: 720,
+      maxHealth: 936,
       physical: 46,
       elemental: 40,
       armor: 46,
@@ -198,28 +198,28 @@ describe("Unwound Belfry Opponents", () => {
     }
 
     expectStats("the-vigil", {
-      maxHealth: 3600,
+      maxHealth: 4680,
       physical: 46,
       elemental: 40,
       armor: 34,
       elementalResistance: 34,
     });
     expectStats("the-tocsin", {
-      maxHealth: 4400,
+      maxHealth: 5720,
       physical: 54,
       elemental: 34,
       armor: 40,
       elementalResistance: 38,
     });
     expectStats("the-unwound", {
-      maxHealth: 6500,
+      maxHealth: 8450,
       physical: 66,
       elemental: 44,
       armor: 50,
       elementalResistance: 46,
     });
     expectStats("aphelion", {
-      maxHealth: 9000,
+      maxHealth: 11700,
       physical: 78,
       elemental: 70,
       armor: 58,

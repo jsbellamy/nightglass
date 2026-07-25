@@ -3,7 +3,7 @@ import type { AbilityDef, BaseStats, OpponentDef } from "../core/types";
 /** Unwound Belfry opponents and kits (issue #592). */
 
 const TICKMOTH_S7_STATS: BaseStats = {
-  maxHealth: 340,
+  maxHealth: 442,
   physical: 30,
   elemental: 34,
   armor: 20,
@@ -11,7 +11,7 @@ const TICKMOTH_S7_STATS: BaseStats = {
 };
 
 const TICKMOTH_S8_STATS: BaseStats = {
-  maxHealth: 400,
+  maxHealth: 520,
   physical: 34,
   elemental: 40,
   armor: 24,
@@ -19,7 +19,7 @@ const TICKMOTH_S8_STATS: BaseStats = {
 };
 
 const TICKMOTH_S9_STATS: BaseStats = {
-  maxHealth: 560,
+  maxHealth: 728,
   physical: 44,
   elemental: 52,
   armor: 30,
@@ -27,7 +27,7 @@ const TICKMOTH_S9_STATS: BaseStats = {
 };
 
 const TOLLBAT_S7_STATS: BaseStats = {
-  maxHealth: 430,
+  maxHealth: 559,
   physical: 42,
   elemental: 16,
   armor: 30,
@@ -35,7 +35,7 @@ const TOLLBAT_S7_STATS: BaseStats = {
 };
 
 const TOLLBAT_S8_STATS: BaseStats = {
-  maxHealth: 500,
+  maxHealth: 650,
   physical: 48,
   elemental: 18,
   armor: 34,
@@ -43,7 +43,7 @@ const TOLLBAT_S8_STATS: BaseStats = {
 };
 
 const TOLLBAT_S9_STATS: BaseStats = {
-  maxHealth: 680,
+  maxHealth: 884,
   physical: 60,
   elemental: 24,
   armor: 42,
@@ -51,7 +51,7 @@ const TOLLBAT_S9_STATS: BaseStats = {
 };
 
 const SPIDER_S8_STATS: BaseStats = {
-  maxHealth: 520,
+  maxHealth: 676,
   physical: 36,
   elemental: 30,
   armor: 36,
@@ -59,7 +59,7 @@ const SPIDER_S8_STATS: BaseStats = {
 };
 
 const SPIDER_S9_STATS: BaseStats = {
-  maxHealth: 720,
+  maxHealth: 936,
   physical: 46,
   elemental: 40,
   armor: 46,
@@ -67,7 +67,7 @@ const SPIDER_S9_STATS: BaseStats = {
 };
 
 const VIGIL_STATS: BaseStats = {
-  maxHealth: 3600,
+  maxHealth: 4680,
   physical: 46,
   elemental: 40,
   armor: 34,
@@ -75,7 +75,7 @@ const VIGIL_STATS: BaseStats = {
 };
 
 const TOCSIN_STATS: BaseStats = {
-  maxHealth: 4400,
+  maxHealth: 5720,
   physical: 54,
   elemental: 34,
   armor: 40,
@@ -83,7 +83,7 @@ const TOCSIN_STATS: BaseStats = {
 };
 
 const UNWOUND_STATS: BaseStats = {
-  maxHealth: 6500,
+  maxHealth: 8450,
   physical: 66,
   elemental: 44,
   armor: 50,
@@ -91,7 +91,7 @@ const UNWOUND_STATS: BaseStats = {
 };
 
 const APHELION_STATS: BaseStats = {
-  maxHealth: 9000,
+  maxHealth: 11700,
   physical: 78,
   elemental: 70,
   armor: 58,
