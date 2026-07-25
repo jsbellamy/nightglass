@@ -1,0 +1,34 @@
+{
+  "status": "promoted",
+  "candidate": "docs/research/evidence/moonberry/lanternmoth/scratch/lanternmoth-c1.png",
+  "raw": "assets-raw/grid_raw/lanternmoth.png",
+  "sidecar": "assets-raw/grid_raw/lanternmoth.source.json",
+  "runtime": "src/assets/sprites/lanternmoth.png",
+  "manifest": "src/assets/sprites/manifest.json",
+  "measurement": {
+    "candidate": "docs/research/evidence/moonberry/lanternmoth/scratch/lanternmoth-c1.png",
+    "tag": "lanternmoth",
+    "status": "advance",
+    "primary_failure": null,
+    "next_action": "advance to visual review",
+    "gates": [],
+    "clipped_sides": [],
+    "cursor_stamp_removed": false,
+    "opaque_bounds": [
+      0,
+      0,
+      751,
+      750
+    ],
+    "fitted_opaque_size": [
+      30,
+      29
+    ],
+    "profile": {
+      "role": "ordinary-opponent",
+      "max_opaque_w": 30,
+      "max_opaque_h": 68,
+      "facing": "left"
+    }
+  }
+}
