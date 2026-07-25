@@ -45,8 +45,15 @@ def check(label, condition, detail=""):
     print(f"  [{status}] {label}{(' -- ' + detail) if detail else ''}")
 
 
+_GOOD_FRAME = None
+
+
 def good_frame():
-    return A.normalize_legacy_grid_v1(RAW_DIR / "knight.png")
+    """A fresh copy of the reference Knight frame; callers mutate what they get."""
+    global _GOOD_FRAME
+    if _GOOD_FRAME is None:
+        _GOOD_FRAME = A.normalize_legacy_grid_v1(RAW_DIR / "knight.png")
+    return _GOOD_FRAME.copy()
 
 
 print("identity body profiles")
@@ -876,11 +883,18 @@ one_png, two_png = png_bytes(one), png_bytes(two)
 check("repeated offline rebuild is byte-identical PNG",
       hashlib.sha256(one_png).hexdigest() == hashlib.sha256(two_png).hexdigest())
 
+# One offline rebuild per sprite feeds both the byte-for-byte check against the
+# committed PNG and the sha256 check against the manifest row.
+REBUILDS = {}
 for raw_tag, runtime_name in RUNTIME_SPRITES.items():
     sidecar = json.loads((RAW_DIR / f"{raw_tag}.png").with_suffix(".source.json").read_text())
     sprite_key = pathlib.Path(runtime_name).stem
     rebuilt_image, _geometry, adapter, _stamp, _palette = A.normalize_archived(
         RAW_DIR / f"{raw_tag}.png", sidecar, out_name=sprite_key)
+    REBUILDS[raw_tag] = (rebuilt_image, adapter)
+
+for raw_tag, runtime_name in RUNTIME_SPRITES.items():
+    rebuilt_image, adapter = REBUILDS[raw_tag]
     rebuilt = png_bytes(rebuilt_image)
     committed = (RUNTIME_DIR / runtime_name).read_bytes()
     check(f"offline rebuild matches committed {runtime_name} byte-for-byte",
@@ -890,9 +904,7 @@ manifest_data = json.loads((RUNTIME_DIR / "manifest.json").read_text())
 for raw_tag, runtime_name in RUNTIME_SPRITES.items():
     sprite_key = pathlib.Path(runtime_name).stem
     entry = manifest_data[sprite_key]
-    sidecar = json.loads((RAW_DIR / f"{raw_tag}.png").with_suffix(".source.json").read_text())
-    rebuilt_image, _geometry, adapter, _stamp, _palette = A.normalize_archived(
-        RAW_DIR / f"{raw_tag}.png", sidecar, out_name=sprite_key)
+    rebuilt_image, adapter = REBUILDS[raw_tag]
     recorded = entry["frames"][0]["sha256"]
     actual = hashlib.sha256(rebuilt_image.tobytes()).hexdigest()
     label = ("flexible" if adapter == "flexible" else "legacy-grid-v1")

@@ -655,8 +655,8 @@ def detect_pitch(src: Image.Image, fg: list[bool], axis: str,
                 teeth += 1
                 energy = 0.0
                 column = -1
-                for delta in (-1, 0, 1):
-                    candidate = round(pos) + delta
+                nearest = round(pos)
+                for candidate in (nearest - 1, nearest, nearest + 1):
                     if 0 <= candidate < length and profile[candidate] > energy:
                         energy = profile[candidate]
                         column = candidate
