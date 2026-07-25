@@ -155,6 +155,24 @@ export function armoryReviewSnapshot(): Snapshot {
   return snapshot;
 }
 
+/** Twelve unequipped Common salvage candidates plus the equipped review set. */
+export function armorySalvageSnapshot(): Snapshot {
+  const snapshot = armoryReviewSnapshot();
+  const salvageCommons: DropInstance[] = Array.from({ length: 12 }, (_, index) => ({
+    dropId: 200 + index,
+    baseId: index % 3 === 0 ? "thornquill-blade" : index % 3 === 1 ? "leafmail-vest" : "berrybright-charm",
+    itemLevel: ((index % 3) + 1) as 1 | 2 | 3,
+    rarity: "common" as const,
+    affixes: [],
+    awardedAtMs: 25_000 - index,
+    seen: true,
+    locked: false,
+    assignedTo: null,
+  }));
+  snapshot.progression.armory = [...snapshot.progression.armory, ...salvageCommons];
+  return snapshot;
+}
+
 export function engineLegalityForSnapshot(snapshot: Snapshot): SerializedEngineLegality {
   const content = buildContent();
   const engine = createEngine(content, snapshot, 42);

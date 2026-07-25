@@ -22,6 +22,7 @@ export const EVIDENCE_SLUG_CATALOG = [
   "armory-comparison-popover",
   "armory-drag-equip-unequip",
   "armory-density-no-outer-scroll",
+  "armory-salvage-tray",
   "equipment-icon-content-tier",
   "equipment-icon-chrome-legibility",
   "character-loadout-no-scroll",
@@ -46,6 +47,7 @@ export type ScenarioId =
   | "dock-navigation-ownership"
   | "armory-collection-compare"
   | "armory-drag-density"
+  | "armory-salvage"
   | "equipment-icon-tiers"
   | "character-loadout"
   | "character-information-popovers"
@@ -65,6 +67,7 @@ export type EvidenceSpecId =
   | "rendered-evidence:dock-navigation-ownership"
   | "rendered-evidence:armory-collection-compare"
   | "rendered-evidence:armory-drag-density"
+  | "rendered-evidence:armory-salvage"
   | "rendered-evidence:equipment-icon-tiers"
   | "rendered-evidence:character-loadout"
   | "rendered-evidence:character-information-popovers"

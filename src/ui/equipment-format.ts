@@ -7,7 +7,9 @@ import type {
   EquipmentSlotId,
   Rarity,
 } from "../core/types";
-import { affixToModifier, formatStatModifierPerRank, CLASS_LABELS } from "./snapshot-view";
+import { affixToModifier, formatStatModifierPerRank, CLASS_LABELS, nextRarity, selectSalvageBatch } from "./snapshot-view";
+
+export { nextRarity, selectSalvageBatch };
 
 export const RARITY_LABELS: Record<Rarity, string> = {
   common: "Common",
