@@ -143,6 +143,19 @@ export interface Engine {
   salvage(dropIds: number[]): void;
 }
 
+/** Test seam for boundary-scan regression (#718); implemented on every Engine instance. */
+export interface EngineTestSeam {
+  nextBoundaryMs(): number | null;
+  statusesRef(entityId: string): ActiveStatus[] | undefined;
+}
+
+/** Test seam — next boundary from Snapshot fields without booting an Engine (issue #718). */
+export function nextBoundaryMsForSnapshot(
+  snapshot: Pick<Snapshot, "attempt" | "simNowMs">,
+): number | null {
+  return nextBoundaryMs(snapshot);
+}
+
 interface EngineState {
   schemaVersion: number;
   simNowMs: number;
@@ -605,7 +618,22 @@ function resolveStatusExpiries(state: EngineState, sink: EventSink): void {
     return;
   }
 
+  let hasStatus = false;
   for (const combatant of attempt.combatants) {
+    if (combatant.statuses.length > 0) {
+      hasStatus = true;
+      break;
+    }
+  }
+  if (!hasStatus) {
+    return;
+  }
+
+  for (const combatant of attempt.combatants) {
+    if (combatant.statuses.length === 0) {
+      continue;
+    }
+    let removed = false;
     const remaining: typeof combatant.statuses = [];
     for (const status of combatant.statuses) {
       if (status.expiresAtMs === state.simNowMs) {
@@ -614,11 +642,14 @@ function resolveStatusExpiries(state: EngineState, sink: EventSink): void {
           entityId: combatant.entityId,
           statusId: status.statusId,
         });
+        removed = true;
       } else {
         remaining.push(status);
       }
     }
-    combatant.statuses = remaining;
+    if (removed) {
+      combatant.statuses = remaining;
+    }
   }
 }
 
@@ -763,24 +794,38 @@ function resolveImpacts(
     return;
   }
 
-  const due = attempt.combatants.filter(
-    (combatant) =>
-      combatant.action?.impactAtMs === state.simNowMs && !combatant.action.impactResolved,
-  );
-  if (due.length === 0) {
-    return;
+  let preHealth: Map<string, number> | undefined;
+  let preKnockedOut: Map<string, boolean> | undefined;
+  let pendingByTarget: Map<string, PendingImpactChange> | undefined;
+
+  function getPreHealth(targetId: string, target: CombatantState): number {
+    if (!preHealth) {
+      preHealth = new Map();
+    }
+    let value = preHealth.get(targetId);
+    if (value === undefined) {
+      value = target.health;
+      preHealth.set(targetId, value);
+    }
+    return value;
   }
 
-  const preHealth = new Map(
-    attempt.combatants.map((combatant) => [combatant.entityId, combatant.health]),
-  );
-  const preKnockedOut = new Map(
-    attempt.combatants.map((combatant) => [combatant.entityId, combatant.knockedOut]),
-  );
-
-  const pendingByTarget = new Map<string, PendingImpactChange>();
+  function getPreKnockedOut(targetId: string, target: CombatantState): boolean {
+    if (!preKnockedOut) {
+      preKnockedOut = new Map();
+    }
+    let value = preKnockedOut.get(targetId);
+    if (value === undefined) {
+      value = target.knockedOut;
+      preKnockedOut.set(targetId, value);
+    }
+    return value;
+  }
 
   function ensurePending(targetId: string): PendingImpactChange {
+    if (!pendingByTarget) {
+      pendingByTarget = new Map();
+    }
     const existing = pendingByTarget.get(targetId);
     if (existing) {
       return existing;
@@ -797,11 +842,13 @@ function resolveImpacts(
     return created;
   }
 
-  for (const actor of due) {
+  let resolvedAny = false;
+  for (const actor of attempt.combatants) {
     const action = actor.action;
-    if (!action) {
+    if (!action || action.impactAtMs !== state.simNowMs || action.impactResolved) {
       continue;
     }
+    resolvedAny = true;
     action.impactResolved = true;
 
     const ability =
@@ -831,8 +878,8 @@ function resolveImpacts(
 
     for (const target of targets) {
       const targetStats = combatantStats(state, index, target);
-      const preTargetHealth = preHealth.get(target.entityId) ?? target.health;
-      const preTargetKnockedOut = preKnockedOut.get(target.entityId) ?? target.knockedOut;
+      const preTargetHealth = getPreHealth(target.entityId, target);
+      const preTargetKnockedOut = getPreKnockedOut(target.entityId, target);
       let projectedHealth = preTargetHealth;
 
       for (const effect of ability.effects) {
@@ -894,6 +941,10 @@ function resolveImpacts(
       abilityId: action.abilityId,
       results,
     });
+  }
+
+  if (!resolvedAny || pendingByTarget === undefined) {
+    return;
   }
 
   for (const [targetId, pending] of pendingByTarget) {
@@ -974,6 +1025,17 @@ function resolveStatusTicks(
 ): void {
   const attempt = state.attempt;
   if (!attempt) {
+    return;
+  }
+
+  let hasStatus = false;
+  for (const combatant of attempt.combatants) {
+    if (combatant.statuses.length > 0) {
+      hasStatus = true;
+      break;
+    }
+  }
+  if (!hasStatus) {
     return;
   }
 
@@ -1429,29 +1491,35 @@ function finishDefeatHold(state: EngineState, index: ContentIndex, sink: EventSi
   startFreshAttempt(state, index, stage, sink);
 }
 
-function nextBoundaryMs(state: EngineState): number | null {
+function nextBoundaryMs(state: Pick<EngineState, "attempt" | "simNowMs">): number | null {
   const attempt = state.attempt;
   if (!attempt) {
     return null;
   }
 
-  const boundaries: number[] = [];
+  let min: number | null = null;
+  const consider = (candidate: number) => {
+    if (min === null || candidate < min) {
+      min = candidate;
+    }
+  };
+
   if (attempt.phaseEndsAtMs !== null) {
-    boundaries.push(attempt.phaseEndsAtMs);
+    consider(attempt.phaseEndsAtMs);
   }
 
   for (const combatant of attempt.combatants) {
     if (combatant.initiativeReadyAtMs > state.simNowMs) {
-      boundaries.push(combatant.initiativeReadyAtMs);
+      consider(combatant.initiativeReadyAtMs);
     }
     for (const status of combatant.statuses) {
-      boundaries.push(status.expiresAtMs);
+      consider(status.expiresAtMs);
       if (
         !combatant.knockedOut &&
         status.nextTickAtMs !== undefined &&
         status.nextTickAtMs < status.expiresAtMs
       ) {
-        boundaries.push(status.nextTickAtMs);
+        consider(status.nextTickAtMs);
       }
     }
     const action = combatant.action;
@@ -1459,12 +1527,12 @@ function nextBoundaryMs(state: EngineState): number | null {
       continue;
     }
     if (!action.impactResolved) {
-      boundaries.push(action.impactAtMs);
+      consider(action.impactAtMs);
     }
-    boundaries.push(action.endsAtMs);
+    consider(action.endsAtMs);
   }
 
-  return boundaries.length > 0 ? Math.min(...boundaries) : null;
+  return min;
 }
 
 function resolveBatch(
@@ -1913,5 +1981,8 @@ export function createEngine(
     markSeen,
     discard,
     salvage,
-  };
+    nextBoundaryMs: () => nextBoundaryMs(state),
+    statusesRef: (entityId: string) =>
+      combatantById(state.attempt?.combatants ?? [], entityId)?.statuses,
+  } as Engine;
 }
