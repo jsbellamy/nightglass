@@ -675,7 +675,7 @@ export function mountLoadoutSurface(
         return;
       }
       const anchor = root.querySelector<HTMLElement>(
-        `[data-ability-id="${openPopoverAbilityId}"]`,
+        `[data-loadout-assign-tile][data-ability-id="${openPopoverAbilityId}"], [data-loadout-basic][data-ability-id="${openPopoverAbilityId}"]`,
       );
       const ability = abilityById(content, openPopoverAbilityId);
       if (!anchor || !ability) {

@@ -671,6 +671,74 @@ describe("Loadout surface", () => {
     surface.destroy();
   });
 
+  it("does not re-anchor an open Ability popover to itself across a Snapshot pump", () => {
+    const dock = document.createElement("div");
+    dock.className = "management-dock";
+    const root = document.createElement("div");
+    dock.append(root);
+    document.body.append(dock);
+
+    const dockRect = { top: 0, left: 0, right: 800, bottom: 480, width: 800, height: 480 };
+    const tileRect = { top: 100, left: 40, right: 120, bottom: 140, width: 80, height: 40 };
+    // Popover sitting at the correct tile-right placement (120 + 6).
+    const popoverRect = { top: 90, left: 126, right: 326, bottom: 150, width: 200, height: 60 };
+
+    function asRect(
+      rect: Pick<DOMRect, "top" | "left" | "right" | "bottom" | "width" | "height">,
+    ): DOMRect {
+      return {
+        x: rect.left,
+        y: rect.top,
+        ...rect,
+        toJSON: () => ({}),
+      } as DOMRect;
+    }
+
+    const originalRect = HTMLElement.prototype.getBoundingClientRect;
+    HTMLElement.prototype.getBoundingClientRect = function getBoundingClientRect(this: HTMLElement) {
+      if (this.classList?.contains("management-dock")) {
+        return asRect(dockRect);
+      }
+      if (this.matches?.('[data-loadout-ability-popover="true"]')) {
+        return asRect(popoverRect);
+      }
+      if (this.matches?.("[data-ability-id]")) {
+        return asRect(tileRect);
+      }
+      return originalRect.call(this);
+    };
+
+    const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
+    const selected = { current: "knight" as ClassId };
+    const surface = mountLoadoutSurface(root, mountOptions(fixtureContent, selected));
+
+    surface.render(engine.snapshot());
+    const tile = poolTile(root, "k-pommel");
+    const popover = root.querySelector<HTMLElement>('[data-loadout-ability-popover="true"]');
+    expect(popover).not.toBeNull();
+    Object.defineProperty(popover!, "offsetWidth", { configurable: true, value: 200 });
+    Object.defineProperty(popover!, "offsetHeight", { configurable: true, value: 60 });
+
+    tile.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
+    expect(popover!.style.left).toBe("126px");
+
+    // Pump refresh rebuilds tiles then re-queries `[data-ability-id]`. The open
+    // popover also carries that attribute and precedes tiles in the host, so a
+    // naive querySelector would re-anchor to the popover and shift left to
+    // popover.right + gap (332px).
+    surface.render(engine.snapshot());
+    const popoverAfter = root.querySelector<HTMLElement>('[data-loadout-ability-popover="true"]');
+    Object.defineProperty(popoverAfter!, "offsetWidth", { configurable: true, value: 200 });
+    Object.defineProperty(popoverAfter!, "offsetHeight", { configurable: true, value: 60 });
+
+    expect(popoverAfter!.hidden).toBe(false);
+    expect(popoverAfter!.style.left).toBe("126px");
+
+    HTMLElement.prototype.getBoundingClientRect = originalRect;
+    surface.destroy();
+    dock.remove();
+  });
+
   it("shows Activation Delay in the popover at edit time for newly inserted slot Abilities", () => {
     const root = document.createElement("div");
     const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
