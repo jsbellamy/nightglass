@@ -321,7 +321,8 @@ export function rollDrop(input: RollDropInput): RollDropResult {
   };
 }
 
-function affixToModifier(affix: { id: AffixId; value: number }): StatModifiers {
+/** The one Affix → statistic mapping. Display formatters read it rather than restating it. */
+export function affixToModifier(affix: { id: AffixId; value: number }): StatModifiers {
   switch (affix.id) {
     case "flat-physical":
       return { flat: { physical: affix.value } };

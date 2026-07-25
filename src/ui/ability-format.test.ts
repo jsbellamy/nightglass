@@ -210,6 +210,10 @@ describe("statLines", () => {
       maxHealth: 0.06,
       physicalPower: 0.05,
       spellPower: 0.04,
+      firePower: 0.08,
+      frostPower: 0.14,
+      lightningPower: 0.2,
+      lightPower: 0.28,
     },
     flat: {
       maxHealth: 10,
@@ -217,32 +221,75 @@ describe("statLines", () => {
       spell: 2,
       armor: 7,
       elementalResistance: 4,
+      firePower: 5,
+      frostPower: 6,
+      lightningPower: 9,
+      lightPower: 12,
+      critChance: 0.07,
+      critDamage: 0.25,
     },
   };
 
-  it("emits all eight fields at ranks = 1 with Talent labels", () => {
+  it("emits every stat at ranks = 1 with the Stats surface vocabulary", () => {
     expect(statLines(allFields)).toEqual([
       { label: "Max Health", value: "+6%" },
-      { label: "Physical", value: "+5%" },
-      { label: "Elemental", value: "+4%" },
+      { label: "Physical Power", value: "+5%" },
+      { label: "Spell Power", value: "+4%" },
+      { label: "Fire Power", value: "+8%" },
+      { label: "Frost Power", value: "+14%" },
+      { label: "Lightning Power", value: "+20%" },
+      { label: "Light Power", value: "+28%" },
       { label: "Max Health", value: "+10" },
-      { label: "Physical", value: "+3" },
-      { label: "Elemental", value: "+2" },
+      { label: "Physical Power", value: "+3" },
+      { label: "Spell Power", value: "+2" },
       { label: "Armor", value: "+7" },
       { label: "Elemental Resistance", value: "+4" },
+      { label: "Fire Power", value: "+5" },
+      { label: "Frost Power", value: "+6" },
+      { label: "Lightning Power", value: "+9" },
+      { label: "Light Power", value: "+12" },
+      { label: "Critical Chance", value: "+7%" },
+      { label: "Critical Damage", value: "+25%" },
     ]);
   });
 
   it("scales flat and percent entries when ranks = 5", () => {
     expect(statLines(allFields, 5)).toEqual([
       { label: "Max Health", value: "+30%" },
-      { label: "Physical", value: "+25%" },
-      { label: "Elemental", value: "+20%" },
+      { label: "Physical Power", value: "+25%" },
+      { label: "Spell Power", value: "+20%" },
+      { label: "Fire Power", value: "+40%" },
+      { label: "Frost Power", value: "+70%" },
+      { label: "Lightning Power", value: "+100%" },
+      { label: "Light Power", value: "+140%" },
       { label: "Max Health", value: "+50" },
-      { label: "Physical", value: "+15" },
-      { label: "Elemental", value: "+10" },
+      { label: "Physical Power", value: "+15" },
+      { label: "Spell Power", value: "+10" },
       { label: "Armor", value: "+35" },
       { label: "Elemental Resistance", value: "+20" },
+      { label: "Fire Power", value: "+25" },
+      { label: "Frost Power", value: "+30" },
+      { label: "Lightning Power", value: "+45" },
+      { label: "Light Power", value: "+60" },
+      { label: "Critical Chance", value: "+35%" },
+      { label: "Critical Damage", value: "+125%" },
+    ]);
+  });
+
+  it("is blind to no stat the Character Stats surface shows", () => {
+    const emitted = new Set(statLines(allFields).map((line) => line.label));
+    expect([...emitted].sort()).toEqual([
+      "Armor",
+      "Critical Chance",
+      "Critical Damage",
+      "Elemental Resistance",
+      "Fire Power",
+      "Frost Power",
+      "Light Power",
+      "Lightning Power",
+      "Max Health",
+      "Physical Power",
+      "Spell Power",
     ]);
   });
 });
@@ -252,9 +299,9 @@ describe("stat label vocabulary across Talent and Armory", () => {
     const modifier = { flat: { physical: 5 } } satisfies StatModifiers;
     const talentLabel = statLines(modifier)[0]!.label;
     const armoryDelta = compareEquipmentStatDeltas([], [modifier])[0]!;
-    expect(talentLabel).toBe("Physical");
+    expect(talentLabel).toBe("Physical Power");
     expect(armoryDelta.label).toBe(talentLabel);
-    expect(formatStatModifierPerRank(modifier)).toBe("+5 Physical");
+    expect(formatStatModifierPerRank(modifier)).toBe("+5 Physical Power");
   });
 });
 
@@ -264,8 +311,8 @@ describe("formatStatModifierPerRank and formatStatTalentDelta", () => {
       flat: { physical: 2 },
       percent: { physicalPower: 0.1 },
     } satisfies StatModifiers;
-    expect(formatStatModifierPerRank(modifier)).toBe("+10% Physical, +2 Physical");
-    expect(formatStatTalentDelta(modifier, 3)).toBe("+30% Physical, +6 Physical");
+    expect(formatStatModifierPerRank(modifier)).toBe("+10% Physical Power, +2 Physical Power");
+    expect(formatStatTalentDelta(modifier, 3)).toBe("+30% Physical Power, +6 Physical Power");
     expect(formatStatTalentDelta(modifier, 0)).toBeNull();
   });
 });

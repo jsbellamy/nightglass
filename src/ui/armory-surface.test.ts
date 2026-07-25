@@ -952,7 +952,7 @@ describe("Armory surface", () => {
       [...row.querySelectorAll("td")].map((cell) => cell.textContent),
     );
     // Pre-slice golden: Hunter Bramblesong Bow (2) → Nightvine Longbow (5); not Knight's worn blade.
-    expect(rows).toContainEqual(["Physical", "2", "5", "+3"]);
+    expect(rows).toContainEqual(["Physical Power", "2", "5", "+3"]);
     expect(rows).toEqual(
       expected.statDeltas.map((line) => [line.label, line.before, line.after, line.delta]),
     );

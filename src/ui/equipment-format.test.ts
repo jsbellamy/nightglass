@@ -129,7 +129,7 @@ describe("equipment-format filters and sorts", () => {
       [{ flat: { physical: 5 } }],
     );
     expect(lines).toEqual([
-      { label: "Physical", before: "2", after: "5", delta: "+3" },
+      { label: "Physical Power", before: "2", after: "5", delta: "+3" },
     ]);
   });
 
@@ -175,5 +175,18 @@ describe("formatAffix", () => {
 
   it("formats flat-crit-damage on the percent scale", () => {
     expect(formatAffix({ id: "flat-crit-damage", value: 0.25 })).toBe("+25% Critical Damage");
+  });
+
+  it("names every Affix with the same statistic vocabulary the Talent tiles use", () => {
+    expect(formatAffix({ id: "flat-spell", value: 16 })).toBe("+16 Spell Power");
+    expect(formatAffix({ id: "percent-spell-power", value: 0.14 })).toBe("+14% Spell Power");
+    expect(formatAffix({ id: "flat-fire", value: 5 })).toBe("+5 Fire Power");
+    expect(formatAffix({ id: "percent-fire-power", value: 0.08 })).toBe("+8% Fire Power");
+    expect(formatAffix({ id: "flat-frost", value: 6 })).toBe("+6 Frost Power");
+    expect(formatAffix({ id: "percent-frost-power", value: 0.14 })).toBe("+14% Frost Power");
+    expect(formatAffix({ id: "flat-lightning", value: 9 })).toBe("+9 Lightning Power");
+    expect(formatAffix({ id: "percent-lightning-power", value: 0.2 })).toBe("+20% Lightning Power");
+    expect(formatAffix({ id: "flat-light", value: 12 })).toBe("+12 Light Power");
+    expect(formatAffix({ id: "percent-light-power", value: 0.28 })).toBe("+28% Light Power");
   });
 });

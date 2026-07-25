@@ -69,7 +69,7 @@ describe("previewEquip", () => {
 
     expect(preview.statDeltas).toEqual([
       {
-        label: "Physical",
+        label: "Physical Power",
         before: "0",
         after: String(guaranteedPhysical + affixPhysical),
         delta: `+${guaranteedPhysical + affixPhysical}`,
@@ -164,7 +164,7 @@ describe("previewEquip", () => {
     expect(preview.statDeltas.length).toBeGreaterThan(0);
     expect(preview.statDeltas.every((line) => line.delta === "0")).toBe(true);
     expect(preview.statDeltas).toEqual([
-      { label: "Physical", before: "4", after: "4", delta: "0" },
+      { label: "Physical Power", before: "4", after: "4", delta: "0" },
     ]);
     expect(preview.abilityChanges).toEqual([]);
   });

@@ -22,8 +22,26 @@ import type {
   StatModifiers,
 } from "./types";
 
+/**
+ * The one statistic vocabulary. Every surface that names a statistic — Talent
+ * per-rank text, Armory affixes and compare, Ability and Status popovers, and
+ * the Character Stats breakdown — spells it exactly one of these ways.
+ */
+export type StatLabel =
+  | "Max Health"
+  | "Physical Power"
+  | "Spell Power"
+  | "Armor"
+  | "Elemental Resistance"
+  | "Fire Power"
+  | "Frost Power"
+  | "Lightning Power"
+  | "Light Power"
+  | "Critical Chance"
+  | "Critical Damage";
+
 export interface StatLine {
-  label: string;
+  label: StatLabel;
   value: string;
 }
 
@@ -36,56 +54,55 @@ function formatSignedStatAmount(amount: number, asPercent: boolean): string {
   return asPercent ? `${prefix}%` : prefix;
 }
 
+const PERCENT_STAT_LABELS: readonly (readonly [
+  keyof NonNullable<StatModifiers["percent"]>,
+  StatLabel,
+])[] = [
+  ["maxHealth", "Max Health"],
+  ["physicalPower", "Physical Power"],
+  ["spellPower", "Spell Power"],
+  ["firePower", "Fire Power"],
+  ["frostPower", "Frost Power"],
+  ["lightningPower", "Lightning Power"],
+  ["lightPower", "Light Power"],
+];
+
+/** The trailing `true` marks a flat stat stored as a fraction and read as a percentage. */
+const FLAT_STAT_LABELS: readonly (readonly [
+  keyof NonNullable<StatModifiers["flat"]>,
+  StatLabel,
+  boolean,
+])[] = [
+  ["maxHealth", "Max Health", false],
+  ["physical", "Physical Power", false],
+  ["spell", "Spell Power", false],
+  ["armor", "Armor", false],
+  ["elementalResistance", "Elemental Resistance", false],
+  ["firePower", "Fire Power", false],
+  ["frostPower", "Frost Power", false],
+  ["lightningPower", "Lightning Power", false],
+  ["lightPower", "Light Power", false],
+  ["critChance", "Critical Chance", true],
+  ["critDamage", "Critical Damage", true],
+];
+
 /** One walk over StatModifiers. `ranks` multiplies both flat and percent entries. */
 export function statLines(modifier: StatModifiers, ranks = 1): StatLine[] {
   const lines: StatLine[] = [];
-  if (modifier.percent?.maxHealth) {
-    lines.push({
-      label: "Max Health",
-      value: formatSignedStatAmount(modifier.percent.maxHealth * ranks * 100, true),
-    });
+  for (const [key, label] of PERCENT_STAT_LABELS) {
+    const amount = modifier.percent?.[key];
+    if (amount) {
+      lines.push({ label, value: formatSignedStatAmount(amount * ranks * 100, true) });
+    }
   }
-  if (modifier.percent?.physicalPower) {
-    lines.push({
-      label: "Physical",
-      value: formatSignedStatAmount(modifier.percent.physicalPower * ranks * 100, true),
-    });
-  }
-  if (modifier.percent?.spellPower) {
-    lines.push({
-      label: "Elemental",
-      value: formatSignedStatAmount(modifier.percent.spellPower * ranks * 100, true),
-    });
-  }
-  if (modifier.flat?.maxHealth) {
-    lines.push({
-      label: "Max Health",
-      value: formatSignedStatAmount(modifier.flat.maxHealth * ranks, false),
-    });
-  }
-  if (modifier.flat?.physical) {
-    lines.push({
-      label: "Physical",
-      value: formatSignedStatAmount(modifier.flat.physical * ranks, false),
-    });
-  }
-  if (modifier.flat?.spell) {
-    lines.push({
-      label: "Elemental",
-      value: formatSignedStatAmount(modifier.flat.spell * ranks, false),
-    });
-  }
-  if (modifier.flat?.armor) {
-    lines.push({
-      label: "Armor",
-      value: formatSignedStatAmount(modifier.flat.armor * ranks, false),
-    });
-  }
-  if (modifier.flat?.elementalResistance) {
-    lines.push({
-      label: "Elemental Resistance",
-      value: formatSignedStatAmount(modifier.flat.elementalResistance * ranks, false),
-    });
+  for (const [key, label, asPercent] of FLAT_STAT_LABELS) {
+    const amount = modifier.flat?.[key];
+    if (amount) {
+      lines.push({
+        label,
+        value: formatSignedStatAmount(asPercent ? amount * ranks * 100 : amount * ranks, asPercent),
+      });
+    }
   }
   return lines;
 }
