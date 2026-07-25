@@ -1,0 +1,7 @@
+Single full-body Brambling ordinary opponent game sprite, strict side profile facing LEFT. A hunched orchard imp whose entire body is woven from living thorn-briar. Ropes of berry-dark bramble cane coil into a narrow twisting torso and long spindly limbs, a snarl of cane forms a low hooded head with two cream pinprick eyes, and dense clusters of ripe moonberries hang as heavy knuckled fists at the ends of its arms. The mutation is one living creature, not an imp holding, wearing, or standing inside a bramble bush.
+
+Preserve its enchanted wrong identity: the hooded briar head with two cream eye-points, a narrow twisting cane torso, two long thorn-studded arms ending in heavy berry-cluster fists, and thin splayed root-feet. Tall, narrow, spiky silhouette with a forward lean. The hood snarl, individual arm thorns, berry fists, and root feet must remain distinct at native game scale.
+
+Chunky simplified flat-colour Moonberry storybook night-garden pixel art with large readable shapes, selective contour-plum outline, and only named moonberry-16 colors: contour plums, berry reds, twilight slate, mint and sage greens, cream-gold and cream. Tone is 60% enchanted and 40% wrong. No gore, wounds, exposed organs, realism, gradients, anti-aliasing, blur, or dithering.
+
+Show exactly one complete subject with generous empty clearance on every edge of an opaque flat solid magenta #ff00ff background. No shadow, floor, glow, falling leaves, sparkles, particles, Ability effect, text, watermark, scenery, UI, transparency, other plant, or other subject.
