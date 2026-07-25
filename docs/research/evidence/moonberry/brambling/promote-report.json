@@ -1,12 +1,12 @@
 {
   "status": "promoted",
-  "candidate": "/Users/jakebellamy/.cursor/projects/Users-jakebellamy-VSProjects-games-game-idea-nightglass/assets/brambling-c1.png",
-  "raw": "/Users/jakebellamy/VSProjects/games/game_idea/nightglass-wt-674/assets-raw/grid_raw/brambling.png",
-  "sidecar": "/Users/jakebellamy/VSProjects/games/game_idea/nightglass-wt-674/assets-raw/grid_raw/brambling.source.json",
-  "runtime": "/Users/jakebellamy/VSProjects/games/game_idea/nightglass-wt-674/src/assets/sprites/brambling.png",
-  "manifest": "/Users/jakebellamy/VSProjects/games/game_idea/nightglass-wt-674/src/assets/sprites/manifest.json",
+  "candidate": "docs/research/evidence/moonberry/brambling/scratch/brambling-c1.png",
+  "raw": "assets-raw/grid_raw/brambling.png",
+  "sidecar": "assets-raw/grid_raw/brambling.source.json",
+  "runtime": "src/assets/sprites/brambling.png",
+  "manifest": "src/assets/sprites/manifest.json",
   "measurement": {
-    "candidate": "/Users/jakebellamy/.cursor/projects/Users-jakebellamy-VSProjects-games-game-idea-nightglass/assets/brambling-c1.png",
+    "candidate": "docs/research/evidence/moonberry/brambling/scratch/brambling-c1.png",
     "tag": "brambling",
     "status": "advance",
     "primary_failure": null,

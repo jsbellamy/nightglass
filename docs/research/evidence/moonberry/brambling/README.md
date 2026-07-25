@@ -33,6 +33,7 @@ See also the exact prompt in `prompt.txt`.
 | Field | Value |
 | --- | --- |
 | Candidate | `brambling-c1` |
+| Scratch (pre-promote measure) | `docs/research/evidence/moonberry/brambling/scratch/brambling-c1.png` |
 | Archived | `assets-raw/grid_raw/brambling.png` |
 | Sidecar | `assets-raw/grid_raw/brambling.source.json` (`acquisition: flexible`, `palette: moonberry-16@1`) |
 | Fitted opaque | **30×61** (≤ 30×68) |
