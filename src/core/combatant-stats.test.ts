@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { effectiveStats } from "./combat";
+import { effectiveStats, powerFrom, resolveStatModifiers } from "./combat";
 import { createStatLedger, statsForCombatant } from "./combatant-stats";
 import { indexContent } from "./content-index";
 import { createEngine, SCHEMA_VERSION } from "./engine";
@@ -7,7 +7,7 @@ import { opponentEntityId, partyEntityId } from "./entity-id";
 import { createDefaultProgression } from "./load-state";
 import { emptyTalentState, normalizeClassTalentState } from "./talents";
 import { characterStats } from "./stats";
-import type { AttemptState, CombatantState } from "./snapshot";
+import type { AttemptState, CombatantState, DropInstance } from "./snapshot";
 import { fixtureContent } from "./testing/fixture-content";
 import type { ClassId } from "./types";
 
@@ -81,7 +81,11 @@ describe("statsForCombatant", () => {
 
   it("derives Opponent stats from authored base statistics", () => {
     const opponent = opponentCombatant("fixture-grunt");
-    const expected = effectiveStats(grunt.base, opponent.statuses, index.statusesById);
+    const expected = effectiveStats(
+      resolveStatModifiers(grunt.base, []),
+      opponent.statuses,
+      index.statusesById,
+    );
     expect(statsForCombatant(index, opponent, progression, null)).toEqual(expected);
   });
 
@@ -116,9 +120,9 @@ describe("createStatLedger", () => {
     const knight = partyCombatant("knight", "front");
     const attempt = minimalAttempt([knight]);
     const ledger = createStatLedger(index, progression, attempt);
-    const withoutBraced = ledger.statsFor(knight).armor;
+    const withoutBraced = ledger.statsFor(knight).stats.armor;
     knight.statuses = [{ statusId: "braced", expiresAtMs: 10_000 }];
-    expect(ledger.statsFor(knight).armor).toBe(withoutBraced + 50);
+    expect(ledger.statsFor(knight).stats.armor).toBe(withoutBraced + 50);
   });
 
   it("keeps cached base stats until invalidate after Talent changes", () => {
@@ -126,13 +130,13 @@ describe("createStatLedger", () => {
     const attempt = minimalAttempt([knight]);
     const localProgression = structuredClone(progression);
     const ledger = createStatLedger(index, localProgression, attempt);
-    const before = ledger.statsFor(knight).physical;
+    const before = ledger.statsFor(knight).stats.physical;
 
     localProgression.talents.knight = knightWithSwordcraftRanks(5);
 
-    expect(ledger.statsFor(knight).physical).toBe(before);
+    expect(ledger.statsFor(knight).stats.physical).toBe(before);
     ledger.invalidate("knight");
-    expect(ledger.statsFor(knight).physical).toBe(17);
+    expect(ledger.statsFor(knight).stats.physical).toBe(17);
   });
 
   it("invalidates a Party Member after a Talent edit", () => {
@@ -140,11 +144,11 @@ describe("createStatLedger", () => {
     const attempt = minimalAttempt([knight]);
     const localProgression = structuredClone(progression);
     const ledger = createStatLedger(index, localProgression, attempt);
-    const baseline = ledger.statsFor(knight).physical;
+    const baseline = ledger.statsFor(knight).stats.physical;
 
     localProgression.talents.knight = knightWithSwordcraftRanks(5);
     ledger.invalidate("knight");
-    expect(ledger.statsFor(knight).physical).toBeGreaterThan(baseline);
+    expect(ledger.statsFor(knight).stats.physical).toBeGreaterThan(baseline);
   });
 
   it("invalidates a Party Member after a Loadout edit", () => {
@@ -179,6 +183,51 @@ describe("createStatLedger", () => {
       const expected = statsForCombatant(index, combatant, localProgression, attempt);
       expect(ledger.statsFor(combatant)).toEqual(expected);
     }
+  });
+
+  it("preserves Element Power on a second statsFor call for a cached Party Member", () => {
+    const wizardKit = fixtureContent.classes.find((entry) => entry.id === "wizard")!;
+    const wizard = partyCombatant("wizard", "middle");
+    const attempt = minimalAttempt([wizard]);
+    const localProgression = structuredClone(progression);
+    const focus: DropInstance = {
+      dropId: 88,
+      baseId: "fixture-focus",
+      itemLevel: 1,
+      rarity: "uncommon",
+      affixes: [
+        { id: "flat-fire", value: 5 },
+        { id: "flat-frost", value: 4 },
+        { id: "flat-lightning", value: 3 },
+        { id: "flat-light", value: 2 },
+      ],
+      awardedAtMs: 0,
+      seen: true,
+      locked: false,
+      assignedTo: { classId: "wizard", slot: "weapon" },
+    };
+    localProgression.armory = [focus];
+    attempt.equipmentLoadouts.wizard = { weapon: 88 };
+
+    const ledger = createStatLedger(index, localProgression, attempt);
+    const first = ledger.statsFor(wizard);
+    const second = ledger.statsFor(wizard);
+
+    for (const element of ["fire", "frost", "lightning", "light"] as const) {
+      expect(powerFrom(second, "elemental", element)).toBe(powerFrom(first, "elemental", element));
+    }
+    expect(second.stats.firePower).toBe(first.stats.firePower);
+    expect(second.stats.frostPower).toBe(first.stats.frostPower);
+    expect(second.stats.lightningPower).toBe(first.stats.lightningPower);
+    expect(second.stats.lightPower).toBe(first.stats.lightPower);
+    expect(first.stats.firePower).toBe(
+      characterStats(wizardKit, localProgression.talents.wizard!, [
+        { flat: { firePower: 5 } },
+        { flat: { frostPower: 4 } },
+        { flat: { lightningPower: 3 } },
+        { flat: { lightPower: 2 } },
+      ]).stats.firePower,
+    );
   });
 
   it("does not serialize the Stat Ledger in snapshot", () => {

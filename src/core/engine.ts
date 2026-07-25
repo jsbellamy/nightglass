@@ -7,9 +7,11 @@ import {
   partyCombatants,
   revalidateTargets,
   resolveEffect,
+  resolveStatModifiers,
   resolveTargets,
   shouldApplyStun,
   type EffectOutcome,
+  type ResolvedStats,
 } from "./combat";
 import { createStatLedger, type StatLedger } from "./combatant-stats";
 import {
@@ -61,7 +63,6 @@ import {
 import { characterStats } from "./stats";
 import type {
   AbilityDef,
-  BaseStats,
   ClassId,
   ClassKitDef,
   Content,
@@ -373,7 +374,7 @@ function combatantStats(
   state: EngineState,
   index: ContentIndex,
   combatant: CombatantState,
-): BaseStats {
+): ResolvedStats {
   if (!state.attempt) {
     throw new Error("Cannot read combatant stats without an active Attempt");
   }
@@ -505,8 +506,8 @@ function makePartyCombatant(
     entityId: partyEntityId(classId, slotIndex),
     side: "party",
     defId: classId,
-    health: stats.maxHealth,
-    maxHealth: stats.maxHealth,
+    health: stats.stats.maxHealth,
+    maxHealth: stats.stats.maxHealth,
     knockedOut: false,
     initiativeReadyAtMs: 0,
     action: null,
@@ -834,19 +835,22 @@ function resolveStatusTick(
     return;
   }
 
-  const actorStats: BaseStats = {
-    maxHealth: 0,
-    physical: status.sourcePower.physical,
-    spell: status.sourcePower.spell,
-    armor: 0,
-    elementalResistance: 0,
-    firePower: 0,
-    frostPower: 0,
-    lightningPower: 0,
-    lightPower: 0,
-    critChance: 0,
-    critDamage: 1.5,
-  };
+  const actorStats = resolveStatModifiers(
+    {
+      maxHealth: 0,
+      physical: status.sourcePower.physical,
+      spell: status.sourcePower.spell,
+      armor: 0,
+      elementalResistance: 0,
+      firePower: 0,
+      frostPower: 0,
+      lightningPower: 0,
+      lightPower: 0,
+      critChance: 0,
+      critDamage: 1.5,
+    },
+    [],
+  );
   const targetStats = combatantStats(state, index, combatant);
   const outcome = resolveEffect(
     statusDef.tickEffect,
@@ -953,9 +957,9 @@ function writeTickSchedule(
 
 function sourceSnapshotFromStats(
   entityId: string,
-  stats: BaseStats,
+  stats: ResolvedStats,
 ): StatusSourceSnapshot {
-  return { entityId, physical: stats.physical, spell: stats.spell };
+  return { entityId, physical: stats.stats.physical, spell: stats.stats.spell };
 }
 
 type ImpactResults = Extract<EngineEvent, { type: "impact" }>["results"];
@@ -1167,10 +1171,10 @@ function resolveImpactBatch(
             : effect;
 
         let crit = false;
-        if (resolvedEffect.kind === "damage" && actorStats.critChance > 0) {
+        if (resolvedEffect.kind === "damage" && actorStats.stats.critChance > 0) {
           const [uniform, nextState] = mulberry32Step(state.combatRngState);
           state.combatRngState = nextState;
-          const chance = Math.min(1, Math.max(0, actorStats.critChance));
+          const chance = Math.min(1, Math.max(0, actorStats.stats.critChance));
           crit = uniform < chance;
         }
 
@@ -1566,7 +1570,7 @@ function applyPendingEdits(
           state.progression.talents[edit.classId]!,
           equipmentMods,
         );
-        combatant.maxHealth = stats.maxHealth;
+        combatant.maxHealth = stats.stats.maxHealth;
         combatant.health = Math.min(combatant.health, combatant.maxHealth);
       }
       state.statLedger?.invalidate(edit.classId);

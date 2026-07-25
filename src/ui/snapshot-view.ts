@@ -10,6 +10,7 @@ export {
   partyCombatants,
   previewEffectRaw,
   statusIdForValidity,
+  type ResolvedStats,
 } from "../core/combat";
 
 export { FORMATION_SLOT_BY_INDEX, parseEntityId } from "../core/entity-id";

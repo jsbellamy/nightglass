@@ -2932,7 +2932,7 @@ describe("progression", () => {
       const knight = engine.snapshot().attempt?.combatants.find(
         (combatant) => combatant.defId === "knight",
       );
-      expect(knight?.maxHealth).toBe(expected.maxHealth);
+      expect(knight?.maxHealth).toBe(expected.stats.maxHealth);
     });
   });
 

@@ -25,8 +25,6 @@ export interface ResolvedStats {
   readonly components: PowerComponents;
 }
 
-const powerComponentsByStats = new WeakMap<BaseStats, PowerComponents>();
-
 export function resolveStatModifiers(
   base: BaseStats,
   modifiers: StatModifiers[],
@@ -113,20 +111,21 @@ export function applyStatModifiers(
   base: BaseStats,
   modifiers: StatModifiers[],
 ): BaseStats {
-  const resolved = resolveStatModifiers(base, modifiers);
-  powerComponentsByStats.set(resolved.stats, resolved.components);
-  return resolved.stats;
+  return resolveStatModifiers(base, modifiers).stats;
 }
 
 export function effectiveStats(
-  base: BaseStats,
+  resolved: ResolvedStats,
   statuses: ActiveStatus[],
   statusDefs: Map<string, StatusEffectDef>,
-): BaseStats {
+): ResolvedStats {
   const modifiers = statuses
     .map((status) => statusDefs.get(status.statusId)?.modifiers)
     .filter((modifier): modifier is StatModifiers => modifier !== undefined);
-  return applyStatModifiers(base, modifiers);
+  if (modifiers.length === 0) {
+    return resolved;
+  }
+  return resolveStatModifiers(resolved.stats, modifiers);
 }
 
 export interface EffectOutcome {
@@ -146,7 +145,7 @@ export interface EffectOutcome {
 }
 
 export interface EffectTargetContext {
-  stats: BaseStats;
+  stats: ResolvedStats;
   health: number;
   maxHealth: number;
   knockedOut: boolean;
@@ -160,7 +159,7 @@ export interface EffectTargetContext {
  */
 export function resolveEffect(
   effect: AbilityEffect,
-  actorStats: BaseStats,
+  actorStats: ResolvedStats,
   target: EffectTargetContext,
   statusesById: Map<string, StatusEffectDef>,
   crit = false,
@@ -170,12 +169,12 @@ export function resolveEffect(
   switch (effect.kind) {
     case "damage": {
       const channel = effect.channel ?? "physical";
-      const power = powerForStats(actorStats, channel, effect.element);
+      const power = powerFrom(actorStats, channel, effect.element);
       const raw = rawDamageFromEffect(power, effect);
       const critRaw = crit
-        ? Math.floor(raw * Math.max(1, actorStats.critDamage))
+        ? Math.floor(raw * Math.max(1, actorStats.stats.critDamage))
         : raw;
-      const amount = mitigateDamage(critRaw, mitigationForChannel(target.stats, channel));
+      const amount = mitigateDamage(critRaw, mitigationForChannel(target.stats.stats, channel));
       return {
         healthDelta: -amount,
         revived: false,
@@ -191,7 +190,7 @@ export function resolveEffect(
       if (target.knockedOut) {
         return empty;
       }
-      const amount = healAmount(powerForStats(actorStats, "elemental"), effect);
+      const amount = healAmount(powerFrom(actorStats, "elemental"), effect);
       const capped = Math.min(target.maxHealth, target.health + amount);
       const applied = capped - target.health;
       return {
@@ -204,7 +203,7 @@ export function resolveEffect(
       if (!target.knockedOut) {
         return empty;
       }
-      const amount = healAmount(powerForStats(actorStats, "elemental"), effect);
+      const amount = healAmount(powerFrom(actorStats, "elemental"), effect);
       return {
         healthDelta: amount,
         revived: true,
@@ -252,7 +251,7 @@ const ELEMENT_POWER_BY_ELEMENT: Array<{ element: Element; stat: keyof BaseStats 
 
 export function adaptiveElementForBasic(
   effect: AbilityEffect,
-  actorStats: BaseStats,
+  actorStats: ResolvedStats,
 ): Element | undefined {
   if (effect.kind !== "damage" || (effect.channel ?? "physical") !== "elemental") {
     return effect.element;
@@ -263,7 +262,7 @@ export function adaptiveElementForBasic(
 
   const candidates = ELEMENT_POWER_BY_ELEMENT.map(({ element, stat }) => ({
     element,
-    power: actorStats[stat],
+    power: actorStats.stats[stat],
   }));
   const maxPower = Math.max(...candidates.map((candidate) => candidate.power));
   const leaders = candidates.filter((candidate) => candidate.power === maxPower);
@@ -274,13 +273,13 @@ export function adaptiveElementForBasic(
 }
 
 /** Pre-mitigation damage or heal amount for UI tooltips (actor Power only). */
-export function previewEffectRaw(effect: AbilityEffect, actorStats: BaseStats): number | null {
+export function previewEffectRaw(effect: AbilityEffect, actorStats: ResolvedStats): number | null {
   if (effect.kind === "damage") {
     const channel = effect.channel ?? "physical";
-    return rawDamageFromEffect(powerForStats(actorStats, channel, effect.element), effect);
+    return rawDamageFromEffect(powerFrom(actorStats, channel, effect.element), effect);
   }
   if (effect.kind === "heal" || effect.kind === "revive") {
-    return healAmount(powerForStats(actorStats, "elemental"), effect);
+    return healAmount(powerFrom(actorStats, "elemental"), effect);
   }
   return null;
 }
@@ -304,23 +303,6 @@ export function powerFrom(
   return Math.floor(
     (components.spellFlat + elementFlat) * (1 + components.spellPercent + elementPercent),
   );
-}
-
-function powerForStats(
-  stats: BaseStats,
-  channel: DamageChannel,
-  element?: Element,
-): number {
-  if (channel === "physical") {
-    return stats.physical;
-  }
-
-  const components = powerComponentsByStats.get(stats);
-  if (!components || !element) {
-    return stats.spell;
-  }
-
-  return powerFrom({ stats, components }, channel, element);
 }
 
 function mitigateDamage(raw: number, mitigation: number): number {

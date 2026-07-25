@@ -44,7 +44,7 @@ const twoTierKnight = {
 describe("Character BaseStats from Class Kit and Talents", () => {
   it("matches reviewed Level 1 Knight bases with no Talents or Equipment", () => {
     const talentState = emptyTalentState(knightKit);
-    expect(characterStats(knightKit, talentState)).toEqual(knightContract.base);
+    expect(characterStats(knightKit, talentState).stats).toEqual(knightContract.base);
   });
 
   it("derives Knight maxHealth after five Fortitude ranks (spec §6 % on reviewed 234 base)", () => {
@@ -53,8 +53,8 @@ describe("Character BaseStats from Class Kit and Talents", () => {
     talentState.tierStates[0]!.statRanks = { "k-fortitude": 5, "k-swordcraft": 0 };
     const stats = characterStats(knightKit, talentState);
     // floor(234 × (1 + 5 × 0.06)) per vertical-slice-spec.md §6 Power formula
-    expect(stats.maxHealth).toBe(304);
-    expect(stats.physical).toBe(knightContract.base.physical);
+    expect(stats.stats.maxHealth).toBe(304);
+    expect(stats.stats.physical).toBe(knightContract.base.physical);
   });
 
   it("applies flat-then-percent ordering when flat and percentage bonuses target the same statistic", () => {
@@ -64,7 +64,7 @@ describe("Character BaseStats from Class Kit and Talents", () => {
       { percent: { physicalPower: 0.1 } },
     ]);
     // floor((14 + 6) × 1.1) — reviewed Knight physical 14, spec §6 formula
-    expect(stats.physical).toBe(22);
+    expect(stats.stats.physical).toBe(22);
   });
 
   it("aggregates Stat Row modifiers from Tier 1 and Tier 2 into one percent pool", () => {
@@ -74,8 +74,8 @@ describe("Character BaseStats from Class Kit and Talents", () => {
     state.statRanks = { ...state.tierStates[0]!.statRanks };
     const stats = characterStats(twoTierKnight, state);
     // floor(234 × (1 + 3×0.06 + 2×0.04)) — spec §6 percent pool sums every rank
-    expect(stats.maxHealth).toBe(294);
-    expect(stats.physical).toBe(knightContract.base.physical);
+    expect(stats.stats.maxHealth).toBe(294);
+    expect(stats.stats.physical).toBe(knightContract.base.physical);
   });
 });
 
@@ -86,8 +86,8 @@ describe("Character BaseStats with Equipment modifiers", () => {
     talentState.tierStates[0]!.statRanks = { "w-elemental-practice": 3, "w-warding-lore": 2 };
     const stats = characterStats(wizardKit, talentState);
     // floor(16 × (1 + 3 × 0.05)) elemental; 24 + 2 × 4 ER flat — wizard base from contract
-    expect(stats.spell).toBe(18);
-    expect(stats.elementalResistance).toBe(32);
-    expect(stats.maxHealth).toBe(wizardContract.base.maxHealth);
+    expect(stats.stats.spell).toBe(18);
+    expect(stats.stats.elementalResistance).toBe(32);
+    expect(stats.stats.maxHealth).toBe(wizardContract.base.maxHealth);
   });
 });

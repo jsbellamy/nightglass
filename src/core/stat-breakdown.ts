@@ -1,9 +1,10 @@
+import type { ResolvedStats } from "./combat";
 import { equipmentModifiersForLoadout, snapshotEquipmentLoadouts } from "./equipment";
 import { characterStatsFor, statsForEquipmentLoadout } from "./equipment-preview";
 import { effectiveTalentState, rosterClassIds } from "./pending-edits";
 import type { Snapshot } from "./snapshot";
 import { cloneClassTalentState, talentStatModifiers } from "./talents";
-import type { BaseStats, ClassId, Content, StatModifiers } from "./types";
+import type { ClassId, Content, StatModifiers, BaseStats } from "./types";
 
 export type CharacterStatKey =
   | "maxHealth"
@@ -177,7 +178,7 @@ export function characterStatsCommittedFor(
   snapshot: Snapshot,
   content: Content,
   classId: ClassId,
-): BaseStats {
+): ResolvedStats {
   const classKit = classKitFor(content, classId);
   const talentState = cloneClassTalentState(snapshot.progression.talents[classId]!);
   const roster = rosterClassIds(snapshot);
@@ -204,17 +205,17 @@ export function statsDifferFromCommittedCombat(
   const effective = characterStatsFor(snapshot, content, classId);
   const committed = characterStatsCommittedFor(snapshot, content, classId);
   return (
-    effective.maxHealth !== committed.maxHealth ||
-    effective.physical !== committed.physical ||
-    effective.spell !== committed.spell ||
-    effective.armor !== committed.armor ||
-    effective.elementalResistance !== committed.elementalResistance ||
-    effective.firePower !== committed.firePower ||
-    effective.frostPower !== committed.frostPower ||
-    effective.lightningPower !== committed.lightningPower ||
-    effective.lightPower !== committed.lightPower ||
-    effective.critChance !== committed.critChance ||
-    effective.critDamage !== committed.critDamage
+    effective.stats.maxHealth !== committed.stats.maxHealth ||
+    effective.stats.physical !== committed.stats.physical ||
+    effective.stats.spell !== committed.stats.spell ||
+    effective.stats.armor !== committed.stats.armor ||
+    effective.stats.elementalResistance !== committed.stats.elementalResistance ||
+    effective.stats.firePower !== committed.stats.firePower ||
+    effective.stats.frostPower !== committed.stats.frostPower ||
+    effective.stats.lightningPower !== committed.stats.lightningPower ||
+    effective.stats.lightPower !== committed.stats.lightPower ||
+    effective.stats.critChance !== committed.stats.critChance ||
+    effective.stats.critDamage !== committed.stats.critDamage
   );
 }
 
@@ -235,6 +236,6 @@ export function characterStatBreakdown(
     base: classKit.base[def.baseKey],
     equipment: sumContribution(equipmentMods, def.flatKey, def.percentKey),
     talents: sumContribution(talentMods, def.flatKey, def.percentKey),
-    total: totals[def.totalKey],
+    total: totals.stats[def.totalKey],
   }));
 }

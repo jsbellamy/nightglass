@@ -25,6 +25,10 @@ import { fixtureContent } from "./testing/fixture-content";
 import { opponentEntityId, partyEntityId } from "./entity-id";
 import type { AbilityDef, BaseStats, ClassId, OpponentDef } from "./types";
 
+function resolvedStats(base: BaseStats, modifiers: Parameters<typeof resolveStatModifiers>[1] = []) {
+  return resolveStatModifiers(base, modifiers);
+}
+
 const abilitiesById = new Map(fixtureContent.abilities.map((ability) => [ability.id, ability]));
 const statusesById = new Map(fixtureContent.statuses.map((status) => [status.id, status]));
 const knightKit = fixtureContent.classes.find((entry) => entry.id === "knight")!;
@@ -68,7 +72,7 @@ function opponentCombatant(id: string, overrides: Partial<CombatantState> = {}):
 }
 
 const emptyTarget = {
-  stats: {
+  stats: resolvedStats({
     maxHealth: 100,
     physical: 0,
     spell: 0,
@@ -80,7 +84,7 @@ const emptyTarget = {
     lightPower: 0,
     critChance: 0.05,
     critDamage: 1.5,
-  },
+  }),
   health: 100,
   maxHealth: 100,
   knockedOut: false,
@@ -181,7 +185,7 @@ describe("Element Power selection", () => {
 
 describe("Elemental Damage Power after stat resolution", () => {
   it("pools Fire Power with Spell Power for fire-invested modifiers (C4)", () => {
-    const stats = applyStatModifiers(
+    const stats = resolveStatModifiers(
       {
         maxHealth: 100,
         physical: 0,
@@ -227,20 +231,21 @@ describe("critical hits", () => {
   };
   const armoredTarget = {
     ...emptyTarget,
-    stats: { ...emptyTarget.stats, armor: 100 },
+    stats: resolvedStats({ ...emptyTarget.stats.stats, armor: 100 }),
   };
 
   it("multiplies raw damage before mitigation on a crit (C4)", () => {
+    const actor = resolvedStats(critActor);
     const crit = resolveEffect(
       { kind: "damage", channel: "physical", coefficient: 1 },
-      critActor,
+      actor,
       armoredTarget,
       statusesById,
       true,
     );
     const normal = resolveEffect(
       { kind: "damage", channel: "physical", coefficient: 1 },
-      critActor,
+      actor,
       armoredTarget,
       statusesById,
       false,
@@ -279,12 +284,12 @@ describe("critical chance and damage statistics", () => {
 
 describe("previewEffectRaw critical preview", () => {
   it("shows non-critical raw damage even when critChance is 1 (C5)", () => {
-    const stats: BaseStats = {
-      ...emptyTarget.stats,
+    const stats = resolvedStats({
+      ...emptyTarget.stats.stats,
       physical: 100,
       critChance: 1,
       critDamage: 1.5,
-    };
+    });
     expect(
       previewEffectRaw({ kind: "damage", channel: "physical", coefficient: 1 }, stats),
     ).toBe(100);
@@ -293,12 +298,23 @@ describe("previewEffectRaw critical preview", () => {
 
 describe("damage mitigation at impact", () => {
   it("uses max(1, floor(raw × 100 / (100 + mitigation))) with mitigation clamped ≥ 0", () => {
-    const actor = { ...emptyTarget.stats, physical: 100, spell: 0, firePower: 0, frostPower: 0, lightningPower: 0, lightPower: 0 };
+    const actor = resolvedStats({
+      ...emptyTarget.stats.stats,
+      physical: 100,
+      spell: 0,
+      firePower: 0,
+      frostPower: 0,
+      lightningPower: 0,
+      lightPower: 0,
+    });
     const mitigated = (raw: number, mitigation: number) =>
       resolveEffect(
         { kind: "damage", channel: "physical", coefficient: raw / 100 },
         actor,
-        { ...emptyTarget, stats: { ...emptyTarget.stats, armor: mitigation } },
+        {
+          ...emptyTarget,
+          stats: resolvedStats({ ...emptyTarget.stats.stats, armor: mitigation }),
+        },
         statusesById,
       ).damageDetail?.amount;
 
@@ -309,7 +325,7 @@ describe("damage mitigation at impact", () => {
   });
 
   it("pairs Spell Power with Elemental Resistance, not Armor", () => {
-    const actorStats: BaseStats = {
+    const actorStats = resolvedStats({
       maxHealth: 100,
       physical: 10,
       spell: 100,
@@ -321,8 +337,8 @@ describe("damage mitigation at impact", () => {
       lightPower: 0,
       critChance: 0.05,
       critDamage: 1.5,
-    };
-    const targetStats: BaseStats = {
+    });
+    const targetStats = resolvedStats({
       maxHealth: 200,
       physical: 0,
       spell: 0,
@@ -334,7 +350,7 @@ describe("damage mitigation at impact", () => {
       lightPower: 0,
       critChance: 0.05,
       critDamage: 1.5,
-    };
+    });
     const outcome = resolveEffect(
       { kind: "damage", channel: "elemental", coefficient: 1 },
       actorStats,
@@ -344,7 +360,7 @@ describe("damage mitigation at impact", () => {
     expect(outcome.damageDetail?.amount).toBe(95);
     const wrongMitigation = Math.max(
       1,
-      Math.floor((100 * 100) / (100 + targetStats.armor)),
+      Math.floor((100 * 100) / (100 + targetStats.stats.armor)),
     );
     expect(outcome.damageDetail?.amount).not.toBe(wrongMitigation);
   });
@@ -366,7 +382,7 @@ describe("Power math", () => {
   };
 
   it("pools Spell and Element Power for elemental damage with worked numbers", () => {
-    const stats = applyStatModifiers(
+    const stats = resolveStatModifiers(
       {
         maxHealth: 100,
         physical: 0,
@@ -403,12 +419,12 @@ describe("Power math", () => {
   });
 
   it("applies floor((base + flat) × (1 + summed%)) before floor(Power × coefficient)", () => {
-    const stats = applyStatModifiers(base, [
+    const stats = resolveStatModifiers(base, [
       { flat: { physical: 6 } },
       { percent: { physicalPower: 0.1 } },
       { percent: { physicalPower: 0.05 } },
     ]);
-    expect(stats.physical).toBe(Math.floor((14 + 6) * 1.15));
+    expect(stats.stats.physical).toBe(Math.floor((14 + 6) * 1.15));
     const physicalPower = Math.floor((14 + 6) * 1.15);
     expect(
       previewEffectRaw({ kind: "damage", channel: "physical", coefficient: 0.9 }, stats),
@@ -417,11 +433,11 @@ describe("Power math", () => {
 
   it("combines flat modifiers before summed percentage modifiers", () => {
     const stats = effectiveStats(
-      base,
+      resolvedStats(base),
       [{ statusId: "braced", expiresAtMs: 10_000 }],
       statusesById,
     );
-    expect(stats.armor).toBe(80);
+    expect(stats.stats.armor).toBe(80);
   });
 });
 
@@ -446,19 +462,27 @@ const zeroElementPowerStats: BaseStats = {
   critDamage: 1.7,
 };
 
+const zeroElementResolved = resolvedStats(zeroElementPowerStats);
+
 describe("adaptiveElementForBasic", () => {
   it("returns the authored Element when every Element Power is zero", () => {
-    expect(adaptiveElementForBasic(arcSparkEffect, zeroElementPowerStats)).toBe("lightning");
+    expect(adaptiveElementForBasic(arcSparkEffect, zeroElementResolved)).toBe("lightning");
   });
 
   it("returns the strictly greatest Element Power's Element", () => {
     expect(
-      adaptiveElementForBasic({ ...arcSparkEffect }, { ...zeroElementPowerStats, firePower: 5 }),
+      adaptiveElementForBasic(
+        { ...arcSparkEffect },
+        resolvedStats(zeroElementPowerStats, [{ flat: { firePower: 5 } }]),
+      ),
     ).toBe("fire");
     expect(
       adaptiveElementForBasic(
         { ...arcSparkEffect },
-        { ...zeroElementPowerStats, firePower: 5, frostPower: 6 },
+        resolvedStats(zeroElementPowerStats, [
+          { flat: { firePower: 5 } },
+          { flat: { frostPower: 6 } },
+        ]),
       ),
     ).toBe("frost");
   });
@@ -467,13 +491,16 @@ describe("adaptiveElementForBasic", () => {
     expect(
       adaptiveElementForBasic(
         { ...arcSparkEffect },
-        { ...zeroElementPowerStats, firePower: 5, frostPower: 5 },
+        resolvedStats(zeroElementPowerStats, [
+          { flat: { firePower: 5 } },
+          { flat: { frostPower: 5 } },
+        ]),
       ),
     ).toBe("lightning");
   });
 
   it("resolves arc-spark as Fire with pooled Fire Power for a Fire-invested Wizard", () => {
-    const stats = applyStatModifiers(zeroElementPowerStats, [{ flat: { firePower: 5 } }]);
+    const stats = resolvedStats(zeroElementPowerStats, [{ flat: { firePower: 5 } }]);
     const element = adaptiveElementForBasic(arcSparkEffect, stats);
     expect(element).toBe("fire");
     const outcome = resolveEffect(
@@ -490,7 +517,7 @@ describe("adaptiveElementForBasic", () => {
   });
 
   it("leaves Core Ability elemental damage on its authored Element", () => {
-    const stats = { ...zeroElementPowerStats, frostPower: 12 };
+    const stats = resolvedStats(zeroElementPowerStats, [{ flat: { frostPower: 12 } }]);
     const cinderBloom = abilitiesById.get("w-cinder")!;
     expect(cinderBloom.slot).toBe("core");
     const outcome = resolveEffect(cinderBloom.effects[0]!, stats, emptyTarget, statusesById);
@@ -741,42 +768,30 @@ describe("retarget once", () => {
 });
 
 describe("healing", () => {
+  const priestHealer = resolvedStats({
+    maxHealth: 100,
+    physical: 0,
+    spell: 14,
+    armor: 0,
+    elementalResistance: 0,
+    firePower: 0,
+    frostPower: 0,
+    lightningPower: 0,
+    lightPower: 0,
+    critChance: 1,
+    critDamage: 2,
+  });
+
   it("ignores mitigation and cannot overheal", () => {
     const outcome = resolveEffect(
       { kind: "heal", coefficient: 0.8 },
-      {
-        maxHealth: 100,
-        physical: 0,
-        spell: 14,
-        armor: 0,
-        elementalResistance: 0,
-        firePower: 0,
-        frostPower: 0,
-        lightningPower: 0,
-        lightPower: 0,
-        critChance: 1,
-        critDamage: 2,
-      },
+      priestHealer,
       { ...emptyTarget, health: 95, maxHealth: 100 },
       statusesById,
       true,
     );
     expect(outcome.healDetail?.amount).toBe(5);
-    expect(
-      previewEffectRaw({ kind: "heal", coefficient: 0.8 }, {
-        maxHealth: 100,
-        physical: 0,
-        spell: 14,
-        armor: 0,
-        elementalResistance: 0,
-        firePower: 0,
-        frostPower: 0,
-        lightningPower: 0,
-        lightPower: 0,
-        critChance: 1,
-        critDamage: 2,
-      }),
-    ).toBe(11);
+    expect(previewEffectRaw({ kind: "heal", coefficient: 0.8 }, priestHealer)).toBe(11);
   });
 });
 
@@ -799,26 +814,26 @@ describe("Wildfire expansion status modifiers", () => {
 
   it("applies Scalded, Shaken, and Overdrive modifiers from the shipped contract", () => {
     const scalded = effectiveStats(
-      knightBase,
+      resolvedStats(knightBase),
       [{ statusId: "scalded", expiresAtMs: 1 }],
       wildfireStatusDefs,
     );
-    expect(scalded.elementalResistance).toBe(0);
+    expect(scalded.stats.elementalResistance).toBe(0);
 
     const shaken = effectiveStats(
-      knightBase,
+      resolvedStats(knightBase),
       [{ statusId: "shaken", expiresAtMs: 1 }],
       wildfireStatusDefs,
     );
-    expect(shaken.physical).toBe(11);
-    expect(shaken.spell).toBe(3);
+    expect(shaken.stats.physical).toBe(11);
+    expect(shaken.stats.spell).toBe(3);
 
     const overdrive = effectiveStats(
-      knightBase,
+      resolvedStats(knightBase),
       [{ statusId: "overdrive", expiresAtMs: 1 }],
       wildfireStatusDefs,
     );
-    expect(overdrive.physical).toBe(17);
+    expect(overdrive.stats.physical).toBe(17);
   });
 });
 

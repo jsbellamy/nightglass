@@ -1,4 +1,4 @@
-import { previewEffectRaw } from "./combat";
+import { previewEffectRaw, type ResolvedStats } from "./combat";
 import {
   equipmentModifiersForLoadout,
   findDrop,
@@ -14,7 +14,6 @@ import { characterStats } from "./stats";
 import type { ClassTalentState } from "./talents";
 import type {
   AbilityDef,
-  BaseStats,
   ClassId,
   ClassKitDef,
   Content,
@@ -121,7 +120,7 @@ export interface AbilityRawDisplay {
 
 export function abilityRawDisplay(
   ability: AbilityDef,
-  stats: BaseStats,
+  stats: ResolvedStats,
 ): AbilityRawDisplay | null {
   for (const effect of ability.effects) {
     if (effect.kind === "damage") {
@@ -251,8 +250,8 @@ export interface AbilityRawChange {
 export function compareAbilityRawChanges(
   loadoutAbilityIds: string[],
   basicAbility: AbilityDef,
-  currentStats: BaseStats,
-  candidateStats: BaseStats,
+  currentStats: ResolvedStats,
+  candidateStats: ResolvedStats,
   abilitiesById: Map<string, AbilityDef>,
 ): AbilityRawChange[] {
   const changes: AbilityRawChange[] = [];
@@ -297,7 +296,7 @@ export function statsForEquipmentLoadout(
   loadout: EquipmentLoadout,
   armory: DropInstance[],
   content: Content,
-): BaseStats {
+): ResolvedStats {
   const equipmentMods = equipmentModifiersForLoadout(loadout, armory, content);
   return characterStats(classKit, talentState, equipmentMods);
 }
@@ -310,7 +309,7 @@ export function characterStatsFor(
   snapshot: Snapshot,
   content: Content,
   classId: ClassId,
-): BaseStats {
+): ResolvedStats {
   const classKit = content.classes.find((entry) => entry.id === classId);
   if (!classKit) {
     throw new Error(`Missing Class Kit for ${classId}`);

@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { previewEffectRaw } from "../core/combat";
+import { previewEffectRaw, resolveStatModifiers } from "../core/combat";
 import { characterStats } from "../core/stats";
 import { emptyTalentState } from "../core/talents";
 import { buildContent } from "../data/index";
 import { fixtureContent } from "../core/testing/fixture-content";
-import type { StatModifiers } from "../core/types";
+import type { BaseStats, StatModifiers } from "../core/types";
 import {
   actionCyclePhase,
   formatAbilityChoiceLabel,
@@ -21,10 +21,15 @@ import {
 } from "./snapshot-view";
 
 const production = buildContent();
-const knightBase = production.classes.find((entry) => entry.id === "knight")!.base;
-const hunterBase = production.classes.find((entry) => entry.id === "hunter")!.base;
-const priestBase = production.classes.find((entry) => entry.id === "priest")!.base;
-const wizardBase = production.classes.find((entry) => entry.id === "wizard")!.base;
+
+function resolvedStats(base: BaseStats) {
+  return resolveStatModifiers(base, []);
+}
+
+const knightBase = resolvedStats(production.classes.find((entry) => entry.id === "knight")!.base);
+const hunterBase = resolvedStats(production.classes.find((entry) => entry.id === "hunter")!.base);
+const priestBase = resolvedStats(production.classes.find((entry) => entry.id === "priest")!.base);
+const wizardBase = resolvedStats(production.classes.find((entry) => entry.id === "wizard")!.base);
 
 function abilityById(content: typeof production, id: string) {
   const ability = content.abilities.find((entry) => entry.id === id);
@@ -318,7 +323,9 @@ describe("formatStatModifierPerRank and formatStatTalentDelta", () => {
 });
 
 describe("abilityRawDisplay", () => {
-  const knightBaseFixture = fixtureContent.classes.find((entry) => entry.id === "knight")!.base;
+  const knightBaseFixture = resolvedStats(
+    fixtureContent.classes.find((entry) => entry.id === "knight")!.base,
+  );
 
   it("returns physical damage from the first damage effect", () => {
     const display = abilityRawDisplay(knightBasic, knightBaseFixture);

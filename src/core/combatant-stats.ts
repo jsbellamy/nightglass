@@ -1,13 +1,13 @@
-import { effectiveStats } from "./combat";
+import { effectiveStats, resolveStatModifiers, type ResolvedStats } from "./combat";
 import type { ContentIndex } from "./content-index";
 import { equipmentModifiersForLoadout } from "./equipment";
 import type { AttemptState, CombatantState, ProgressionState } from "./snapshot";
 import { characterStats } from "./stats";
 import { emptyTalentState } from "./talents";
-import type { BaseStats, ClassId } from "./types";
+import type { ClassId } from "./types";
 
 export interface StatLedger {
-  statsFor(combatant: CombatantState): BaseStats;
+  statsFor(combatant: CombatantState): ResolvedStats;
   invalidate(classId: ClassId): void;
 }
 
@@ -16,7 +16,7 @@ function baseStatsForCombatant(
   combatant: CombatantState,
   progression: ProgressionState,
   attempt: AttemptState | null,
-): BaseStats {
+): ResolvedStats {
   if (combatant.side === "party") {
     const classId = combatant.defId as ClassId;
     const classKit = index.classesById.get(classId);
@@ -37,7 +37,7 @@ function baseStatsForCombatant(
   if (!opponent) {
     throw new Error(`Missing opponent ${combatant.defId}`);
   }
-  return opponent.base;
+  return resolveStatModifiers(opponent.base, []);
 }
 
 export function createStatLedger(
@@ -45,9 +45,9 @@ export function createStatLedger(
   progression: ProgressionState,
   attempt: AttemptState | null,
 ): StatLedger {
-  const baseByEntityId = new Map<string, BaseStats>();
+  const baseByEntityId = new Map<string, ResolvedStats>();
 
-  function statsFor(combatant: CombatantState): BaseStats {
+  function statsFor(combatant: CombatantState): ResolvedStats {
     let base = baseByEntityId.get(combatant.entityId);
     if (!base) {
       base = baseStatsForCombatant(index, combatant, progression, attempt);
