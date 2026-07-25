@@ -1,13 +1,9 @@
 import {
   adaptiveElementForBasic,
-  chooseFirstValidAbility,
   combatantById,
-  effectiveStats,
   isCombatantStunned,
   livingCombatants,
-  opponentAbilityCandidates,
   opponentCombatants,
-  partyAbilityCandidates,
   partyCombatants,
   revalidateTargets,
   resolveEffect,
@@ -15,6 +11,12 @@ import {
   shouldApplyStun,
   type EffectOutcome,
 } from "./combat";
+import { statsForCombatant } from "./combatant-stats";
+import {
+  chooseAbilityForCombatant,
+  indexContent,
+  type ContentIndex,
+} from "./content-index";
 import {
   assignDrop,
   canEquipToSlot,
@@ -122,15 +124,6 @@ interface EngineState {
   pendingEdits: Snapshot["pendingEdits"];
 }
 
-interface ContentIndex {
-  content: Content;
-  classesById: Map<ClassId, ClassKitDef>;
-  opponentsById: Map<string, OpponentDef>;
-  stagesById: Map<StageId, StageDef>;
-  abilitiesById: Map<string, AbilityDef>;
-  statusesById: Map<string, StatusEffectDef>;
-}
-
 interface PendingImpactChange {
   targetId: string;
   healthDelta: number;
@@ -157,17 +150,6 @@ interface StatusSourceSnapshot {
   entityId: string;
   physical: number;
   spell: number;
-}
-
-function indexContent(content: Content): ContentIndex {
-  return {
-    content,
-    classesById: new Map(content.classes.map((entry) => [entry.id, entry])),
-    opponentsById: new Map(content.opponents.map((entry) => [entry.id, entry])),
-    stagesById: new Map(content.stages.map((entry) => [entry.id, entry])),
-    abilitiesById: new Map(content.abilities.map((entry) => [entry.id, entry])),
-    statusesById: new Map(content.statuses.map((entry) => [entry.id, entry])),
-  };
 }
 
 function restoreProgression(
@@ -449,65 +431,6 @@ function startFreshAttempt(
   });
 }
 
-function statsForCombatant(
-  index: ContentIndex,
-  combatant: CombatantState,
-  progression: ProgressionState,
-  attempt: AttemptState | null,
-): ReturnType<typeof effectiveStats> {
-  let base;
-  if (combatant.side === "party") {
-    const classId = combatant.defId as ClassId;
-    const classKit = index.classesById.get(classId);
-    if (!classKit) {
-      throw new Error(`Missing Class Kit ${combatant.defId}`);
-    }
-    const talentState = progression.talents[classId] ?? emptyTalentState(classKit);
-    const equipmentLoadout = attempt?.equipmentLoadouts[classId] ?? {};
-    const equipmentMods = equipmentModifiersForLoadout(
-      equipmentLoadout,
-      progression.armory,
-      index.content,
-    );
-    base = characterStats(classKit, talentState, equipmentMods);
-  } else {
-    const opponent = index.opponentsById.get(combatant.defId);
-    if (!opponent) {
-      throw new Error(`Missing opponent ${combatant.defId}`);
-    }
-    base = opponent.base;
-  }
-  return effectiveStats(base, combatant.statuses, index.statusesById);
-}
-
-function chooseAbilityForCombatant(
-  index: ContentIndex,
-  state: EngineState,
-  combatant: CombatantState,
-): AbilityDef | null {
-  if (combatant.side === "party") {
-    const classKit = index.classesById.get(combatant.defId as ClassId);
-    if (!classKit) {
-      throw new Error(`Missing Class Kit ${combatant.defId}`);
-    }
-    const loadout = state.progression.loadouts[combatant.defId as ClassId];
-    const candidates = partyAbilityCandidates(
-      index.content,
-      classKit,
-      loadout,
-      index.abilitiesById,
-    );
-    return chooseFirstValidAbility(candidates, combatant, state.attempt!.combatants, state.simNowMs);
-  }
-
-  const opponent = index.opponentsById.get(combatant.defId);
-  if (!opponent) {
-    throw new Error(`Missing opponent ${combatant.defId}`);
-  }
-  const candidates = opponentAbilityCandidates(index.content, opponent, index.abilitiesById);
-  return chooseFirstValidAbility(candidates, combatant, state.attempt!.combatants, state.simNowMs);
-}
-
 function chooseActions(
   state: EngineState,
   index: ContentIndex,
@@ -529,7 +452,13 @@ function chooseActions(
       continue;
     }
 
-    const ability = chooseAbilityForCombatant(index, state, combatant);
+    const ability = chooseAbilityForCombatant(
+      index,
+      combatant,
+      state.progression.loadouts,
+      attempt.combatants,
+      state.simNowMs,
+    );
     if (!ability) {
       continue;
     }
@@ -793,7 +722,13 @@ function resolveImpacts(
 
     const ability =
       index.abilitiesById.get(action.abilityId) ??
-      chooseAbilityForCombatant(index, state, actor);
+      chooseAbilityForCombatant(
+        index,
+        actor,
+        state.progression.loadouts,
+        attempt.combatants,
+        state.simNowMs,
+      );
     if (!ability) {
       continue;
     }
