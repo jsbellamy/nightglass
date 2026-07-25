@@ -97,6 +97,24 @@ function stageById(id: StageId): StageDef {
   return stage;
 }
 
+function opponentFamily(opponentId: string): string {
+  return opponentById(opponentId).family;
+}
+
+function assertMoonberryWaveComposition(wave: { opponents: string[] }): void {
+  const slotCount = wave.opponents.length;
+  const familyCounts = new Map<string, number>();
+  for (const opponentId of wave.opponents) {
+    const family = opponentFamily(opponentId);
+    familyCounts.set(family, (familyCounts.get(family) ?? 0) + 1);
+  }
+  expect(familyCounts.size).toBeGreaterThanOrEqual(3);
+  const maxPerFamily = Math.floor(slotCount / 2);
+  for (const count of familyCounts.values()) {
+    expect(count).toBeLessThanOrEqual(maxPerFamily);
+  }
+}
+
 function sumEncounterXp(stage: StageDef): number {
   const sumWave = (opponentIds: string[]) =>
     opponentIds.reduce((total, opponentId) => total + opponentById(opponentId).xpAward, 0);
@@ -181,6 +199,60 @@ describe("assembled Stage content", () => {
     expect(moonberryOpponents.map((entry) => entry.id)).toEqual([...MOONBERRY_OPPONENT_IDS]);
     expect(XP_THRESHOLDS.slice(0, 6)).toEqual([0, 100, 250, 450, 650, 850]);
     expect(content.xpThresholds.slice(0, 6)).toEqual([0, 100, 250, 450, 650, 850]);
+  });
+
+  it("recomposes Moonberry Stages 1–3 waves from the five-family pool", () => {
+    const stage1 = stageById(1);
+    expect(stage1.waves[0]!.opponents).toEqual([
+      "pipcap-1-7a",
+      "brambling-1-7",
+      "lanternmoth-1-6",
+    ]);
+    expect(stage1.waves[1]!.opponents).toEqual([
+      "pipcap-1-5",
+      "pipcap-1-5",
+      "huskbeetle-1-5",
+      "dewsnail-1-5",
+    ]);
+
+    const stage2 = stageById(2);
+    expect(stage2.waves[0]!.opponents).toEqual([
+      "pipcap-2-8a",
+      "pipcap-2-8b",
+      "brambling-2-7",
+      "lanternmoth-2-7",
+    ]);
+    expect(stage2.waves[1]!.opponents).toEqual([
+      "pipcap-2-6",
+      "pipcap-2-6",
+      "huskbeetle-2-6",
+      "dewsnail-2-6",
+      "brambling-2-6",
+    ]);
+
+    const stage3 = stageById(3);
+    expect(stage3.waves[0]!.opponents).toEqual([
+      "pipcap-3-8",
+      "pipcap-3-8",
+      "brambling-3-8",
+      "lanternmoth-3-8",
+      "huskbeetle-3-8",
+    ]);
+    expect(stage3.waves[1]!.opponents).toEqual([
+      "dewsnail-3-8",
+      "dewsnail-3-8",
+      "brambling-3-8",
+      "lanternmoth-3-8",
+      "pipcap-3-8",
+    ]);
+  });
+
+  it("keeps every Moonberry ordinary wave within the five-family composition rule", () => {
+    for (const stage of content.stages.filter((entry) => entry.id <= 3)) {
+      for (const wave of stage.waves) {
+        assertMoonberryWaveComposition(wave);
+      }
+    }
   });
 
   it("ships five Moonberry ordinary families and three distinct Moonberry Bosses", () => {

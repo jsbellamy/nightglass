@@ -565,14 +565,14 @@ describe("Initiative Roll at encounter start", () => {
     }
   });
 
-  it("desynchronizes Stage 1 Wave 1 Pipcaps on a pinned seed", () => {
+  it("desynchronizes Stage 1 Wave 1 mixed roster on a pinned seed", () => {
     const engine = createEngine(productionContent, undefined, LOOT_SEED, fixtureNow);
-    const pipcapIds = ["pipcap-1-7a", "pipcap-1-7b", "pipcap-1-6"] as const;
+    const waveOpponentIds = ["pipcap-1-7a", "brambling-1-7", "lanternmoth-1-6"] as const;
     const entityByDefId = new Map(
       engine
         .snapshot()
         .attempt!.combatants.filter((combatant) =>
-          (pipcapIds as readonly string[]).includes(combatant.defId),
+          (waveOpponentIds as readonly string[]).includes(combatant.defId),
         )
         .map((combatant) => [combatant.defId, combatant.entityId]),
     );
@@ -582,15 +582,18 @@ describe("Initiative Roll at encounter start", () => {
       if (event.type !== "action-started") {
         continue;
       }
-      for (const defId of pipcapIds) {
+      for (const defId of waveOpponentIds) {
         if (event.entityId === entityByDefId.get(defId) && !startedAtByDefId.has(defId)) {
           startedAtByDefId.set(defId, event.atMs);
         }
       }
     }
+    const firstActionTimes = waveOpponentIds.map((defId) => startedAtByDefId.get(defId));
+    expect(firstActionTimes).toEqual([expect.any(Number), expect.any(Number), expect.any(Number)]);
+    expect(new Set(firstActionTimes).size).toBe(3);
     expect(startedAtByDefId.get("pipcap-1-7a")).toBe(574);
-    expect(startedAtByDefId.get("pipcap-1-7b")).toBe(3);
-    expect(startedAtByDefId.get("pipcap-1-6")).toBe(20);
+    expect(startedAtByDefId.get("brambling-1-7")).toBe(3);
+    expect(startedAtByDefId.get("lanternmoth-1-6")).toBe(20);
   });
 });
 
