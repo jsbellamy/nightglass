@@ -87,6 +87,8 @@ match any `moonberry-glow@1` RGB value.
 | ordinary opponent | `tickmoth` | moth fused with a cracked pocket watch; small, dial-thorax, four indigo wings |
 | ordinary opponent | `tollbat` | bat fused with a cracked bronze hand-bell; wide leathery wings, clapper tongue |
 | ordinary opponent | `astrolabe-spider` | spider fused with a broken brass astrolabe; verdigris zodiac disc-body, caliper legs |
+| ordinary opponent | `pendulum-rat` | belfry rat whose tail is a swinging brass pendulum bob; long low quadruped |
+| ordinary opponent | `sundial-gargoyle` | crouched stone gargoyle with a broken bronze gnomon fused along its spine; squat, heavy, angular |
 | Boss | `the-vigil` | great owl fused with a stopped tower clock (Stage 7) |
 | Boss | `the-tocsin` | colossal raven fused with a cracked bronze bourdon bell (Stage 8) |
 | Boss | `the-unwound` | the belfry's great clock movement and carillon awakened (Stage 9) |
@@ -95,6 +97,15 @@ match any `moonberry-glow@1` RGB value.
 | backdrop | `carillon-hall` | interior bell chamber of hanging tarnished bells (Stage 8) |
 | backdrop | `the-mainspring` | the great gearworks / clock-heart chamber (Stage 9) |
 | backdrop | `the-oculus` | the tower's open astronomical crown under a broken firmament (Stage 10) |
+
+### Ordinary-opponent silhouette separation
+
+The five ordinary Belfry silhouettes must stay mutually distinguishable at the
+30×68 ordinary-opponent ceiling — `tickmoth` small and delicate, `tollbat`
+wide-winged, `astrolabe-spider` low and many-legged, `pendulum-rat` long and low
+on four legs, `sundial-gargoyle` squat, heavy and angular. A candidate that
+reads as another family's silhouette is rejected at visual review even when every
+deterministic gate passes.
 
 Silhouette contrast across the cohort: `tickmoth` small-winged, `tollbat`
 wide-winged, `astrolabe-spider` low and many-legged; each Boss reads within the
@@ -159,6 +170,46 @@ Show exactly one complete subject with generous empty clearance on every edge of
 ### Intended read
 
 At native 1× it reads in order: spider → broken-astrolabe fusion → uncanny instrument-arachnid. It is low and many-legged, contrasting the small winged Tickmoth and wide-winged Tollbat. Eye cluster, engraved disc, snapped rule, and caliper legs remain distinct after quantization. It is not a spider standing on an instrument.
+
+---
+
+## `pendulum-rat` (ordinary opponent)
+
+### Generation prompt
+
+```text
+Single full-body Pendulum Rat ordinary opponent game sprite, strict side profile facing LEFT. A long low belfry rat anatomically fused with a clock's escapement, whose tail has become a swinging pendulum. Its lean dust-indigo body runs low and horizontal on four short clawed legs; the tail is a straight tarnished-brass pendulum rod ending in a heavy flat brass bob that hangs below the hindquarters, and a small verdigris escapement wheel is set into the haunch where the rod joins the spine. The mutation is one living creature, not a rat dragging or gnawing a clock part.
+
+Preserve its uncanny absurd identity: a pointed rat head with a chisel incisor and one cold-glass eye holding a single alarm-red glint, two thin notched ears, a lean low body on four short clawed legs, the verdigris escapement wheel set into the haunch, and the straight brass pendulum rod tail with its heavy flat bob. Long, low, horizontal silhouette. The incisor, ears, escapement wheel, pendulum rod, and bob must remain distinct at native game scale.
+
+Chunky simplified flat-colour Unwound Belfry pixel art matching the accepted Tickmoth, Tollbat, and Astrolabe-Spider in block size, selective moonless-indigo contour, saturation discipline, and 55% absurd / 45% uncanny tone. Use only named unwound-belfry-24 colors: moonless indigos, tarnished brass, verdigris patina, candle ivory, cold glass, and restrained alarm red. Metal reads through flat planes, not gradients. No gore, wounds, exposed organs, realism, gradients, anti-aliasing, blur, or dithering.
+
+Show exactly one complete subject with generous empty clearance on every edge of an opaque flat solid magenta #ff00ff background. No shadow, floor, glow, motion arc, swing streak, sparkles, particles, Ability effect, text, watermark, scenery, UI, transparency, other clock part, or other subject.
+```
+
+### Intended read
+
+At native 1× it reads in order: rat → brass pendulum tail → low scuttling clockwork vermin. It is long and horizontal where Tickmoth is small and upright and Tollbat is wide-winged, and it stands on four legs where Astrolabe-Spider sprawls on eight. Incisor, ears, escapement wheel, rod, and bob survive quantization as separate planes. It is not a rat carrying a pendulum.
+
+---
+
+## `sundial-gargoyle` (ordinary opponent)
+
+### Generation prompt
+
+```text
+Single full-body Sundial Gargoyle ordinary opponent game sprite, strict side profile facing LEFT. A squat crouched belfry gargoyle anatomically fused with a broken sundial. Its hunched body is weathered verdigris-streaked stone with blocky angular planes; a heavy triangular bronze gnomon rises from the spine like a fin, snapped short at the tip, and a cracked candle-ivory dial face is set flat into the shoulder plate with worn tick marks around its edge. Folded stubby stone wings clamp against the flanks. The mutation is one living creature, not a gargoyle statue beside or holding a sundial.
+
+Preserve its uncanny absurd identity: a blunt snarling stone muzzle with a heavy brow, one cold-glass eye with a single alarm-red glint, two short curled horns, the snapped triangular bronze gnomon fin along the spine, the cracked ivory dial set into the shoulder, folded stubby wings clamped to the flanks, and four thick clawed stone feet in a low crouch. Squat, heavy, angular silhouette with a wide flat base. The muzzle, horns, gnomon fin, dial face, folded wings, and all four feet must remain distinct at native game scale.
+
+Chunky simplified flat-colour Unwound Belfry pixel art matching the accepted Tickmoth, Tollbat, and Astrolabe-Spider in block size, selective moonless-indigo contour, saturation discipline, and 55% absurd / 45% uncanny tone. Use only named unwound-belfry-24 colors: moonless indigos, tarnished brass, verdigris patina, candle ivory, cold glass, and restrained alarm red. Stone and patina read through flat planes and chipped edges, not gradients. No gore, wounds, exposed organs, realism, gradients, anti-aliasing, blur, or dithering.
+
+Show exactly one complete subject with generous empty clearance on every edge of an opaque flat solid magenta #ff00ff background. No shadow, floor, glow, cast sundial shadow, dust, rubble, sparkles, particles, Ability effect, text, watermark, scenery, UI, transparency, other statue, or other subject.
+```
+
+### Intended read
+
+At native 1× it reads in order: gargoyle → broken sundial fused to its back → squat crouched stone guardian. It is the heaviest and most angular of the five Belfry silhouettes, clearly separate from Pendulum Rat's long low line and Astrolabe-Spider's thin caliper legs. Muzzle, horns, gnomon fin, cracked dial, folded wings, and four feet survive quantization. It is not a statue next to a sundial.
 
 ---
 
