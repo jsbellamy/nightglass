@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { createEngine, SCHEMA_VERSION } from "./engine";
+import { createEngine, nextBoundaryMsForSnapshot, SCHEMA_VERSION, type EngineTestSeam } from "./engine";
 import type { EngineEvent } from "./events";
 import { partyEntityId } from "./entity-id";
-import type { DropInstance, Snapshot } from "./snapshot";
+import type { AttemptState, CombatantState, DropInstance, Snapshot } from "./snapshot";
 import { cloneSnapshot } from "./snapshot";
 import { content as productionContent } from "../data";
 import { statuses as shippedStatuses } from "../data/statuses";
@@ -18,6 +18,10 @@ const LOOT_SEED = 0x5090;
 const DURATION_MS = 30_000;
 const FIXTURE_NOW_MS = 1_000;
 const fixtureNow = () => FIXTURE_NOW_MS;
+
+function engineTestSeam(engine: ReturnType<typeof createEngine>): EngineTestSeam {
+  return engine as ReturnType<typeof createEngine> & EngineTestSeam;
+}
 
 function dropIdsWhileClearingEncounter(
   engine: ReturnType<typeof createEngine>,
@@ -4483,6 +4487,457 @@ describe("Stat Ledger invalidation", () => {
       }
     }
     throw new Error("config-applied never emitted for formation boundary");
+  });
+});
+
+describe("boundary scan optimizations (#718)", () => {
+  const SIM_NOW_MS = 500;
+
+  function boundaryCombatant(
+    entityId: string,
+    overrides: Partial<CombatantState> = {},
+  ): CombatantState {
+    return {
+      entityId,
+      side: "party",
+      defId: "knight",
+      health: 100,
+      maxHealth: 100,
+      knockedOut: false,
+      initiativeReadyAtMs: 0,
+      action: null,
+      cooldownReadyAtMs: {},
+      statuses: [],
+      ...overrides,
+    };
+  }
+
+  function boundaryAttempt(
+    combatants: CombatantState[],
+    overrides: Partial<AttemptState> = {},
+  ): AttemptState {
+    return {
+      id: 1,
+      stage: 1,
+      encounter: 1,
+      phase: "fighting",
+      phaseEndsAtMs: null,
+      equipmentLoadouts: {} as AttemptState["equipmentLoadouts"],
+      combatants,
+      ...overrides,
+    };
+  }
+
+  function nextBoundary(
+    attempt: AttemptState | null,
+    simNowMs: number = SIM_NOW_MS,
+  ): number | null {
+    return nextBoundaryMsForSnapshot({ attempt, simNowMs });
+  }
+
+  describe("next boundary minimum timestamp", () => {
+    it("returns null when there is no Attempt", () => {
+      expect(nextBoundary(null)).toBeNull();
+    });
+
+    it("picks phaseEndsAtMs when it is the earliest candidate", () => {
+      const attempt = boundaryAttempt([boundaryCombatant("party:knight:front")], {
+        phaseEndsAtMs: 600,
+      });
+      expect(nextBoundary(attempt)).toBe(600);
+    });
+
+    it("picks initiativeReadyAtMs when it is the earliest candidate", () => {
+      const attempt = boundaryAttempt([
+        boundaryCombatant("party:knight:front", { initiativeReadyAtMs: 700 }),
+      ]);
+      expect(nextBoundary(attempt)).toBe(700);
+    });
+
+    it("picks status expiry when it is the earliest candidate", () => {
+      const attempt = boundaryAttempt([
+        boundaryCombatant("party:knight:front", {
+          statuses: [{ statusId: "stun", expiresAtMs: 650 }],
+        }),
+      ]);
+      expect(nextBoundary(attempt)).toBe(650);
+    });
+
+    it("picks status nextTickAtMs when it is the earliest candidate", () => {
+      const attempt = boundaryAttempt([
+        boundaryCombatant("party:knight:front", {
+          statuses: [
+            {
+              statusId: "scorched",
+              expiresAtMs: 5_000,
+              nextTickAtMs: 625,
+              sourceEntityId: "party:wizard:middle",
+              sourcePower: { physical: 0, spell: 4 },
+            },
+          ],
+        }),
+      ]);
+      expect(nextBoundary(attempt)).toBe(625);
+    });
+
+    it("picks unresolved impactAtMs when it is the earliest candidate", () => {
+      const attempt = boundaryAttempt([
+        boundaryCombatant("party:knight:front", {
+          action: {
+            abilityId: "knight-basic",
+            startedAtMs: 0,
+            impactAtMs: 640,
+            endsAtMs: 1_000,
+            targetIds: ["opp:1:0"],
+            impactResolved: false,
+          },
+        }),
+      ]);
+      expect(nextBoundary(attempt)).toBe(640);
+    });
+
+    it("picks action endsAtMs when it is the earliest candidate", () => {
+      const attempt = boundaryAttempt([
+        boundaryCombatant("party:knight:front", {
+          action: {
+            abilityId: "knight-basic",
+            startedAtMs: 0,
+            impactAtMs: 400,
+            endsAtMs: 610,
+            targetIds: ["opp:1:0"],
+            impactResolved: true,
+          },
+        }),
+      ]);
+      expect(nextBoundary(attempt)).toBe(610);
+    });
+
+    it("returns the tied minimum when a Status expiry matches an action end", () => {
+      const attempt = boundaryAttempt([
+        boundaryCombatant("party:knight:front", {
+          statuses: [{ statusId: "stun", expiresAtMs: 800 }],
+          action: {
+            abilityId: "knight-basic",
+            startedAtMs: 0,
+            impactAtMs: 400,
+            endsAtMs: 800,
+            targetIds: ["opp:1:0"],
+            impactResolved: true,
+          },
+        }),
+      ]);
+      expect(nextBoundary(attempt)).toBe(800);
+    });
+  });
+
+  describe("status expiry and tick passes without Statuses", () => {
+    function snapshotAtStatusBoundary(withStatus: boolean): Snapshot {
+      const snap = scenario().build();
+      snap.simNowMs = 999;
+      snap.attempt!.phase = "fighting";
+      snap.attempt!.phaseEndsAtMs = null;
+      for (const combatant of snap.attempt!.combatants) {
+        combatant.initiativeReadyAtMs = 0;
+        combatant.action = null;
+        combatant.statuses = [];
+      }
+      if (withStatus) {
+        const opponent = snap.attempt!.combatants.find((entry) => entry.side === "opponent");
+        if (!opponent) {
+          throw new Error("missing opponent");
+        }
+        opponent.statuses = [{ statusId: "stun", expiresAtMs: 1_000 }];
+      }
+      return snap;
+    }
+
+    it("keeps combatant Status array identity when no Status exists on the Attempt", () => {
+      const snap = snapshotAtStatusBoundary(false);
+      snap.attempt!.phase = "wave-transition";
+      snap.attempt!.phaseEndsAtMs = 1_000;
+      const engine = createEngine(fixtureContent, snap, LOOT_SEED, fixtureNow);
+      const seam = engineTestSeam(engine);
+      const knightId = partyEntityId("knight", 1);
+      const statusesBefore = seam.statusesRef(knightId);
+      engine.advanceBy(1);
+      expect(seam.statusesRef(knightId)).toBe(statusesBefore);
+    });
+
+    it("expires exactly one Status at the next boundary with the same status-expired event", () => {
+      const snap = snapshotAtStatusBoundary(true);
+      stunCombatants(snap, snap.simNowMs);
+      const engine = createEngine(fixtureContent, snap, LOOT_SEED, fixtureNow);
+      const events = engine.advanceBy(1);
+      expect(events.filter((event) => event.type === "status-expired")).toEqual([
+        expect.objectContaining({
+          type: "status-expired",
+          entityId: "opp:1:0",
+          statusId: "stun",
+          atMs: 1_000,
+        }),
+      ]);
+    });
+  });
+
+  describe("Impact pre-resolution health snapshots", () => {
+    it("reports unchanged healthAfter for a lone Impact in a full Party", () => {
+      const snap = scenario(fixtureContent)
+        .withParty(["wizard", "knight", "priest"], "hunter")
+        .build();
+      snap.lootRngState = LOOT_SEED;
+      snap.simNowMs = 450;
+      const wizard = snap.attempt!.combatants.find((entry) => entry.defId === "wizard");
+      const opponent = snap.attempt!.combatants.find((entry) => entry.side === "opponent");
+      if (!wizard || !opponent) {
+        throw new Error("missing wizard or opponent");
+      }
+      stunCombatants(snap, 450, [wizard.entityId]);
+      wizard.action = {
+        abilityId: "wizard-basic",
+        startedAtMs: 0,
+        impactAtMs: 450,
+        endsAtMs: 1_200,
+        targetIds: [opponent.entityId],
+        impactResolved: false,
+      };
+      const engine = createEngine(
+        {
+          ...fixtureContent,
+          classes: fixtureContent.classes.map((classKit) =>
+            classKit.id === "wizard"
+              ? { ...classKit, base: { ...classKit.base, firePower: 5, critChance: 0 } }
+              : classKit,
+          ),
+        },
+        snap,
+        LOOT_SEED,
+      );
+      const events = engine.advanceBy(0);
+      const impact = events.find(
+        (event): event is Extract<EngineEvent, { type: "impact" }> =>
+          event.type === "impact" && event.abilityId === "wizard-basic",
+      );
+      expect(impact?.results).toEqual([
+        {
+          targetId: opponent.entityId,
+          kind: "damage",
+          channel: "elemental",
+          element: "fire",
+          amount: 20,
+          healthAfter: 20,
+        },
+      ]);
+    });
+
+    it("lets simultaneous Impacts against one target both read the same pre-Impact health", () => {
+      const saved = scenario()
+        .withParty(["knight", "wizard", "priest"], "hunter")
+        .build();
+      saved.lootRngState = LOOT_SEED;
+      saved.simNowMs = 0;
+      saved.attempt!.combatants = [
+        {
+          entityId: "party:knight:front",
+          side: "party",
+          defId: "knight",
+          health: 180,
+          maxHealth: 180,
+          knockedOut: false,
+          initiativeReadyAtMs: 0,
+          action: {
+            abilityId: "knight-basic",
+            startedAtMs: 0,
+            impactAtMs: 350,
+            endsAtMs: 1_000,
+            targetIds: ["opp:1:0"],
+            impactResolved: false,
+          },
+          cooldownReadyAtMs: {},
+          statuses: [],
+        },
+        {
+          entityId: "party:wizard:middle",
+          side: "party",
+          defId: "wizard",
+          health: 100,
+          maxHealth: 100,
+          knockedOut: false,
+          initiativeReadyAtMs: 0,
+          action: {
+            abilityId: "wizard-basic",
+            startedAtMs: 0,
+            impactAtMs: 350,
+            endsAtMs: 1_000,
+            targetIds: ["opp:1:0"],
+            impactResolved: false,
+          },
+          cooldownReadyAtMs: {},
+          statuses: [],
+        },
+        {
+          entityId: "party:priest:back",
+          side: "party",
+          defId: "priest",
+          health: 110,
+          maxHealth: 110,
+          knockedOut: false,
+          initiativeReadyAtMs: 0,
+          action: null,
+          cooldownReadyAtMs: {},
+          statuses: [],
+        },
+        {
+          entityId: "opp:1:0",
+          side: "opponent",
+          defId: "fixture-grunt",
+          health: 30,
+          maxHealth: 40,
+          knockedOut: false,
+          initiativeReadyAtMs: 999_999,
+          action: null,
+          cooldownReadyAtMs: {},
+          statuses: [],
+        },
+      ];
+
+      const engine = createEngine(
+        {
+          ...fixtureContent,
+          classes: fixtureContent.classes.map((classKit) => ({
+            ...classKit,
+            base: { ...classKit.base, critChance: 0 },
+          })),
+        },
+        saved,
+        LOOT_SEED,
+      );
+      const events = engine.advanceBy(350);
+      const impacts = events.filter(
+        (event): event is Extract<EngineEvent, { type: "impact" }> => event.type === "impact",
+      );
+      expect(impacts).toHaveLength(2);
+      const sharedTargetResults = impacts.flatMap((event) =>
+        event.results.filter((result) => result.targetId === "opp:1:0"),
+      );
+      expect(sharedTargetResults).toEqual([
+        { targetId: "opp:1:0", kind: "damage", channel: "physical", amount: 13, healthAfter: 17 },
+        {
+          targetId: "opp:1:0",
+          kind: "damage",
+          channel: "elemental",
+          element: "lightning",
+          amount: 15,
+          healthAfter: 15,
+        },
+      ]);
+    });
+  });
+
+  describe("simultaneous Impact resolution order", () => {
+    it("preserves impact event seq order and seed-pinned Critical Hit outcomes", () => {
+      const saved = scenario()
+        .withParty(["knight", "wizard", "priest"], "hunter")
+        .build();
+      saved.lootRngState = LOOT_SEED;
+      saved.simNowMs = 0;
+      const impactAtMs = 350;
+      saved.attempt!.combatants = [
+        {
+          entityId: "party:knight:front",
+          side: "party",
+          defId: "knight",
+          health: 180,
+          maxHealth: 180,
+          knockedOut: false,
+          initiativeReadyAtMs: 0,
+          action: {
+            abilityId: "knight-basic",
+            startedAtMs: 0,
+            impactAtMs,
+            endsAtMs: 1_000,
+            targetIds: ["opp:1:0"],
+            impactResolved: false,
+          },
+          cooldownReadyAtMs: {},
+          statuses: [],
+        },
+        {
+          entityId: "party:wizard:middle",
+          side: "party",
+          defId: "wizard",
+          health: 100,
+          maxHealth: 100,
+          knockedOut: false,
+          initiativeReadyAtMs: 0,
+          action: {
+            abilityId: "wizard-basic",
+            startedAtMs: 0,
+            impactAtMs,
+            endsAtMs: 1_000,
+            targetIds: ["opp:1:0"],
+            impactResolved: false,
+          },
+          cooldownReadyAtMs: {},
+          statuses: [],
+        },
+        {
+          entityId: "party:priest:back",
+          side: "party",
+          defId: "priest",
+          health: 110,
+          maxHealth: 110,
+          knockedOut: false,
+          initiativeReadyAtMs: 0,
+          action: null,
+          cooldownReadyAtMs: {},
+          statuses: [],
+        },
+        {
+          entityId: "opp:1:0",
+          side: "opponent",
+          defId: "fixture-grunt",
+          health: 200,
+          maxHealth: 200,
+          knockedOut: false,
+          initiativeReadyAtMs: 999_999,
+          action: null,
+          cooldownReadyAtMs: {},
+          statuses: [],
+        },
+      ];
+
+      const engine = createEngine(fixtureContent, saved, LOOT_SEED);
+      const events = engine.advanceBy(impactAtMs);
+      const impacts = events.filter(
+        (event): event is Extract<EngineEvent, { type: "impact" }> => event.type === "impact",
+      );
+      expect(impacts.map((event) => event.entityId)).toEqual([
+        "party:knight:front",
+        "party:wizard:middle",
+      ]);
+      expect(impacts.map((event) => event.seq)).toEqual([4, 5]);
+      expect(impacts[0]?.results[0]).toMatchObject({
+        kind: "damage",
+        amount: 20,
+        crit: true,
+      });
+      expect(impacts[1]?.results[0]).toMatchObject({
+        kind: "damage",
+        amount: 25,
+        crit: true,
+      });
+    });
+  });
+
+  describe("unchanged combat behaviour after boundary-scan optimization", () => {
+    it("stays chunk-neutral at 1ms and 7ms step sizes", () => {
+      const oneMs = createEngine(engineContent, undefined, LOOT_SEED, fixtureNow);
+      const sevenMs = createEngine(engineContent, undefined, LOOT_SEED, fixtureNow);
+      const oneMsEvents = driveBy(oneMs, DURATION_MS, 1);
+      const sevenMsEvents = driveBy(sevenMs, DURATION_MS, 7);
+      expect(stable(oneMsEvents)).toBe(stable(sevenMsEvents));
+      expect(stable(oneMs.snapshot())).toBe(stable(sevenMs.snapshot()));
+    });
   });
 });
 
