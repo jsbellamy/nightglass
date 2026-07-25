@@ -160,6 +160,99 @@ def revive_burst() -> Image.Image:
     return petal_burst(25, "bloom", 10, -15)
 
 
+def basic_cut() -> Image.Image:
+    """Short low close-in blade stroke — a jab, not arc-slash's wide swing."""
+    w, h = 22, 14
+    cx, cy = 4.0, h / 2.0 + 2.0
+    im = canvas(w, h)
+    ramp = PALETTE["families"]["arc"]
+    r_out, r_in = 14.0, 9.0
+    for y in range(h):
+        for x in range(w):
+            dx, dy = x - cx, y - cy
+            r = math.hypot(dx, dy)
+            if not (r_in <= r <= r_out):
+                continue
+            ang = math.degrees(math.atan2(dy, dx))
+            if not (-25 <= ang <= 35):
+                continue
+            edge = abs(r - (r_in + r_out) / 2) / ((r_out - r_in) / 2)
+            tip = abs(ang - 5) / 30.0
+            put(im, x, y, ramp_pick(ramp, min(1.0, 0.5 * edge + 0.8 * (1 - tip))))
+    return im
+
+
+def basic_arrow() -> Image.Image:
+    """Long thin shaft with trailing streak — distinct from arrow-bolt."""
+    w, h = 28, 7
+    im = canvas(w, h)
+    ramp = PALETTE["families"]["arc"]
+    cy = h // 2
+    tail = w - 8
+    for x in range(tail):
+        t = x / max(1, tail - 1)
+        put(im, x, cy, ramp_pick(ramp, 0.3 + 0.4 * t))
+        if x % 2 == 0:
+            for dy in (-1, 1):
+                if 0 <= cy + dy < h:
+                    put(im, x, cy + dy, ramp_pick(ramp, 0.12 + 0.2 * t))
+    for x in range(tail, w - 1):
+        t = (x - tail) / max(1, w - tail - 2)
+        put(im, x, cy, ramp_pick(ramp, 0.55 + 0.35 * t))
+    tip_x = w - 1
+    for dy in (-1, 0, 1):
+        put(im, tip_x, cy + dy, GLOW["glow-core"])
+    put(im, tip_x - 1, cy, GLOW["glow-cream"])
+    put(im, w - 2, cy, GLOW["glow-mint-bright"])
+    return im
+
+
+def basic_spark() -> Image.Image:
+    """Compact crackling mote — rounder and denser than spell-bolt."""
+    w = h = 13
+    c = (w - 1) / 2.0
+    im = canvas(w, h)
+    ramp = PALETTE["families"]["bloom"]
+    for y in range(h):
+        for x in range(w):
+            r = math.hypot(x - c, y - c)
+            if r > c - 0.5:
+                continue
+            if r <= 2.0:
+                put(im, x, y, GLOW["glow-core"])
+            elif r <= 3.5:
+                put(im, x, y, GLOW["glow-berry-bright"])
+            elif (x + y + int(r)) % 3 == 0:
+                put(im, x, y, ramp_pick(ramp, 0.55 + 0.35 * (r / c)))
+    for dx, dy in ((0, -4), (3, 2), (-3, 2)):
+        put(im, int(c + dx), int(c + dy), GLOW["glow-violet"])
+    return im
+
+
+def basic_mote() -> Image.Image:
+    """Soft rising sphere with faint halo — distinct from spell-bolt's hard point."""
+    w = h = 15
+    c = (w - 1) / 2.0
+    im = canvas(w, h)
+    ramp = PALETTE["families"]["bloom"]
+    for y in range(h):
+        for x in range(w):
+            r = math.hypot(x - c, y - c)
+            if 5.5 <= r <= 7.0:
+                put(im, x, y, ramp_pick(ramp, 0.35))
+                continue
+            if r > 4.5:
+                continue
+            t = r / 4.5
+            if r <= 1.5:
+                put(im, x, y, GLOW["glow-core"])
+            else:
+                put(im, x, y, ramp_pick(ramp, 0.5 + 0.4 * (1 - t)))
+    for dx in (-1, 0, 1):
+        put(im, int(c) + dx, int(c) - 3, GLOW["glow-cream"])
+    return im
+
+
 def buff_halo() -> Image.Image:
     w = h = 21
     c = (w - 1) / 2.0
@@ -182,6 +275,10 @@ SOURCES = {
     "arc-slash": arc_slash,
     "arc-impact": arc_impact,
     "arrow-bolt": arrow_bolt,
+    "basic-cut": basic_cut,
+    "basic-arrow": basic_arrow,
+    "basic-spark": basic_spark,
+    "basic-mote": basic_mote,
     "spell-bolt": spell_bolt,
     "spell-bloom": spell_bloom,
     "heal-rise": heal_rise,

@@ -291,9 +291,62 @@ SEQUENCES: dict[str, dict] = {
             (lambda s: fade(s, 1), 100),
         ],
     },
+    "basic-cut": {
+        "still_key": "basic-cut",
+        "anchor": "strike_target",
+        "anchor_dx": -15,
+        "align_to": "impact_expected",
+        "cue_frame": 2,
+        "pivot": (4, 9),
+        "frames": [
+            (lambda s: sweep(s, (4, 9), -25, 5), 60),
+            (lambda s: sweep(s, (4, 9), 0, 35), 60),
+            (lambda s: sweep(s, (4, 9), 15, 35), 130),
+            (lambda s: fade(s, 2), 130),
+        ],
+    },
+    "basic-arrow": {
+        "still_key": "basic-arrow",
+        "anchor": "lane_travel",
+        "anchor_dx": 0,
+        "align_to": "release_projectile",
+        "cue_frame": 0,
+        "frames": [
+            (lambda s: s, 100),
+            (lambda s: spin(s, 1), 100),
+            (lambda s: spin(s, 2), 100),
+            (lambda s: fade(s, 1), 100),
+        ],
+    },
+    "basic-spark": {
+        "still_key": "basic-spark",
+        "anchor": "lane_travel",
+        "anchor_dx": 0,
+        "align_to": "release_projectile",
+        "cue_frame": 0,
+        "frames": [
+            (lambda s: scale(s, 0.8), 105),
+            (lambda s: s, 105),
+            (lambda s: spin(s, 1), 105),
+            (lambda s: fade(s, 2), 105),
+        ],
+    },
+    "basic-mote": {
+        "still_key": "basic-mote",
+        "anchor": "lane_travel",
+        "anchor_dx": 0,
+        "align_to": "release_projectile",
+        "cue_frame": 0,
+        "frames": [
+            (lambda s: band(s, 10, 14), 115),
+            (lambda s: band(s, 6, 14), 115),
+            (lambda s: band(s, 2, 14), 115),
+            (lambda s: fade(band(s, 0, 14), 1), 115),
+        ],
+    },
 }
 
-# Element-tagged copies of bolt/bloom derivations.
+# Element-tagged copies of bolt/bloom/spark/mote derivations.
 for element in ELEMENT_REMAP:
     SEQUENCES[f"spell-bolt-{element}"] = {
         **SEQUENCES["spell-bolt"],
@@ -307,6 +360,16 @@ for element in ELEMENT_REMAP:
     }
     SEQUENCES[f"spell-bloom-scaled-{element}"] = {
         **SEQUENCES["spell-bloom-scaled"],
+        "element": element,
+        "post": lambda im, el=element: recolour_element(im, el),
+    }
+    SEQUENCES[f"basic-spark-{element}"] = {
+        **SEQUENCES["basic-spark"],
+        "element": element,
+        "post": lambda im, el=element: recolour_element(im, el),
+    }
+    SEQUENCES[f"basic-mote-{element}"] = {
+        **SEQUENCES["basic-mote"],
         "element": element,
         "post": lambda im, el=element: recolour_element(im, el),
     }
