@@ -5,9 +5,9 @@ Frozen by [#4](https://github.com/jsbellamy/nightglass/issues/4). Sits on top of
 #258), which owns anchors, timings, validation, provenance, and deterministic
 build outputs — this document does not restate or re-decide any of that.
 
-Prototype and gates:
-[`prototype/presentation-contract/`](../prototype/presentation-contract/)
-(`verify.py`, seven gates, all passing).
+Prototype evidence and gates:
+[`docs/research/evidence/04-presentation-contract/`](research/evidence/04-presentation-contract/README.md)
+(`verify.py`, seven gates, all passing before #714 removed the throwaway tree).
 
 ## What this contract adds
 
@@ -120,7 +120,7 @@ The pool is a soft ellipse at the acting Character's feet (`rx 11`, `ry 3`,
 `dy 1`, `glow-mint`), drawn on the mark layer for the duration of the action.
 
 Three candidates were rendered against each other at 1× with three concurrent
-actors ([`review/CHANNEL_1x.png`](../prototype/presentation-contract/review/CHANNEL_1x.png)):
+actors ([`CHANNEL_1x.png`](research/evidence/04-presentation-contract/CHANNEL_1x.png)):
 
 | Candidate | Verdict |
 | --- | --- |

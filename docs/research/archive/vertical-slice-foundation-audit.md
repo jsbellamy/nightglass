@@ -5,8 +5,9 @@
 > [`docs/agents/acceptance-evidence.md`](../../agents/acceptance-evidence.md).
 > Findings here may describe a state that no longer exists; do not action them
 > without re-verifying against the current tree. Resolved since this audit:
-> `prototype/comfyui-fit/canonical/` was deleted; all four Character references
-> and three Boss stills ship at 32×48.
+> `prototype/comfyui-fit/canonical/` was deleted in #42 and the entire
+> `prototype/` tree was removed in #714; all four Character references and three
+> Boss stills ship at 32×48.
 
 Audited on 2026-07-19 against `main` at `3528abf` (`Audit rendered application
 acceptance evidence (#93)`) and the live GitHub issue bodies for
@@ -51,8 +52,9 @@ typecheck` passes, the production Vite build passes, `cargo check` in
 
 The exceptions are:
 
-1. **One real, uncorrected failure.** #42 required deleting the stale
-   `prototype/comfyui-fit/canonical/*.png` pair. Both files are still present.
+1. **One real, uncorrected failure (resolved in #714).** #42 required deleting
+   the stale `prototype/comfyui-fit/canonical/*.png` pair. The entire
+   `prototype/` tree was removed in #714.
 2. **Two rows falsified by intentional successors.** #33's five-permission
    capability list is now twelve (the Management Dock window from #46), and
    #35's basic-attack interim label was removed when #36 landed the real combat
@@ -199,7 +201,7 @@ Issue state: **closed**. Source: [live issue](https://github.com/jsbellamy/night
 | `npm run assets:verify` green locally and in CI; CI job has no provider/network access. | **Proven on current main** | Rerun locally: all contract tests pass, then determinism `PASS` (94 files rebuilt byte-identically), separation `PASS` (78/78 effect frames caught), body-free `PASS`. CI wires it as the `assets` job in [`.github/workflows/ci.yml`](../../../.github/workflows/ci.yml), whose only install step is `pip install pillow`; the verifier's own `[PASS] no provider/model modules imported` and socket check enforce the neutrality clause in-band. |
 | Raw bytes unchanged: each sidecar's `raw_sha256` matches its moved raw. | **Proven on current main** | Recomputed SHA-256 for each raw under `assets-raw/grid_raw/` against the `raw_sha256` recorded in its `.source.json` sidecar: `boss` `ae87deb3…`, `knight` `9dfcdd69…`, `pipcap` `61521e22…`, `wizard` `cf390b25…` — four matches, zero mismatches. |
 | Runtime outputs named `knight.png`, `wizard.png`, `pipcap.png`, `boss-1.png`; manifest records `"palette": "moonberry-16"`. | **Proven on current main** | Exactly those four filenames plus `manifest.json` are present. The verifier's dedicated gate reports `[PASS] manifest records moonberry-16 palette for every sprite -- {'knight': …, 'wizard': …, 'pipcap': …, 'boss-1': …}`, and the literal string appears on three manifest entries plus the fourth. |
-| Stale `prototype/comfyui-fit/canonical/*.png` pair deleted. | **Regressed / current failure** | **The deletion never happened.** `prototype/comfyui-fit/canonical/` still contains `knight-canonical.png`, `wizard-canonical.png`, and `MANIFEST.md` on current `main`. This is the only row in #33–#42 that is false for reasons unrelated to a later intentional successor — it is simply outstanding cleanup from #42 itself. Low severity (the directory is prototype-only and not imported by the runtime), but the row as written is untrue. |
+| Stale `prototype/comfyui-fit/canonical/*.png` pair deleted. | **Proven on current main** | Resolved in #714: the entire `prototype/` tree was removed after review artifacts were preserved under `docs/research/evidence/`. |
 | Validator still rejects an off-palette frame (test_contract's gates all pass in the new location). | **Proven on current main** | [`pipeline/test_contract.py`](../../../pipeline/test_contract.py) fires every rejection rule as a positive assertion in the production location: non-magenta background, wrong dimensions, non-RGBA, unapproved alpha, embedded off-palette effects, empty frame, and generator-clipped raw. All pass. This is a genuine rejection-fires check, not a "clean input passes" check. |
 
 ### Carried-over structural weakness
@@ -224,9 +226,8 @@ Remediation belongs to the #43 finding, not to a reopening of #42.
 Ordered by severity, for the Wayfinder tickets that follow. None are fixed by
 this audit, which is research-only.
 
-1. **Delete `prototype/comfyui-fit/canonical/{knight,wizard}-canonical.png`**
-   (and decide whether `MANIFEST.md` goes with them) to close #42's outstanding
-   row. Trivial, uncontested, no design question.
+1. ~~**Delete `prototype/comfyui-fit/canonical/{knight,wizard}-canonical.png`**~~
+   — resolved in #714 (entire `prototype/` tree removed).
 2. **Extend #39's transcription pinning from 5 Abilities to all 28**, or amend
    the criterion to match the sample the project actually intends to maintain.
    This is the largest correctness exposure in the foundation: 23 Abilities'

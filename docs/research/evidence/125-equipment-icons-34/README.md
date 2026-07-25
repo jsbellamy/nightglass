@@ -23,11 +23,5 @@ Optional GenerateImage path + measured reject ladder:
 
 ## Armory review
 
-```
-npm run prototype:equipment-icons-34
-# optional: npm run prototype:equipment-icons-34:ingest
-npm run dev
-open http://localhost:1420/?window=dock&prototype=equipment-icons-34
-```
-
-Working notes: [`prototype/equipment-icons-34/NOTES.md`](../../../prototype/equipment-icons-34/NOTES.md)
+Shipped in #137 via [`124-equipment-icon-consumers`](../124-equipment-icon-consumers/README.md).
+The throwaway `prototype/equipment-icons-34/` harness was removed in #714.
