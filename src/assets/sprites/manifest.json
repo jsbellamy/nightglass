@@ -830,5 +830,37 @@
       "provider": "Cursor GenerateImage",
       "raw_sha256": "234802b62cd215cc87f13d70787931d3a74a9e07aab68b71817983c70ea99517"
     }
+  },
+  "pie-widgeon": {
+    "action": "still",
+    "frame_size": [
+      30,
+      15
+    ],
+    "visual_bounds": [
+      0,
+      0,
+      30,
+      15
+    ],
+    "foot_anchor": [
+      15,
+      15
+    ],
+    "palette": "fowl-harvest-24",
+    "baseline_row": 14,
+    "total_ms": 1,
+    "frames": [
+      {
+        "name": "pie-widgeon",
+        "duration_ms": 1,
+        "sha256": "82446ce81d394ac1d8195c31386a648ffb8f6a483be7eacd10b30b9bcc73b4e5"
+      }
+    ],
+    "cues_ms": {},
+    "source": {
+      "provider": "Cursor GenerateImage",
+      "raw_sha256": "ea1a45b99f1245db520d9f1f890122e2b7ccd473ed1321c89444529ade93e824"
+    }
   }
 }
