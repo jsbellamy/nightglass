@@ -70,6 +70,8 @@ type StateFilterId = "all" | "unseen" | "locked";
 
 type ArmoryActionMode = "salvage" | "discard-tier";
 
+type PopoverAnchorKind = "grid" | "worn" | "salvage-slot" | "discard-row" | "salvage-result";
+
 
 function equippedDropId(
   armory: DropInstance[],
@@ -443,7 +445,7 @@ export function mountArmorySurface(
             text: RARITY_LABELS[entry.rarity],
           }),
         );
-        bindEquipmentPopover(entry, row, bodyEl, "detail");
+        bindEquipmentPopover(entry, row, bodyEl, "detail", "discard-row");
         list.append(row);
       }
       pane.append(list);
@@ -639,7 +641,7 @@ export function mountArmorySurface(
         slot.append(
           el("span", { class: "armory-salvage-slot-il", text: `IL ${stagedDrop.itemLevel}` }),
         );
-        bindEquipmentPopover(stagedDrop, slot, bodyEl, "detail");
+        bindEquipmentPopover(stagedDrop, slot, bodyEl, "detail", "salvage-slot");
         slotGrid.append(slot);
       } else {
         slotGrid.append(
@@ -687,7 +689,7 @@ export function mountArmorySurface(
           createEquipmentIconElement(base.iconKey, "content", { ariaLabel: base.name }),
         );
         card.append(el("span", { class: "armory-salvage-result-name", text: base.name }));
-        bindEquipmentPopover(resultDrop, card, bodyEl, "detail");
+        bindEquipmentPopover(resultDrop, card, bodyEl, "detail", "salvage-result");
         pane.append(card);
       }
     }
@@ -840,8 +842,20 @@ export function mountArmorySurface(
   function hideComparePopover(): void {
     comparePopover.hidden = true;
     comparePopover.replaceChildren();
+    comparePopover.style.visibility = "";
     delete comparePopover.dataset["compareDropId"];
     delete comparePopover.dataset["popoverMode"];
+    delete comparePopover.dataset["compareAnchorKind"];
+    delete comparePopover.dataset["compareAnchorSlot"];
+  }
+
+  function rememberPopoverAnchor(kind: PopoverAnchorKind, wornSlot?: EquipmentSlotId): void {
+    comparePopover.dataset["compareAnchorKind"] = kind;
+    if (wornSlot) {
+      comparePopover.dataset["compareAnchorSlot"] = wornSlot;
+    } else {
+      delete comparePopover.dataset["compareAnchorSlot"];
+    }
   }
 
   function openCompareDropId(): number | null {
@@ -854,10 +868,32 @@ export function mountArmorySurface(
   }
 
   function findPopoverAnchor(dropId: number): HTMLElement | null {
-    return (
-      root.querySelector<HTMLElement>(`[data-compare-anchor-drop-id="${dropId}"]`) ??
-      root.querySelector<HTMLElement>(`.armory-grid .equipment-card[data-drop-id="${dropId}"]`)
-    );
+    const kind = (comparePopover.dataset["compareAnchorKind"] ?? "grid") as PopoverAnchorKind;
+    switch (kind) {
+      case "worn": {
+        const slot = comparePopover.dataset["compareAnchorSlot"];
+        if (!slot) {
+          return null;
+        }
+        return root.querySelector<HTMLElement>(
+          `[data-worn-slot="${slot}"][data-compare-anchor-drop-id="${dropId}"]`,
+        );
+      }
+      case "salvage-slot":
+        return root.querySelector<HTMLElement>(
+          `[data-salvage-slot][data-compare-anchor-drop-id="${dropId}"]`,
+        );
+      case "discard-row":
+        return root.querySelector<HTMLElement>(
+          `[data-discard-tier-row][data-compare-anchor-drop-id="${dropId}"]`,
+        );
+      case "salvage-result":
+        return root.querySelector<HTMLElement>(`[data-salvage-result="${dropId}"]`);
+      default:
+        return root.querySelector<HTMLElement>(
+          `.armory-grid .equipment-card[data-drop-id="${dropId}"]`,
+        );
+    }
   }
 
   function clearDragHighlights(host: HTMLElement): void {
@@ -1223,6 +1259,8 @@ export function mountArmorySurface(
     drop: DropInstance,
     anchor: HTMLElement,
     host: HTMLElement,
+    anchorKind: PopoverAnchorKind,
+    wornSlot?: EquipmentSlotId,
   ): void {
     const classId = options.getSelectedClassId();
     if (!classId) {
@@ -1231,6 +1269,7 @@ export function mountArmorySurface(
     }
     markDropSeen(drop.dropId);
     comparePopover.dataset["compareDropId"] = String(drop.dropId);
+    rememberPopoverAnchor(anchorKind, wornSlot);
     const descId = fillComparePopover(snapshot, drop, classId);
     anchor.setAttribute("aria-describedby", descId);
     positionComparePopover(anchor, host);
@@ -1241,12 +1280,54 @@ export function mountArmorySurface(
     drop: DropInstance,
     anchor: HTMLElement,
     host: HTMLElement,
+    anchorKind: PopoverAnchorKind,
+    wornSlot?: EquipmentSlotId,
   ): void {
     markDropSeen(drop.dropId);
     comparePopover.dataset["compareDropId"] = String(drop.dropId);
+    rememberPopoverAnchor(anchorKind, wornSlot);
     const descId = fillItemDetailPopover(drop);
     anchor.setAttribute("aria-describedby", descId);
     positionComparePopover(anchor, host);
+  }
+
+  function refreshOpenPopover(snapshot: ReadonlySnapshot, host: HTMLElement): void {
+    const dropId = openCompareDropId();
+    if (dropId === null) {
+      return;
+    }
+    const drop = dropById(snapshot.progression.armory, dropId);
+    const anchor = findPopoverAnchor(dropId);
+    if (!drop || !anchor) {
+      hideComparePopover();
+      return;
+    }
+    const mode = comparePopover.dataset["popoverMode"] ?? "compare";
+    comparePopover.style.visibility = "hidden";
+    const descId =
+      mode === "detail"
+        ? fillItemDetailPopover(drop)
+        : (() => {
+            const classId = options.getSelectedClassId();
+            if (!classId) {
+              hideComparePopover();
+              return null;
+            }
+            return fillComparePopover(snapshot, drop, classId);
+          })();
+    if (!descId) {
+      return;
+    }
+    anchor.setAttribute("aria-describedby", descId);
+    const place = () => {
+      const currentAnchor = findPopoverAnchor(dropId);
+      if (!currentAnchor || openCompareDropId() !== dropId) {
+        return;
+      }
+      positionComparePopover(currentAnchor, host);
+    };
+    place();
+    requestAnimationFrame(place);
   }
 
   function bindEquipmentPopover(
@@ -1254,6 +1335,8 @@ export function mountArmorySurface(
     anchor: HTMLElement,
     host: HTMLElement,
     mode: "compare" | "detail",
+    anchorKind: PopoverAnchorKind,
+    wornSlot?: EquipmentSlotId,
   ): void {
     anchor.dataset["compareAnchorDropId"] = String(drop.dropId);
     const open = () => {
@@ -1263,9 +1346,9 @@ export function mountArmorySurface(
         : undefined;
       if (snapshot && current) {
         if (mode === "compare") {
-          showComparePopover(snapshot, current, anchor, host);
+          showComparePopover(snapshot, current, anchor, host, anchorKind, wornSlot);
         } else {
-          showItemDetailPopover(snapshot, current, anchor, host);
+          showItemDetailPopover(snapshot, current, anchor, host, anchorKind, wornSlot);
         }
       }
     };
@@ -1289,7 +1372,7 @@ export function mountArmorySurface(
     tile: HTMLElement,
     host: HTMLElement,
   ): void {
-    bindEquipmentPopover(drop, tile, host, "compare");
+    bindEquipmentPopover(drop, tile, host, "compare", "grid");
   }
 
   function appendContentTierIcon(container: HTMLElement, iconKey: string, name: string): void {
@@ -1369,7 +1452,7 @@ export function mountArmorySurface(
       }
       if (drop && classId) {
         bindWornSlotDrag(classId, slot, drop, button);
-        bindEquipmentPopover(drop, button, bodyEl, "detail");
+        bindEquipmentPopover(drop, button, bodyEl, "detail", "worn", slot);
       }
       strip.append(button);
     }
@@ -1738,28 +1821,7 @@ export function mountArmorySurface(
     const compareDropId = openCompareDropId();
     const compareHost = root.querySelector<HTMLElement>(".armory-body--compare-host");
     if (compareDropId !== null && compareHost && snapshot) {
-      const drop = dropById(snapshot.progression.armory, compareDropId);
-      const anchor = findPopoverAnchor(compareDropId);
-      const mode = comparePopover.dataset["popoverMode"] ?? "compare";
-      if (drop && anchor) {
-        const descId =
-          mode === "detail"
-            ? fillItemDetailPopover(drop)
-            : (() => {
-                const classId = options.getSelectedClassId();
-                if (!classId) {
-                  hideComparePopover();
-                  return null;
-                }
-                return fillComparePopover(snapshot, drop, classId);
-              })();
-        if (descId) {
-          anchor.setAttribute("aria-describedby", descId);
-          positionComparePopover(anchor, compareHost);
-        }
-      } else if (!anchor) {
-        hideComparePopover();
-      }
+      refreshOpenPopover(snapshot, compareHost);
     }
   }
 

@@ -926,6 +926,41 @@ describe("Armory surface", () => {
     root.remove();
   });
 
+  it("keeps compare popover coordinates stable across four Snapshot pumps", async () => {
+    const root = document.createElement("div");
+    document.body.append(root);
+    const selected = { current: "knight" as ClassId };
+    const snapshot = armorySnapshot([
+      drop({ dropId: 1, baseId: "fixture-blade-ii", itemLevel: 3, rarity: "rare", seen: false }),
+    ]);
+    const surface = mountWithSelection(root, selected);
+    renderArmory(surface, snapshot);
+
+    const tile = root.querySelector<HTMLElement>('.equipment-card[data-drop-id="1"]')!;
+    tile.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+
+    const popover = root.querySelector<HTMLElement>('[data-armory-compare-popover="true"]')!;
+    const left = popover.style.left;
+    const top = popover.style.top;
+
+    for (let index = 0; index < 4; index += 1) {
+      const pumped = structuredClone(snapshot);
+      pumped.progression.armory = pumped.progression.armory.map((entry) =>
+        entry.dropId === 1 ? { ...entry, seen: true } : entry,
+      );
+      renderArmory(surface, pumped);
+      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    }
+
+    expect(popover.hidden).toBe(false);
+    expect(popover.style.left).toBe(left);
+    expect(popover.style.top).toBe(top);
+
+    surface.destroy();
+    root.remove();
+  });
+
   describe("item-detail popover", () => {
     it("evidence: armory-item-detail-popover opens on worn-slot hover with item stats only", () => {
       const root = document.createElement("div");
@@ -992,6 +1027,42 @@ describe("Armory surface", () => {
         false,
       );
       expect(root.querySelector('[data-item-stats="true"]')).not.toBeNull();
+
+      surface.destroy();
+      root.remove();
+    });
+
+    it("does not re-anchor an open salvage-slot item-detail popover to the collection grid on pump", () => {
+      const root = document.createElement("div");
+      document.body.append(root);
+      const selected = { current: "knight" as ClassId };
+      const armory = commonSalvageDrops(12);
+      const snapshot = armorySnapshot(armory);
+      const surface = mountWithSelection(root, selected);
+      renderArmory(surface, snapshot);
+      openSalvagePane(root);
+      renderArmory(surface, snapshot);
+      pressSalvageFill(root);
+      renderArmory(surface, snapshot);
+
+      const batch = selectSalvageBatchForRarity(armory, "common");
+      expect(batch).not.toBeNull();
+      const stagedDropId = batch!.dropIds[0]!;
+      const slot = root.querySelector<HTMLElement>(
+        `[data-salvage-slot][data-compare-anchor-drop-id="${stagedDropId}"]`,
+      )!;
+      slot.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
+
+      renderArmory(surface, structuredClone(snapshot));
+
+      const popover = root.querySelector<HTMLElement>('[data-armory-compare-popover="true"]');
+      expect(popover?.dataset["compareAnchorKind"]).toBe("salvage-slot");
+      expect(slot.getAttribute("aria-describedby")).toMatch(/armory-item-desc-/);
+      expect(
+        root
+          .querySelector<HTMLElement>(`.equipment-card[data-drop-id="${stagedDropId}"]`)
+          ?.getAttribute("aria-describedby"),
+      ).toBeNull();
 
       surface.destroy();
       root.remove();
