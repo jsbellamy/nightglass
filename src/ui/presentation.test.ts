@@ -923,6 +923,84 @@ describe("keyed DOM reconciliation", () => {
     presentation.destroy();
   });
 
+  it("renders critical damage from impact results with the critical class and glyph", () => {
+    const { presentation, addCombatant, feedbackLayer } = mountPresentationHarness();
+    addCombatant("opp:1:0", "100px");
+    const snapshot = createEngine(buildContent(), undefined, LOOT_SEED).snapshot();
+    snapshot.simNowMs = 2_000;
+    presentation.applyEvents(
+      [
+        {
+          seq: 1,
+          atMs: 2_000,
+          type: "impact",
+          entityId: "party:knight:front",
+          abilityId: "steel-cut",
+          results: [
+            {
+              targetId: "opp:1:0",
+              kind: "damage",
+              channel: "physical",
+              amount: 5,
+              healthAfter: 10,
+              crit: true,
+            },
+          ],
+        },
+      ],
+      snapshot,
+    );
+    presentation.render(2_050, snapshot);
+    const damage = feedbackLayer.querySelector<HTMLElement>(".damage-number.critical");
+    expect(damage).not.toBeNull();
+    expect(damage?.textContent).toBe("5!");
+    presentation.destroy();
+  });
+
+  it("keeps critical and ordinary damage numbers separate when they share a timestamp", () => {
+    const { presentation, addCombatant, feedbackLayer } = mountPresentationHarness();
+    addCombatant("opp:1:0", "100px");
+    const snapshot = createEngine(buildContent(), undefined, LOOT_SEED).snapshot();
+    snapshot.simNowMs = 2_000;
+    presentation.applyEvents(
+      [
+        {
+          seq: 1,
+          atMs: 2_000,
+          type: "impact",
+          entityId: "party:knight:front",
+          abilityId: "steel-cut",
+          results: [
+            {
+              targetId: "opp:1:0",
+              kind: "damage",
+              channel: "physical",
+              amount: 4,
+              healthAfter: 12,
+              crit: true,
+            },
+            {
+              targetId: "opp:1:0",
+              kind: "damage",
+              channel: "physical",
+              amount: 6,
+              healthAfter: 6,
+            },
+          ],
+        },
+      ],
+      snapshot,
+    );
+    presentation.render(2_050, snapshot);
+    const numbers = feedbackLayer.querySelectorAll<HTMLElement>(".damage-number");
+    expect(numbers).toHaveLength(2);
+    expect(feedbackLayer.querySelector(".damage-number.critical")?.textContent).toBe("4!");
+    expect(
+      [...numbers].find((entry) => !entry.classList.contains("critical"))?.textContent,
+    ).toBe("6");
+    presentation.destroy();
+  });
+
   it("removes damage numbers after their lifetime and does not accumulate orphans", () => {
     const { presentation, addCombatant } = mountPresentationHarness();
     addCombatant("opp:1:0", "100px");

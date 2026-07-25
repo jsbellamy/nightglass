@@ -313,6 +313,11 @@ body {
   animation: damage-float 900ms ease-out forwards;
 }
 
+.damage-number.critical {
+  font-size: 10px;
+  font-weight: 900;
+}
+
 .damage-number.physical {
   color: #ffb36b;
 }
