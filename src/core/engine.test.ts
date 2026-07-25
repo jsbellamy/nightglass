@@ -3867,3 +3867,83 @@ describe("adaptive Basic Attack Element", () => {
     });
   });
 });
+
+describe("Wind-up Element for adaptive Basic Attacks", () => {
+  const fireWizardContent: Content = {
+    ...productionContent,
+    classes: productionContent.classes.map((classKit) =>
+      classKit.id === "wizard"
+        ? { ...classKit, base: { ...classKit.base, firePower: 5, critChance: 0 } }
+        : classKit,
+    ),
+  };
+
+  function firstActionStarted(
+    engine: ReturnType<typeof createEngine>,
+    abilityId: string,
+    maxMs = 20_000,
+  ): Extract<EngineEvent, { type: "action-started" }> | undefined {
+    let elapsed = 0;
+    while (elapsed < maxMs) {
+      elapsed += 1;
+      const events = driveBy(engine, 1);
+      const started = events.find(
+        (event): event is Extract<EngineEvent, { type: "action-started" }> =>
+          event.type === "action-started" && event.abilityId === abilityId,
+      );
+      if (started) {
+        return started;
+      }
+    }
+    return undefined;
+  }
+
+  it("reports Fire as the Wind-up Element for a Fire-adapted Arc Spark", () => {
+    const snap = scenario(fireWizardContent)
+      .withParty(["wizard", "knight", "priest"], "hunter")
+      .build();
+    const wizard = snap.attempt!.combatants.find((entry) => entry.defId === "wizard");
+    if (!wizard) {
+      throw new Error("missing wizard");
+    }
+    stunCombatants(snap, 0, [wizard.entityId]);
+    const engine = createEngine(fireWizardContent, snap, LOOT_SEED, fixtureNow);
+    const started = firstActionStarted(engine, "arc-spark");
+    expect(started).toMatchObject({ abilityId: "arc-spark", element: "fire" });
+  });
+
+  it("omits Wind-up Element for a physical Basic Attack", () => {
+    const snap = scenario(productionContent)
+      .withParty(["knight", "wizard", "priest"], "hunter")
+      .build();
+    const knight = snap.attempt!.combatants.find((entry) => entry.defId === "knight");
+    if (!knight) {
+      throw new Error("missing knight");
+    }
+    stunCombatants(snap, 0, [knight.entityId]);
+    const engine = createEngine(productionContent, snap, LOOT_SEED, fixtureNow);
+    const started = firstActionStarted(engine, "steel-cut");
+    expect(started).toMatchObject({ abilityId: "steel-cut" });
+    expect(started).not.toHaveProperty("element");
+  });
+
+  it("omits Wind-up Element for a Core Ability", () => {
+    const snap = scenario(productionContent)
+      .withParty(["wizard", "knight", "priest"], "hunter")
+      .build();
+    const wizard = snap.attempt!.combatants.find((entry) => entry.defId === "wizard");
+    if (!wizard) {
+      throw new Error("missing wizard");
+    }
+    snap.progression.loadouts.wizard = ["cinder-bloom", "frost-lance", "prism-ward"];
+    wizard.cooldownReadyAtMs = {
+      "frost-lance": 999_999,
+      "prism-ward": 999_999,
+    };
+    stunCombatants(snap, 0, [wizard.entityId]);
+    const engine = createEngine(productionContent, snap, LOOT_SEED, fixtureNow);
+    const started = firstActionStarted(engine, "cinder-bloom");
+    expect(started).toMatchObject({ abilityId: "cinder-bloom" });
+    expect(started).not.toHaveProperty("element");
+  });
+});

@@ -60,6 +60,7 @@ import type {
   ClassId,
   ClassKitDef,
   Content,
+  Element,
   EquipmentSlotId,
   OpponentDef,
   StageDef,
@@ -543,12 +544,29 @@ function chooseActions(
       targetIds: targets.map((target) => target.entityId),
       impactResolved: false,
     };
+
+    const actorStats = statsForCombatant(index, combatant, state.progression, attempt);
+    let element: Element | undefined;
+    if (ability.slot === "basic") {
+      for (const effect of ability.effects) {
+        if (
+          effect.kind === "damage" &&
+          (effect.channel ?? "physical") === "elemental" &&
+          effect.element
+        ) {
+          element = adaptiveElementForBasic(effect, actorStats) ?? effect.element;
+          break;
+        }
+      }
+    }
+
     emit(state, events, {
       type: "action-started",
       entityId: combatant.entityId,
       abilityId: ability.id,
       impactAtMs,
       targetIds: targets.map((target) => target.entityId),
+      ...(element !== undefined ? { element } : {}),
     });
   }
 }

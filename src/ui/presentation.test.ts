@@ -1001,6 +1001,65 @@ describe("keyed DOM reconciliation", () => {
   });
 });
 
+describe("element-keyed effect frames", () => {
+  afterEach(() => {
+    document.body.replaceChildren();
+  });
+
+  it("draws a Fire-adapted Arc Spark bolt during Wind-up", () => {
+    const { effectLane, presentation, addCombatant } = mountPresentationHarness();
+    addCombatant("party:wizard:middle", "40px");
+    addCombatant("opp:1:0", "260px");
+    const snapshot = createEngine(buildContent(), undefined, LOOT_SEED).snapshot();
+    snapshot.simNowMs = 500;
+    presentation.applyEvents(
+      [
+        {
+          seq: 1,
+          atMs: 0,
+          type: "action-started",
+          entityId: "party:wizard:middle",
+          abilityId: "arc-spark",
+          impactAtMs: 450,
+          targetIds: ["opp:1:0"],
+          element: "fire",
+        },
+      ],
+      snapshot,
+    );
+    presentation.render(50, snapshot);
+    const img = effectLane.querySelector<HTMLImageElement>(".effect-frame.lane-travel");
+    expect(img?.src).toContain("spell-bolt-fire");
+    presentation.destroy();
+  });
+
+  it("falls back to the authored Lightning bolt when Wind-up omits Element", () => {
+    const { effectLane, presentation, addCombatant } = mountPresentationHarness();
+    addCombatant("party:wizard:middle", "40px");
+    addCombatant("opp:1:0", "260px");
+    const snapshot = createEngine(buildContent(), undefined, LOOT_SEED).snapshot();
+    snapshot.simNowMs = 500;
+    presentation.applyEvents(
+      [
+        {
+          seq: 1,
+          atMs: 0,
+          type: "action-started",
+          entityId: "party:wizard:middle",
+          abilityId: "arc-spark",
+          impactAtMs: 450,
+          targetIds: ["opp:1:0"],
+        },
+      ],
+      snapshot,
+    );
+    presentation.render(50, snapshot);
+    const img = effectLane.querySelector<HTMLImageElement>(".effect-frame.lane-travel");
+    expect(img?.src).toContain("spell-bolt-lightning");
+    presentation.destroy();
+  });
+});
+
 describe("simulation boundary", () => {
   it("does not place asset names in src/core", async () => {
     const { readdirSync, readFileSync } = await import("node:fs");

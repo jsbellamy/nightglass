@@ -2,8 +2,8 @@ import effectManifest from "../assets/effects/manifest.json";
 import type { EngineEvent } from "../core/events";
 import { isPartyEntity } from "../core/entity-id";
 import type { Snapshot } from "../core/snapshot";
-import type { Content, Rarity } from "../core/types";
-import { effectRecipes } from "../data/effects";
+import type { Content, Element, Rarity } from "../core/types";
+import { effectRecipes, type EffectRecipe } from "../data/effects";
 import {
   damageNumberClass,
   formatDamageNumber,
@@ -82,6 +82,7 @@ interface ActiveEffect {
   targetIds: string[];
   startedAtMs: number;
   impactAtMs: number;
+  element?: Element;
 }
 
 interface ActiveBanner {
@@ -159,6 +160,10 @@ function recipeForAbility(abilityId: string) {
   return effectRecipes[abilityId];
 }
 
+function frameFamilyForEffect(recipe: EffectRecipe, element?: Element): string {
+  return (element && recipe.framesByElement?.[element]) ?? recipe.frames;
+}
+
 function manifestForRecipe(framesKey: string): EffectManifestEntry | undefined {
   return EFFECT_MANIFEST[framesKey];
 }
@@ -230,7 +235,7 @@ function collectAnchorEntityIds(
     if (!recipe) {
       continue;
     }
-    const manifest = manifestForRecipe(recipe.frames);
+    const manifest = manifestForRecipe(frameFamilyForEffect(recipe, effect.element));
     if (!manifest) {
       continue;
     }
@@ -342,6 +347,7 @@ export function createPresentation(options: PresentationOptions): Presentation {
             targetIds: event.targetIds,
             startedAtMs: event.atMs,
             impactAtMs: event.impactAtMs,
+            ...(event.element !== undefined ? { element: event.element } : {}),
           });
           break;
         }
@@ -580,7 +586,7 @@ export function createPresentation(options: PresentationOptions): Presentation {
       if (!recipe) {
         continue;
       }
-      const manifest = manifestForRecipe(recipe.frames);
+      const manifest = manifestForRecipe(frameFamilyForEffect(recipe, effect.element));
       if (!manifest) {
         continue;
       }

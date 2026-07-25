@@ -3,12 +3,16 @@
  * Asset manifests live under src/assets/effects/; this file is data only.
  */
 
+import type { Element } from "../core/types";
+
 export type EffectAnchor = "strike_target" | "lane_travel" | "band";
 
 export interface EffectRecipe {
   stillKey: string;
   /** Derivation ref — key in src/assets/effects/manifest.json */
   frames: string;
+  /** Frame family per Element, for Abilities whose Element is resolved at runtime. */
+  framesByElement?: Partial<Record<Element, string>>;
   anchor: EffectAnchor;
   anchorDx?: number;
   /** Total derived sequence length in integer ms */
@@ -188,6 +192,12 @@ export const effectRecipes: Record<string, EffectRecipe> = {
   "arc-spark": {
     stillKey: "spell-bolt",
     frames: "spell-bolt-lightning",
+    framesByElement: {
+      fire: "spell-bolt-fire",
+      frost: "spell-bolt-frost",
+      lightning: "spell-bolt-lightning",
+      light: "spell-bolt-light",
+    },
     anchor: "lane_travel",
     durationMs: 100,
     cuesMs: { release_projectile: 450 },
@@ -267,6 +277,12 @@ export const effectRecipes: Record<string, EffectRecipe> = {
   "sun-mote": {
     stillKey: "spell-bolt",
     frames: "spell-bolt-light",
+    framesByElement: {
+      fire: "spell-bolt-fire",
+      frost: "spell-bolt-frost",
+      lightning: "spell-bolt-lightning",
+      light: "spell-bolt-light",
+    },
     anchor: "lane_travel",
     durationMs: 100,
     cuesMs: { release_projectile: 500 },
