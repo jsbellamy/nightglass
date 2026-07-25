@@ -1,16 +1,25 @@
 import type { Content } from "../core/types";
 import aphelionUrl from "../assets/sprites/aphelion.png";
 import astrolabeSpiderUrl from "../assets/sprites/astrolabe-spider.png";
+import balewaddleUrl from "../assets/sprites/balewaddle.png";
 import boss1Url from "../assets/sprites/boss-1.png";
 import boss2Url from "../assets/sprites/boss-2.png";
 import boss3Url from "../assets/sprites/boss-3.png";
+import bramblingUrl from "../assets/sprites/brambling.png";
 import burgerDrakeUrl from "../assets/sprites/burger-drake.png";
 import cornquackerUrl from "../assets/sprites/cornquacker.png";
+import dewsnailUrl from "../assets/sprites/dewsnail.png";
+import huskbeetleUrl from "../assets/sprites/huskbeetle.png";
 import knightUrl from "../assets/sprites/knight.png";
+import lanternmothUrl from "../assets/sprites/lanternmoth.png";
+import milkshakeMallardUrl from "../assets/sprites/milkshake-mallard.png";
+import pendulumRatUrl from "../assets/sprites/pendulum-rat.png";
+import pieWidgeonUrl from "../assets/sprites/pie-widgeon.png";
 import pipcapUrl from "../assets/sprites/pipcap.png";
 import hunterUrl from "../assets/sprites/hunter.png";
 import priestUrl from "../assets/sprites/priest.png";
 import scarequackUrl from "../assets/sprites/scarequack.png";
+import sundialGargoyleUrl from "../assets/sprites/sundial-gargoyle.png";
 import theCombineUrl from "../assets/sprites/the-combine.png";
 import theFryerUrl from "../assets/sprites/the-fryer.png";
 import theTocsinUrl from "../assets/sprites/the-tocsin.png";
@@ -54,8 +63,15 @@ export const SPRITE_SOURCES = {
   priest: { url: priestUrl },
   hunter: { url: hunterUrl },
   pipcap: { url: pipcapUrl },
+  brambling: { url: bramblingUrl },
+  lanternmoth: { url: lanternmothUrl },
+  huskbeetle: { url: huskbeetleUrl },
+  dewsnail: { url: dewsnailUrl },
   "burger-drake": { url: burgerDrakeUrl },
   cornquacker: { url: cornquackerUrl },
+  "milkshake-mallard": { url: milkshakeMallardUrl },
+  balewaddle: { url: balewaddleUrl },
+  "pie-widgeon": { url: pieWidgeonUrl },
   "boss-1": { url: boss1Url },
   "boss-2": { url: boss2Url },
   "boss-3": { url: boss3Url },
@@ -65,6 +81,8 @@ export const SPRITE_SOURCES = {
   tickmoth: { url: tickmothUrl },
   tollbat: { url: tollbatUrl },
   "astrolabe-spider": { url: astrolabeSpiderUrl },
+  "pendulum-rat": { url: pendulumRatUrl },
+  "sundial-gargoyle": { url: sundialGargoyleUrl },
   "the-vigil": { url: theVigilUrl },
   "the-tocsin": { url: theTocsinUrl },
   "the-unwound": { url: theUnwoundUrl },
@@ -76,11 +94,20 @@ const KNOWN_SPRITE_KEYS = new Set<string>(Object.keys(SPRITE_SOURCES));
 const PARTY_SPRITE_KEYS = new Set(["knight", "wizard", "priest", "hunter"]);
 const ORDINARY_OPPONENT_SPRITE_KEYS = new Set([
   "pipcap",
+  "brambling",
+  "lanternmoth",
+  "huskbeetle",
+  "dewsnail",
   "burger-drake",
   "cornquacker",
+  "milkshake-mallard",
+  "balewaddle",
+  "pie-widgeon",
   "tickmoth",
   "tollbat",
   "astrolabe-spider",
+  "pendulum-rat",
+  "sundial-gargoyle",
 ]);
 const BOSS_SPRITE_KEYS = new Set([
   "boss-1",

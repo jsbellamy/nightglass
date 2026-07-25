@@ -320,6 +320,70 @@ check("Pipcap flexible opaque bounds fit the ordinary Opponent 30x68 ceiling",
       and pipcap_measure["clipped_sides"] == [],
       str(pipcap_measure))
 
+brambling_profile = A.body_profile_for_tag("brambling")
+brambling_sidecar = _sidecar("brambling")
+brambling_measure = A.measure_candidate(RAW_DIR / "brambling.png", tag="brambling")
+check("Brambling archived raw uses flexible Moonberry provenance",
+      brambling_sidecar.get("acquisition") == "flexible"
+      and brambling_sidecar.get("identity_profile", {}).get("role") == "ordinary-opponent"
+      and brambling_sidecar.get("facing") == "left"
+      and brambling_sidecar.get("palette") == "moonberry-16@1",
+      str(brambling_sidecar))
+check("Brambling flexible opaque bounds fit the ordinary Opponent 30x68 ceiling",
+      brambling_measure["status"] == "advance"
+      and brambling_measure["fitted_opaque_size"][0] <= brambling_profile.max_opaque_w
+      and brambling_measure["fitted_opaque_size"][1] <= brambling_profile.max_opaque_h
+      and brambling_measure["clipped_sides"] == [],
+      str(brambling_measure))
+
+lanternmoth_profile = A.body_profile_for_tag("lanternmoth")
+lanternmoth_sidecar = _sidecar("lanternmoth")
+lanternmoth_measure = A.measure_candidate(RAW_DIR / "lanternmoth.png", tag="lanternmoth")
+check("Lanternmoth archived raw uses flexible Moonberry provenance",
+      lanternmoth_sidecar.get("acquisition") == "flexible"
+      and lanternmoth_sidecar.get("identity_profile", {}).get("role") == "ordinary-opponent"
+      and lanternmoth_sidecar.get("facing") == "left"
+      and lanternmoth_sidecar.get("palette") == "moonberry-16@1",
+      str(lanternmoth_sidecar))
+check("Lanternmoth flexible opaque bounds fit the ordinary Opponent 30x68 ceiling",
+      lanternmoth_measure["status"] == "advance"
+      and lanternmoth_measure["fitted_opaque_size"][0] <= lanternmoth_profile.max_opaque_w
+      and lanternmoth_measure["fitted_opaque_size"][1] <= lanternmoth_profile.max_opaque_h
+      and lanternmoth_measure["clipped_sides"] == [],
+      str(lanternmoth_measure))
+
+huskbeetle_profile = A.body_profile_for_tag("huskbeetle")
+huskbeetle_sidecar = _sidecar("huskbeetle")
+huskbeetle_measure = A.measure_candidate(RAW_DIR / "huskbeetle.png", tag="huskbeetle")
+check("Huskbeetle archived raw uses flexible Moonberry provenance",
+      huskbeetle_sidecar.get("acquisition") == "flexible"
+      and huskbeetle_sidecar.get("identity_profile", {}).get("role") == "ordinary-opponent"
+      and huskbeetle_sidecar.get("facing") == "left"
+      and huskbeetle_sidecar.get("palette") == "moonberry-16@1",
+      str(huskbeetle_sidecar))
+check("Huskbeetle flexible opaque bounds fit the ordinary Opponent 30x68 ceiling",
+      huskbeetle_measure["status"] == "advance"
+      and huskbeetle_measure["fitted_opaque_size"][0] <= huskbeetle_profile.max_opaque_w
+      and huskbeetle_measure["fitted_opaque_size"][1] <= huskbeetle_profile.max_opaque_h
+      and huskbeetle_measure["clipped_sides"] == [],
+      str(huskbeetle_measure))
+
+dewsnail_profile = A.body_profile_for_tag("dewsnail")
+dewsnail_sidecar = _sidecar("dewsnail")
+dewsnail_measure = A.measure_candidate(RAW_DIR / "dewsnail.png", tag="dewsnail")
+check("Dewsnail archived raw uses flexible Moonberry provenance",
+      dewsnail_sidecar.get("acquisition") == "flexible"
+      and dewsnail_sidecar.get("identity_profile", {}).get("role") == "ordinary-opponent"
+      and dewsnail_sidecar.get("facing") == "left"
+      and dewsnail_sidecar.get("palette") == "moonberry-16@1",
+      str(dewsnail_sidecar))
+check("Dewsnail flexible opaque bounds fit the ordinary Opponent 30x68 ceiling",
+      dewsnail_measure["status"] == "advance"
+      and dewsnail_measure["fitted_opaque_size"][0] <= dewsnail_profile.max_opaque_w
+      and dewsnail_measure["fitted_opaque_size"][1] <= dewsnail_profile.max_opaque_h
+      and dewsnail_measure["clipped_sides"] == [],
+      str(dewsnail_measure))
+
 burger_sidecar = _sidecar("burger-drake")
 burger_measure = A.measure_candidate(RAW_DIR / "burger-drake.png", tag="burger-drake")
 check("Burger Drake archived raw uses flexible Fowl Harvest provenance",
@@ -349,6 +413,55 @@ check("Cornquacker flexible opaque bounds fit the ordinary Opponent 30x68 ceilin
       and corn_measure["fitted_opaque_size"][1] <= cornquacker_profile.max_opaque_h
       and corn_measure["clipped_sides"] == [],
       str(corn_measure))
+
+milkshake_mallard_profile = A.body_profile_for_tag("milkshake-mallard")
+milkshake_mallard_sidecar = _sidecar("milkshake-mallard")
+milkshake_mallard_measure = A.measure_candidate(
+    RAW_DIR / "milkshake-mallard.png", tag="milkshake-mallard")
+check("Milkshake Mallard archived raw uses flexible Fowl Harvest provenance",
+      milkshake_mallard_sidecar.get("acquisition") == "flexible"
+      and milkshake_mallard_sidecar.get("identity_profile", {}).get("role") == "ordinary-opponent"
+      and milkshake_mallard_sidecar.get("facing") == "left"
+      and milkshake_mallard_sidecar.get("palette") == "fowl-harvest-24@1",
+      str(milkshake_mallard_sidecar))
+check("Milkshake Mallard flexible opaque bounds fit the ordinary Opponent 30x68 ceiling",
+      milkshake_mallard_measure["status"] == "advance"
+      and milkshake_mallard_measure["fitted_opaque_size"][0] <= milkshake_mallard_profile.max_opaque_w
+      and milkshake_mallard_measure["fitted_opaque_size"][1] <= milkshake_mallard_profile.max_opaque_h
+      and milkshake_mallard_measure["clipped_sides"] == [],
+      str(milkshake_mallard_measure))
+
+balewaddle_profile = A.body_profile_for_tag("balewaddle")
+balewaddle_sidecar = _sidecar("balewaddle")
+balewaddle_measure = A.measure_candidate(RAW_DIR / "balewaddle.png", tag="balewaddle")
+check("Balewaddle archived raw uses flexible Fowl Harvest provenance",
+      balewaddle_sidecar.get("acquisition") == "flexible"
+      and balewaddle_sidecar.get("identity_profile", {}).get("role") == "ordinary-opponent"
+      and balewaddle_sidecar.get("facing") == "left"
+      and balewaddle_sidecar.get("palette") == "fowl-harvest-24@1",
+      str(balewaddle_sidecar))
+check("Balewaddle flexible opaque bounds fit the ordinary Opponent 30x68 ceiling",
+      balewaddle_measure["status"] == "advance"
+      and balewaddle_measure["fitted_opaque_size"][0] <= balewaddle_profile.max_opaque_w
+      and balewaddle_measure["fitted_opaque_size"][1] <= balewaddle_profile.max_opaque_h
+      and balewaddle_measure["clipped_sides"] == [],
+      str(balewaddle_measure))
+
+pie_widgeon_profile = A.body_profile_for_tag("pie-widgeon")
+pie_widgeon_sidecar = _sidecar("pie-widgeon")
+pie_widgeon_measure = A.measure_candidate(RAW_DIR / "pie-widgeon.png", tag="pie-widgeon")
+check("Pie Widgeon archived raw uses flexible Fowl Harvest provenance",
+      pie_widgeon_sidecar.get("acquisition") == "flexible"
+      and pie_widgeon_sidecar.get("identity_profile", {}).get("role") == "ordinary-opponent"
+      and pie_widgeon_sidecar.get("facing") == "left"
+      and pie_widgeon_sidecar.get("palette") == "fowl-harvest-24@1",
+      str(pie_widgeon_sidecar))
+check("Pie Widgeon flexible opaque bounds fit the ordinary Opponent 30x68 ceiling",
+      pie_widgeon_measure["status"] == "advance"
+      and pie_widgeon_measure["fitted_opaque_size"][0] <= pie_widgeon_profile.max_opaque_w
+      and pie_widgeon_measure["fitted_opaque_size"][1] <= pie_widgeon_profile.max_opaque_h
+      and pie_widgeon_measure["clipped_sides"] == [],
+      str(pie_widgeon_measure))
 
 combine_sidecar = _sidecar("the-combine")
 combine_measure = A.measure_candidate(RAW_DIR / "the-combine.png", tag="the-combine")
@@ -440,6 +553,39 @@ check("Astrolabe Spider flexible opaque bounds fit the ordinary Opponent 30x68 c
       and astrolabe_spider_measure["fitted_opaque_size"][1] <= astrolabe_spider_profile.max_opaque_h
       and astrolabe_spider_measure["clipped_sides"] == [],
       str(astrolabe_spider_measure))
+
+pendulum_rat_profile = A.body_profile_for_tag("pendulum-rat")
+pendulum_rat_sidecar = _sidecar("pendulum-rat")
+pendulum_rat_measure = A.measure_candidate(RAW_DIR / "pendulum-rat.png", tag="pendulum-rat")
+check("Pendulum Rat archived raw uses flexible Unwound Belfry provenance",
+      pendulum_rat_sidecar.get("acquisition") == "flexible"
+      and pendulum_rat_sidecar.get("identity_profile", {}).get("role") == "ordinary-opponent"
+      and pendulum_rat_sidecar.get("facing") == "left"
+      and pendulum_rat_sidecar.get("palette") == "unwound-belfry-24@1",
+      str(pendulum_rat_sidecar))
+check("Pendulum Rat flexible opaque bounds fit the ordinary Opponent 30x68 ceiling",
+      pendulum_rat_measure["status"] == "advance"
+      and pendulum_rat_measure["fitted_opaque_size"][0] <= pendulum_rat_profile.max_opaque_w
+      and pendulum_rat_measure["fitted_opaque_size"][1] <= pendulum_rat_profile.max_opaque_h
+      and pendulum_rat_measure["clipped_sides"] == [],
+      str(pendulum_rat_measure))
+
+sundial_gargoyle_profile = A.body_profile_for_tag("sundial-gargoyle")
+sundial_gargoyle_sidecar = _sidecar("sundial-gargoyle")
+sundial_gargoyle_measure = A.measure_candidate(
+    RAW_DIR / "sundial-gargoyle.png", tag="sundial-gargoyle")
+check("Sundial Gargoyle archived raw uses flexible Unwound Belfry provenance",
+      sundial_gargoyle_sidecar.get("acquisition") == "flexible"
+      and sundial_gargoyle_sidecar.get("identity_profile", {}).get("role") == "ordinary-opponent"
+      and sundial_gargoyle_sidecar.get("facing") == "left"
+      and sundial_gargoyle_sidecar.get("palette") == "unwound-belfry-24@1",
+      str(sundial_gargoyle_sidecar))
+check("Sundial Gargoyle flexible opaque bounds fit the ordinary Opponent 30x68 ceiling",
+      sundial_gargoyle_measure["status"] == "advance"
+      and sundial_gargoyle_measure["fitted_opaque_size"][0] <= sundial_gargoyle_profile.max_opaque_w
+      and sundial_gargoyle_measure["fitted_opaque_size"][1] <= sundial_gargoyle_profile.max_opaque_h
+      and sundial_gargoyle_measure["clipped_sides"] == [],
+      str(sundial_gargoyle_measure))
 
 the_vigil_sidecar = _sidecar("the-vigil")
 the_vigil_measure = A.measure_candidate(RAW_DIR / "the-vigil.png", tag="the-vigil")
