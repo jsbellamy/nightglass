@@ -1,10 +1,10 @@
 {
   "status": "promoted",
   "candidate": "docs/research/evidence/moonberry/dewsnail/scratch/dewsnail-c1.png",
-  "raw": "/Users/jakebellamy/VSProjects/games/game_idea/nightglass-wt-677/assets-raw/grid_raw/dewsnail.png",
-  "sidecar": "/Users/jakebellamy/VSProjects/games/game_idea/nightglass-wt-677/assets-raw/grid_raw/dewsnail.source.json",
-  "runtime": "/Users/jakebellamy/VSProjects/games/game_idea/nightglass-wt-677/src/assets/sprites/dewsnail.png",
-  "manifest": "/Users/jakebellamy/VSProjects/games/game_idea/nightglass-wt-677/src/assets/sprites/manifest.json",
+  "raw": "assets-raw/grid_raw/dewsnail.png",
+  "sidecar": "assets-raw/grid_raw/dewsnail.source.json",
+  "runtime": "src/assets/sprites/dewsnail.png",
+  "manifest": "src/assets/sprites/manifest.json",
   "measurement": {
     "candidate": "docs/research/evidence/moonberry/dewsnail/scratch/dewsnail-c1.png",
     "tag": "dewsnail",
