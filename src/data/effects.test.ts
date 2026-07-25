@@ -100,18 +100,23 @@ describe("effect recipes", () => {
   });
 
   it("maps Knight Talent Tier 3 abilities to the exact effect derivation families", () => {
-    expect(effectRecipes["aegis-wall"]?.frames).toBe("buff-halo");
-    expect(effectRecipes["titans-cleave"]?.frames).toBe("arc-slash-heavy");
+    expect(effectRecipes["aegis-wall"]?.frames).toBe("aegis-wall");
+    expect(effectRecipes["titans-cleave"]?.frames).toBe("titans-cleave");
   });
 
   it("maps Priest Talent Tier 3 abilities to the exact effect derivation families", () => {
-    expect(effectRecipes["radiant-bulwark"]?.frames).toBe("heal-rise");
-    expect(effectRecipes["solar-verdict"]?.frames).toBe("spell-bolt-light");
+    expect(effectRecipes["radiant-bulwark"]?.frames).toBe("radiant-bulwark");
+    expect(effectRecipes["solar-verdict"]?.frames).toBe("solar-verdict");
   });
 
   it("maps Hunter Talent Tier 3 abilities to the exact effect derivation families", () => {
-    expect(effectRecipes["death-rain"]?.frames).toBe("arrow-bolt");
-    expect(effectRecipes["killshot"]?.frames).toBe("arrow-bolt");
+    expect(effectRecipes["death-rain"]?.frames).toBe("death-rain");
+    expect(effectRecipes["killshot"]?.frames).toBe("killshot");
+  });
+
+  it("maps Wizard Talent Tier 3 abilities to the exact effect derivation families", () => {
+    expect(effectRecipes["comet-fall"]?.frames).toBe("comet-fall");
+    expect(effectRecipes["glacial-prison"]?.frames).toBe("glacial-prison");
   });
 
   it("presents Twin Fang as one arrow-bolt while gameplay applies two damage effects", () => {
@@ -132,6 +137,7 @@ describe("effect recipes", () => {
     );
     expect(stillKeys).toEqual(
       new Set([
+        "aegis-wall",
         "arc-slash",
         "arrow-bolt",
         "basic-arrow",
@@ -139,10 +145,17 @@ describe("effect recipes", () => {
         "basic-mote",
         "basic-spark",
         "buff-halo",
+        "comet-fall",
+        "death-rain",
+        "glacial-prison",
         "heal-rise",
+        "killshot",
+        "radiant-bulwark",
         "revive-burst",
+        "solar-verdict",
         "spell-bolt",
         "spell-bloom",
+        "titans-cleave",
       ]),
     );
   });
