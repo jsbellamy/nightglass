@@ -1934,6 +1934,41 @@ describe("Armory surface", () => {
     outside.remove();
   });
 
+  it("keeps collection tile order when unseen drops are marked seen on hover", () => {
+    const root = document.createElement("div");
+    document.body.append(root);
+    const selected = { current: "knight" as ClassId };
+    const snapshot = armorySnapshot([
+      drop({ dropId: 1, baseId: "fixture-blade", awardedAtMs: 100, seen: true }),
+      drop({ dropId: 2, baseId: "fixture-armor", awardedAtMs: 300, seen: false }),
+      drop({ dropId: 3, baseId: "fixture-charm", awardedAtMs: 200, seen: false }),
+    ]);
+    const surface = mountWithSelection(root, selected);
+    renderArmory(surface, snapshot);
+
+    const orderBefore = [...root.querySelectorAll<HTMLElement>(".armory-grid .equipment-card")].map(
+      (card) => card.dataset["dropId"],
+    );
+    expect(orderBefore).toEqual(["2", "3", "1"]);
+
+    const unseenTile = root.querySelector<HTMLElement>('.equipment-card[data-drop-id="2"]')!;
+    unseenTile.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
+
+    const seenSnapshot = cloneSnapshot(snapshot);
+    seenSnapshot.progression.armory = seenSnapshot.progression.armory.map((entry) =>
+      entry.dropId === 2 ? { ...entry, seen: true } : entry,
+    );
+    renderArmory(surface, seenSnapshot);
+
+    const orderAfter = [...root.querySelectorAll<HTMLElement>(".armory-grid .equipment-card")].map(
+      (card) => card.dataset["dropId"],
+    );
+    expect(orderAfter).toEqual(orderBefore);
+
+    surface.destroy();
+    root.remove();
+  });
+
   it("reuses the whole collection tile node across a combat pump so hover controls do not flash", () => {
     const root = document.createElement("div");
     document.body.append(root);
