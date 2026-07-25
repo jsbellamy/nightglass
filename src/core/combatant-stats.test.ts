@@ -1,12 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { effectiveStats } from "./combat";
-import { statsForCombatant } from "./combatant-stats";
+import { createStatLedger, statsForCombatant } from "./combatant-stats";
 import { indexContent } from "./content-index";
+import { createEngine, SCHEMA_VERSION } from "./engine";
 import { opponentEntityId, partyEntityId } from "./entity-id";
 import { createDefaultProgression } from "./load-state";
-import { emptyTalentState } from "./talents";
+import { emptyTalentState, normalizeClassTalentState } from "./talents";
 import { characterStats } from "./stats";
-import type { CombatantState } from "./snapshot";
+import type { AttemptState, CombatantState } from "./snapshot";
 import { fixtureContent } from "./testing/fixture-content";
 import type { ClassId } from "./types";
 
@@ -48,6 +49,23 @@ function opponentCombatant(id: string, overrides: Partial<CombatantState> = {}):
   };
 }
 
+function minimalAttempt(combatants: CombatantState[]): AttemptState {
+  return {
+    id: 1,
+    stage: 1,
+    encounter: 1,
+    phase: "fighting",
+    phaseEndsAtMs: null,
+    equipmentLoadouts: {
+      knight: {},
+      wizard: {},
+      priest: {},
+      hunter: {},
+    },
+    combatants,
+  };
+}
+
 describe("statsForCombatant", () => {
   const index = indexContent(fixtureContent);
   const progression = createDefaultProgression(fixtureContent);
@@ -79,5 +97,94 @@ describe("statsForCombatant", () => {
     expect(() => statsForCombatant(index, missing, progression, null)).toThrow(
       "Missing opponent missing-opponent",
     );
+  });
+});
+
+describe("createStatLedger", () => {
+  const index = indexContent(fixtureContent);
+  const progression = createDefaultProgression(fixtureContent);
+  const knightKit = fixtureContent.classes.find((entry) => entry.id === "knight")!;
+
+  function knightWithSwordcraftRanks(ranks: number) {
+    const next = emptyTalentState(knightKit);
+    next.tierStates[0]!.statRanks["k-swordcraft"] = ranks;
+    next.statRanks = { ...next.tierStates[0]!.statRanks };
+    return normalizeClassTalentState(knightKit, next);
+  }
+
+  it("applies Status modifiers on every statsFor call without invalidation", () => {
+    const knight = partyCombatant("knight", "front");
+    const attempt = minimalAttempt([knight]);
+    const ledger = createStatLedger(index, progression, attempt);
+    const withoutBraced = ledger.statsFor(knight).armor;
+    knight.statuses = [{ statusId: "braced", expiresAtMs: 10_000 }];
+    expect(ledger.statsFor(knight).armor).toBe(withoutBraced + 50);
+  });
+
+  it("keeps cached base stats until invalidate after Talent changes", () => {
+    const knight = partyCombatant("knight", "front");
+    const attempt = minimalAttempt([knight]);
+    const localProgression = structuredClone(progression);
+    const ledger = createStatLedger(index, localProgression, attempt);
+    const before = ledger.statsFor(knight).physical;
+
+    localProgression.talents.knight = knightWithSwordcraftRanks(5);
+
+    expect(ledger.statsFor(knight).physical).toBe(before);
+    ledger.invalidate("knight");
+    expect(ledger.statsFor(knight).physical).toBe(17);
+  });
+
+  it("invalidates a Party Member after a Talent edit", () => {
+    const knight = partyCombatant("knight", "front");
+    const attempt = minimalAttempt([knight]);
+    const localProgression = structuredClone(progression);
+    const ledger = createStatLedger(index, localProgression, attempt);
+    const baseline = ledger.statsFor(knight).physical;
+
+    localProgression.talents.knight = knightWithSwordcraftRanks(5);
+    ledger.invalidate("knight");
+    expect(ledger.statsFor(knight).physical).toBeGreaterThan(baseline);
+  });
+
+  it("invalidates a Party Member after a Loadout edit", () => {
+    const knight = partyCombatant("knight", "front");
+    const attempt = minimalAttempt([knight]);
+    const ledger = createStatLedger(index, progression, attempt);
+    ledger.statsFor(knight);
+    ledger.invalidate("knight");
+    expect(ledger.statsFor(knight)).toEqual(
+      statsForCombatant(index, knight, progression, attempt),
+    );
+  });
+
+  it("invalidates each Party Member after a Formation edit", () => {
+    const knight = partyCombatant("knight", "front");
+    const wizard = partyCombatant("wizard", "middle");
+    const priest = partyCombatant("priest", "back");
+    const attempt = minimalAttempt([knight, wizard, priest]);
+    const localProgression = structuredClone(progression);
+    const ledger = createStatLedger(index, localProgression, attempt);
+
+    knight.entityId = partyEntityId("knight", 1);
+    wizard.entityId = partyEntityId("wizard", 0);
+    priest.entityId = partyEntityId("priest", 2);
+    attempt.combatants = [wizard, knight, priest];
+
+    for (const classId of ["wizard", "knight", "priest"] as const) {
+      ledger.invalidate(classId);
+    }
+
+    for (const combatant of attempt.combatants) {
+      const expected = statsForCombatant(index, combatant, localProgression, attempt);
+      expect(ledger.statsFor(combatant)).toEqual(expected);
+    }
+  });
+
+  it("does not serialize the Stat Ledger in snapshot", () => {
+    const engine = createEngine(fixtureContent, undefined, 0x5090);
+    const snap = engine.snapshot();
+    expect(snap).not.toHaveProperty("statLedger");
+    expect(SCHEMA_VERSION).toBe(2);
   });
 });

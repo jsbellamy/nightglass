@@ -11,7 +11,7 @@ import {
   shouldApplyStun,
   type EffectOutcome,
 } from "./combat";
-import { statsForCombatant } from "./combatant-stats";
+import { createStatLedger, type StatLedger } from "./combatant-stats";
 import {
   chooseAbilityForCombatant,
   indexContent,
@@ -121,7 +121,22 @@ interface EngineState {
   nextDropId: number;
   progression: ProgressionState;
   attempt: AttemptState | null;
+  statLedger: StatLedger | null;
   pendingEdits: Snapshot["pendingEdits"];
+}
+
+function combatantStats(
+  state: EngineState,
+  index: ContentIndex,
+  combatant: CombatantState,
+): BaseStats {
+  if (!state.attempt) {
+    throw new Error("Cannot read combatant stats without an active Attempt");
+  }
+  if (!state.statLedger) {
+    state.statLedger = createStatLedger(index, state.progression, state.attempt);
+  }
+  return state.statLedger.statsFor(combatant);
 }
 
 interface PendingImpactChange {
@@ -417,6 +432,7 @@ function startFreshAttempt(
   applyPendingEdits(state, index, events, state.simNowMs);
 
   state.attempt = createAttempt(state, index, stage, 1);
+  state.statLedger = createStatLedger(index, state.progression, state.attempt);
   const stageDef = stageDefFor(index, stage);
   emit(state, events, {
     type: "stage-attempt-started",
@@ -479,7 +495,7 @@ function chooseActions(
       impactResolved: false,
     };
 
-    const actorStats = statsForCombatant(index, combatant, state.progression, attempt);
+    const actorStats = combatantStats(state, index, combatant);
     let element: Element | undefined;
     if (ability.slot === "basic") {
       for (const effect of ability.effects) {
@@ -743,10 +759,10 @@ function resolveImpacts(
     );
 
     const results: Extract<EngineEvent, { type: "impact" }>["results"] = [];
-    const actorStats = statsForCombatant(index, actor, state.progression, attempt);
+    const actorStats = combatantStats(state, index, actor);
 
     for (const target of targets) {
-      const targetStats = statsForCombatant(index, target, state.progression, attempt);
+      const targetStats = combatantStats(state, index, target);
       const preTargetHealth = preHealth.get(target.entityId) ?? target.health;
       const preTargetKnockedOut = preKnockedOut.get(target.entityId) ?? target.knockedOut;
       let projectedHealth = preTargetHealth;
@@ -924,7 +940,7 @@ function resolveStatusTicks(
         critChance: 0,
         critDamage: 1.5,
       };
-      const targetStats = statsForCombatant(index, target, state.progression, attempt);
+      const targetStats = combatantStats(state, index, target);
       const outcome = resolveEffect(
         statusDef.tickEffect,
         actorStats,
@@ -1147,6 +1163,7 @@ function clearStage(state: EngineState, index: ContentIndex, events: EngineEvent
   }
 
   state.attempt = null;
+  state.statLedger = null;
   startFreshAttempt(state, index, nextStage, events);
 }
 
@@ -1231,6 +1248,7 @@ function applyPendingEdits(
         combatant.maxHealth = stats.maxHealth;
         combatant.health = Math.min(combatant.health, combatant.maxHealth);
       }
+      state.statLedger?.invalidate(edit.classId);
       continue;
     }
 
@@ -1254,6 +1272,9 @@ function applyPendingEdits(
         };
       });
       attempt.combatants = [...reordered, ...opponentCombatants(attempt.combatants)];
+      for (const classId of edit.order) {
+        state.statLedger?.invalidate(classId);
+      }
     }
 
     if (edit.kind === "loadout") {
@@ -1282,6 +1303,7 @@ function applyPendingEdits(
           boundaryMs + ability.cooldownMs,
         );
       }
+      state.statLedger?.invalidate(edit.classId);
     }
   }
 
@@ -1334,6 +1356,7 @@ function finishDefeatHold(state: EngineState, index: ContentIndex, events: Engin
 
   const stage = attempt.stage;
   state.attempt = null;
+  state.statLedger = null;
   startFreshAttempt(state, index, stage, events);
 }
 
@@ -1422,6 +1445,7 @@ function fromSnapshot(saved: Snapshot): EngineState {
     nextDropId: cloned.nextDropId,
     progression: cloned.progression,
     attempt: cloned.attempt,
+    statLedger: null,
     pendingEdits: cloned.pendingEdits,
   };
 }
@@ -1478,6 +1502,7 @@ export function createEngine(
         nextDropId: 1,
         progression: createDefaultProgression(content),
         attempt: null,
+        statLedger: null,
         pendingEdits: [],
       };
 
@@ -1533,6 +1558,7 @@ export function createEngine(
     const events: EngineEvent[] = [];
     const stage = state.attempt?.stage ?? state.progression.unlockedStage;
     state.attempt = null;
+    state.statLedger = null;
     startFreshAttempt(state, index, stage, events);
     return events;
   }
@@ -1544,6 +1570,7 @@ export function createEngine(
 
     const events: EngineEvent[] = [];
     state.attempt = null;
+    state.statLedger = null;
     startFreshAttempt(state, index, stage, events);
     return events;
   }

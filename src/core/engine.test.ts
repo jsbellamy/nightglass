@@ -7,6 +7,7 @@ import { content as productionContent } from "../data";
 import { statuses as shippedStatuses } from "../data/statuses";
 import { wizardTier2Abilities } from "../data/classes/wizard";
 import { effectiveLoadout, effectiveTalentState } from "./pending-edits";
+import { emptyTalentState } from "./talents";
 import { characterStats } from "./stats";
 import { fixtureContent, fixtureContentWithAuthoredStages, fourTierFixtureContent } from "./testing/fixture-content";
 import { driveBy, scenario } from "./testing/scenario";
@@ -4121,5 +4122,300 @@ describe("Wind-up Element for adaptive Basic Attacks", () => {
     const started = firstActionStarted(engine, "cinder-bloom");
     expect(started).toMatchObject({ abilityId: "cinder-bloom" });
     expect(started).not.toHaveProperty("element");
+  });
+});
+
+describe("Stat Ledger invalidation", () => {
+  const noCritFixture: Content = {
+    ...fixtureContent,
+    classes: fixtureContent.classes.map((classKit) => ({
+      ...classKit,
+      base: { ...classKit.base, critChance: 0 },
+    })),
+    opponents: fixtureContent.opponents.map((opponent) => ({
+      ...opponent,
+      base: { ...opponent.base, critChance: 0 },
+    })),
+  };
+
+  function knightImpactDamage(
+    engine: ReturnType<typeof createEngine>,
+    abilityId: string,
+    entityId = "party:knight:front",
+  ): number | undefined {
+    let elapsed = 0;
+    while (elapsed < 30_000) {
+      elapsed += 1;
+      const events = driveBy(engine, 1);
+      const impact = events.find(
+        (event): event is Extract<EngineEvent, { type: "impact" }> =>
+          event.type === "impact" &&
+          event.entityId === entityId &&
+          event.abilityId === abilityId,
+      );
+      if (impact?.results[0]?.kind === "damage") {
+        return impact.results[0].amount;
+      }
+    }
+    return undefined;
+  }
+
+  it("rebuilds the Stat Ledger at createAttempt so frozen Equipment loadouts apply", () => {
+    const saved = scenario()
+      .withParty(["knight", "wizard", "priest"], "hunter")
+      .withDrops(1)
+      .build();
+    saved.lootRngState = LOOT_SEED;
+    saved.nextDropId = 2;
+    saved.attempt!.combatants = [
+      {
+        entityId: "party:knight:front",
+        side: "party",
+        defId: "knight",
+        health: 180,
+        maxHealth: 180,
+        knockedOut: false,
+        initiativeReadyAtMs: 0,
+        action: {
+          abilityId: "knight-basic",
+          startedAtMs: 0,
+          impactAtMs: 1,
+          endsAtMs: 1001,
+          targetIds: ["opp:1:0"],
+          impactResolved: false,
+        },
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "party:wizard:middle",
+        side: "party",
+        defId: "wizard",
+        health: 100,
+        maxHealth: 100,
+        knockedOut: false,
+        initiativeReadyAtMs: 0,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "party:priest:back",
+        side: "party",
+        defId: "priest",
+        health: 110,
+        maxHealth: 110,
+        knockedOut: false,
+        initiativeReadyAtMs: 0,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "opp:1:0",
+        side: "opponent",
+        defId: "fixture-grunt",
+        health: 40,
+        maxHealth: 40,
+        knockedOut: false,
+        initiativeReadyAtMs: 0,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+    ];
+
+    const engine = createEngine(noCritFixture, saved, LOOT_SEED);
+    expect(engine.advanceBy(1).find((event) => event.type === "impact")?.results[0]?.amount).toBe(
+      13,
+    );
+
+    engine.equip(1, "knight", "weapon");
+    expect(knightImpactDamage(engine, "knight-basic")).toBe(13);
+
+    engine.selectStage(1);
+    expect(knightImpactDamage(engine, "knight-basic")).toBe(15);
+  });
+
+  it("observes Talent stat changes in damage after a Wave boundary invalidation", () => {
+    const saved = scenario().build();
+    saved.lootRngState = LOOT_SEED;
+    const knightKit = noCritFixture.classes.find((classKit) => classKit.id === "knight")!;
+    const draft = emptyTalentState(knightKit);
+    draft.tierStates[0]!.statRanks["k-swordcraft"] = 5;
+    draft.statRanks = { ...draft.tierStates[0]!.statRanks };
+    saved.pendingEdits.push({
+      kind: "talent",
+      classId: "knight",
+      statRanks: { ...draft.statRanks },
+      abilityTalentId: null,
+      tierStates: draft.tierStates.map((tier) => ({
+        statRanks: { ...tier.statRanks },
+        abilityTalentId: tier.abilityTalentId,
+      })),
+    });
+    saved.attempt!.combatants = [
+      {
+        entityId: "party:knight:front",
+        side: "party",
+        defId: "knight",
+        health: 180,
+        maxHealth: 180,
+        knockedOut: false,
+        initiativeReadyAtMs: 0,
+        action: {
+          abilityId: "knight-basic",
+          startedAtMs: 0,
+          impactAtMs: 1,
+          endsAtMs: 1001,
+          targetIds: ["opp:1:0"],
+          impactResolved: false,
+        },
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "party:wizard:middle",
+        side: "party",
+        defId: "wizard",
+        health: 100,
+        maxHealth: 100,
+        knockedOut: false,
+        initiativeReadyAtMs: 999_999,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "party:priest:back",
+        side: "party",
+        defId: "priest",
+        health: 110,
+        maxHealth: 110,
+        knockedOut: false,
+        initiativeReadyAtMs: 999_999,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "opp:1:0",
+        side: "opponent",
+        defId: "fixture-grunt",
+        health: 40,
+        maxHealth: 40,
+        knockedOut: false,
+        initiativeReadyAtMs: 999_999,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+    ];
+
+    const engine = createEngine(noCritFixture, saved, LOOT_SEED);
+    const beforeDamage = engine.advanceBy(1).find((event) => event.type === "impact")?.results[0]
+      ?.amount;
+    expect(beforeDamage).toBe(13);
+
+    let elapsed = 0;
+    while (elapsed < 120_000) {
+      elapsed += 1;
+      const events = driveBy(engine, 1);
+      if (events.some((event) => event.type === "config-applied")) {
+        expect(knightImpactDamage(engine, "knight-basic")).toBe(16);
+        return;
+      }
+    }
+    throw new Error("config-applied never emitted for talent boundary");
+  });
+
+  it("observes Loadout ability damage after a Wave boundary invalidation", () => {
+    const boot = createEngine(noCritFixture, undefined, LOOT_SEED);
+    boot.advanceBy(1);
+    const saved = boot.snapshot();
+    saved.progression.characterXp.knight = 850;
+    const engine = createEngine(noCritFixture, saved, LOOT_SEED);
+    fillKnightTierOne(engine);
+    engine.allocateTalent("knight", "k-falling-star");
+    engine.setLoadout("knight", ["k-falling-star", "k-sweep", "k-rally"]);
+
+    let elapsed = 0;
+    while (elapsed < 120_000) {
+      elapsed += 1;
+      const events = driveBy(engine, 1);
+      if (events.some((event) => event.type === "config-applied")) {
+        expect(knightImpactDamage(engine, "k-falling-star")).toBe(20);
+        return;
+      }
+    }
+    throw new Error("config-applied never emitted for loadout boundary");
+  });
+
+  it("observes correct damage after a Formation edit changes entityIds at the Wave boundary", () => {
+    const saved = scenario().build();
+    saved.lootRngState = LOOT_SEED;
+    saved.attempt!.combatants = [
+      {
+        entityId: "party:knight:front",
+        side: "party",
+        defId: "knight",
+        health: 180,
+        maxHealth: 180,
+        knockedOut: false,
+        initiativeReadyAtMs: 0,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "party:wizard:middle",
+        side: "party",
+        defId: "wizard",
+        health: 100,
+        maxHealth: 100,
+        knockedOut: false,
+        initiativeReadyAtMs: 999_999,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "party:priest:back",
+        side: "party",
+        defId: "priest",
+        health: 110,
+        maxHealth: 110,
+        knockedOut: false,
+        initiativeReadyAtMs: 999_999,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "opp:1:0",
+        side: "opponent",
+        defId: "fixture-grunt",
+        health: 40,
+        maxHealth: 40,
+        knockedOut: false,
+        initiativeReadyAtMs: 999_999,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+    ];
+    const engine = createEngine(noCritFixture, saved, LOOT_SEED);
+    engine.setFormation(["priest", "knight", "wizard"]);
+
+    let elapsed = 0;
+    while (elapsed < 120_000) {
+      elapsed += 1;
+      const events = driveBy(engine, 1);
+      if (events.some((event) => event.type === "config-applied")) {
+        expect(knightImpactDamage(engine, "knight-basic", "party:knight:middle")).toBe(13);
+        return;
+      }
+    }
+    throw new Error("config-applied never emitted for formation boundary");
   });
 });
