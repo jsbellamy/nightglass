@@ -9,14 +9,9 @@ import {
   filterArmoryDrops,
   formatRarityLabel,
   isCompatibleWithSlot,
-  nextRarity,
-  RARITY_LABELS,
   rareOrEpicDropNames,
-  selectSalvageBatch,
   SLOT_LABELS,
   sortArmoryDrops,
-  sweepableDropsAtItemLevel,
-  sweepableItemLevels,
 } from "./equipment-format";
 import { bindPressable } from "./keyboard";
 import { EMPTY_ENGINE_LEGALITY, type EngineLegalityView } from "./engine-legality";
@@ -59,11 +54,9 @@ type SalvagePendingResult = {
   expectedItemLevel: ItemLevel;
 };
 
-type SalvageStageMeta = {
-  rarity: Rarity;
-};
-
 type StateFilterId = "all" | "unseen" | "locked";
+
+type ArmoryActionMode = "salvage" | "discard-tier";
 
 
 function equippedDropId(
@@ -119,10 +112,8 @@ export function mountArmorySurface(
   let browseCompatibility: BrowseCompatibility | null = null;
   let selectedDiscard = new Set<number>();
   let discardConfirmOpen = false;
-  let sweepItemLevel: ItemLevel | null = null;
-  let sweepConfirmOpen = false;
+  let actionMode: ArmoryActionMode | null = null;
   let stagedSalvageIds = new Set<number>();
-  let stagedSalvageMeta: SalvageStageMeta | null = null;
   let pendingSalvageResult: SalvagePendingResult | null = null;
   let salvageResultDropId: number | null = null;
   let activeDrag: ArmoryDragSource | null = null;
@@ -149,14 +140,18 @@ export function mountArmorySurface(
     props: { role: "list" },
     aria: { label: "Armory collection" },
   });
-  const armoryPanes = el("div", { class: "armory-panes armory-panes--full" }, [gridEl]);
+  const detailEl = el("div", {
+    class: "armory-detail",
+    data: { armoryDetail: "true", surfaceRetain: "true" },
+    props: { hidden: true },
+  });
+  const armoryPanes = el("div", { class: "armory-panes armory-panes--full" }, [gridEl, detailEl]);
   const bodyEl = el("div", {
     class: "armory-body armory-body--compare-host",
     data: { surfaceRetain: "true" },
   });
   bodyEl.append(armoryPanes, comparePopover);
   let currentToolbar: HTMLElement | null = null;
-  let currentSalvageTray: HTMLElement | null = null;
   let currentWornStrip: HTMLElement | null = null;
 
   /** Swap a persistent-body section in place, keeping the grid attached and unmoved. */
@@ -179,7 +174,101 @@ export function mountArmorySurface(
 
   function clearSalvageStaging(): void {
     stagedSalvageIds = new Set();
-    stagedSalvageMeta = null;
+  }
+
+  function closeActionPane(): void {
+    actionMode = null;
+    clearSalvageStaging();
+    clearSalvageResult();
+    detailEl.hidden = true;
+    armoryPanes.classList.add("armory-panes--full");
+    delete detailEl.dataset["armoryActionMode"];
+    detailEl.replaceChildren();
+  }
+
+  function openActionPane(mode: ArmoryActionMode): void {
+    if (actionMode === mode) {
+      closeActionPane();
+      return;
+    }
+    actionMode = mode;
+    clearSalvageStaging();
+    clearSalvageResult();
+    armoryPanes.classList.remove("armory-panes--full");
+    detailEl.hidden = false;
+    detailEl.dataset["armoryActionMode"] = mode;
+  }
+
+  function syncActionPane(snapshot: ReadonlySnapshot): void {
+    if (actionMode === null) {
+      detailEl.hidden = true;
+      armoryPanes.classList.add("armory-panes--full");
+      detailEl.replaceChildren();
+      delete detailEl.dataset["armoryActionMode"];
+      return;
+    }
+
+    armoryPanes.classList.remove("armory-panes--full");
+    detailEl.hidden = false;
+    detailEl.dataset["armoryActionMode"] = actionMode;
+    detailEl.replaceChildren(renderActionPaneBody(snapshot, actionMode));
+  }
+
+  function renderActionPaneBody(
+    snapshot: ReadonlySnapshot,
+    mode: ArmoryActionMode,
+  ): HTMLElement {
+    const shell = el("div", { class: "armory-action-pane" });
+    const title = mode === "salvage" ? "Salvage" : "Discard";
+    shell.append(el("h3", { class: "armory-action-pane-title", text: title }));
+
+    if (mode === "salvage") {
+      shell.append(
+        el("p", {
+          class: "armory-action-pane-hint",
+          text: "Choose a Rarity, then fill ten slots to review the batch.",
+        }),
+      );
+    } else {
+      shell.append(
+        el("p", {
+          class: "armory-action-pane-hint",
+          text: "Choose an Item Level, then fill from tier to review the batch.",
+        }),
+      );
+    }
+
+    if (salvageResultDropId !== null && mode === "salvage") {
+      const resultDrop = dropById(snapshot.progression.armory, salvageResultDropId);
+      if (resultDrop) {
+        const base = equipmentBaseForDrop(resultDrop, content);
+        const card = el("div", {
+          class: `armory-salvage-result rarity-${resultDrop.rarity}`,
+          data: { salvageResult: String(resultDrop.dropId) },
+        });
+        card.append(
+          createEquipmentIconElement(base.iconKey, "content", { ariaLabel: base.name }),
+        );
+        card.append(el("span", { class: "armory-salvage-result-name", text: base.name }));
+        shell.append(card);
+      }
+    }
+
+    const close = el("button", {
+      class: "armory-action-close focus-ring",
+      data: { armoryActionClose: "true" },
+      props: { type: "button" },
+      text: "Close",
+    });
+    bindPressable(close, () => {
+      closeActionPane();
+      if (lastSnapshot) {
+        render(lastSnapshot);
+      }
+    });
+    shell.append(el("div", { class: "armory-detail-actions" }, [close]));
+
+    return shell;
   }
 
   function syncStagedSalvage(armory: readonly DropInstance[]): void {
@@ -225,130 +314,6 @@ export function mountArmorySurface(
 
   function salvageStagedDrop(drop: DropInstance): boolean {
     return stagedSalvageIds.has(drop.dropId);
-  }
-
-  function renderSalvageTray(snapshot: ReadonlySnapshot): HTMLElement {
-    const tray = el("div", {
-      class: "armory-salvage-tray",
-      data: { salvageTray: "true" },
-    });
-
-    const batch = selectSalvageBatch([...snapshot.progression.armory]);
-    const autofill = el("button", {
-      class: "armory-salvage-autofill focus-ring",
-      data: { salvageAutofill: "true" },
-      props: {
-        type: "button",
-        disabled: batch === null,
-      },
-      text: batch ? `Auto-fill · 10 ${RARITY_LABELS[batch.rarity]}` : "Auto-fill · 10 pieces",
-    });
-    bindPressable(autofill, () => {
-      clearSalvageResult();
-      const nextBatch = selectSalvageBatch([...snapshot.progression.armory]);
-      if (nextBatch) {
-        stagedSalvageIds = new Set(nextBatch.dropIds);
-        stagedSalvageMeta = { rarity: nextBatch.rarity };
-      } else {
-        clearSalvageStaging();
-      }
-      if (lastSnapshot) {
-        render(lastSnapshot);
-      }
-    });
-    tray.append(autofill);
-
-    if (!batch) {
-      tray.append(
-        el("p", {
-          class: "armory-salvage-unavailable",
-          data: { salvageUnavailable: "true" },
-          text: "No Rarity has ten unequipped, unlocked pieces yet.",
-        }),
-      );
-    }
-
-    if (stagedSalvageIds.size === 10 && stagedSalvageMeta) {
-      const stagedDrops = [...stagedSalvageIds]
-        .map((dropId) => dropById(snapshot.progression.armory, dropId))
-        .filter((entry): entry is DropInstance => entry !== undefined);
-      const fromRarity = stagedSalvageMeta.rarity;
-      const toRarity = nextRarity(fromRarity);
-      const minItemLevel = Math.min(...stagedDrops.map((entry) => entry.itemLevel)) as ItemLevel;
-      if (toRarity) {
-        tray.append(
-          el("p", {
-            class: "armory-salvage-summary",
-            data: { salvageSummary: "true" },
-            text: `10 ${RARITY_LABELS[fromRarity]} → 1 ${RARITY_LABELS[toRarity]} · Item Level ${minItemLevel}`,
-          }),
-        );
-      }
-
-      const confirm = el("button", {
-        class: "armory-salvage-confirm focus-ring",
-        data: { salvageConfirm: "true" },
-        props: { type: "button" },
-        text: "Salvage",
-      });
-      bindPressable(confirm, () => {
-        const dropIds = [...stagedSalvageIds];
-        const consumed = dropIds
-          .map((dropId) => dropById(snapshot.progression.armory, dropId))
-          .filter((entry): entry is DropInstance => entry !== undefined);
-        const upgradedRarity = nextRarity(stagedSalvageMeta!.rarity);
-        if (!upgradedRarity || consumed.length !== 10) {
-          return;
-        }
-        pendingSalvageResult = {
-          beforeIds: new Set(snapshot.progression.armory.map((entry) => entry.dropId)),
-          consumedDropIds: dropIds,
-          expectedRarity: upgradedRarity,
-          expectedItemLevel: Math.min(...consumed.map((entry) => entry.itemLevel)) as ItemLevel,
-        };
-        publish({ cmd: "salvage", args: [dropIds] });
-        clearSalvageStaging();
-        if (lastSnapshot) {
-          render(lastSnapshot);
-        }
-      });
-
-      const cancel = el("button", {
-        class: "armory-salvage-cancel focus-ring",
-        data: { salvageCancel: "true" },
-        props: { type: "button" },
-        text: "Cancel",
-      });
-      bindPressable(cancel, () => {
-        clearSalvageStaging();
-        clearSalvageResult();
-        if (lastSnapshot) {
-          render(lastSnapshot);
-        }
-      });
-
-      tray.append(
-        el("div", { class: "armory-salvage-actions" }, [confirm, cancel]),
-      );
-    }
-
-    if (salvageResultDropId !== null) {
-      const resultDrop = dropById(snapshot.progression.armory, salvageResultDropId);
-      if (resultDrop) {
-        const base = equipmentBaseForDrop(resultDrop, content);
-        const card = el("div", {
-          class: `armory-salvage-result rarity-${resultDrop.rarity}`,
-          data: { salvageResult: String(resultDrop.dropId) },
-        });
-        card.append(
-          createEquipmentIconElement(base.iconKey, "content", { ariaLabel: base.name }),
-        );
-        card.append(el("span", { class: "armory-salvage-result-name", text: base.name }));
-        tray.append(card);
-      }
-    }
-
-    return tray;
   }
 
   function isDropSeen(drop: DropInstance): boolean {
@@ -985,124 +950,40 @@ export function mountArmorySurface(
       el("label", { class: "armory-sort-label", text: "Sort" }, [sortSelect]),
     );
 
-    const sweepLevels = sweepableItemLevels(snapshot.progression.armory);
-    const sweepLevelSelect = el("select", {
-      class: "armory-sweep-item-level-select focus-ring",
-      data: { sweepItemLevel: "true" },
-      aria: { label: "Sweep Item Level" },
-      props: { disabled: sweepLevels.length === 0 },
+    const salvageOpen = el("button", {
+      class: "armory-salvage-open focus-ring",
+      data: { armorySalvageOpen: "true" },
+      props: { type: "button" },
+      aria: { pressed: actionMode === "salvage" ? "true" : "false" },
+      text: "Salvage",
     });
-    sweepLevelSelect.append(
-      el("option", {
-        props: { value: "", selected: sweepItemLevel === null },
-        text: "Item Level…",
-      }),
-    );
-    for (const entry of sweepLevels) {
-      sweepLevelSelect.append(
-        el("option", {
-          props: {
-            value: String(entry.itemLevel),
-            selected: sweepItemLevel === entry.itemLevel,
-          },
-          text: `Item Level ${entry.itemLevel} (${entry.count})`,
-        }),
-      );
-    }
-    sweepLevelSelect.addEventListener("change", () => {
-      const value = sweepLevelSelect.value;
-      sweepItemLevel = value === "" ? null : (Number(value) as ItemLevel);
-      sweepConfirmOpen = false;
-      render(snapshot);
+    bindPressable(salvageOpen, () => {
+      openActionPane("salvage");
+      if (lastSnapshot) {
+        render(lastSnapshot);
+      }
     });
 
-    const selectedSweepCount =
-      sweepItemLevel === null
-        ? 0
-        : sweepableDropsAtItemLevel(snapshot.progression.armory, sweepItemLevel).length;
-    const sweepButton = el("button", {
-      class: "armory-sweep-button focus-ring",
-      data: { sweep: "true" },
-      props: {
-        type: "button",
-        disabled: sweepItemLevel === null || sweepLevels.length === 0,
-      },
-      text:
-        sweepItemLevel === null
-          ? "Sweep"
-          : `Sweep Item Level ${sweepItemLevel} (${selectedSweepCount})`,
+    const discardTierOpen = el("button", {
+      class: "armory-discard-tier-open focus-ring",
+      data: { armoryDiscardTierOpen: "true" },
+      props: { type: "button" },
+      aria: { pressed: actionMode === "discard-tier" ? "true" : "false" },
+      text: "Discard",
     });
-    bindPressable(sweepButton, () => {
-      if (sweepItemLevel === null) {
-        return;
+    bindPressable(discardTierOpen, () => {
+      openActionPane("discard-tier");
+      if (lastSnapshot) {
+        render(lastSnapshot);
       }
-      sweepConfirmOpen = true;
-      render(snapshot);
     });
+
     toolbar.append(
-      el("div", { class: "armory-bulk-actions", data: { sweepStrip: "true" } }, [
-        el("label", { class: "armory-sweep-label", text: "Sweep" }, [sweepLevelSelect]),
-        sweepButton,
+      el("div", { class: "armory-bulk-actions", data: { armoryBulkOpen: "true" } }, [
+        salvageOpen,
+        discardTierOpen,
       ]),
     );
-
-    if (sweepConfirmOpen && sweepItemLevel !== null) {
-      const sweptDrops = sweepableDropsAtItemLevel(
-        snapshot.progression.armory,
-        sweepItemLevel,
-      );
-      const sweptCount = sweptDrops.length;
-      const rareEpic = rareOrEpicDropNames(sweptDrops, content);
-      const confirmCopy: HTMLElement[] = [
-        el("p", {
-          class: "armory-confirm-copy",
-          text: `Discard ${sweptCount} piece(s) at Item Level ${sweepItemLevel}?`,
-        }),
-      ];
-      if (rareEpic.length > 0) {
-        confirmCopy.push(
-          el("p", {
-            class: "armory-confirm-copy",
-            text: `Rare/Epic: ${rareEpic.join(", ")}`,
-          }),
-        );
-      }
-      const yes = el("button", {
-        class: "armory-confirm-yes focus-ring",
-        data: { sweepConfirmYes: "true" },
-        props: { type: "button" },
-        text: "Discard",
-      });
-      bindPressable(yes, () => {
-        if (!lastSnapshot || sweepItemLevel === null) {
-          return;
-        }
-        const dropIds = sweepableDropsAtItemLevel(
-          lastSnapshot.progression.armory,
-          sweepItemLevel,
-        ).map((entry) => entry.dropId);
-        publish({ cmd: "discard", args: [dropIds] });
-        sweepItemLevel = null;
-        sweepConfirmOpen = false;
-        render(lastSnapshot);
-      });
-      const no = el("button", {
-        class: "armory-confirm-no focus-ring",
-        data: { sweepConfirmNo: "true" },
-        props: { type: "button" },
-        text: "Cancel",
-      });
-      bindPressable(no, () => {
-        sweepConfirmOpen = false;
-        render(snapshot);
-      });
-      toolbar.append(
-        el("div", { class: "armory-confirm", data: { sweepConfirm: "true" } }, [
-          ...confirmCopy,
-          el("div", { class: "armory-confirm-actions" }, [yes, no]),
-        ]),
-      );
-    }
 
     if (selectedDiscard.size > 0) {
       const discardButton = el("button", {
@@ -1321,8 +1202,8 @@ export function mountArmorySurface(
         resolvePendingSalvageResult(snapshot);
       }
       currentToolbar = swapBodySection(currentToolbar, renderToolbar(snapshot));
-      currentSalvageTray = swapBodySection(currentSalvageTray, renderSalvageTray(snapshot));
       currentWornStrip = swapBodySection(currentWornStrip, renderWornStrip(snapshot));
+      syncActionPane(snapshot);
       reconcileGrid(snapshot, bodyEl);
       return [bodyEl];
     },
@@ -1377,8 +1258,7 @@ export function mountArmorySurface(
     render,
     destroy() {
       salvageVisibilityObserver?.disconnect();
-      clearSalvageStaging();
-      clearSalvageResult();
+      closeActionPane();
       pendingSalvageResult = null;
       unbindGridOverflow?.();
       const host = armoryDragHost();

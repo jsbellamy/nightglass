@@ -2400,6 +2400,38 @@ html.dock-window body {
   gap: 6px;
 }
 
+.armory-action-pane-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.armory-action-pane-hint {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--dock-text-muted, #d8d0bf);
+}
+
+.armory-salvage-open,
+.armory-discard-tier-open,
+.armory-action-close {
+  border: 1px solid rgba(255, 249, 233, 0.18);
+  border-radius: 4px;
+  background: #292d3d;
+  color: var(--dock-text, #fff9e9);
+  cursor: pointer;
+  padding: 4px 8px;
+  font-size: 11px;
+  text-align: left;
+}
+
+.armory-salvage-open[aria-pressed="true"],
+.armory-discard-tier-open[aria-pressed="true"] {
+  border-color: #8ec8ff;
+  background: #3a4158;
+}
+
 .armory-bulk-actions,
 .armory-compare-columns,
 .armory-confirm-actions,

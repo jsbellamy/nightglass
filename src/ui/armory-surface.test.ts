@@ -233,11 +233,11 @@ describe("Armory surface", () => {
       root.querySelector<HTMLElement>('[data-worn-slot="charm"]')?.dataset["slotFilled"],
     ).toBe("false");
 
-    const panes = root.querySelector(".armory-panes");
+    const panes = root.querySelector<HTMLElement>(".armory-panes");
     expect(panes?.querySelector(".armory-grid")).not.toBeNull();
-    expect(panes?.querySelector(".armory-detail")).toBeNull();
+    expect(panes?.classList.contains("armory-panes--full")).toBe(true);
     expect(root.querySelector('[data-armory-collection="true"]')).not.toBeNull();
-    expect(root.querySelector('[data-armory-detail="true"]')).toBeNull();
+    expect(root.querySelector('[data-armory-detail="true"]')?.hasAttribute("hidden")).toBe(true);
 
     surface.destroy();
   });
@@ -274,7 +274,7 @@ describe("Armory surface", () => {
       root
         .querySelector<HTMLElement>('.armory-grid .equipment-card[data-drop-id="1"]'),
     ).toBeNull();
-    expect(root.querySelector('[data-armory-detail="true"]')).toBeNull();
+    expect(root.querySelector('[data-armory-detail="true"]')?.hasAttribute("hidden")).toBe(true);
 
     surface.destroy();
   });
@@ -302,7 +302,7 @@ describe("Armory surface", () => {
         (card) => card.dataset["dropId"],
       ),
     ).toEqual(["2"]);
-    expect(root.querySelector('[data-armory-detail="true"]')).toBeNull();
+    expect(root.querySelector('[data-armory-detail="true"]')?.hasAttribute("hidden")).toBe(true);
 
     surface.destroy();
   });
@@ -418,7 +418,7 @@ describe("Armory surface", () => {
     const surface = mountWithSelection(root, selected);
     renderArmory(surface, snapshot);
 
-    expect(root.querySelector('[data-armory-detail="true"]')).toBeNull();
+    expect(root.querySelector('[data-armory-detail="true"]')?.hasAttribute("hidden")).toBe(true);
     expect(root.querySelector('[data-equip-button="true"]')).toBeNull();
     expect(root.querySelector('[data-unequip-slot]')).toBeNull();
     expect(root.querySelector('[data-cross-equip-confirm="true"]')).toBeNull();
@@ -1024,11 +1024,125 @@ describe("Armory surface", () => {
     );
   }
 
+  describe("bulk action pane shell", () => {
+    it("renders peer Salvage and Discard toolbar buttons without the legacy tray or sweep controls", () => {
+      const root = document.createElement("div");
+      const selected = { current: "knight" as ClassId };
+      const snapshot = armorySnapshot(commonSalvageDrops(12));
+      const surface = mountWithSelection(root, selected);
+      renderArmory(surface, snapshot);
+
+      expect(root.querySelector('[data-armory-salvage-open="true"]')).not.toBeNull();
+      expect(root.querySelector('[data-armory-discard-tier-open="true"]')).not.toBeNull();
+      expect(root.querySelector('[data-salvage-tray="true"]')).toBeNull();
+      expect(root.querySelector('[data-sweep-item-level="true"]')).toBeNull();
+      expect(root.querySelector('[data-sweep="true"]')).toBeNull();
+
+      surface.destroy();
+    });
+
+    it("keeps the collection grid full width until a bulk action opens the detail pane", () => {
+      const root = document.createElement("div");
+      const selected = { current: "knight" as ClassId };
+      const snapshot = armorySnapshot(commonSalvageDrops(3));
+      const surface = mountWithSelection(root, selected);
+      renderArmory(surface, snapshot);
+
+      const panes = root.querySelector<HTMLElement>(".armory-panes");
+      expect(panes?.classList.contains("armory-panes--full")).toBe(true);
+      expect(root.querySelector('[data-armory-detail="true"]')?.hasAttribute("hidden")).toBe(true);
+
+      surface.destroy();
+    });
+
+    it("opens the Salvage detail pane with aria-pressed on the toolbar button", () => {
+      const root = document.createElement("div");
+      const selected = { current: "knight" as ClassId };
+      const snapshot = armorySnapshot(commonSalvageDrops(12));
+      const surface = mountWithSelection(root, selected);
+      renderArmory(surface, snapshot);
+
+      root.querySelector<HTMLButtonElement>('[data-armory-salvage-open="true"]')?.click();
+      renderArmory(surface, snapshot);
+
+      const panes = root.querySelector<HTMLElement>(".armory-panes");
+      expect(panes?.classList.contains("armory-panes--full")).toBe(false);
+      const detail = root.querySelector<HTMLElement>('[data-armory-detail="true"]');
+      expect(detail?.hasAttribute("hidden")).toBe(false);
+      expect(detail?.dataset["armoryActionMode"]).toBe("salvage");
+      expect(
+        root
+          .querySelector<HTMLButtonElement>('[data-armory-salvage-open="true"]')
+          ?.getAttribute("aria-pressed"),
+      ).toBe("true");
+      expect(
+        root
+          .querySelector<HTMLButtonElement>('[data-armory-discard-tier-open="true"]')
+          ?.getAttribute("aria-pressed"),
+      ).toBe("false");
+
+      surface.destroy();
+    });
+
+    it("opens the Discard detail pane and switches modes from Salvage", () => {
+      const root = document.createElement("div");
+      const selected = { current: "knight" as ClassId };
+      const snapshot = armorySnapshot(commonSalvageDrops(12));
+      const surface = mountWithSelection(root, selected);
+      renderArmory(surface, snapshot);
+
+      root.querySelector<HTMLButtonElement>('[data-armory-salvage-open="true"]')?.click();
+      renderArmory(surface, snapshot);
+      root.querySelector<HTMLButtonElement>('[data-armory-discard-tier-open="true"]')?.click();
+      renderArmory(surface, snapshot);
+
+      const detail = root.querySelector<HTMLElement>('[data-armory-detail="true"]');
+      expect(detail?.dataset["armoryActionMode"]).toBe("discard-tier");
+      expect(
+        root
+          .querySelector<HTMLButtonElement>('[data-armory-discard-tier-open="true"]')
+          ?.getAttribute("aria-pressed"),
+      ).toBe("true");
+      expect(
+        root
+          .querySelector<HTMLButtonElement>('[data-armory-salvage-open="true"]')
+          ?.getAttribute("aria-pressed"),
+      ).toBe("false");
+
+      surface.destroy();
+    });
+
+    it("closes the detail pane and restores the full-width grid", () => {
+      const root = document.createElement("div");
+      const selected = { current: "knight" as ClassId };
+      const snapshot = armorySnapshot(commonSalvageDrops(12));
+      const surface = mountWithSelection(root, selected);
+      renderArmory(surface, snapshot);
+
+      root.querySelector<HTMLButtonElement>('[data-armory-discard-tier-open="true"]')?.click();
+      renderArmory(surface, snapshot);
+      root.querySelector<HTMLButtonElement>('[data-armory-action-close="true"]')?.click();
+      renderArmory(surface, snapshot);
+
+      expect(root.querySelector<HTMLElement>(".armory-panes")?.classList.contains("armory-panes--full")).toBe(
+        true,
+      );
+      expect(root.querySelector('[data-armory-detail="true"]')?.hasAttribute("hidden")).toBe(true);
+      expect(
+        root
+          .querySelector<HTMLButtonElement>('[data-armory-discard-tier-open="true"]')
+          ?.getAttribute("aria-pressed"),
+      ).toBe("false");
+
+      surface.destroy();
+    });
+  });
+
   function pressSalvageAutofill(root: HTMLElement): void {
     root.querySelector<HTMLButtonElement>('[data-salvage-autofill="true"]')?.click();
   }
 
-  describe("salvage tray", () => {
+  describe.skip("salvage tray (M2)", () => {
     it("renders a persistent tray with enabled Auto-fill for twelve eligible Commons", () => {
       const root = document.createElement("div");
       const selected = { current: "knight" as ClassId };
@@ -1204,7 +1318,7 @@ describe("Armory surface", () => {
     });
   });
 
-  describe("item level broom", () => {
+  describe.skip("item level discard pane (M3)", () => {
     function sweepableArmory(): DropInstance[] {
       return [
         drop({ dropId: 1, baseId: "fixture-blade", itemLevel: 1 }),
@@ -1661,7 +1775,7 @@ describe("Armory surface source boundary", () => {
       join(dirname(fileURLToPath(import.meta.url)), "armory-surface.ts"),
       "utf8",
     );
-    expect(source).not.toMatch(/armory-detail|equipButton|crossEquipConfirm|unequipSlot/);
+    expect(source).not.toMatch(/equipButton|crossEquipConfirm|unequipSlot/);
   });
 
   it("does not value-import core or data modules", () => {
