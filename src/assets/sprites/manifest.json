@@ -702,5 +702,37 @@
       "provider": "Cursor GenerateImage",
       "raw_sha256": "8e19f3590e86c31e1200d28adff4a2ce43f7540c5f0e5ce04364bce3afcef95e"
     }
+  },
+  "huskbeetle": {
+    "action": "still",
+    "frame_size": [
+      30,
+      14
+    ],
+    "visual_bounds": [
+      0,
+      0,
+      30,
+      14
+    ],
+    "foot_anchor": [
+      15,
+      14
+    ],
+    "palette": "moonberry-16",
+    "baseline_row": 13,
+    "total_ms": 1,
+    "frames": [
+      {
+        "name": "huskbeetle",
+        "duration_ms": 1,
+        "sha256": "3c65bed86f648de3c918744dea6ad4903f926cae7ae6fabe68b224803e306d3d"
+      }
+    ],
+    "cues_ms": {},
+    "source": {
+      "provider": "Cursor GenerateImage",
+      "raw_sha256": "8b59921d3732efa585b48dc697053f78a1939391f973d4cc2689062ff2183974"
+    }
   }
 }
