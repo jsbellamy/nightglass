@@ -138,7 +138,7 @@ export function mountArmorySurface(
   // collection grid never leaves the DOM across a rebuild, so a hovered tile keeps its
   // native :hover (the lock button / discard checkbox stay put) and a tile grabbed for
   // drag is never torn out from under the pointer. Only the parts that actually change
-  // — the toolbar, worn strip, and the keyed grid tiles — update.
+  // — the toolbar, salvage tray, worn strip, and the keyed grid tiles — update.
   const gridEl = el("div", {
     class: "armory-grid",
     data: { armoryCollection: "true" },
