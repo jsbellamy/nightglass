@@ -9,9 +9,11 @@ import {
   opponentAbilityCandidates,
   opponentBasicAbility,
   partyAbilityCandidates,
+  powerFrom,
   previewEffectRaw,
   revalidateTargets,
   resolveEffect,
+  resolveStatModifiers,
   selectFirstKnockedOutAlly,
   selectLowestHealthAlly,
   shouldApplyStun,
@@ -84,6 +86,130 @@ const emptyTarget = {
   knockedOut: false,
   statuses: [] as const,
 };
+
+describe("stat modifier resolution", () => {
+  const base: BaseStats = {
+    maxHealth: 100,
+    physical: 14,
+    spell: 16,
+    armor: 30,
+    elementalResistance: 12,
+    firePower: 4,
+    frostPower: 2,
+    lightningPower: 1,
+    lightPower: 3,
+    critChance: 0.05,
+    critDamage: 1.5,
+  };
+
+  it.each([
+    {
+      label: "flat-only",
+      modifiers: [{ flat: { physical: 6, firePower: 5 } }],
+    },
+    {
+      label: "percent-only",
+      modifiers: [{ percent: { spellPower: 0.1, firePower: 0.05 } }],
+    },
+    {
+      label: "mixed flat and percent",
+      modifiers: [
+        { flat: { physical: 6 } },
+        { percent: { physicalPower: 0.1 } },
+        { percent: { physicalPower: 0.05 } },
+      ],
+    },
+    {
+      label: "per-Element flats and percents",
+      modifiers: [
+        { flat: { firePower: 20 } },
+        { percent: { spellPower: 0.1 } },
+        { percent: { firePower: 0.1 } },
+      ],
+    },
+  ])("combines $label modifiers into the same effective stats (C1)", ({ modifiers }) => {
+    expect(resolveStatModifiers(base, modifiers).stats).toEqual(
+      applyStatModifiers(base, modifiers),
+    );
+  });
+});
+
+describe("Element Power selection", () => {
+  const spellElementBase: BaseStats = {
+    maxHealth: 100,
+    physical: 0,
+    spell: 100,
+    armor: 0,
+    elementalResistance: 0,
+    firePower: 0,
+    frostPower: 0,
+    lightningPower: 0,
+    lightPower: 0,
+    critChance: 0.05,
+    critDamage: 1.5,
+  };
+
+  it("reproduces CONTEXT Spell and Element Power worked examples (C2)", () => {
+    const fireInvested = resolveStatModifiers(spellElementBase, [
+      { flat: { firePower: 20 } },
+      { percent: { spellPower: 0.1 } },
+      { percent: { firePower: 0.1 } },
+    ]);
+    // floor((100 + 20) × (1 + 0.1 + 0.1)) = 144
+    expect(powerFrom(fireInvested, "elemental", "fire")).toBe(144);
+    // floor((100 + 0) × (1 + 0.1 + 0)) = 110
+    expect(powerFrom(fireInvested, "elemental", "frost")).toBe(110);
+    expect(powerFrom(fireInvested, "elemental")).toBe(110);
+
+    const lightningInvested = resolveStatModifiers(spellElementBase, [
+      { flat: { lightningPower: 15 } },
+      { percent: { spellPower: 0.1 } },
+      { percent: { lightningPower: 0.15 } },
+    ]);
+    // floor((100 + 15) × (1 + 0.1 + 0.15)) = 143
+    expect(powerFrom(lightningInvested, "elemental", "lightning")).toBe(143);
+
+    const lightInvested = resolveStatModifiers(spellElementBase, [
+      { flat: { spell: 5, lightPower: 8 } },
+      { percent: { spellPower: 0.1 } },
+      { percent: { lightPower: 0.2 } },
+    ]);
+    // floor((105 + 8) × (1 + 0.1 + 0.2)) = 146
+    expect(powerFrom(lightInvested, "elemental", "light")).toBe(146);
+  });
+});
+
+describe("Elemental Damage Power after stat resolution", () => {
+  it("pools Fire Power with Spell Power for fire-invested modifiers (C4)", () => {
+    const stats = applyStatModifiers(
+      {
+        maxHealth: 100,
+        physical: 0,
+        spell: 100,
+        armor: 0,
+        elementalResistance: 0,
+        firePower: 0,
+        frostPower: 0,
+        lightningPower: 0,
+        lightPower: 0,
+        critChance: 0.05,
+        critDamage: 1.5,
+      },
+      [
+        { flat: { firePower: 20 } },
+        { percent: { spellPower: 0.1 } },
+        { percent: { firePower: 0.1 } },
+      ],
+    );
+
+    expect(
+      previewEffectRaw(
+        { kind: "damage", channel: "elemental", element: "fire", coefficient: 1 },
+        stats,
+      ),
+    ).toBe(144);
+  });
+});
 
 describe("critical hits", () => {
   const critActor: BaseStats = {

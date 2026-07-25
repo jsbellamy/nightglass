@@ -13,19 +13,24 @@ import type {
 } from "./types";
 import type { ActiveStatus, CombatantState } from "./snapshot";
 
-interface PowerComponents {
+export interface PowerComponents {
   spellFlat: number;
   spellPercent: number;
   elementFlats: Record<Element, number>;
   elementPercents: Record<Element, number>;
 }
 
+export interface ResolvedStats {
+  readonly stats: BaseStats;
+  readonly components: PowerComponents;
+}
+
 const powerComponentsByStats = new WeakMap<BaseStats, PowerComponents>();
 
-export function applyStatModifiers(
+export function resolveStatModifiers(
   base: BaseStats,
   modifiers: StatModifiers[],
-): BaseStats {
+): ResolvedStats {
   const flat: Partial<BaseStats> = {};
   const percent = {
     maxHealth: 0,
@@ -84,7 +89,7 @@ export function applyStatModifiers(
     critDamage: Math.max(1, critDamage),
   };
 
-  powerComponentsByStats.set(result, {
+  const components: PowerComponents = {
     spellFlat,
     spellPercent: percent.spellPower,
     elementFlats: {
@@ -99,9 +104,18 @@ export function applyStatModifiers(
       lightning: percent.lightningPower,
       light: percent.lightPower,
     },
-  });
+  };
 
-  return result;
+  return { stats: result, components };
+}
+
+export function applyStatModifiers(
+  base: BaseStats,
+  modifiers: StatModifiers[],
+): BaseStats {
+  const resolved = resolveStatModifiers(base, modifiers);
+  powerComponentsByStats.set(resolved.stats, resolved.components);
+  return resolved.stats;
 }
 
 export function effectiveStats(
@@ -271,6 +285,27 @@ export function previewEffectRaw(effect: AbilityEffect, actorStats: BaseStats): 
   return null;
 }
 
+export function powerFrom(
+  resolved: ResolvedStats,
+  channel: DamageChannel,
+  element?: Element,
+): number {
+  if (channel === "physical") {
+    return resolved.stats.physical;
+  }
+
+  if (!element) {
+    return resolved.stats.spell;
+  }
+
+  const { components } = resolved;
+  const elementFlat = components.elementFlats[element];
+  const elementPercent = components.elementPercents[element];
+  return Math.floor(
+    (components.spellFlat + elementFlat) * (1 + components.spellPercent + elementPercent),
+  );
+}
+
 function powerForStats(
   stats: BaseStats,
   channel: DamageChannel,
@@ -285,11 +320,7 @@ function powerForStats(
     return stats.spell;
   }
 
-  const elementFlat = components.elementFlats[element];
-  const elementPercent = components.elementPercents[element];
-  return Math.floor(
-    (components.spellFlat + elementFlat) * (1 + components.spellPercent + elementPercent),
-  );
+  return powerFrom({ stats, components }, channel, element);
 }
 
 function mitigateDamage(raw: number, mitigation: number): number {
