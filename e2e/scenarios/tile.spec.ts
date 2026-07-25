@@ -5,12 +5,16 @@ import {
   TILE_WIDTH,
 } from "../../src/ui/battle-tile-layout";
 import { advanceUntil, advanceUntilVisible } from "../helpers/advance";
-import { postBusCommand, postBusSnapshot } from "../helpers/bus";
+import { postBusSnapshot } from "../helpers/bus";
 import { contrastRatio, parseRGB } from "../helpers/contrast";
 import { closeEvidenceSession, openEvidenceSession } from "../helpers/evidence-session";
 import { defineEvidenceScenario } from "../helpers/evidence-scenarios";
 import { captureReviewScene } from "../helpers/review-scenes";
-import { holdTheLineStatusSnapshot } from "../helpers/snapshots";
+import {
+  holdTheLineStatusSnapshot,
+  stageTwoFiveOpponentDropSnapshot,
+  stageTwoFiveOpponentStressSnapshot,
+} from "../helpers/snapshots";
 
 const SCREENSHOTS = "e2e-screenshots";
 
@@ -406,27 +410,18 @@ test.describe("Battle Tile evidence scenarios", () => {
     },
     async ({ browser }) => {
     test.setTimeout(60_000);
-    const session = await openEvidenceSession(browser, { preset: "live-tile" });
-    const { tile } = session;
-
-    await advanceUntil(tile, async () => {
-      const text = await tile.locator(".stage-wave-text").textContent();
-      return text?.includes("Moonlit") ?? false;
+    const stressSnapshot = stageTwoFiveOpponentStressSnapshot();
+    const stressSession = await openEvidenceSession(browser, {
+      preset: "live-tile",
+      savedSnapshotJson: JSON.stringify(stressSnapshot),
     });
-    await expect(tile.locator(".stage-wave-text")).toContainText("Moonlit");
-    await postBusCommand(tile, { cmd: "selectStage", args: [2] });
-    await expect(tile.locator(".stage-wave-text")).toContainText("Moonlit");
+    const stressTile = stressSession.tile;
 
-    await advanceUntil(
-      tile,
-      async () => (await tile.locator(".opponent-zone .combatant").count()) === 5,
-      { stepMs: 2_000 },
-    );
-    await expect(tile.locator(".opponent-zone .combatant")).toHaveCount(5);
+    await expect(stressTile.locator(".stage-wave-text")).toContainText("Moonlit");
+    await expect(stressTile.locator(".opponent-zone .combatant")).toHaveCount(5);
+    await expect(stressTile.locator(".battlefield")).toHaveClass(/opponent-stress-layout/);
 
-    await expect(tile.locator(".battlefield")).toHaveClass(/opponent-stress-layout/);
-
-    const geometry = await tile.evaluate(() => {
+    const geometry = await stressTile.evaluate(() => {
       const r = (el: Element | null): Rect => {
         if (!el) return { x: 0, y: 0, w: 0, h: 0 };
         const b = el.getBoundingClientRect();
@@ -459,6 +454,18 @@ test.describe("Battle Tile evidence scenarios", () => {
     ).toHaveLength(8);
     assertCombatantsFitTile([...geometry.opponents, ...geometry.party]);
 
+    await stressTile.screenshot({ path: `${SCREENSHOTS}/05-tile-five-opponents.png` });
+    await closeEvidenceSession(stressSession);
+
+    const dropSnapshot = stageTwoFiveOpponentDropSnapshot();
+    const dropSession = await openEvidenceSession(browser, {
+      preset: "live-tile",
+      savedSnapshotJson: JSON.stringify(dropSnapshot),
+    });
+    const tile = dropSession.tile;
+
+    await expect(tile.locator(".stage-wave-text")).toContainText("Moonlit");
+
     type DropClearance = {
       notification: Rect;
       statusLine: Rect;
@@ -468,47 +475,55 @@ test.describe("Battle Tile evidence scenarios", () => {
       notificationInStatusDom: boolean;
     };
 
+    await advanceUntil(
+      tile,
+      async () => (await tile.locator(".status-notification-layer .drop-toast:not([hidden])").count()) > 0,
+      { stepMs: 250, maxSimMs: 2_000 },
+    );
+
     let dropClearance: DropClearance | null = null;
-    await advanceUntil(tile, async () => {
-      dropClearance = await tile.evaluate(() => {
-        const r = (el: Element | null): Rect => {
-          if (!el) return { x: 0, y: 0, w: 0, h: 0 };
-          const b = el.getBoundingClientRect();
-          return { x: b.x, y: b.y, w: b.width, h: b.height, cls: el.className };
-        };
-        const notificationEl = document.querySelector<HTMLElement>(
-          ".status-notification-layer .drop-toast",
-        );
-        if (
-          !notificationEl ||
-          notificationEl.hidden ||
-          !notificationEl.querySelector(".equipment-icon-img--content")
-        ) {
-          return null;
-        }
-        const notification = r(notificationEl);
-        if (notification.h < 34) {
-          return null;
-        }
-        const statusLine = r(document.querySelector(".status-line"));
-        const stageWave = r(document.querySelector(".stage-wave-text"));
-        const buttons = [...document.querySelectorAll(".status-button")].map((el) => r(el));
-        const combatants = [...document.querySelectorAll(".combatant")].map((el) => r(el));
-        const statusLineEl = document.querySelector(".status-line");
-        return {
-          notification,
-          statusLine,
-          stageWave,
-          buttons,
-          combatants,
-          notificationInStatusDom:
-            !!statusLineEl &&
-            (statusLineEl.contains(notificationEl) ||
-              statusLineEl.parentElement?.contains(notificationEl) === true),
-        };
-      });
-      return (dropClearance?.notification.h ?? 0) >= 34;
-    });
+    await expect
+      .poll(async () => {
+        dropClearance = await tile.evaluate(() => {
+          const r = (el: Element | null): Rect => {
+            if (!el) return { x: 0, y: 0, w: 0, h: 0 };
+            const b = el.getBoundingClientRect();
+            return { x: b.x, y: b.y, w: b.width, h: b.height, cls: el.className };
+          };
+          const notificationEl = document.querySelector<HTMLElement>(
+            ".status-notification-layer .drop-toast",
+          );
+          if (
+            !notificationEl ||
+            notificationEl.hidden ||
+            !notificationEl.querySelector(".equipment-icon-img--content")
+          ) {
+            return null;
+          }
+          const notification = r(notificationEl);
+          if (notification.h < 34) {
+            return null;
+          }
+          const statusLine = r(document.querySelector(".status-line"));
+          const stageWave = r(document.querySelector(".stage-wave-text"));
+          const buttons = [...document.querySelectorAll(".status-button")].map((el) => r(el));
+          const combatants = [...document.querySelectorAll(".combatant")].map((el) => r(el));
+          const statusLineEl = document.querySelector(".status-line");
+          return {
+            notification,
+            statusLine,
+            stageWave,
+            buttons,
+            combatants,
+            notificationInStatusDom:
+              !!statusLineEl &&
+              (statusLineEl.contains(notificationEl) ||
+                statusLineEl.parentElement?.contains(notificationEl) === true),
+          };
+        });
+        return dropClearance;
+      }, { timeout: 5_000 })
+      .not.toBeNull();
 
     if (!dropClearance) {
       throw new Error("drop clearance poll passed but left dropClearance unset");
@@ -534,9 +549,8 @@ test.describe("Battle Tile evidence scenarios", () => {
       "drop notification must not overlap stage-wave text",
     ).toBe(false);
 
-    await tile.screenshot({ path: `${SCREENSHOTS}/05-tile-five-opponents.png` });
     await tile.screenshot({ path: `${SCREENSHOTS}/06-tile-drop-notification.png` });
-    await closeEvidenceSession(session);
+    await closeEvidenceSession(dropSession);
   },
   );
 });

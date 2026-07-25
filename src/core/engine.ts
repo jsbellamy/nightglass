@@ -26,7 +26,7 @@ import {
   validateEquip,
 } from "./equipment";
 import type { EngineEvent, EngineEventInput } from "./events";
-import { initialLootRngState } from "./rng";
+import { initialCombatRngState, initialLootRngState, mulberry32Step } from "./rng";
 import {
   cloneSnapshot,
   type ActiveStatus,
@@ -68,7 +68,7 @@ import type {
 import { opponentEntityId, partyEntityId } from "./entity-id";
 import { awardXp, levelFromXp, reserveXpAward } from "./xp";
 
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
 const WAVE_TRANSITION_MS = 2_000;
 const DEFEAT_HOLD_MS = 2_000;
 const REVIVAL_RECOVERY_MS = 1_000;
@@ -106,6 +106,7 @@ interface EngineState {
   schemaVersion: number;
   simNowMs: number;
   lootRngState: number;
+  combatRngState: number;
   nextEventSeq: number;
   nextAttemptId: number;
   nextDropId: number;
@@ -259,6 +260,7 @@ function makePartyCombatant(
     health: stats.maxHealth,
     maxHealth: stats.maxHealth,
     knockedOut: false,
+    initiativeReadyAtMs: 0,
     action: null,
     cooldownReadyAtMs: {},
     statuses: [],
@@ -277,10 +279,20 @@ function makeOpponentCombatant(
     health: opponent.base.maxHealth,
     maxHealth: opponent.base.maxHealth,
     knockedOut: false,
+    initiativeReadyAtMs: 0,
     action: null,
     cooldownReadyAtMs: {},
     statuses: [],
   };
+}
+
+function rollInitiativeForEncounter(state: EngineState, attempt: AttemptState): void {
+  for (const combatant of attempt.combatants) {
+    const [uniform, nextState] = mulberry32Step(state.combatRngState);
+    state.combatRngState = nextState;
+    const roll = Math.floor(uniform * 601);
+    combatant.initiativeReadyAtMs = state.simNowMs + roll;
+  }
 }
 
 function nextStageId(
@@ -380,7 +392,7 @@ function createAttempt(
       index.content,
     );
   });
-  return {
+  const attempt: AttemptState = {
     id: state.nextAttemptId++,
     stage,
     encounter,
@@ -389,6 +401,8 @@ function createAttempt(
     equipmentLoadouts,
     combatants: [...partyMembers, ...spawnOpponents(index, stage, encounter)],
   };
+  rollInitiativeForEncounter(state, attempt);
+  return attempt;
 }
 
 function emit(
@@ -499,6 +513,9 @@ function chooseActions(
 
   for (const combatant of attempt.combatants) {
     if (combatant.knockedOut || combatant.action) {
+      continue;
+    }
+    if (state.simNowMs < combatant.initiativeReadyAtMs) {
       continue;
     }
     if (isCombatantStunned(combatant, index.statusesById)) {
@@ -1308,6 +1325,7 @@ function finishWaveTransition(
   attempt.phase = "fighting";
   attempt.phaseEndsAtMs = null;
   attempt.combatants = [...party, ...spawnOpponents(index, attempt.stage, nextEncounter)];
+  rollInitiativeForEncounter(state, attempt);
 
   emit(state, events, {
     type: "wave-started",
@@ -1344,6 +1362,9 @@ function nextBoundaryMs(state: EngineState): number | null {
   }
 
   for (const combatant of attempt.combatants) {
+    if (combatant.initiativeReadyAtMs > state.simNowMs) {
+      boundaries.push(combatant.initiativeReadyAtMs);
+    }
     for (const status of combatant.statuses) {
       boundaries.push(status.expiresAtMs);
       if (
@@ -1389,6 +1410,7 @@ function toSnapshot(state: EngineState, now: () => number): Snapshot {
     savedAtMs: now(),
     simNowMs: state.simNowMs,
     lootRngState: state.lootRngState,
+    combatRngState: state.combatRngState,
     nextEventSeq: state.nextEventSeq,
     nextAttemptId: state.nextAttemptId,
     nextDropId: state.nextDropId,
@@ -1407,6 +1429,7 @@ function fromSnapshot(saved: Snapshot): EngineState {
     schemaVersion: cloned.schemaVersion,
     simNowMs: cloned.simNowMs,
     lootRngState: cloned.lootRngState,
+    combatRngState: cloned.combatRngState,
     nextEventSeq: cloned.nextEventSeq,
     nextAttemptId: cloned.nextAttemptId,
     nextDropId: cloned.nextDropId,
@@ -1462,6 +1485,7 @@ export function createEngine(
         schemaVersion: SCHEMA_VERSION,
         simNowMs: 0,
         lootRngState: initialLootRngState(lootSeed),
+        combatRngState: initialCombatRngState(lootSeed),
         nextEventSeq: 1,
         nextAttemptId: 1,
         nextDropId: 1,

@@ -5,6 +5,7 @@ import {
   parseStoredSave,
   SAVE_SCHEMA_VERSION,
 } from "./load-state";
+import { initialCombatRngState } from "./rng";
 import { content as testContent } from "../data";
 import type { Snapshot } from "./snapshot";
 import type { Content, ClassKitDef } from "./types";
@@ -19,6 +20,7 @@ describe("tolerant talent save migration", () => {
       savedAtMs: 0,
       simNowMs: 0,
       lootRngState: 0,
+      combatRngState: 0,
       nextEventSeq: 1,
       nextAttemptId: 1,
       nextDropId: 1,
@@ -87,6 +89,7 @@ describe("tolerant talent save migration", () => {
       savedAtMs: 0,
       simNowMs: 0,
       lootRngState: 0,
+      combatRngState: 0,
       nextEventSeq: 1,
       nextAttemptId: 1,
       nextDropId: 1,
@@ -124,6 +127,26 @@ describe("parseStoredSave", () => {
     expect(parsed.kind).toBe("fresh");
     expect(error).toHaveBeenCalledTimes(1);
     error.mockRestore();
+  });
+
+  it("schemaVersion 1 no longer parses as exact", () => {
+    const engine = createEngine(testContent, undefined, LOOT_SEED);
+    engine.advanceBy(1);
+    const saved = engine.snapshot();
+    const raw = JSON.parse(JSON.stringify(saved)) as Record<string, unknown>;
+    raw["schemaVersion"] = 1;
+    delete raw["combatRngState"];
+
+    const parsed = parseStoredSave(JSON.stringify(raw), testContent);
+    expect(parsed.kind).toBe("tolerant");
+    if (parsed.kind !== "tolerant") {
+      return;
+    }
+    expect(parsed.snapshot.combatRngState).toBe(initialCombatRngState(undefined));
+    expect(parsed.snapshot.attempt).toBeNull();
+
+    const restored = createEngine(testContent, parsed.snapshot, LOOT_SEED);
+    expect(restored.snapshot().attempt).toMatchObject({ stage: 1, encounter: 1 });
   });
 
   it("schemaVersion mismatch recovers durable progression and discards the in-flight Attempt", () => {
@@ -232,6 +255,7 @@ describe("parseStoredSave", () => {
       savedAtMs: 1,
       simNowMs: 2,
       lootRngState: 3,
+      combatRngState: 4,
       nextEventSeq: 4,
       nextAttemptId: 5,
       nextDropId: 6,
@@ -258,6 +282,7 @@ describe("parseStoredSave", () => {
         savedAtMs: 0,
         simNowMs: 0,
         lootRngState: 0,
+      combatRngState: 0,
         nextEventSeq: 1,
         nextAttemptId: 1,
         nextDropId: 1,
@@ -299,6 +324,7 @@ describe("parseStoredSave", () => {
       savedAtMs: 0,
       simNowMs: 0,
       lootRngState: 0,
+      combatRngState: 0,
       nextEventSeq: 1,
       nextAttemptId: 1,
       nextDropId: 1,
@@ -341,6 +367,7 @@ describe("parseStoredSave", () => {
         savedAtMs: 0,
         simNowMs: 0,
         lootRngState: 0,
+      combatRngState: 0,
         nextEventSeq: 1,
         nextAttemptId: 1,
         nextDropId: 1,
@@ -384,6 +411,7 @@ describe("parseStoredSave", () => {
         savedAtMs: 0,
         simNowMs: 0,
         lootRngState: 0,
+      combatRngState: 0,
         nextEventSeq: 1,
         nextAttemptId: 1,
         nextDropId: 1,
@@ -410,6 +438,7 @@ describe("parseStoredSave", () => {
         savedAtMs: 0,
         simNowMs: 0,
         lootRngState: 0,
+      combatRngState: 0,
         nextEventSeq: 1,
         nextAttemptId: 1,
         nextDropId: 1,

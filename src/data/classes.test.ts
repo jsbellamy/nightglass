@@ -182,6 +182,7 @@ describe("Hold the Line validity gate", () => {
       health: 180,
       maxHealth: 180,
       knockedOut: false,
+      initiativeReadyAtMs: 0,
       action: null,
       cooldownReadyAtMs: {},
       statuses: [],

@@ -33,10 +33,11 @@ function drop(
 
 function baseSnapshot(overrides: Partial<Snapshot> = {}): Snapshot {
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     savedAtMs: 0,
     simNowMs: 0,
     lootRngState: 0,
+    combatRngState: 0,
     nextEventSeq: 1,
     nextAttemptId: 1,
     nextDropId: 1,

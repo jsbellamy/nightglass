@@ -12,3 +12,9 @@ export function mulberry32Step(state: number): [number, number] {
 export function initialLootRngState(seed?: number): number {
   return (seed ?? 0x5090) >>> 0;
 }
+
+/** Derived from `lootSeed` so `createEngine`'s signature stays unchanged. */
+export function initialCombatRngState(seed?: number): number {
+  const [, state] = mulberry32Step(initialLootRngState(seed));
+  return state;
+}

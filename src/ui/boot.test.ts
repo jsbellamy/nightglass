@@ -24,6 +24,7 @@ const SNAPSHOT_KEYS: (keyof Snapshot)[] = [
   "savedAtMs",
   "simNowMs",
   "lootRngState",
+  "combatRngState",
   "nextEventSeq",
   "nextAttemptId",
   "nextDropId",
@@ -70,7 +71,7 @@ describe("bootTile", () => {
     window.dispatchEvent(new Event("pagehide"));
     const afterHide = storage.getItem(SAVE_KEY);
     expect(afterHide).not.toBeNull();
-    expect(JSON.parse(afterHide!)).toMatchObject({ schemaVersion: 1 });
+    expect(JSON.parse(afterHide!)).toMatchObject({ schemaVersion: 2 });
 
     booted.dispose();
   });
