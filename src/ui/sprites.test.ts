@@ -67,8 +67,31 @@ describe("sprite registry", () => {
     expect(resolveSprite("boss-3").url).not.toBe(resolveSprite("boss-1").url);
   });
 
-  it("resolves all five Fowl Harvest bodies with ordinary/Boss roles and manifest geometry", () => {
-    const ordinary = ["burger-drake", "cornquacker"] as const;
+  it("resolves all four Moonberry ordinary opponents with manifest geometry", () => {
+    const ordinary = ["brambling", "lanternmoth", "huskbeetle", "dewsnail"] as const;
+    for (const key of ordinary) {
+      const sprite = resolveSprite(key);
+      const manifest = manifestJson[key];
+      expect(isRegisteredSpriteKey(key)).toBe(true);
+      expect(spriteBattlefieldRole(key)).toBe("ordinary_opponent");
+      expect(sprite.frameSize).toEqual(manifest.frame_size);
+      expect(sprite.visualBounds).toEqual(manifest.visual_bounds);
+      expect(sprite.footAnchor).toEqual(manifest.foot_anchor);
+      expect(sprite.url).toContain(key);
+      expect(SPRITE_SOURCES[key].url).toBe(sprite.url);
+    }
+    expect(resolveSprite("brambling").url).not.toBe(resolveSprite("lanternmoth").url);
+    expect(resolveSprite("huskbeetle").url).not.toBe(resolveSprite("dewsnail").url);
+  });
+
+  it("resolves all eight Fowl Harvest bodies with ordinary/Boss roles and manifest geometry", () => {
+    const ordinary = [
+      "burger-drake",
+      "cornquacker",
+      "milkshake-mallard",
+      "balewaddle",
+      "pie-widgeon",
+    ] as const;
     const bosses = ["the-combine", "the-fryer", "scarequack"] as const;
     for (const key of ordinary) {
       const sprite = resolveSprite(key);
@@ -96,8 +119,14 @@ describe("sprite registry", () => {
     expect(resolveSprite("the-fryer").url).not.toBe(resolveSprite("the-combine").url);
   });
 
-  it("resolves all seven Unwound Belfry bodies with ordinary/Boss roles and manifest geometry", () => {
-    const ordinary = ["tickmoth", "tollbat", "astrolabe-spider"] as const;
+  it("resolves all nine Unwound Belfry bodies with ordinary/Boss roles and manifest geometry", () => {
+    const ordinary = [
+      "tickmoth",
+      "tollbat",
+      "astrolabe-spider",
+      "pendulum-rat",
+      "sundial-gargoyle",
+    ] as const;
     const bosses = ["the-vigil", "the-tocsin", "the-unwound", "aphelion"] as const;
     for (const key of ordinary) {
       const sprite = resolveSprite(key);
