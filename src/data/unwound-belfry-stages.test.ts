@@ -28,7 +28,7 @@ describe("Unwound Belfry Stages 7–10", () => {
     ]);
   });
 
-  it("Stage 7 is five-family mixed waves then solo The Vigil", async () => {
+  it("Stage 7 is pool-mixed ordinary waves then solo The Vigil", async () => {
     const { unwoundBelfryStages } = await import("./unwound-belfry-stages");
     const stage = unwoundBelfryStages.find((entry) => entry.id === 7);
     if (!stage) {
@@ -50,7 +50,7 @@ describe("Unwound Belfry Stages 7–10", () => {
     expect(stage.boss.opponents).toEqual(["the-vigil"]);
   });
 
-  it("Stage 8 is five-family mixed waves then solo The Tocsin", async () => {
+  it("Stage 8 is pool-mixed ordinary waves then solo The Tocsin", async () => {
     const { unwoundBelfryStages } = await import("./unwound-belfry-stages");
     const stage = unwoundBelfryStages.find((entry) => entry.id === 8);
     if (!stage) {
@@ -73,7 +73,7 @@ describe("Unwound Belfry Stages 7–10", () => {
     expect(stage.boss.opponents).toEqual(["the-tocsin"]);
   });
 
-  it("Stage 9 is five-family mixed waves then solo The Unwound", async () => {
+  it("Stage 9 is pool-mixed ordinary waves then solo The Unwound", async () => {
     const { unwoundBelfryStages } = await import("./unwound-belfry-stages");
     const stage = unwoundBelfryStages.find((entry) => entry.id === 9);
     if (!stage) {
