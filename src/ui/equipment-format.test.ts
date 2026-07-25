@@ -8,8 +8,8 @@ import {
   equipmentBaseInitials,
   rareOrEpicDropNames,
   sortArmoryDrops,
-  sweepableDropsAtItemLevel,
-  sweepableItemLevels,
+  discardTierDropsAtItemLevel,
+  discardTierItemLevels,
 } from "./equipment-format";
 import { compareEquipmentStatDeltas } from "./snapshot-view";
 
@@ -151,7 +151,7 @@ describe("equipment-format filters and sorts", () => {
   });
 });
 
-describe("Item Level sweep eligibility", () => {
+describe("Item Level discard-tier eligibility", () => {
   const armory: DropInstance[] = [
     drop({ dropId: 10, baseId: "fixture-blade", itemLevel: 1 }),
     drop({
@@ -172,14 +172,14 @@ describe("Item Level sweep eligibility", () => {
     drop({ dropId: 31, baseId: "fixture-armor", itemLevel: 3 }),
   ];
 
-  it("lists sweepable drops at an Item Level in ascending dropId order", () => {
-    expect(sweepableDropsAtItemLevel(armory, 1).map((entry) => entry.dropId)).toEqual([10]);
-    expect(sweepableDropsAtItemLevel(armory, 2).map((entry) => entry.dropId)).toEqual([20, 21]);
-    expect(sweepableDropsAtItemLevel(armory, 3).map((entry) => entry.dropId)).toEqual([30, 31]);
+  it("lists discard-tier drops at an Item Level in ascending dropId order", () => {
+    expect(discardTierDropsAtItemLevel(armory, 1).map((entry) => entry.dropId)).toEqual([10]);
+    expect(discardTierDropsAtItemLevel(armory, 2).map((entry) => entry.dropId)).toEqual([20, 21]);
+    expect(discardTierDropsAtItemLevel(armory, 3).map((entry) => entry.dropId)).toEqual([30, 31]);
   });
 
-  it("lists Item Levels with sweepable counts in ascending order", () => {
-    expect(sweepableItemLevels(armory)).toEqual([
+  it("lists Item Levels with discard-tier counts in ascending order", () => {
+    expect(discardTierItemLevels(armory)).toEqual([
       { itemLevel: 1, count: 1 },
       { itemLevel: 2, count: 2 },
       { itemLevel: 3, count: 2 },

@@ -11,6 +11,7 @@ import {
   rollSalvageDrop,
   SALVAGE_BATCH_SIZE,
   selectSalvageBatch,
+  selectSalvageBatchForRarity,
   snapshotEquipmentLoadouts,
   tierForItemLevel,
 } from "./equipment";
@@ -225,6 +226,11 @@ describe("salvage equipment rules", () => {
       rarity: "common",
       dropIds: [3, 2, 4, 5, 6, 7, 8, 9, 10, 11],
     });
+    expect(selectSalvageBatchForRarity(armory, "uncommon")).toEqual({
+      rarity: "uncommon",
+      dropIds: [12, 13, 14, 15, 16, 17, 18, 19, 20, 21],
+    });
+    expect(selectSalvageBatchForRarity(armory, "rare")).toBeNull();
     expect(SALVAGE_BATCH_SIZE).toBe(10);
   });
 

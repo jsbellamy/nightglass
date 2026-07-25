@@ -371,43 +371,56 @@ export function nextRarity(rarity: Rarity): Rarity | null {
 
 export const SALVAGE_BATCH_SIZE = 10;
 
+const SALVAGE_INPUT_RARITIES: Rarity[] = ["common", "uncommon", "rare"];
+
+function sortSalvageCandidates(drops: readonly DropInstance[]): DropInstance[] {
+  return [...drops].sort((left, right) => {
+    if (left.itemLevel !== right.itemLevel) {
+      return right.itemLevel - left.itemLevel;
+    }
+    if (left.awardedAtMs !== right.awardedAtMs) {
+      return left.awardedAtMs - right.awardedAtMs;
+    }
+    return left.dropId - right.dropId;
+  });
+}
+
+export function salvageEligibleAtRarity(
+  armory: readonly DropInstance[],
+  rarity: Rarity,
+): DropInstance[] {
+  if (rarity === "epic") {
+    return [];
+  }
+  return sortSalvageCandidates(
+    armory.filter(
+      (drop) => drop.assignedTo === null && !drop.locked && drop.rarity === rarity,
+    ),
+  );
+}
+
+export function selectSalvageBatchForRarity(
+  armory: DropInstance[],
+  rarity: Rarity,
+): { rarity: Rarity; dropIds: number[] } | null {
+  const sorted = salvageEligibleAtRarity(armory, rarity);
+  if (sorted.length < SALVAGE_BATCH_SIZE) {
+    return null;
+  }
+  return {
+    rarity,
+    dropIds: sorted.slice(0, SALVAGE_BATCH_SIZE).map((drop) => drop.dropId),
+  };
+}
+
 export function selectSalvageBatch(
   armory: DropInstance[],
 ): { rarity: Rarity; dropIds: number[] } | null {
-  const eligible = armory.filter(
-    (drop) => drop.assignedTo === null && !drop.locked && drop.rarity !== "epic",
-  );
-
-  const byRarity = new Map<Rarity, DropInstance[]>();
-  for (const drop of eligible) {
-    const group = byRarity.get(drop.rarity) ?? [];
-    group.push(drop);
-    byRarity.set(drop.rarity, group);
-  }
-
-  for (const rarity of RARITIES) {
-    if (rarity === "epic") {
-      continue;
+  for (const rarity of SALVAGE_INPUT_RARITIES) {
+    const batch = selectSalvageBatchForRarity(armory, rarity);
+    if (batch) {
+      return batch;
     }
-    const group = byRarity.get(rarity);
-    if (!group || group.length < SALVAGE_BATCH_SIZE) {
-      continue;
-    }
-
-    const sorted = [...group].sort((left, right) => {
-      if (left.itemLevel !== right.itemLevel) {
-        return right.itemLevel - left.itemLevel;
-      }
-      if (left.awardedAtMs !== right.awardedAtMs) {
-        return left.awardedAtMs - right.awardedAtMs;
-      }
-      return left.dropId - right.dropId;
-    });
-
-    return {
-      rarity,
-      dropIds: sorted.slice(0, SALVAGE_BATCH_SIZE).map((drop) => drop.dropId),
-    };
   }
 
   return null;

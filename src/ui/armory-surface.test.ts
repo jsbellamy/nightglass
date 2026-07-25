@@ -5,7 +5,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { createEngine } from "../core/engine";
-import { selectSalvageBatch } from "../core/equipment";
+import { selectSalvageBatchForRarity } from "../core/equipment";
 import { cloneSnapshot, type DropInstance, type Snapshot } from "../core/snapshot";
 import type { ClassId, Content } from "../core/types";
 import { fixtureContent } from "../core/testing/fixture-content";
@@ -233,11 +233,11 @@ describe("Armory surface", () => {
       root.querySelector<HTMLElement>('[data-worn-slot="charm"]')?.dataset["slotFilled"],
     ).toBe("false");
 
-    const panes = root.querySelector(".armory-panes");
+    const panes = root.querySelector<HTMLElement>(".armory-panes");
     expect(panes?.querySelector(".armory-grid")).not.toBeNull();
-    expect(panes?.querySelector(".armory-detail")).toBeNull();
+    expect(panes?.classList.contains("armory-panes--full")).toBe(true);
     expect(root.querySelector('[data-armory-collection="true"]')).not.toBeNull();
-    expect(root.querySelector('[data-armory-detail="true"]')).toBeNull();
+    expect(root.querySelector('[data-armory-detail="true"]')?.hasAttribute("hidden")).toBe(true);
 
     surface.destroy();
   });
@@ -274,7 +274,7 @@ describe("Armory surface", () => {
       root
         .querySelector<HTMLElement>('.armory-grid .equipment-card[data-drop-id="1"]'),
     ).toBeNull();
-    expect(root.querySelector('[data-armory-detail="true"]')).toBeNull();
+    expect(root.querySelector('[data-armory-detail="true"]')?.hasAttribute("hidden")).toBe(true);
 
     surface.destroy();
   });
@@ -302,7 +302,7 @@ describe("Armory surface", () => {
         (card) => card.dataset["dropId"],
       ),
     ).toEqual(["2"]);
-    expect(root.querySelector('[data-armory-detail="true"]')).toBeNull();
+    expect(root.querySelector('[data-armory-detail="true"]')?.hasAttribute("hidden")).toBe(true);
 
     surface.destroy();
   });
@@ -418,7 +418,7 @@ describe("Armory surface", () => {
     const surface = mountWithSelection(root, selected);
     renderArmory(surface, snapshot);
 
-    expect(root.querySelector('[data-armory-detail="true"]')).toBeNull();
+    expect(root.querySelector('[data-armory-detail="true"]')?.hasAttribute("hidden")).toBe(true);
     expect(root.querySelector('[data-equip-button="true"]')).toBeNull();
     expect(root.querySelector('[data-unequip-slot]')).toBeNull();
     expect(root.querySelector('[data-cross-equip-confirm="true"]')).toBeNull();
@@ -717,7 +717,7 @@ describe("Armory surface", () => {
     surface.destroy();
   });
 
-  it("lists Rare and Epic pieces in bulk discard confirm and excludes equipped or Locked rows", () => {
+  it("lists Rare and Epic pieces in the Discard pane and excludes equipped or Locked rows", () => {
     const root = document.createElement("div");
     const commands: unknown[] = [];
     const selected = { current: "knight" as ClassId };
@@ -743,17 +743,20 @@ describe("Armory surface", () => {
 
     expect(root.querySelector('[data-discard-select="2"]')).toBeNull();
     expect(root.querySelector('[data-discard-select="3"]')).toBeNull();
-    const checkbox = root.querySelector<HTMLInputElement>('[data-discard-select="4"]');
-    checkbox!.checked = true;
-    checkbox!.dispatchEvent(new Event("change"));
+    expect(root.querySelector('[data-discard-select="4"]')).toBeNull();
+
+    openDiscardPane(root);
+    renderArmory(surface, snapshot);
+    root.querySelector<HTMLElement>('.equipment-card[data-drop-id="4"]')?.click();
     renderArmory(surface, snapshot);
 
-    root.querySelector<HTMLButtonElement>('[data-bulk-discard="true"]')?.click();
-    renderArmory(surface, snapshot);
-    expect(root.querySelector('[data-discard-confirm="true"]')?.textContent).toMatch(/Fixture Charm/);
-    expect(root.querySelector('[data-discard-confirm="true"]')?.textContent).toMatch(/Epic/i);
-
-    root.querySelector<HTMLButtonElement>(".armory-confirm-yes")?.click();
+    expect(root.querySelector('[data-discard-tier-summary="true"]')?.textContent).toMatch(
+      /1 Rare\/Epic/i,
+    );
+    expect(root.querySelector('[data-discard-tier-row="true"]')?.textContent).toMatch(
+      /Fixture Charm/,
+    );
+    root.querySelector<HTMLButtonElement>('[data-discard-tier-confirm="true"]')?.click();
     expect(commands).toContainEqual({ cmd: "discard", args: [[4]] });
 
     surface.destroy();
@@ -1024,46 +1027,179 @@ describe("Armory surface", () => {
     );
   }
 
-  function pressSalvageAutofill(root: HTMLElement): void {
-    root.querySelector<HTMLButtonElement>('[data-salvage-autofill="true"]')?.click();
-  }
-
-  describe("salvage tray", () => {
-    it("renders a persistent tray with enabled Auto-fill for twelve eligible Commons", () => {
+  describe("bulk action pane shell", () => {
+    it("renders peer Salvage and Discard toolbar buttons without the legacy tray or sweep controls", () => {
       const root = document.createElement("div");
       const selected = { current: "knight" as ClassId };
       const snapshot = armorySnapshot(commonSalvageDrops(12));
       const surface = mountWithSelection(root, selected);
       renderArmory(surface, snapshot);
 
-      expect(root.querySelector('[data-salvage-tray="true"]')).not.toBeNull();
-      expect(root.querySelector(".armory-salvage-tray")).not.toBeNull();
-      const autofill = root.querySelector<HTMLButtonElement>('[data-salvage-autofill="true"]');
-      expect(autofill?.disabled).toBe(false);
-      expect(autofill?.textContent).toBe("Auto-fill · 10 Common");
-      expect(root.querySelector('[data-salvage-unavailable="true"]')).toBeNull();
+      expect(root.querySelector('[data-armory-salvage-open="true"]')).not.toBeNull();
+      expect(root.querySelector('[data-armory-discard-tier-open="true"]')).not.toBeNull();
+      expect(root.querySelector('[data-salvage-tray="true"]')).toBeNull();
+      expect(root.querySelector('[data-sweep-item-level="true"]')).toBeNull();
+      expect(root.querySelector('[data-sweep="true"]')).toBeNull();
 
       surface.destroy();
     });
 
-    it("disables Auto-fill with the unavailable copy for three eligible pieces", () => {
+    it("keeps the collection grid full width until a bulk action opens the detail pane", () => {
       const root = document.createElement("div");
       const selected = { current: "knight" as ClassId };
       const snapshot = armorySnapshot(commonSalvageDrops(3));
       const surface = mountWithSelection(root, selected);
       renderArmory(surface, snapshot);
 
-      const autofill = root.querySelector<HTMLButtonElement>('[data-salvage-autofill="true"]');
-      expect(autofill?.disabled).toBe(true);
-      expect(autofill?.textContent).toBe("Auto-fill · 10 pieces");
-      expect(root.querySelector('[data-salvage-unavailable="true"]')?.textContent).toBe(
-        "No Rarity has ten unequipped, unlocked pieces yet.",
-      );
+      const panes = root.querySelector<HTMLElement>(".armory-panes");
+      const detail = root.querySelector<HTMLElement>('[data-armory-detail="true"]');
+      expect(panes?.classList.contains("armory-panes--full")).toBe(true);
+      expect(panes?.classList.contains("armory-panes--compact")).toBe(false);
+      expect(detail?.hasAttribute("hidden")).toBe(true);
+      expect(detail?.getAttribute("aria-hidden")).toBe("true");
 
       surface.destroy();
     });
 
-    it("stages ten tiles with the mixed Item Level summary after Auto-fill", () => {
+    it("opens the Salvage detail pane with aria-pressed on the toolbar button", () => {
+      const root = document.createElement("div");
+      const selected = { current: "knight" as ClassId };
+      const snapshot = armorySnapshot(commonSalvageDrops(12));
+      const surface = mountWithSelection(root, selected);
+      renderArmory(surface, snapshot);
+
+      root.querySelector<HTMLButtonElement>('[data-armory-salvage-open="true"]')?.click();
+      renderArmory(surface, snapshot);
+
+      const panes = root.querySelector<HTMLElement>(".armory-panes");
+      expect(panes?.classList.contains("armory-panes--full")).toBe(false);
+      expect(panes?.classList.contains("armory-panes--compact")).toBe(true);
+      const detail = root.querySelector<HTMLElement>('[data-armory-detail="true"]');
+      expect(detail?.hasAttribute("hidden")).toBe(false);
+      expect(detail?.getAttribute("aria-hidden")).toBeNull();
+      expect(detail?.dataset["armoryActionMode"]).toBe("salvage");
+      expect(
+        root
+          .querySelector<HTMLButtonElement>('[data-armory-salvage-open="true"]')
+          ?.getAttribute("aria-pressed"),
+      ).toBe("true");
+      expect(
+        root
+          .querySelector<HTMLButtonElement>('[data-armory-discard-tier-open="true"]')
+          ?.getAttribute("aria-pressed"),
+      ).toBe("false");
+
+      surface.destroy();
+    });
+
+    it("opens the Discard detail pane and switches modes from Salvage", () => {
+      const root = document.createElement("div");
+      const selected = { current: "knight" as ClassId };
+      const snapshot = armorySnapshot(commonSalvageDrops(12));
+      const surface = mountWithSelection(root, selected);
+      renderArmory(surface, snapshot);
+
+      root.querySelector<HTMLButtonElement>('[data-armory-salvage-open="true"]')?.click();
+      renderArmory(surface, snapshot);
+      root.querySelector<HTMLButtonElement>('[data-armory-discard-tier-open="true"]')?.click();
+      renderArmory(surface, snapshot);
+
+      const detail = root.querySelector<HTMLElement>('[data-armory-detail="true"]');
+      expect(detail?.dataset["armoryActionMode"]).toBe("discard-tier");
+      expect(
+        root
+          .querySelector<HTMLButtonElement>('[data-armory-discard-tier-open="true"]')
+          ?.getAttribute("aria-pressed"),
+      ).toBe("true");
+      expect(
+        root
+          .querySelector<HTMLButtonElement>('[data-armory-salvage-open="true"]')
+          ?.getAttribute("aria-pressed"),
+      ).toBe("false");
+
+      surface.destroy();
+    });
+
+    it("closes the detail pane and restores the full-width grid", () => {
+      const root = document.createElement("div");
+      const selected = { current: "knight" as ClassId };
+      const snapshot = armorySnapshot(commonSalvageDrops(12));
+      const surface = mountWithSelection(root, selected);
+      renderArmory(surface, snapshot);
+
+      root.querySelector<HTMLButtonElement>('[data-armory-discard-tier-open="true"]')?.click();
+      renderArmory(surface, snapshot);
+      root.querySelector<HTMLButtonElement>('[data-armory-action-close="true"]')?.click();
+      renderArmory(surface, snapshot);
+
+      expect(root.querySelector<HTMLElement>(".armory-panes")?.classList.contains("armory-panes--full")).toBe(
+        true,
+      );
+      expect(
+        root.querySelector<HTMLElement>(".armory-panes")?.classList.contains("armory-panes--compact"),
+      ).toBe(false);
+      const detail = root.querySelector<HTMLElement>('[data-armory-detail="true"]');
+      expect(detail?.hasAttribute("hidden")).toBe(true);
+      expect(detail?.getAttribute("aria-hidden")).toBe("true");
+      expect(
+        root
+          .querySelector<HTMLButtonElement>('[data-armory-discard-tier-open="true"]')
+          ?.getAttribute("aria-pressed"),
+      ).toBe("false");
+
+      surface.destroy();
+    });
+  });
+
+  function openSalvagePane(root: HTMLElement): void {
+    root.querySelector<HTMLButtonElement>('[data-armory-salvage-open="true"]')?.click();
+  }
+
+  function pressSalvageFill(root: HTMLElement): void {
+    root.querySelector<HTMLButtonElement>('[data-salvage-fill="true"]')?.click();
+  }
+
+  describe("salvage pane", () => {
+    it("opens with rarity chips and an enabled Fill control for twelve eligible Commons", () => {
+      const root = document.createElement("div");
+      const selected = { current: "knight" as ClassId };
+      const snapshot = armorySnapshot(commonSalvageDrops(12));
+      const surface = mountWithSelection(root, selected);
+      renderArmory(surface, snapshot);
+
+      openSalvagePane(root);
+      renderArmory(surface, snapshot);
+
+      expect(root.querySelector('[data-salvage-pane="true"]')).not.toBeNull();
+      const commonChip = root.querySelector<HTMLButtonElement>('[data-salvage-rarity-pick="common"]');
+      expect(commonChip?.getAttribute("aria-pressed")).toBe("true");
+      expect(commonChip?.textContent).toContain("12/10");
+      expect(root.querySelector<HTMLButtonElement>('[data-salvage-fill="true"]')?.disabled).toBe(false);
+      expect(root.querySelector('[data-salvage-unavailable="true"]')).toBeNull();
+
+      surface.destroy();
+    });
+
+    it("disables Fill when the selected Rarity has fewer than ten eligible pieces", () => {
+      const root = document.createElement("div");
+      const selected = { current: "knight" as ClassId };
+      const snapshot = armorySnapshot(commonSalvageDrops(3));
+      const surface = mountWithSelection(root, selected);
+      renderArmory(surface, snapshot);
+
+      openSalvagePane(root);
+      renderArmory(surface, snapshot);
+
+      const fill = root.querySelector<HTMLButtonElement>('[data-salvage-fill="true"]');
+      expect(fill?.disabled).toBe(true);
+      expect(
+        root.querySelector<HTMLButtonElement>('[data-salvage-rarity-pick="common"]')?.textContent,
+      ).toContain("3/10");
+
+      surface.destroy();
+    });
+
+    it("stages ten tiles with the mixed Item Level summary after Fill", () => {
       const root = document.createElement("div");
       const selected = { current: "knight" as ClassId };
       const armory = commonSalvageDrops(12);
@@ -1071,13 +1207,15 @@ describe("Armory surface", () => {
       const surface = mountWithSelection(root, selected);
       renderArmory(surface, snapshot);
 
-      pressSalvageAutofill(root);
+      openSalvagePane(root);
+      renderArmory(surface, snapshot);
+      pressSalvageFill(root);
       renderArmory(surface, snapshot);
 
       expect(root.querySelector('[data-salvage-summary="true"]')?.textContent).toBe(
         "10 Common → 1 Uncommon · Item Level 1",
       );
-      const batch = selectSalvageBatch(armory);
+      const batch = selectSalvageBatchForRarity(armory, "common");
       expect(batch).not.toBeNull();
       for (const dropId of batch!.dropIds) {
         const tile = root.querySelector<HTMLElement>(`.equipment-card[data-drop-id="${dropId}"]`);
@@ -1086,6 +1224,7 @@ describe("Armory surface", () => {
         expect(tile?.querySelector(`[data-discard-select="${dropId}"]`)).toBeNull();
       }
       expect(root.querySelectorAll('[data-salvage-staged="true"]').length).toBe(10);
+      expect(root.querySelectorAll('[data-salvage-slot="true"]').length).toBe(10);
 
       surface.destroy();
     });
@@ -1098,11 +1237,13 @@ describe("Armory surface", () => {
       const snapshot = armorySnapshot(armory);
       const surface = mountWithSelection(root, selected, (command) => commands.push(command));
       renderArmory(surface, snapshot);
-      pressSalvageAutofill(root);
+      openSalvagePane(root);
+      renderArmory(surface, snapshot);
+      pressSalvageFill(root);
       renderArmory(surface, snapshot);
 
       root.querySelector<HTMLButtonElement>('[data-salvage-confirm="true"]')?.click();
-      const batch = selectSalvageBatch(armory);
+      const batch = selectSalvageBatchForRarity(armory, "common");
       expect(commands).toEqual([{ cmd: "salvage", args: [batch!.dropIds] }]);
       expect(root.querySelectorAll('[data-salvage-staged="true"]').length).toBe(0);
       expect(root.querySelector('[data-salvage-confirm="true"]')).toBeNull();
@@ -1117,7 +1258,9 @@ describe("Armory surface", () => {
       const snapshot = armorySnapshot(commonSalvageDrops(12));
       const surface = mountWithSelection(root, selected, (command) => commands.push(command));
       renderArmory(surface, snapshot);
-      pressSalvageAutofill(root);
+      openSalvagePane(root);
+      renderArmory(surface, snapshot);
+      pressSalvageFill(root);
       renderArmory(surface, snapshot);
 
       root.querySelector<HTMLButtonElement>('[data-salvage-cancel="true"]')?.click();
@@ -1126,6 +1269,7 @@ describe("Armory surface", () => {
       expect(commands).toEqual([]);
       expect(root.querySelectorAll('[data-salvage-staged="true"]').length).toBe(0);
       expect(root.querySelector('[data-salvage-summary="true"]')).toBeNull();
+      expect(root.querySelector('[data-salvage-pane="true"]')).not.toBeNull();
 
       surface.destroy();
     });
@@ -1135,10 +1279,12 @@ describe("Armory surface", () => {
       const selected = { current: "knight" as ClassId };
       const armory = commonSalvageDrops(12);
       const snapshotA = armorySnapshot(armory);
-      const batch = selectSalvageBatch(armory)!;
+      const batch = selectSalvageBatchForRarity(armory, "common")!;
       const surface = mountWithSelection(root, selected);
       renderArmory(surface, snapshotA);
-      pressSalvageAutofill(root);
+      openSalvagePane(root);
+      renderArmory(surface, snapshotA);
+      pressSalvageFill(root);
       renderArmory(surface, snapshotA);
       root.querySelector<HTMLButtonElement>('[data-salvage-confirm="true"]')?.click();
 
@@ -1170,7 +1316,9 @@ describe("Armory surface", () => {
       const snapshotA = armorySnapshot(armory);
       const surface = mountWithSelection(root, selected);
       renderArmory(surface, snapshotA);
-      pressSalvageAutofill(root);
+      openSalvagePane(root);
+      renderArmory(surface, snapshotA);
+      pressSalvageFill(root);
       renderArmory(surface, snapshotA);
       root.querySelector<HTMLButtonElement>('[data-salvage-confirm="true"]')?.click();
 
@@ -1185,11 +1333,13 @@ describe("Armory surface", () => {
       const selected = { current: "knight" as ClassId };
       const armory = commonSalvageDrops(12);
       const snapshotA = armorySnapshot(armory);
-      const batch = selectSalvageBatch(armory)!;
+      const batch = selectSalvageBatchForRarity(armory, "common")!;
       const equippedId = batch.dropIds[0]!;
       const surface = mountWithSelection(root, selected);
       renderArmory(surface, snapshotA);
-      pressSalvageAutofill(root);
+      openSalvagePane(root);
+      renderArmory(surface, snapshotA);
+      pressSalvageFill(root);
       renderArmory(surface, snapshotA);
 
       const snapshotB = cloneSnapshot(snapshotA);
@@ -1204,8 +1354,16 @@ describe("Armory surface", () => {
     });
   });
 
-  describe("item level broom", () => {
-    function sweepableArmory(): DropInstance[] {
+  function openDiscardPane(root: HTMLElement): void {
+    root.querySelector<HTMLButtonElement>('[data-armory-discard-tier-open="true"]')?.click();
+  }
+
+  function pressDiscardTierFill(root: HTMLElement): void {
+    root.querySelector<HTMLButtonElement>('[data-discard-tier-fill="true"]')?.click();
+  }
+
+  describe("discard tier pane", () => {
+    function discardableArmory(): DropInstance[] {
       return [
         drop({ dropId: 1, baseId: "fixture-blade", itemLevel: 1 }),
         drop({ dropId: 2, baseId: "fixture-armor", itemLevel: 1 }),
@@ -1227,177 +1385,195 @@ describe("Armory surface", () => {
       ];
     }
 
-    it("renders Item Level sweep options and disables controls when nothing is sweepable", () => {
+    it("opens with Item Level chips and an enabled Fill control for eligible tiers", () => {
       const root = document.createElement("div");
       const selected = { current: "knight" as ClassId };
-      const snapshot = armorySnapshot(sweepableArmory());
+      const snapshot = armorySnapshot(discardableArmory());
       const surface = mountWithSelection(root, selected);
       renderArmory(surface, snapshot);
 
-      const options = [...root.querySelectorAll<HTMLOptionElement>(
-        '[data-sweep-item-level="true"] option',
-      )];
-      expect(options.map((option) => option.textContent)).toEqual([
-        "Item Level…",
-        "Item Level 1 (3)",
-        "Item Level 2 (2)",
-      ]);
-      expect(root.querySelector<HTMLButtonElement>('[data-sweep="true"]')?.disabled).toBe(true);
+      openDiscardPane(root);
+      renderArmory(surface, snapshot);
 
-      const emptySnapshot = armorySnapshot([
+      expect(root.querySelector('[data-discard-tier-pane="true"]')).not.toBeNull();
+      expect(
+        root.querySelector<HTMLButtonElement>('[data-discard-tier-pick="1"]')?.textContent,
+      ).toContain("(3)");
+      expect(
+        root.querySelector<HTMLButtonElement>('[data-discard-tier-pick="2"]')?.textContent,
+      ).toContain("(2)");
+      expect(
+        root.querySelector<HTMLButtonElement>('[data-discard-tier-pick="1"]')?.getAttribute(
+          "aria-pressed",
+        ),
+      ).toBe("true");
+      expect(root.querySelector<HTMLButtonElement>('[data-discard-tier-fill="true"]')?.disabled).toBe(
+        false,
+      );
+
+      surface.destroy();
+    });
+
+    it("disables Fill when no unequipped unlocked pieces remain", () => {
+      const root = document.createElement("div");
+      const selected = { current: "knight" as ClassId };
+      const snapshot = armorySnapshot([
         drop({
           dropId: 1,
           baseId: "fixture-blade",
           assignedTo: { classId: "knight", slot: "weapon" },
         }),
       ]);
-      renderArmory(surface, emptySnapshot);
-      expect(root.querySelector<HTMLSelectElement>('[data-sweep-item-level="true"]')?.disabled).toBe(
+      const surface = mountWithSelection(root, selected);
+      renderArmory(surface, snapshot);
+
+      openDiscardPane(root);
+      renderArmory(surface, snapshot);
+
+      expect(root.querySelector('[data-discard-tier-pick]')).toBeNull();
+      expect(root.querySelector<HTMLButtonElement>('[data-discard-tier-fill="true"]')?.disabled).toBe(
         true,
       );
-      expect(root.querySelector<HTMLButtonElement>('[data-sweep="true"]')?.disabled).toBe(true);
 
       surface.destroy();
     });
 
-    it("labels Sweep with the selected Item Level and count", () => {
+    it("lists Rare and Epic pieces first after Fill with summary copy", () => {
       const root = document.createElement("div");
       const selected = { current: "knight" as ClassId };
-      const snapshot = armorySnapshot(sweepableArmory());
+      const snapshot = armorySnapshot(discardableArmory());
       const surface = mountWithSelection(root, selected);
       renderArmory(surface, snapshot);
 
-      const select = root.querySelector<HTMLSelectElement>('[data-sweep-item-level="true"]')!;
-      select.value = "2";
-      select.dispatchEvent(new Event("change"));
+      openDiscardPane(root);
+      renderArmory(surface, snapshot);
+      root.querySelector<HTMLButtonElement>('[data-discard-tier-pick="2"]')?.click();
+      renderArmory(surface, snapshot);
+      pressDiscardTierFill(root);
       renderArmory(surface, snapshot);
 
-      const sweep = root.querySelector<HTMLButtonElement>('[data-sweep="true"]');
-      expect(sweep?.disabled).toBe(false);
-      expect(sweep?.textContent).toBe("Sweep Item Level 2 (2)");
+      expect(root.querySelector('[data-discard-tier-summary="true"]')?.textContent).toBe(
+        "Discard 2 at Item Level 2 · 1 Rare/Epic",
+      );
+      const rows = [...root.querySelectorAll<HTMLElement>('[data-discard-tier-row="true"]')];
+      expect(rows).toHaveLength(2);
+      expect(rows[0]?.classList.contains("priority")).toBe(true);
+      expect(rows[0]?.textContent).toMatch(/Fixture Blade II/);
+      expect(rows[0]?.textContent).toMatch(/Rare/i);
 
       surface.destroy();
     });
 
-    it("renders sweep confirm copy and Rare/Epic disclosure", () => {
+    it("stages matching grid tiles after Fill", () => {
       const root = document.createElement("div");
       const selected = { current: "knight" as ClassId };
-      const snapshot = armorySnapshot(sweepableArmory());
+      const snapshot = armorySnapshot(discardableArmory());
       const surface = mountWithSelection(root, selected);
       renderArmory(surface, snapshot);
 
-      root.querySelector<HTMLSelectElement>('[data-sweep-item-level="true"]')!.value = "2";
-      root
-        .querySelector<HTMLSelectElement>('[data-sweep-item-level="true"]')!
-        .dispatchEvent(new Event("change"));
+      openDiscardPane(root);
       renderArmory(surface, snapshot);
-      root.querySelector<HTMLButtonElement>('[data-sweep="true"]')?.click();
+      pressDiscardTierFill(root);
       renderArmory(surface, snapshot);
 
-      const confirm = root.querySelector('[data-sweep-confirm="true"]');
-      expect(confirm?.querySelectorAll(".armory-confirm-copy")[0]?.textContent).toBe(
-        "Discard 2 piece(s) at Item Level 2?",
-      );
-      expect(confirm?.querySelectorAll(".armory-confirm-copy")[1]?.textContent).toBe(
-        "Rare/Epic: Fixture Blade II",
-      );
+      for (const dropId of [1, 2, 3]) {
+        const tile = root.querySelector<HTMLElement>(`.equipment-card[data-drop-id="${dropId}"]`);
+        expect(tile?.dataset["discardTierStaged"]).toBe("true");
+        expect(tile?.classList.contains("armory-card--staged")).toBe(true);
+        expect(tile?.querySelector(`[data-discard-select="${dropId}"]`)).toBeNull();
+      }
+      expect(root.querySelectorAll('[data-discard-tier-staged="true"]').length).toBe(3);
 
       surface.destroy();
     });
 
-    it("publishes discard once on confirm and resets the selector", () => {
+    it("publishes discard once on confirm and clears staging", () => {
       const root = document.createElement("div");
       const commands: import("./bus").TileCommand[] = [];
       const selected = { current: "knight" as ClassId };
-      const snapshot = armorySnapshot(sweepableArmory());
+      const snapshot = armorySnapshot(discardableArmory());
       const surface = mountWithSelection(root, selected, (command) => commands.push(command));
       renderArmory(surface, snapshot);
 
-      const select = root.querySelector<HTMLSelectElement>('[data-sweep-item-level="true"]')!;
-      select.value = "1";
-      select.dispatchEvent(new Event("change"));
+      openDiscardPane(root);
       renderArmory(surface, snapshot);
-      root.querySelector<HTMLButtonElement>('[data-sweep="true"]')?.click();
+      pressDiscardTierFill(root);
       renderArmory(surface, snapshot);
-      root.querySelector<HTMLButtonElement>('[data-sweep-confirm-yes="true"]')?.click();
+      root.querySelector<HTMLButtonElement>('[data-discard-tier-confirm="true"]')?.click();
 
       expect(commands).toEqual([{ cmd: "discard", args: [[1, 2, 3]] }]);
-      expect(root.querySelector('[data-sweep-confirm="true"]')).toBeNull();
-      expect(
-        root.querySelector<HTMLSelectElement>('[data-sweep-item-level="true"]')?.value,
-      ).toBe("");
+      expect(root.querySelectorAll('[data-discard-tier-staged="true"]').length).toBe(0);
+      expect(root.querySelector('[data-discard-tier-confirm="true"]')).toBeNull();
 
       surface.destroy();
     });
 
-    it("closes sweep confirm without publishing on cancel", () => {
+    it("clears staging without publishing on Cancel", () => {
       const root = document.createElement("div");
       const commands: import("./bus").TileCommand[] = [];
       const selected = { current: "knight" as ClassId };
-      const snapshot = armorySnapshot(sweepableArmory());
+      const snapshot = armorySnapshot(discardableArmory());
       const surface = mountWithSelection(root, selected, (command) => commands.push(command));
       renderArmory(surface, snapshot);
 
-      root.querySelector<HTMLSelectElement>('[data-sweep-item-level="true"]')!.value = "1";
-      root
-        .querySelector<HTMLSelectElement>('[data-sweep-item-level="true"]')!
-        .dispatchEvent(new Event("change"));
+      openDiscardPane(root);
       renderArmory(surface, snapshot);
-      root.querySelector<HTMLButtonElement>('[data-sweep="true"]')?.click();
+      pressDiscardTierFill(root);
       renderArmory(surface, snapshot);
-      root.querySelector<HTMLButtonElement>('[data-sweep-confirm-no="true"]')?.click();
+      root.querySelector<HTMLButtonElement>('[data-discard-tier-cancel="true"]')?.click();
       renderArmory(surface, snapshot);
 
       expect(commands).toEqual([]);
-      expect(root.querySelector('[data-sweep-confirm="true"]')).toBeNull();
+      expect(root.querySelectorAll('[data-discard-tier-staged="true"]').length).toBe(0);
+      expect(root.querySelector('[data-discard-tier-summary="true"]')).toBeNull();
+      expect(root.querySelector('[data-discard-tier-pane="true"]')).not.toBeNull();
 
       surface.destroy();
     });
 
-    it("sweeps the whole Armory regardless of slot filter", () => {
+    it("discards the whole Armory at the tier regardless of slot filter", () => {
       const root = document.createElement("div");
       const commands: import("./bus").TileCommand[] = [];
       const selected = { current: "knight" as ClassId };
-      const snapshot = armorySnapshot(sweepableArmory());
+      const snapshot = armorySnapshot(discardableArmory());
       const surface = mountWithSelection(root, selected, (command) => commands.push(command));
       renderArmory(surface, snapshot);
 
       root.querySelector<HTMLButtonElement>('[data-slot-filter="weapon"]')?.click();
       renderArmory(surface, snapshot);
-
-      root.querySelector<HTMLSelectElement>('[data-sweep-item-level="true"]')!.value = "1";
-      root
-        .querySelector<HTMLSelectElement>('[data-sweep-item-level="true"]')!
-        .dispatchEvent(new Event("change"));
+      openDiscardPane(root);
       renderArmory(surface, snapshot);
-      root.querySelector<HTMLButtonElement>('[data-sweep="true"]')?.click();
+      pressDiscardTierFill(root);
       renderArmory(surface, snapshot);
-      root.querySelector<HTMLButtonElement>('[data-sweep-confirm-yes="true"]')?.click();
+      root.querySelector<HTMLButtonElement>('[data-discard-tier-confirm="true"]')?.click();
 
       expect(commands).toEqual([{ cmd: "discard", args: [[1, 2, 3]] }]);
 
       surface.destroy();
     });
+    it("stages pieces when the Discard pane is open and a collection tile is clicked", () => {
+      const root = document.createElement("div");
+      const selected = { current: "knight" as ClassId };
+      const snapshot = armorySnapshot([
+        drop({ dropId: 1, baseId: "fixture-blade", rarity: "common" }),
+      ]);
+      const surface = mountWithSelection(root, selected);
+      renderArmory(surface, snapshot);
+
+      expect(root.querySelector('[data-bulk-discard="true"]')).toBeNull();
+      openDiscardPane(root);
+      renderArmory(surface, snapshot);
+      root.querySelector<HTMLElement>('.equipment-card[data-drop-id="1"]')?.click();
+      renderArmory(surface, snapshot);
+
+      expect(root.querySelector('[data-discard-tier-staged="true"]')).not.toBeNull();
+      expect(root.querySelector('[data-discard-tier-confirm="true"]')).not.toBeNull();
+
+      surface.destroy();
+    });
   });
 
-  it("hides bulk discard until at least one tile is selected", () => {
-    const root = document.createElement("div");
-    const selected = { current: "knight" as ClassId };
-    const snapshot = armorySnapshot([
-      drop({ dropId: 1, baseId: "fixture-blade", rarity: "common" }),
-    ]);
-    const surface = mountWithSelection(root, selected);
-    renderArmory(surface, snapshot);
-    expect(root.querySelector('[data-bulk-discard="true"]')).toBeNull();
-    const checkbox = root.querySelector<HTMLInputElement>('[data-discard-select="1"]')!;
-    checkbox.checked = true;
-    checkbox.dispatchEvent(new Event("change"));
-    renderArmory(surface, snapshot);
-    expect(root.querySelector('[data-bulk-discard-strip="true"]')).not.toBeNull();
-    surface.destroy();
-  });
-
-  it("locks from the tile control and keeps discard selection keyboard-reachable", () => {
+  it("locks from the tile control", () => {
     const root = document.createElement("div");
     document.body.append(root);
     const commands: unknown[] = [];
@@ -1409,10 +1585,7 @@ describe("Armory surface", () => {
     renderArmory(surface, snapshot);
 
     const tile = root.querySelector<HTMLElement>('.equipment-card[data-drop-id="1"]');
-    const checkbox = tile?.querySelector<HTMLInputElement>('[data-discard-select="1"]');
-    expect(checkbox).not.toBeNull();
-    checkbox!.focus();
-    expect(document.activeElement).toBe(checkbox);
+    expect(tile?.querySelector('[data-discard-select="1"]')).toBeNull();
 
     const lock = root.querySelector<HTMLButtonElement>('[data-tile-lock="1"]');
     lock?.focus();
@@ -1661,7 +1834,7 @@ describe("Armory surface source boundary", () => {
       join(dirname(fileURLToPath(import.meta.url)), "armory-surface.ts"),
       "utf8",
     );
-    expect(source).not.toMatch(/armory-detail|equipButton|crossEquipConfirm|unequipSlot/);
+    expect(source).not.toMatch(/equipButton|crossEquipConfirm|unequipSlot/);
   });
 
   it("does not value-import core or data modules", () => {

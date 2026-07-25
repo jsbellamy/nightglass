@@ -8,9 +8,22 @@ import type {
   ItemLevel,
   Rarity,
 } from "../core/types";
-import { affixToModifier, formatStatModifierPerRank, CLASS_LABELS, nextRarity, selectSalvageBatch } from "./snapshot-view";
+import {
+  affixToModifier,
+  formatStatModifierPerRank,
+  CLASS_LABELS,
+  nextRarity,
+  salvageEligibleAtRarity,
+  selectSalvageBatch,
+  selectSalvageBatchForRarity,
+} from "./snapshot-view";
 
-export { nextRarity, selectSalvageBatch };
+export {
+  nextRarity,
+  salvageEligibleAtRarity,
+  selectSalvageBatch,
+  selectSalvageBatchForRarity,
+};
 
 export const RARITY_LABELS: Record<Rarity, string> = {
   common: "Common",
@@ -227,7 +240,7 @@ export function discardableDrop(drop: DropInstance): boolean {
   return !drop.assignedTo && !drop.locked;
 }
 
-export function sweepableDropsAtItemLevel(
+export function discardTierDropsAtItemLevel(
   armory: DropInstance[],
   itemLevel: ItemLevel,
 ): DropInstance[] {
@@ -236,7 +249,7 @@ export function sweepableDropsAtItemLevel(
     .sort((left, right) => left.dropId - right.dropId);
 }
 
-export function sweepableItemLevels(
+export function discardTierItemLevels(
   armory: DropInstance[],
 ): { itemLevel: ItemLevel; count: number }[] {
   const counts = new Map<ItemLevel, number>();
