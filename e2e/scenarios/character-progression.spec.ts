@@ -29,7 +29,7 @@ test.describe("Character progression evidence scenarios", () => {
       fixture: "live-tile-and-dock",
       reviewScenes: [{ id: "character-stats-breakdown" }],
       summary:
-        "Variant C Stats: Vitals/Offense/Defense groups, five totals/source rows, XP-only overview, pending marker fit, no outer scroll at 800×480",
+        "Variant C Stats: Vitals/Offense/Element Power/Defense groups, eleven totals/source rows, XP-only overview, pending marker fit, no outer scroll at 800×480",
     },
     async ({ browser }) => {
     const session = await openEvidenceSession(browser, CHARACTER_PROGRESSION_SESSION.preset, {
@@ -83,16 +83,22 @@ test.describe("Character progression evidence scenarios", () => {
       };
     });
     expect(statsFit).not.toBeNull();
-    expect(statsFit!.groups).toEqual(["vitals", "offense", "defense"]);
+    expect(statsFit!.groups).toEqual(["vitals", "offense", "elements", "defense"]);
     expect(statsFit!.keys).toEqual([
       "maxHealth",
       "physical",
       "spell",
+      "critChance",
+      "critDamage",
+      "firePower",
+      "frostPower",
+      "lightningPower",
+      "lightPower",
       "armor",
       "elementalResistance",
     ]);
-    expect(statsFit!.sourceRows).toBe(5);
-    expect(statsFit!.totals).toBe(5);
+    expect(statsFit!.sourceRows).toBe(11);
+    expect(statsFit!.totals).toBe(11);
     expect(statsFit!.interactiveRows).toBe(0);
     expect(statsFit!.panelScrollable).toBe(false);
     expect(statsFit!.lastFits).toBe(true);

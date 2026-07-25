@@ -27,6 +27,7 @@ export const EVIDENCE_SLUG_CATALOG = [
   "character-loadout-assignment",
   "character-information-popovers",
   "character-stats-breakdown",
+  "character-stats-element-crit",
   "character-talents-tree-scroll",
   "talent-direct-actions",
   "five-actor-pools",

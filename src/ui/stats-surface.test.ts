@@ -4,11 +4,13 @@ import { describe, expect, it } from "vitest";
 import { createEngine } from "../core/engine";
 import { scenario } from "../core/testing/scenario";
 import { fixtureContent } from "../core/testing/fixture-content";
+import { buildContent } from "../data/index";
 import type { ClassId } from "../core/types";
 import { legalityViewFromEngine } from "./engine-legality";
 import { mountStatsSurface } from "./stats-surface";
 
 const LOOT_SEED = 42;
+const productionContent = buildContent();
 
 function mountOptions(selected: { current: ClassId }) {
   return {
@@ -74,7 +76,7 @@ describe("Stats surface", () => {
     surface.destroy();
   });
 
-  it("renders five stat lines in contract order with totals", () => {
+  it("renders eleven stat lines in contract order with totals", () => {
     const root = document.createElement("div");
     const engine = leveledKnightEngine();
     const selected = { current: "knight" as ClassId };
@@ -88,6 +90,12 @@ describe("Stats surface", () => {
       "maxHealth",
       "physical",
       "spell",
+      "critChance",
+      "critDamage",
+      "firePower",
+      "frostPower",
+      "lightningPower",
+      "lightPower",
       "armor",
       "elementalResistance",
     ]);
@@ -170,7 +178,7 @@ describe("Stats surface", () => {
     surface.destroy();
   });
 
-  it("groups canonical stats under Vitals, Offense, and Defense", () => {
+  it("groups all eleven stats under Vitals, Offense, Element Power, and Defense", () => {
     const root = document.createElement("div");
     const engine = leveledKnightEngine();
     const selected = { current: "knight" as ClassId };
@@ -178,6 +186,10 @@ describe("Stats surface", () => {
 
     renderStats(surface, engine);
     const knight = knightSection(root);
+    const groups = [...knight.querySelectorAll<HTMLElement>("[data-stats-group]")].map(
+      (group) => group.dataset["statsGroup"],
+    );
+    expect(groups).toEqual(["vitals", "offense", "elements", "defense"]);
     expect(knight.querySelector('[data-stats-group="vitals"] .stats-group-heading')?.textContent).toBe(
       "Vitals",
     );
@@ -189,13 +201,63 @@ describe("Stats surface", () => {
     );
     expect(
       knight.querySelectorAll('[data-stats-group="offense"] [data-stat-key]').length,
-    ).toBe(2);
+    ).toBe(4);
+    expect(
+      knight.querySelector('[data-stats-group="elements"] .stats-group-heading')?.textContent,
+    ).toBe("Element Power");
+    const elementRows = [
+      ...knight.querySelectorAll<HTMLElement>('[data-stats-group="elements"] [data-stat-key]'),
+    ];
+    expect(elementRows.map((row) => row.dataset["statKey"])).toEqual([
+      "firePower",
+      "frostPower",
+      "lightningPower",
+      "lightPower",
+    ]);
+    for (const row of elementRows) {
+      expect(row.querySelector('[data-stat-total="true"]')?.textContent).toBe("0");
+    }
     expect(knight.querySelector('[data-stats-group="defense"] .stats-group-heading')?.textContent).toBe(
       "Defense",
     );
     expect(
       knight.querySelectorAll('[data-stats-group="defense"] [data-stat-key]').length,
     ).toBe(2);
+
+    surface.destroy();
+  });
+
+  it("formats Hunter Critical Chance and Critical Damage as proportion and multiplier", () => {
+    const root = document.createElement("div");
+    const boot = createEngine(productionContent, undefined, LOOT_SEED);
+    const saved = boot.snapshot();
+    saved.progression.characterXp.hunter = 700;
+    const engine = createEngine(productionContent, saved, LOOT_SEED);
+    const selected = { current: "hunter" as ClassId };
+    const surface = mountStatsSurface(root, {
+      content: productionContent,
+      getSelectedClassId: () => selected.current,
+    });
+
+    renderStats(surface, engine);
+    const section = root.querySelector<HTMLElement>('[data-class-id="hunter"]');
+    if (!section) {
+      throw new Error("missing hunter stats section");
+    }
+    expect(
+      section.querySelector('[data-stat-key="critChance"] [data-stat-total="true"]')?.textContent,
+    ).toBe("15%");
+    expect(
+      section.querySelector('[data-stat-key="critDamage"] [data-stat-total="true"]')?.textContent,
+    ).toBe("1.6×");
+    const critSources =
+      section.querySelector('[data-stat-key="critChance"] [data-stat-sources="true"]')?.textContent ??
+      "";
+    expect(critSources).toMatch(/Base 15%/);
+    const critDamageSources =
+      section.querySelector('[data-stat-key="critDamage"] [data-stat-sources="true"]')?.textContent ??
+      "";
+    expect(critDamageSources).toMatch(/Base 1\.6×/);
 
     surface.destroy();
   });

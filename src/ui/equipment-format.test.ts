@@ -3,6 +3,7 @@ import { fixtureContent } from "../core/testing/fixture-content";
 import type { DropInstance } from "../core/snapshot";
 import {
   filterArmoryDrops,
+  formatAffix,
   formatRarityLabel,
   equipmentBaseInitials,
   rareOrEpicDropNames,
@@ -145,5 +146,34 @@ describe("equipment-format filters and sorts", () => {
       "Fixture Armor",
       "Fixture Blade II",
     ]);
+  });
+});
+
+const NEW_AFFIX_IDS = [
+  "flat-fire",
+  "percent-fire-power",
+  "flat-frost",
+  "percent-frost-power",
+  "flat-lightning",
+  "percent-lightning-power",
+  "flat-light",
+  "percent-light-power",
+  "flat-crit-chance",
+  "flat-crit-damage",
+] as const;
+
+describe("formatAffix", () => {
+  it.each(NEW_AFFIX_IDS)("formats %s as readable text", (id) => {
+    const text = formatAffix({ id, value: 0.07 });
+    expect(text.length).toBeGreaterThan(0);
+    expect(text).not.toBe(id);
+  });
+
+  it("formats flat-crit-chance on the percent scale", () => {
+    expect(formatAffix({ id: "flat-crit-chance", value: 0.07 })).toBe("+7% Critical Chance");
+  });
+
+  it("formats flat-crit-damage on the percent scale", () => {
+    expect(formatAffix({ id: "flat-crit-damage", value: 0.25 })).toBe("+25% Critical Damage");
   });
 });

@@ -16,6 +16,7 @@ import {
   reconcileLoadoutSurfaceAfterSyntheticAssignment,
 } from "../helpers/evidence-session";
 import { defineEvidenceScenario } from "../helpers/evidence-scenarios";
+import { assertAaContrast, readTextContrastSample } from "../helpers/contrast";
 import { captureReviewScene } from "../helpers/review-scenes";
 import { keyboardBootSnapshot } from "../helpers/snapshots";
 
@@ -33,7 +34,11 @@ test.describe("Character Loadout evidence scenarios", () => {
   defineEvidenceScenario(
     {
       id: "character-loadout",
-      slugs: ["character-loadout-no-scroll", "character-loadout-assignment"],
+      slugs: [
+        "character-loadout-no-scroll",
+        "character-loadout-assignment",
+        "character-stats-element-crit",
+      ],
       spec: {
         id: "rendered-evidence:character-loadout",
         path: "e2e/scenarios/character-loadout.spec.ts",
@@ -408,9 +413,18 @@ test.describe("Character Loadout evidence scenarios", () => {
         return null;
       }
       const overview = section.querySelector<HTMLElement>('[data-stats-overview="true"]');
+      const elementRows = [
+        ...section.querySelectorAll<HTMLElement>('[data-stats-group="elements"] [data-stat-key]'),
+      ];
       return {
+        groups: [...section.querySelectorAll<HTMLElement>("[data-stats-group]")].map(
+          (group) => group.dataset["statsGroup"],
+        ),
         keys: [...section.querySelectorAll<HTMLElement>("[data-stat-key]")].map(
           (row) => row.dataset["statKey"],
+        ),
+        elementTotals: elementRows.map(
+          (row) => row.querySelector('[data-stat-total="true"]')?.textContent ?? "",
         ),
         panelScrollable: panel.scrollHeight > panel.clientHeight + 1,
         xpVisible: (section.querySelector("[data-stats-xp='true']")?.textContent?.length ?? 0) > 0,
@@ -419,17 +433,38 @@ test.describe("Character Loadout evidence scenarios", () => {
       };
     });
     expect(statsFit).not.toBeNull();
+    expect(statsFit!.groups).toEqual(["vitals", "offense", "elements", "defense"]);
     expect(statsFit!.keys).toEqual([
       "maxHealth",
       "physical",
       "spell",
+      "critChance",
+      "critDamage",
+      "firePower",
+      "frostPower",
+      "lightningPower",
+      "lightPower",
       "armor",
       "elementalResistance",
     ]);
+    expect(statsFit!.elementTotals).toEqual(["0", "0", "0", "0"]);
     expect(statsFit!.panelScrollable, "Stats fits without outer Character scroll").toBe(false);
     expect(statsFit!.xpVisible, "Stats overview shows XP progress").toBe(true);
     expect(statsFit!.levelInOverview, "Stats overview omits Level").toBe(false);
     expect(statsFit!.talentPointsInOverview, "Stats overview omits Talent Points").toBe(false);
+
+    const statsLabelContrast = await readTextContrastSample(
+      dock,
+      '[data-character-section="stats"] [data-stat-key="physical"] .stats-total',
+    );
+    const statsSourceContrast = await readTextContrastSample(
+      dock,
+      '[data-character-section="stats"] [data-stat-key="physical"] [data-stat-sources="true"]',
+    );
+    expect(statsLabelContrast).not.toBeNull();
+    expect(statsSourceContrast).not.toBeNull();
+    assertAaContrast(statsLabelContrast!);
+    assertAaContrast(statsSourceContrast!);
     await captureReviewScene(dock, "character-loadout", "character-sub-stats");
 
     await closeEvidenceSession(session);
