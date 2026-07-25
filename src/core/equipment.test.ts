@@ -7,6 +7,7 @@ import {
   discardDrops,
   dropStatModifiers,
   equipViolation,
+  findDrop,
   nextRarity,
   rollDrop,
   rollSalvageDrop,
@@ -548,9 +549,44 @@ describe("Armory assignment", () => {
       },
     ];
 
-    assignDrop(armory, 2, "knight", "weapon");
-    expect(armory[0]?.assignedTo).toBeNull();
-    expect(armory[1]?.assignedTo).toEqual({ classId: "knight", slot: "weapon" });
+    const next = assignDrop(armory, 2, "knight", "weapon");
+    expect(next[0]?.assignedTo).toBeNull();
+    expect(next[1]?.assignedTo).toEqual({ classId: "knight", slot: "weapon" });
+  });
+
+  it("returns a new Armory array with copy-on-write semantics", () => {
+    const armory: DropInstance[] = [
+      {
+        dropId: 1,
+        baseId: "fixture-blade",
+        itemLevel: 1,
+        rarity: "common",
+        affixes: [],
+        awardedAtMs: 1,
+        seen: false,
+        locked: false,
+        assignedTo: { classId: "knight", slot: "weapon" },
+      },
+      {
+        dropId: 2,
+        baseId: "fixture-blade",
+        itemLevel: 1,
+        rarity: "common",
+        affixes: [],
+        awardedAtMs: 2,
+        seen: false,
+        locked: false,
+        assignedTo: null,
+      },
+    ];
+    const before = armory[0];
+    const next = assignDrop(armory, 2, "knight", "weapon");
+    expect(next).not.toBe(armory);
+    expect(armory[0]?.assignedTo).toEqual({ classId: "knight", slot: "weapon" });
+    expect(next[0]).not.toBe(before);
+    expect(next[1]).not.toBe(armory[1]);
+    expect(next[0]?.assignedTo).toBeNull();
+    expect(next[1]?.assignedTo).toEqual({ classId: "knight", slot: "weapon" });
   });
 
   it("rejects discard for equipped or Locked pieces", () => {
@@ -603,6 +639,48 @@ describe("Armory assignment", () => {
       wizard: {},
       priest: {},
     });
+  });
+});
+
+describe("findDrop", () => {
+  const armory: DropInstance[] = [
+    {
+      dropId: 1,
+      baseId: "fixture-blade",
+      itemLevel: 1,
+      rarity: "common",
+      affixes: [],
+      awardedAtMs: 1,
+      seen: false,
+      locked: false,
+      assignedTo: null,
+    },
+    {
+      dropId: 2,
+      baseId: "fixture-armor",
+      itemLevel: 1,
+      rarity: "common",
+      affixes: [],
+      awardedAtMs: 2,
+      seen: false,
+      locked: false,
+      assignedTo: null,
+    },
+  ];
+
+  it("returns the matching Drop from the Armory array", () => {
+    expect(findDrop(armory, 1)).toBe(armory[0]);
+    expect(findDrop(armory, 2)).toBe(armory[1]);
+  });
+
+  it("returns undefined for a missing Drop id", () => {
+    expect(findDrop(armory, 99)).toBeUndefined();
+  });
+
+  it("resolves through a Drop index when provided", () => {
+    const index = new Map(armory.map((drop) => [drop.dropId, drop]));
+    expect(findDrop(armory, 2, index)).toBe(armory[1]);
+    expect(findDrop(armory, 99, index)).toBeUndefined();
   });
 });
 

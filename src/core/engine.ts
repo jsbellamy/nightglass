@@ -22,7 +22,6 @@ import {
   canEquipToSlot,
   discardDrops,
   equipmentModifiersForLoadout,
-  findDrop,
   nextRarity,
   rollDrop,
   rollSalvageDrop,
@@ -35,6 +34,7 @@ import type { EngineEvent, EngineEventInput } from "./events";
 import { initialCombatRngState, initialLootRngState, mulberry32Step } from "./rng";
 import {
   cloneSnapshot,
+  freezeArmoryForSnapshot,
   type ActiveStatus,
   type AttemptState,
   type CombatantState,
@@ -155,6 +155,42 @@ interface EngineState {
   attempt: AttemptState | null;
   statLedger: StatLedger | null;
   pendingEdits: Snapshot["pendingEdits"];
+  dropIndex: Map<number, DropInstance>;
+}
+
+function rebuildDropIndex(armory: DropInstance[]): Map<number, DropInstance> {
+  return new Map(armory.map((drop) => [drop.dropId, drop]));
+}
+
+function syncDropIndex(index: Map<number, DropInstance>, armory: DropInstance[]): void {
+  index.clear();
+  for (const drop of armory) {
+    index.set(drop.dropId, drop);
+  }
+}
+
+function replaceArmory(state: EngineState, armory: DropInstance[]): void {
+  state.progression.armory = armory;
+  syncDropIndex(state.dropIndex, armory);
+}
+
+function cowReplaceDrop(
+  state: EngineState,
+  dropId: number,
+  update: (drop: DropInstance) => DropInstance,
+): void {
+  let next: DropInstance | undefined;
+  state.progression.armory = state.progression.armory.map((drop) => {
+    if (drop.dropId !== dropId) {
+      return drop;
+    }
+    next = update(drop);
+    return next;
+  });
+  if (!next) {
+    throw new Error(`Unknown Drop ${dropId}`);
+  }
+  state.dropIndex.set(dropId, next);
 }
 
 function combatantStats(
@@ -1130,6 +1166,7 @@ function awardEncounterDrops(
   state.lootRngState = rolled.lootRng.state;
   state.nextDropId += 1;
   state.progression.armory.push(rolled.drop);
+  state.dropIndex.set(rolled.drop.dropId, rolled.drop);
   emit(state, sink, { type: "drop-awarded", dropId: rolled.drop.dropId });
 }
 
@@ -1447,7 +1484,8 @@ function resolveBatch(
 }
 
 function toSnapshot(state: EngineState, now: () => number): Snapshot {
-  return cloneSnapshot({
+  const { armory, ...progressionWithoutArmory } = state.progression;
+  return {
     schemaVersion: state.schemaVersion,
     savedAtMs: now(),
     simNowMs: state.simNowMs,
@@ -1456,10 +1494,13 @@ function toSnapshot(state: EngineState, now: () => number): Snapshot {
     nextEventSeq: state.nextEventSeq,
     nextAttemptId: state.nextAttemptId,
     nextDropId: state.nextDropId,
-    progression: state.progression,
-    attempt: state.attempt,
-    pendingEdits: state.pendingEdits,
-  });
+    progression: {
+      ...structuredClone(progressionWithoutArmory),
+      armory: freezeArmoryForSnapshot(armory) as DropInstance[],
+    },
+    attempt: state.attempt ? structuredClone(state.attempt) : null,
+    pendingEdits: structuredClone(state.pendingEdits),
+  };
 }
 
 function fromSnapshot(saved: Snapshot): EngineState {
@@ -1479,6 +1520,7 @@ function fromSnapshot(saved: Snapshot): EngineState {
     attempt: cloned.attempt,
     statLedger: null,
     pendingEdits: cloned.pendingEdits,
+    dropIndex: rebuildDropIndex(cloned.progression.armory),
   };
 }
 
@@ -1519,10 +1561,14 @@ export function createEngine(
   now: () => number = Date.now,
 ): Engine {
   const index = indexContent(content);
+  const progression = saved
+    ? restoreProgression(saved.progression, content)
+    : createDefaultProgression(content);
   const state: EngineState = saved
     ? {
         ...fromSnapshot(saved),
-        progression: restoreProgression(saved.progression, content),
+        progression,
+        dropIndex: rebuildDropIndex(progression.armory),
       }
     : {
         schemaVersion: SCHEMA_VERSION,
@@ -1532,10 +1578,11 @@ export function createEngine(
         nextEventSeq: 1,
         nextAttemptId: 1,
         nextDropId: 1,
-        progression: createDefaultProgression(content),
+        progression,
         attempt: null,
         statLedger: null,
         pendingEdits: [],
+        dropIndex: rebuildDropIndex(progression.armory),
       };
 
   const bootEvents: EngineEvent[] = [];
@@ -1721,16 +1768,19 @@ export function createEngine(
   }
 
   function equip(dropId: number, classId: ClassId, slot: EquipmentSlotId): void {
-    const drop = findDrop(state.progression.armory, dropId);
+    const drop = state.dropIndex.get(dropId);
     if (!drop) {
       throw new Error(`Unknown Drop ${dropId}`);
     }
     validateEquip(drop, index.content, classId, slot);
-    assignDrop(state.progression.armory, dropId, classId, slot);
+    replaceArmory(
+      state,
+      assignDrop(state.progression.armory, dropId, classId, slot, state.dropIndex),
+    );
   }
 
   function canEquip(dropId: number, classId: ClassId, slot: EquipmentSlotId): boolean {
-    const drop = findDrop(state.progression.armory, dropId);
+    const drop = state.dropIndex.get(dropId);
     if (!drop) {
       return false;
     }
@@ -1741,29 +1791,45 @@ export function createEngine(
     if (!index.classesById.has(classId)) {
       throw new Error(`Unknown Class ${classId}`);
     }
-    unequipSlot(state.progression.armory, classId, slot);
+    replaceArmory(state, unequipSlot(state.progression.armory, classId, slot));
   }
 
   function setLocked(dropId: number, locked: boolean): void {
-    const drop = findDrop(state.progression.armory, dropId);
-    if (!drop) {
+    if (!state.dropIndex.has(dropId)) {
       throw new Error(`Unknown Drop ${dropId}`);
     }
-    drop.locked = locked;
+    cowReplaceDrop(state, dropId, (drop) => ({ ...drop, locked }));
   }
 
   function markSeen(dropIds: number[]): void {
+    const unseen = new Set<number>();
     for (const dropId of dropIds) {
-      const drop = findDrop(state.progression.armory, dropId);
+      const drop = state.dropIndex.get(dropId);
       if (!drop) {
         throw new Error(`Unknown Drop ${dropId}`);
       }
-      drop.seen = true;
+      if (!drop.seen) {
+        unseen.add(dropId);
+      }
     }
+    if (unseen.size === 0) {
+      return;
+    }
+    state.progression.armory = state.progression.armory.map((drop) => {
+      if (!unseen.has(drop.dropId)) {
+        return drop;
+      }
+      const next = { ...drop, seen: true };
+      state.dropIndex.set(drop.dropId, next);
+      return next;
+    });
   }
 
   function discard(dropIds: number[]): void {
-    state.progression.armory = discardDrops(state.progression.armory, dropIds);
+    replaceArmory(
+      state,
+      discardDrops(state.progression.armory, dropIds, state.dropIndex),
+    );
   }
 
   function salvage(dropIds: number[]): void {
@@ -1779,7 +1845,7 @@ export function createEngine(
       }
       seen.add(dropId);
 
-      const drop = findDrop(state.progression.armory, dropId);
+      const drop = state.dropIndex.get(dropId);
       if (!drop) {
         throw new Error(`Unknown Drop ${dropId}`);
       }
@@ -1806,9 +1872,10 @@ export function createEngine(
     }
 
     const toRemove = new Set(dropIds);
-    state.progression.armory = state.progression.armory.filter(
-      (drop) => !toRemove.has(drop.dropId),
-    );
+    const armory = state.progression.armory.filter((drop) => !toRemove.has(drop.dropId));
+    for (const dropId of dropIds) {
+      state.dropIndex.delete(dropId);
+    }
 
     const rolled = rollSalvageDrop({
       content: index.content,
@@ -1820,7 +1887,9 @@ export function createEngine(
     });
     state.lootRngState = rolled.lootRng.state;
     state.nextDropId += 1;
-    state.progression.armory.push(rolled.drop);
+    armory.push(rolled.drop);
+    state.dropIndex.set(rolled.drop.dropId, rolled.drop);
+    state.progression.armory = armory;
   }
 
   return {
