@@ -717,6 +717,44 @@ describe("advanceOffline", () => {
   });
 });
 
+describe("advanceOfflineSummary", () => {
+  it("matches advanceOffline snapshots and returns the stage-cleared count", () => {
+    const arrayPath = createEngine(engineContent, undefined, LOOT_SEED, fixtureNow);
+    const summaryPath = createEngine(engineContent, undefined, LOOT_SEED, fixtureNow);
+    arrayPath.advanceOffline(1);
+    summaryPath.advanceOfflineSummary(1);
+
+    const events = arrayPath.advanceOffline(DURATION_MS);
+    const advance = summaryPath.advanceOfflineSummary(DURATION_MS);
+    const stageClearedCount = events.filter((event) => event.type === "stage-cleared").length;
+
+    expect(advance.stagesCleared).toBe(stageClearedCount);
+    expect(stable(summaryPath.snapshot())).toBe(stable(arrayPath.snapshot()));
+  });
+
+  it("throws on non-integer and negative elapsedMs like advanceOffline", () => {
+    const engine = createEngine(engineContent, undefined, LOOT_SEED, fixtureNow);
+    expect(() => engine.advanceOfflineSummary(-1)).toThrow(/non-negative integer/);
+    expect(() => engine.advanceOfflineSummary(1.5)).toThrow(/non-negative integer/);
+  });
+
+  it("delivers pending boot events exactly once on each path", () => {
+    const saved = createEngine(engineContent, undefined, LOOT_SEED, fixtureNow).snapshot();
+    saved.attempt = null;
+
+    const arrayEngine = createEngine(engineContent, saved, LOOT_SEED, fixtureNow);
+    const firstArray = arrayEngine.advanceOffline(1);
+    const secondArray = arrayEngine.advanceOffline(1);
+    expect(firstArray.some((event) => event.type === "stage-attempt-started")).toBe(true);
+    expect(secondArray.some((event) => event.type === "stage-attempt-started")).toBe(false);
+
+    const summaryEngine = createEngine(engineContent, structuredClone(saved), LOOT_SEED, fixtureNow);
+    summaryEngine.advanceOfflineSummary(1);
+    const afterSummary = summaryEngine.advanceOffline(1);
+    expect(afterSummary.some((event) => event.type === "stage-attempt-started")).toBe(false);
+  });
+});
+
 describe("save/reload equivalence", () => {
   it("continues with identical events after restoring a mid-Attempt Snapshot", () => {
     const continuous = createEngine(

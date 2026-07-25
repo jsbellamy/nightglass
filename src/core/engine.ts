@@ -81,6 +81,32 @@ const WAVE_TRANSITION_MS = 2_000;
 const DEFEAT_HOLD_MS = 2_000;
 const REVIVAL_RECOVERY_MS = 1_000;
 
+export interface OfflineAdvance {
+  stagesCleared: number;
+}
+
+interface EventSink {
+  push(event: EngineEvent): void;
+}
+
+function arrayEventSink(events: EngineEvent[]): EventSink {
+  return {
+    push(event) {
+      events.push(event);
+    },
+  };
+}
+
+function countingEventSink(counter: { stagesCleared: number }): EventSink {
+  return {
+    push(event) {
+      if (event.type === "stage-cleared") {
+        counter.stagesCleared += 1;
+      }
+    },
+  };
+}
+
 export interface Engine {
   advanceBy(ms: number): EngineEvent[];
   /**
@@ -89,6 +115,12 @@ export interface Engine {
    * and XP without generating loot.
    */
   advanceOffline(ms: number): EngineEvent[];
+  /**
+   * Advances like advanceOffline but accumulates counts instead of
+   * materialising Presentation Events. For Offline Progress catch-up, where
+   * the caller needs totals, not a per-event stream.
+   */
+  advanceOfflineSummary(ms: number): OfflineAdvance;
   snapshot(): Snapshot;
   beginFreshAttempt(): EngineEvent[];
   selectStage(stage: StageId): EngineEvent[];
@@ -411,17 +443,17 @@ function createAttempt(
 
 function emit(
   state: EngineState,
-  events: EngineEvent[],
+  sink: EventSink,
   event: EngineEventInput,
 ): void {
-  events.push({ ...event, seq: state.nextEventSeq++, atMs: state.simNowMs } as EngineEvent);
+  sink.push({ ...event, seq: state.nextEventSeq++, atMs: state.simNowMs } as EngineEvent);
 }
 
 function startFreshAttempt(
   state: EngineState,
   index: ContentIndex,
   stage: StageId,
-  events: EngineEvent[],
+  sink: EventSink,
 ): void {
   if (state.progression.pendingParty) {
     state.progression.party = [...state.progression.pendingParty.members];
@@ -429,17 +461,17 @@ function startFreshAttempt(
     state.progression.pendingParty = null;
   }
 
-  applyPendingEdits(state, index, events, state.simNowMs);
+  applyPendingEdits(state, index, sink, state.simNowMs);
 
   state.attempt = createAttempt(state, index, stage, 1);
   state.statLedger = createStatLedger(index, state.progression, state.attempt);
   const stageDef = stageDefFor(index, stage);
-  emit(state, events, {
+  emit(state, sink, {
     type: "stage-attempt-started",
     stage,
     attemptId: state.attempt.id,
   });
-  emit(state, events, {
+  emit(state, sink, {
     type: "wave-started",
     stage,
     encounter: 1,
@@ -450,7 +482,7 @@ function startFreshAttempt(
 function chooseActions(
   state: EngineState,
   index: ContentIndex,
-  events: EngineEvent[],
+  sink: EventSink,
 ): void {
   const attempt = state.attempt;
   if (!attempt || attempt.phase !== "fighting") {
@@ -510,7 +542,7 @@ function chooseActions(
       }
     }
 
-    emit(state, events, {
+    emit(state, sink, {
       type: "action-started",
       entityId: combatant.entityId,
       abilityId: ability.id,
@@ -531,7 +563,7 @@ function startCooldown(
   }
 }
 
-function resolveStatusExpiries(state: EngineState, events: EngineEvent[]): void {
+function resolveStatusExpiries(state: EngineState, sink: EventSink): void {
   const attempt = state.attempt;
   if (!attempt) {
     return;
@@ -541,7 +573,7 @@ function resolveStatusExpiries(state: EngineState, events: EngineEvent[]): void 
     const remaining: typeof combatant.statuses = [];
     for (const status of combatant.statuses) {
       if (status.expiresAtMs === state.simNowMs) {
-        emit(state, events, {
+        emit(state, sink, {
           type: "status-expired",
           entityId: combatant.entityId,
           statusId: status.statusId,
@@ -688,7 +720,7 @@ function queueStatusFromOutcome(
 function resolveImpacts(
   state: EngineState,
   index: ContentIndex,
-  events: EngineEvent[],
+  sink: EventSink,
 ): void {
   const attempt = state.attempt;
   if (!attempt) {
@@ -820,7 +852,7 @@ function resolveImpacts(
       }
     }
 
-    emit(state, events, {
+    emit(state, sink, {
       type: "impact",
       entityId: actor.entityId,
       abilityId: action.abilityId,
@@ -845,7 +877,7 @@ function resolveImpacts(
         targetIds: [],
         impactResolved: true,
       };
-      emit(state, events, {
+      emit(state, sink, {
         type: "revived",
         entityId: target.entityId,
         health: target.health,
@@ -867,7 +899,7 @@ function resolveImpacts(
           spell: status.sourceElemental,
         },
       );
-      emit(state, events, {
+      emit(state, sink, {
         type: "status-applied",
         entityId: target.entityId,
         statusId: status.statusId,
@@ -887,7 +919,7 @@ function resolveImpacts(
           spell: status.sourceElemental,
         },
       );
-      emit(state, events, {
+      emit(state, sink, {
         type: "status-applied",
         entityId: target.entityId,
         statusId: status.statusId,
@@ -902,7 +934,7 @@ function resolveImpacts(
 function resolveStatusTicks(
   state: EngineState,
   index: ContentIndex,
-  events: EngineEvent[],
+  sink: EventSink,
 ): void {
   const attempt = state.attempt;
   if (!attempt) {
@@ -971,7 +1003,7 @@ function resolveStatusTicks(
       }
 
       if (results.length > 0) {
-        emit(state, events, {
+        emit(state, sink, {
           type: "impact",
           entityId: status.sourceEntityId,
           abilityId: `status:${status.statusId}`,
@@ -1013,7 +1045,7 @@ function cancelStunnedWindUps(state: EngineState, index: ContentIndex): void {
 function awardOpponentDefeatXp(
   state: EngineState,
   index: ContentIndex,
-  events: EngineEvent[],
+  sink: EventSink,
   opponentAward: number,
 ): void {
   if (opponentAward <= 0) {
@@ -1031,14 +1063,14 @@ function awardOpponentDefeatXp(
     const currentXp = state.progression.characterXp[classId] ?? 0;
     const result = awardXp(currentXp, amount, index.content.xpThresholds);
     state.progression.characterXp[classId] = result.totalXp;
-    emit(state, events, {
+    emit(state, sink, {
       type: "xp-awarded",
       classId,
       amount,
       totalXp: result.totalXp,
     });
     for (let level = result.previousLevel + 1; level <= result.newLevel; level += 1) {
-      emit(state, events, { type: "level-up", classId, level });
+      emit(state, sink, { type: "level-up", classId, level });
     }
   }
 }
@@ -1046,7 +1078,7 @@ function awardOpponentDefeatXp(
 function resolveKnockouts(
   state: EngineState,
   index: ContentIndex,
-  events: EngineEvent[],
+  sink: EventSink,
 ): void {
   const attempt = state.attempt;
   if (!attempt) {
@@ -1063,11 +1095,11 @@ function resolveKnockouts(
       if (combatant.action && !combatant.action.impactResolved) {
         combatant.action = null;
       }
-      emit(state, events, { type: "knockout", entityId: combatant.entityId });
+      emit(state, sink, { type: "knockout", entityId: combatant.entityId });
       if (combatant.side === "opponent") {
         const opponentDef = index.opponentsById.get(combatant.defId);
         if (opponentDef) {
-          awardOpponentDefeatXp(state, index, events, opponentDef.xpAward);
+          awardOpponentDefeatXp(state, index, sink, opponentDef.xpAward);
         }
       }
     }
@@ -1077,7 +1109,7 @@ function resolveKnockouts(
 function awardEncounterDrops(
   state: EngineState,
   index: ContentIndex,
-  events: EngineEvent[],
+  sink: EventSink,
   stage: StageId,
   encounter: number,
 ): void {
@@ -1098,13 +1130,13 @@ function awardEncounterDrops(
   state.lootRngState = rolled.lootRng.state;
   state.nextDropId += 1;
   state.progression.armory.push(rolled.drop);
-  emit(state, events, { type: "drop-awarded", dropId: rolled.drop.dropId });
+  emit(state, sink, { type: "drop-awarded", dropId: rolled.drop.dropId });
 }
 
 function evaluateEncounterOutcome(
   state: EngineState,
   index: ContentIndex,
-  events: EngineEvent[],
+  sink: EventSink,
   awardDrops: boolean,
 ): void {
   const attempt = state.attempt;
@@ -1117,16 +1149,16 @@ function evaluateEncounterOutcome(
 
   if (livingOpponents.length === 0) {
     if (awardDrops) {
-      awardEncounterDrops(state, index, events, attempt.stage, attempt.encounter);
+      awardEncounterDrops(state, index, sink, attempt.stage, attempt.encounter);
     }
-    emit(state, events, {
+    emit(state, sink, {
       type: "wave-cleared",
       stage: attempt.stage,
       encounter: attempt.encounter,
     });
 
     if (attempt.encounter === bossEncounter(stageDefFor(index, attempt.stage))) {
-      clearStage(state, index, events);
+      clearStage(state, index, sink);
       return;
     }
 
@@ -1136,20 +1168,20 @@ function evaluateEncounterOutcome(
   }
 
   if (livingParty.length === 0) {
-    emit(state, events, { type: "party-defeat", stage: attempt.stage });
+    emit(state, sink, { type: "party-defeat", stage: attempt.stage });
     attempt.phase = "defeat-hold";
     attempt.phaseEndsAtMs = state.simNowMs + DEFEAT_HOLD_MS;
   }
 }
 
-function clearStage(state: EngineState, index: ContentIndex, events: EngineEvent[]): void {
+function clearStage(state: EngineState, index: ContentIndex, sink: EventSink): void {
   const attempt = state.attempt;
   if (!attempt) {
     return;
   }
 
   const clearedStage = attempt.stage;
-  emit(state, events, { type: "stage-cleared", stage: clearedStage });
+  emit(state, sink, { type: "stage-cleared", stage: clearedStage });
 
   const nextStage = nextStageId(index.stagesById, clearedStage);
   if (nextStage === null) {
@@ -1164,7 +1196,7 @@ function clearStage(state: EngineState, index: ContentIndex, events: EngineEvent
 
   state.attempt = null;
   state.statLedger = null;
-  startFreshAttempt(state, index, nextStage, events);
+  startFreshAttempt(state, index, nextStage, sink);
 }
 
 function completeRecoveries(state: EngineState): void {
@@ -1183,7 +1215,7 @@ function completeRecoveries(state: EngineState): void {
 function applyPendingEdits(
   state: EngineState,
   index: ContentIndex,
-  events: EngineEvent[],
+  sink: EventSink,
   boundaryMs: number,
 ): void {
   if (state.pendingEdits.length === 0) {
@@ -1308,13 +1340,13 @@ function applyPendingEdits(
   }
 
   state.pendingEdits = [];
-  emit(state, events, { type: "config-applied" });
+  emit(state, sink, { type: "config-applied" });
 }
 
 function finishWaveTransition(
   state: EngineState,
   index: ContentIndex,
-  events: EngineEvent[],
+  sink: EventSink,
 ): void {
   const attempt = state.attempt;
   if (
@@ -1325,7 +1357,7 @@ function finishWaveTransition(
     return;
   }
 
-  applyPendingEdits(state, index, events, state.simNowMs);
+  applyPendingEdits(state, index, sink, state.simNowMs);
 
   const stageDef = stageDefFor(index, attempt.stage);
   const nextEncounter = attempt.encounter + 1;
@@ -1336,7 +1368,7 @@ function finishWaveTransition(
   attempt.combatants = [...party, ...spawnOpponents(index, attempt.stage, nextEncounter)];
   rollInitiativeForEncounter(state, attempt);
 
-  emit(state, events, {
+  emit(state, sink, {
     type: "wave-started",
     stage: attempt.stage,
     encounter: nextEncounter,
@@ -1344,7 +1376,7 @@ function finishWaveTransition(
   });
 }
 
-function finishDefeatHold(state: EngineState, index: ContentIndex, events: EngineEvent[]): void {
+function finishDefeatHold(state: EngineState, index: ContentIndex, sink: EventSink): void {
   const attempt = state.attempt;
   if (
     !attempt ||
@@ -1357,7 +1389,7 @@ function finishDefeatHold(state: EngineState, index: ContentIndex, events: Engin
   const stage = attempt.stage;
   state.attempt = null;
   state.statLedger = null;
-  startFreshAttempt(state, index, stage, events);
+  startFreshAttempt(state, index, stage, sink);
 }
 
 function nextBoundaryMs(state: EngineState): number | null {
@@ -1401,17 +1433,17 @@ function nextBoundaryMs(state: EngineState): number | null {
 function resolveBatch(
   state: EngineState,
   index: ContentIndex,
-  events: EngineEvent[],
+  sink: EventSink,
   awardDrops: boolean,
 ): void {
-  resolveStatusExpiries(state, events);
-  resolveStatusTicks(state, index, events);
-  resolveImpacts(state, index, events);
-  resolveKnockouts(state, index, events);
-  evaluateEncounterOutcome(state, index, events, awardDrops);
+  resolveStatusExpiries(state, sink);
+  resolveStatusTicks(state, index, sink);
+  resolveImpacts(state, index, sink);
+  resolveKnockouts(state, index, sink);
+  evaluateEncounterOutcome(state, index, sink, awardDrops);
   completeRecoveries(state);
-  finishWaveTransition(state, index, events);
-  finishDefeatHold(state, index, events);
+  finishWaveTransition(state, index, sink);
+  finishDefeatHold(state, index, sink);
 }
 
 function toSnapshot(state: EngineState, now: () => number): Snapshot {
@@ -1508,58 +1540,73 @@ export function createEngine(
 
   const bootEvents: EngineEvent[] = [];
   if (!saved) {
-    startFreshAttempt(state, index, 1, bootEvents);
+    startFreshAttempt(state, index, 1, arrayEventSink(bootEvents));
   } else if (saved.attempt === null) {
-    startFreshAttempt(state, index, state.progression.unlockedStage, bootEvents);
+    startFreshAttempt(state, index, state.progression.unlockedStage, arrayEventSink(bootEvents));
   }
   let bootEventsPending = bootEvents.length > 0;
 
-  function assertNonNegativeIntegerMs(ms: number, method: "advanceBy" | "advanceOffline"): void {
+  function assertNonNegativeIntegerMs(
+    ms: number,
+    method: "advanceBy" | "advanceOffline" | "advanceOfflineSummary",
+  ): void {
     if (!Number.isInteger(ms) || ms < 0) {
       throw new Error(`${method} expects a non-negative integer ms, got ${ms}`);
     }
   }
 
-  function advanceElapsed(ms: number, awardDrops: boolean): EngineEvent[] {
-    const events: EngineEvent[] = [];
+  function advanceElapsed(ms: number, awardDrops: boolean, sink: EventSink): void {
     if (bootEventsPending) {
-      events.push(...bootEvents);
+      for (const event of bootEvents) {
+        sink.push(event);
+      }
       bootEventsPending = false;
     }
 
     const targetMs = state.simNowMs + ms;
 
     while (true) {
-      chooseActions(state, index, events);
+      chooseActions(state, index, sink);
       const boundaryMs = nextBoundaryMs(state);
       if (boundaryMs === null || boundaryMs > targetMs) {
         break;
       }
       state.simNowMs = boundaryMs;
-      resolveBatch(state, index, events, awardDrops);
-      chooseActions(state, index, events);
+      resolveBatch(state, index, sink, awardDrops);
+      chooseActions(state, index, sink);
     }
 
     state.simNowMs = targetMs;
-    return events;
   }
 
   function advanceBy(ms: number): EngineEvent[] {
     assertNonNegativeIntegerMs(ms, "advanceBy");
-    return advanceElapsed(ms, true);
+    const events: EngineEvent[] = [];
+    advanceElapsed(ms, true, arrayEventSink(events));
+    return events;
   }
 
   function advanceOffline(ms: number): EngineEvent[] {
     assertNonNegativeIntegerMs(ms, "advanceOffline");
-    return advanceElapsed(ms, false);
+    const events: EngineEvent[] = [];
+    advanceElapsed(ms, false, arrayEventSink(events));
+    return events;
+  }
+
+  function advanceOfflineSummary(ms: number): OfflineAdvance {
+    assertNonNegativeIntegerMs(ms, "advanceOfflineSummary");
+    const counter = { stagesCleared: 0 };
+    advanceElapsed(ms, false, countingEventSink(counter));
+    return { stagesCleared: counter.stagesCleared };
   }
 
   function beginFreshAttemptCommand(): EngineEvent[] {
     const events: EngineEvent[] = [];
+    const sink = arrayEventSink(events);
     const stage = state.attempt?.stage ?? state.progression.unlockedStage;
     state.attempt = null;
     state.statLedger = null;
-    startFreshAttempt(state, index, stage, events);
+    startFreshAttempt(state, index, stage, sink);
     return events;
   }
 
@@ -1569,9 +1616,10 @@ export function createEngine(
     }
 
     const events: EngineEvent[] = [];
+    const sink = arrayEventSink(events);
     state.attempt = null;
     state.statLedger = null;
-    startFreshAttempt(state, index, stage, events);
+    startFreshAttempt(state, index, stage, sink);
     return events;
   }
 
@@ -1778,6 +1826,7 @@ export function createEngine(
   return {
     advanceBy,
     advanceOffline,
+    advanceOfflineSummary,
     snapshot: () => toSnapshot(state, now),
     beginFreshAttempt: beginFreshAttemptCommand,
     selectStage,

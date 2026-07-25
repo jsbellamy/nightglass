@@ -1,4 +1,3 @@
-import type { EngineEvent } from "../core/events";
 import type { DropInstance, Snapshot } from "../core/snapshot";
 import type { ClassId, Content } from "../core/types";
 import { levelFromXp } from "../core/xp";
@@ -25,14 +24,13 @@ export interface OfflineSummary {
 }
 
 export function summarizeOfflineProgress(
-  events: EngineEvent[],
+  stagesCleared: number,
   before: Snapshot,
   after: Snapshot,
   content: Content,
   awayMs: number,
   capped: boolean,
 ): OfflineSummary {
-  const stagesCleared = events.filter((event) => event.type === "stage-cleared").length;
   const basesById = new Map(content.equipmentBases.map((base) => [base.id, base.name]));
 
   const beforeDropIds = new Set(before.progression.armory.map((drop) => drop.dropId));

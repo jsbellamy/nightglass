@@ -12,8 +12,16 @@ describe("summarizeOfflineProgress", () => {
     const before = engine.snapshot();
     const events = engine.advanceBy(30_000);
     const after = engine.snapshot();
+    const stagesCleared = events.filter((event) => event.type === "stage-cleared").length;
 
-    const summary = summarizeOfflineProgress(events, before, after, fixtureContent, 30_000, false);
+    const summary = summarizeOfflineProgress(
+      stagesCleared,
+      before,
+      after,
+      fixtureContent,
+      30_000,
+      false,
+    );
     const totalXpGain = summary.characterGains.reduce((sum, gain) => sum + gain.xpGained, 0);
     const xpDelta = Object.values(after.progression.characterXp).reduce(
       (sum, xp, index) => sum + xp - (Object.values(before.progression.characterXp)[index] ?? 0),

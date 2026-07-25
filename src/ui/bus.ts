@@ -10,6 +10,7 @@ export type TileCommandName = Exclude<
   keyof Engine,
   | "advanceBy"
   | "advanceOffline"
+  | "advanceOfflineSummary"
   | "snapshot"
   | "beginFreshAttempt"
   | "canAllocateTalent"
