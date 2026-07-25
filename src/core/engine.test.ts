@@ -4941,6 +4941,311 @@ describe("boundary scan optimizations (#718)", () => {
   });
 });
 
+describe("due-queue scheduler (#722)", () => {
+  function seam(engine: ReturnType<typeof createEngine>): EngineTestSeam {
+    return engineTestSeam(engine);
+  }
+
+  it("reloads mid-Attempt with ticking Status, Wind-up, and unreached Initiative identically", () => {
+    const saved = scenario()
+      .withParty(["knight", "wizard", "priest"], "hunter")
+      .build();
+    saved.lootRngState = LOOT_SEED;
+    saved.simNowMs = 500;
+    const knight = saved.attempt!.combatants.find((combatant) => combatant.defId === "knight")!;
+    const wizard = saved.attempt!.combatants.find((combatant) => combatant.defId === "wizard")!;
+    const opponent = saved.attempt!.combatants.find((combatant) => combatant.side === "opponent")!;
+    knight.initiativeReadyAtMs = 0;
+    knight.action = {
+      abilityId: "k-sweep",
+      startedAtMs: 400,
+      impactAtMs: 900,
+      endsAtMs: 1_400,
+      targetIds: [opponent.entityId],
+      impactResolved: false,
+    };
+    wizard.initiativeReadyAtMs = 2_000;
+    wizard.action = null;
+    opponent.statuses = [
+      {
+        statusId: "scorched",
+        expiresAtMs: 5_000,
+        nextTickAtMs: 800,
+        sourceEntityId: knight.entityId,
+        sourcePower: { physical: 5, spell: 0 },
+      },
+    ];
+
+    const continuous = createEngine(fixtureContent, structuredClone(saved), LOOT_SEED, fixtureNow);
+    const continuousEvents = driveBy(continuous, 3_000, 7);
+
+    const reloaded = createEngine(fixtureContent, structuredClone(saved), LOOT_SEED, fixtureNow);
+    const reloadEvents = driveBy(reloaded, 1_500, 7);
+    const midFight = structuredClone(reloaded.snapshot());
+    const restored = createEngine(fixtureContent, midFight, LOOT_SEED, fixtureNow);
+    reloadEvents.push(...driveBy(restored, 1_500, 7));
+
+    expect(stable(reloadEvents)).toBe(stable(continuousEvents));
+    expect(stable(restored.snapshot())).toBe(stable(continuous.snapshot()));
+  });
+
+  it("drops a stunned Wind-up impact from holding the next boundary", () => {
+    const saved = scenario()
+      .withParty(["knight", "wizard", "priest"], "hunter")
+      .build();
+    saved.lootRngState = LOOT_SEED;
+    saved.simNowMs = 0;
+    const knight = saved.attempt!.combatants.find((combatant) => combatant.defId === "knight")!;
+    knight.action = {
+      abilityId: "k-sweep",
+      startedAtMs: 0,
+      impactAtMs: 500,
+      endsAtMs: 1_200,
+      targetIds: ["opp:1:0"],
+      impactResolved: false,
+    };
+    saved.attempt!.combatants = saved.attempt!.combatants.map((combatant) =>
+      combatant.side === "opponent"
+        ? {
+            ...combatant,
+            defId: "fixture-stunner",
+            initiativeReadyAtMs: 0,
+            action: {
+              abilityId: "stunner-bash",
+              startedAtMs: 0,
+              impactAtMs: 200,
+              endsAtMs: 700,
+              targetIds: [knight.entityId],
+              impactResolved: false,
+            },
+          }
+        : combatant,
+    );
+
+    const engine = createEngine(fixtureContent, saved, LOOT_SEED, fixtureNow);
+    const events = driveBy(engine, 250, 1);
+    const cancelledImpactMs = 500;
+    expect(seam(engine).nextBoundaryMs()).not.toBe(cancelledImpactMs);
+    events.push(...driveBy(engine, cancelledImpactMs - 250, 1));
+    expect(
+      events.some(
+        (event) => event.type === "impact" && event.entityId === knight.entityId && event.atMs === cancelledImpactMs,
+      ),
+    ).toBe(false);
+  });
+
+  it("drops a Knocked Out combatant's Wind-up and Status tick from the queue", () => {
+    const saved = scenario()
+      .withParty(["knight", "wizard", "priest"], "hunter")
+      .build();
+    saved.lootRngState = LOOT_SEED;
+    saved.simNowMs = 0;
+    const knight = saved.attempt!.combatants.find((combatant) => combatant.defId === "knight")!;
+    const opponent = saved.attempt!.combatants.find((combatant) => combatant.side === "opponent")!;
+    opponent.health = 1;
+    opponent.maxHealth = 40;
+    knight.action = {
+      abilityId: "k-sweep",
+      startedAtMs: 0,
+      impactAtMs: 400,
+      endsAtMs: 1_000,
+      targetIds: [opponent.entityId],
+      impactResolved: false,
+    };
+    opponent.statuses = [
+      {
+        statusId: "scorched",
+        expiresAtMs: 2_000,
+        nextTickAtMs: 300,
+        sourceEntityId: knight.entityId,
+        sourcePower: { physical: 20, spell: 0 },
+      },
+    ];
+
+    const engine = createEngine(fixtureContent, saved, LOOT_SEED, fixtureNow);
+    const events = driveBy(engine, 450, 1);
+    expect(events.some((event) => event.type === "knockout" && event.entityId === opponent.entityId)).toBe(
+      true,
+    );
+    expect(seam(engine).nextBoundaryMs()).not.toBe(300);
+    const tickEvents = driveBy(engine, 300, 1);
+    expect(
+      tickEvents.some(
+        (event) =>
+          event.type === "impact" &&
+          event.abilityId === "status:scorched" &&
+          event.results.some((result) => result.targetId === opponent.entityId),
+      ),
+    ).toBe(false);
+  });
+
+  it("replaces a revived combatant's scheduled Wind-up with Recovery", () => {
+    const saved = scenario()
+      .withParty(["knight", "wizard", "priest"], "hunter")
+      .knockedOut("wizard")
+      .build();
+    saved.lootRngState = LOOT_SEED;
+    saved.simNowMs = 0;
+    const wizard = saved.attempt!.combatants.find((combatant) => combatant.defId === "wizard")!;
+    wizard.action = {
+      abilityId: "w-frost",
+      startedAtMs: 0,
+      impactAtMs: 600,
+      endsAtMs: 1_200,
+      targetIds: ["opp:1:0"],
+      impactResolved: false,
+    };
+    const priest = saved.attempt!.combatants.find((combatant) => combatant.defId === "priest")!;
+    priest.initiativeReadyAtMs = 0;
+    priest.action = {
+      abilityId: "p-resurgence",
+      startedAtMs: 0,
+      impactAtMs: 300,
+      endsAtMs: 900,
+      targetIds: [wizard.entityId],
+      impactResolved: false,
+    };
+
+    const engine = createEngine(fixtureContent, saved, LOOT_SEED, fixtureNow);
+    const events = driveBy(engine, 350, 1);
+    expect(events.some((event) => event.type === "revived" && event.entityId === wizard.entityId)).toBe(
+      true,
+    );
+    expect(seam(engine).nextBoundaryMs()).not.toBe(600);
+    events.push(...driveBy(engine, 600, 1));
+    expect(
+      events.some((event) => event.type === "impact" && event.entityId === wizard.entityId && event.abilityId === "w-frost"),
+    ).toBe(false);
+    expect(
+      events.some((event) => event.type === "action-started" && event.entityId === wizard.entityId && event.abilityId === "revival-recovery"),
+    ).toBe(false);
+  });
+
+  it("clears Opponent scheduled moments across a Wave transition", () => {
+    const saved = scenario().withOpponentsAtOneHealth().build();
+    saved.lootRngState = LOOT_SEED;
+    saved.simNowMs = 0;
+    const opponent = saved.attempt!.combatants.find((combatant) => combatant.side === "opponent")!;
+    opponent.initiativeReadyAtMs = 2_000;
+    opponent.action = {
+      abilityId: "grunt-attack",
+      startedAtMs: 0,
+      impactAtMs: 5_000,
+      endsAtMs: 6_000,
+      targetIds: ["party:knight:front"],
+      impactResolved: false,
+    };
+
+    const engine = createEngine(fixtureContent, saved, LOOT_SEED, fixtureNow);
+    const events = driveBy(engine, 60_000, 1);
+    expect(events.some((event) => event.type === "wave-cleared" && event.encounter === 1)).toBe(true);
+    expect(seam(engine).nextBoundaryMs()).not.toBe(5_000);
+    const afterTransition = driveBy(engine, 5_000, 1);
+    expect(
+      afterTransition.some(
+        (event) => event.type === "impact" && event.entityId === opponent.entityId,
+      ),
+    ).toBe(false);
+  });
+
+  it("re-keys Party scheduled moments after a Formation Pending Edit", () => {
+    const engine = createEngine(fixtureContent, undefined, LOOT_SEED, fixtureNow);
+    engine.setFormation(["priest", "knight", "wizard"]);
+    let configAppliedMs: number | null = null;
+    let elapsed = 0;
+    while (elapsed < 120_000) {
+      elapsed += 1;
+      const events = driveBy(engine, 1);
+      if (events.some((event) => event.type === "config-applied")) {
+        configAppliedMs = engine.snapshot().simNowMs;
+        break;
+      }
+    }
+    expect(configAppliedMs).not.toBeNull();
+    const oldKnightId = partyEntityId("knight", 0);
+    const newKnightId = partyEntityId("knight", 1);
+    expect(oldKnightId).not.toBe(newKnightId);
+    expect(seam(engine).nextBoundaryMs()).not.toBeNull();
+    const boundaryBefore = seam(engine).nextBoundaryMs();
+    const events = driveBy(engine, (boundaryBefore ?? 0) - engine.snapshot().simNowMs + 1, 1);
+    expect(
+      events.some(
+        (event) =>
+          (event.type === "action-started" || event.type === "impact") &&
+          "entityId" in event &&
+          event.entityId === oldKnightId,
+      ),
+    ).toBe(false);
+    expect(engine.snapshot().attempt?.combatants.some((combatant) => combatant.entityId === newKnightId)).toBe(
+      true,
+    );
+  });
+
+  it("discards scheduled Attempt moments when beginFreshAttempt replaces the Attempt", () => {
+    const saved = scenario().build();
+    saved.lootRngState = LOOT_SEED;
+    saved.simNowMs = 0;
+    for (const combatant of saved.attempt!.combatants) {
+      if (combatant.side === "party") {
+        combatant.initiativeReadyAtMs = 9_999;
+        combatant.action = null;
+      }
+    }
+    const opponent = saved.attempt!.combatants.find((combatant) => combatant.side === "opponent")!;
+    opponent.initiativeReadyAtMs = 9_999;
+    opponent.action = {
+      abilityId: "grunt-attack",
+      startedAtMs: 0,
+      impactAtMs: 800,
+      endsAtMs: 1_400,
+      targetIds: ["party:knight:front"],
+      impactResolved: false,
+    };
+    const engine = createEngine(fixtureContent, saved, LOOT_SEED, fixtureNow);
+    expect(seam(engine).nextBoundaryMs()).toBe(800);
+    engine.beginFreshAttempt();
+    expect(seam(engine).nextBoundaryMs()).not.toBe(800);
+    const events = driveBy(engine, 800, 1);
+    expect(
+      events.some(
+        (event) => event.type === "impact" && event.entityId === opponent.entityId,
+      ),
+    ).toBe(false);
+  });
+
+  it("discards scheduled Attempt moments when selectStage replaces the Attempt", () => {
+    const saved = scenario().build();
+    saved.lootRngState = LOOT_SEED;
+    saved.simNowMs = 0;
+    for (const combatant of saved.attempt!.combatants) {
+      if (combatant.side === "party") {
+        combatant.initiativeReadyAtMs = 9_999;
+        combatant.action = null;
+      }
+    }
+    const opponent = saved.attempt!.combatants.find((combatant) => combatant.side === "opponent")!;
+    opponent.initiativeReadyAtMs = 9_999;
+    opponent.action = {
+      abilityId: "grunt-attack",
+      startedAtMs: 0,
+      impactAtMs: 800,
+      endsAtMs: 1_400,
+      targetIds: ["party:knight:front"],
+      impactResolved: false,
+    };
+    const engine = createEngine(fixtureContent, saved, LOOT_SEED, fixtureNow);
+    expect(seam(engine).nextBoundaryMs()).toBe(800);
+    engine.selectStage(1);
+    expect(seam(engine).nextBoundaryMs()).not.toBe(800);
+    const events = driveBy(engine, 800, 1);
+    expect(
+      events.some(
+        (event) => event.type === "impact" && event.entityId === opponent.entityId,
+      ),
+    ).toBe(false);
+  });
+});
+
 describe("copy-on-write Armory", () => {
   function armorySnapshot(count: number) {
     return scenario(fixtureContent)

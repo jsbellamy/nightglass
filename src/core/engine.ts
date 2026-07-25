@@ -75,11 +75,13 @@ import type {
 } from "./types";
 import { opponentEntityId, partyEntityId } from "./entity-id";
 import { awardXp, levelFromXp, reserveXpAward } from "./xp";
+import { createDueQueue, type DueEntry, type DueKind, type DueQueueWithIndex } from "./schedule";
 
 export const SCHEMA_VERSION = 2;
 const WAVE_TRANSITION_MS = 2_000;
 const DEFEAT_HOLD_MS = 2_000;
 const REVIVAL_RECOVERY_MS = 1_000;
+const PHASE_END_ENTITY_ID = "attempt";
 
 export interface OfflineAdvance {
   stagesCleared: number;
@@ -153,7 +155,13 @@ export interface EngineTestSeam {
 export function nextBoundaryMsForSnapshot(
   snapshot: Pick<Snapshot, "attempt" | "simNowMs">,
 ): number | null {
-  return nextBoundaryMs(snapshot);
+  const queue = createDueQueue();
+  rebuildDueQueue({
+    simNowMs: snapshot.simNowMs,
+    attempt: snapshot.attempt,
+    dueQueue: queue,
+  } as EngineState);
+  return queue.nextDueMs();
 }
 
 interface EngineState {
@@ -169,6 +177,161 @@ interface EngineState {
   statLedger: StatLedger | null;
   pendingEdits: Snapshot["pendingEdits"];
   dropIndex: Map<number, DropInstance>;
+  dueQueue: DueQueueWithIndex;
+}
+
+function combatantIndexFor(state: EngineState, entityId: string): number {
+  return state.attempt?.combatants.findIndex((combatant) => combatant.entityId === entityId) ?? -1;
+}
+
+function scheduleDue(state: EngineState, entry: DueEntry): void {
+  state.dueQueue.scheduleWithIndex(entry, combatantIndexFor(state, entry.entityId));
+}
+
+function cancelActionSchedule(state: EngineState, entityId: string, abilityId: string): void {
+  state.dueQueue.cancel(entityId, "action-impact", abilityId);
+  state.dueQueue.cancel(entityId, "action-end", abilityId);
+}
+
+function cancelStatusSchedule(state: EngineState, entityId: string, statusId: string): void {
+  state.dueQueue.cancel(entityId, "status-expiry", statusId);
+  state.dueQueue.cancel(entityId, "status-tick", statusId);
+}
+
+function schedulePhaseEnd(state: EngineState): void {
+  const attempt = state.attempt;
+  state.dueQueue.cancel(PHASE_END_ENTITY_ID, "phase-end");
+  if (!attempt || attempt.phaseEndsAtMs === null) {
+    return;
+  }
+  scheduleDue(state, {
+    atMs: attempt.phaseEndsAtMs,
+    kind: "phase-end",
+    entityId: PHASE_END_ENTITY_ID,
+  });
+}
+
+function scheduleInitiative(
+  state: EngineState,
+  combatant: CombatantState,
+  combatantIndex: number,
+): void {
+  state.dueQueue.cancel(combatant.entityId, "initiative-ready");
+  if (combatant.initiativeReadyAtMs > state.simNowMs) {
+    state.dueQueue.scheduleWithIndex(
+      {
+        atMs: combatant.initiativeReadyAtMs,
+        kind: "initiative-ready",
+        entityId: combatant.entityId,
+      },
+      combatantIndex,
+    );
+  }
+}
+
+function scheduleStatus(
+  state: EngineState,
+  combatant: CombatantState,
+  status: ActiveStatus,
+  combatantIndex: number,
+): void {
+  cancelStatusSchedule(state, combatant.entityId, status.statusId);
+  state.dueQueue.scheduleWithIndex(
+    {
+      atMs: status.expiresAtMs,
+      kind: "status-expiry",
+      entityId: combatant.entityId,
+      key: status.statusId,
+    },
+    combatantIndex,
+  );
+  if (
+    !combatant.knockedOut &&
+    status.nextTickAtMs !== undefined &&
+    status.nextTickAtMs < status.expiresAtMs
+  ) {
+    state.dueQueue.scheduleWithIndex(
+      {
+        atMs: status.nextTickAtMs,
+        kind: "status-tick",
+        entityId: combatant.entityId,
+        key: status.statusId,
+      },
+      combatantIndex,
+    );
+  }
+}
+
+function scheduleAction(
+  state: EngineState,
+  combatant: CombatantState,
+  combatantIndex: number,
+): void {
+  const action = combatant.action;
+  if (!action) {
+    return;
+  }
+  cancelActionSchedule(state, combatant.entityId, action.abilityId);
+  if (!action.impactResolved) {
+    state.dueQueue.scheduleWithIndex(
+      {
+        atMs: action.impactAtMs,
+        kind: "action-impact",
+        entityId: combatant.entityId,
+        key: action.abilityId,
+      },
+      combatantIndex,
+    );
+  }
+  state.dueQueue.scheduleWithIndex(
+    {
+      atMs: action.endsAtMs,
+      kind: "action-end",
+      entityId: combatant.entityId,
+      key: action.abilityId,
+    },
+    combatantIndex,
+  );
+}
+
+function scheduleCombatant(
+  state: EngineState,
+  combatant: CombatantState,
+  combatantIndex: number,
+): void {
+  scheduleInitiative(state, combatant, combatantIndex);
+  for (const status of combatant.statuses) {
+    scheduleStatus(state, combatant, status, combatantIndex);
+  }
+  scheduleAction(state, combatant, combatantIndex);
+}
+
+function rebuildDueQueue(state: EngineState): void {
+  state.dueQueue.clear();
+  const attempt = state.attempt;
+  if (!attempt) {
+    return;
+  }
+  schedulePhaseEnd(state);
+  for (let index = 0; index < attempt.combatants.length; index += 1) {
+    scheduleCombatant(state, attempt.combatants[index]!, index);
+  }
+}
+
+function reschedulePartyFormation(state: EngineState, previousEntityIds: string[]): void {
+  for (const entityId of previousEntityIds) {
+    state.dueQueue.cancelAllFor(entityId);
+  }
+  const attempt = state.attempt;
+  if (!attempt) {
+    return;
+  }
+  for (let index = 0; index < attempt.combatants.length; index += 1) {
+    const combatant = attempt.combatants[index]!;
+    if (combatant.side === "party") {
+      scheduleCombatant(state, combatant, index);
+    }
+  }
 }
 
 function rebuildDropIndex(armory: DropInstance[]): Map<number, DropInstance> {
@@ -514,6 +677,7 @@ function startFreshAttempt(
 
   state.attempt = createAttempt(state, index, stage, 1);
   state.statLedger = createStatLedger(index, state.progression, state.attempt);
+  rebuildDueQueue(state);
   const stageDef = stageDefFor(index, stage);
   emit(state, sink, {
     type: "stage-attempt-started",
@@ -575,6 +739,7 @@ function chooseActions(
       targetIds: targets.map((target) => target.entityId),
       impactResolved: false,
     };
+    scheduleAction(state, combatant, combatantIndexFor(state, combatant.entityId));
 
     const actorStats = combatantStats(state, index, combatant);
     let element: Element | undefined;
@@ -612,48 +777,140 @@ function startCooldown(
   }
 }
 
-function resolveStatusExpiries(state: EngineState, sink: EventSink): void {
+function resolveStatusExpiry(
+  state: EngineState,
+  sink: EventSink,
+  entry: DueEntry,
+): void {
   const attempt = state.attempt;
   if (!attempt) {
     return;
   }
-
-  let hasStatus = false;
-  for (const combatant of attempt.combatants) {
-    if (combatant.statuses.length > 0) {
-      hasStatus = true;
-      break;
-    }
+  const combatant = combatantById(attempt.combatants, entry.entityId);
+  if (!combatant || entry.key === undefined) {
+    return;
   }
-  if (!hasStatus) {
+  const statusIndex = combatant.statuses.findIndex((status) => status.statusId === entry.key);
+  if (statusIndex < 0) {
+    return;
+  }
+  const status = combatant.statuses[statusIndex]!;
+  if (status.expiresAtMs !== state.simNowMs) {
+    return;
+  }
+  cancelStatusSchedule(state, combatant.entityId, status.statusId);
+  combatant.statuses = combatant.statuses.filter((_, index) => index !== statusIndex);
+  emit(state, sink, {
+    type: "status-expired",
+    entityId: combatant.entityId,
+    statusId: status.statusId,
+  });
+}
+
+function resolveStatusTick(
+  state: EngineState,
+  index: ContentIndex,
+  sink: EventSink,
+  entry: DueEntry,
+): void {
+  const attempt = state.attempt;
+  if (!attempt) {
+    return;
+  }
+  const combatant = combatantById(attempt.combatants, entry.entityId);
+  if (!combatant || combatant.knockedOut || entry.key === undefined) {
+    return;
+  }
+  const status = combatant.statuses.find((candidate) => candidate.statusId === entry.key);
+  if (!status || status.nextTickAtMs !== state.simNowMs) {
+    return;
+  }
+  if (status.nextTickAtMs >= status.expiresAtMs) {
     return;
   }
 
-  for (const combatant of attempt.combatants) {
-    if (combatant.statuses.length === 0) {
-      continue;
-    }
-    let removed = false;
-    const remaining: typeof combatant.statuses = [];
-    for (const status of combatant.statuses) {
-      if (status.expiresAtMs === state.simNowMs) {
-        emit(state, sink, {
-          type: "status-expired",
-          entityId: combatant.entityId,
-          statusId: status.statusId,
-        });
-        removed = true;
-      } else {
-        remaining.push(status);
-      }
-    }
-    if (removed) {
-      combatant.statuses = remaining;
-    }
+  const statusDef = index.statusesById.get(status.statusId);
+  if (!statusDef?.tickEffect || !status.sourceEntityId || !status.sourcePower) {
+    return;
+  }
+
+  const actorStats: BaseStats = {
+    maxHealth: 0,
+    physical: status.sourcePower.physical,
+    spell: status.sourcePower.spell,
+    armor: 0,
+    elementalResistance: 0,
+    firePower: 0,
+    frostPower: 0,
+    lightningPower: 0,
+    lightPower: 0,
+    critChance: 0,
+    critDamage: 1.5,
+  };
+  const targetStats = combatantStats(state, index, combatant);
+  const outcome = resolveEffect(
+    statusDef.tickEffect,
+    actorStats,
+    {
+      stats: targetStats,
+      health: combatant.health,
+      maxHealth: combatant.maxHealth,
+      knockedOut: combatant.knockedOut,
+      statuses: combatant.statuses,
+    },
+    index.statusesById,
+  );
+
+  const results: Extract<EngineEvent, { type: "impact" }>["results"] = [];
+  if (outcome.damageDetail) {
+    const { amount, channel, element, crit } = outcome.damageDetail;
+    const healthAfter = Math.max(0, combatant.health - amount);
+    results.push({
+      targetId: combatant.entityId,
+      kind: "damage",
+      channel,
+      ...(element ? { element } : {}),
+      amount,
+      healthAfter,
+      ...(crit ? { crit: true } : {}),
+    });
+    combatant.health = healthAfter;
+  }
+
+  if (results.length > 0) {
+    emit(state, sink, {
+      type: "impact",
+      entityId: status.sourceEntityId,
+      abilityId: `status:${status.statusId}`,
+      results,
+    });
+  }
+
+  const tickEveryMs = statusDef.tickEveryMs;
+  if (tickEveryMs === undefined) {
+    return;
+  }
+  const combatantIndex = combatantIndexFor(state, combatant.entityId);
+  state.dueQueue.cancel(combatant.entityId, "status-tick", status.statusId);
+  const nextTickAtMs = state.simNowMs + tickEveryMs;
+  if (nextTickAtMs < status.expiresAtMs) {
+    status.nextTickAtMs = nextTickAtMs;
+    state.dueQueue.scheduleWithIndex(
+      {
+        atMs: nextTickAtMs,
+        kind: "status-tick",
+        entityId: combatant.entityId,
+        key: status.statusId,
+      },
+      combatantIndex,
+    );
+  } else {
+    delete status.nextTickAtMs;
   }
 }
 
 function applyStatus(
+  state: EngineState,
   combatant: CombatantState,
   statusId: string,
   expiresAtMs: number,
@@ -663,14 +920,17 @@ function applyStatus(
 ): "applied" | "refreshed" {
   const statusDef = index.statusesById.get(statusId);
   const existing = combatant.statuses.find((status) => status.statusId === statusId);
+  const combatantIndex = combatantIndexFor(state, combatant.entityId);
   if (existing) {
     existing.expiresAtMs = expiresAtMs;
     writeTickSchedule(existing, statusDef, appliedAtMs, source);
+    scheduleStatus(state, combatant, existing, combatantIndex);
     return "refreshed";
   }
   const created: ActiveStatus = { statusId, expiresAtMs };
   writeTickSchedule(created, statusDef, appliedAtMs, source);
   combatant.statuses.push(created);
+  scheduleStatus(state, combatant, created, combatantIndex);
   return "applied";
 }
 
@@ -784,13 +1044,14 @@ function queueStatusFromOutcome(
   }
 }
 
-function resolveImpacts(
+function resolveImpactBatch(
   state: EngineState,
   index: ContentIndex,
   sink: EventSink,
+  entries: DueEntry[],
 ): void {
   const attempt = state.attempt;
-  if (!attempt) {
+  if (!attempt || entries.length === 0) {
     return;
   }
 
@@ -843,13 +1104,24 @@ function resolveImpacts(
   }
 
   let resolvedAny = false;
-  for (const actor of attempt.combatants) {
-    const action = actor.action;
-    if (!action || action.impactAtMs !== state.simNowMs || action.impactResolved) {
+  for (const entry of entries) {
+    if (entry.key === undefined) {
+      continue;
+    }
+    const actor = combatantById(attempt.combatants, entry.entityId);
+    const action = actor?.action;
+    if (
+      !actor ||
+      !action ||
+      action.abilityId !== entry.key ||
+      action.impactAtMs !== state.simNowMs ||
+      action.impactResolved
+    ) {
       continue;
     }
     resolvedAny = true;
     action.impactResolved = true;
+    state.dueQueue.cancel(actor.entityId, "action-impact", action.abilityId);
 
     const ability =
       index.abilitiesById.get(action.abilityId) ??
@@ -944,6 +1216,7 @@ function resolveImpacts(
   }
 
   if (!resolvedAny || pendingByTarget === undefined) {
+    cancelStunnedWindUps(state, index);
     return;
   }
 
@@ -954,6 +1227,9 @@ function resolveImpacts(
     }
 
     if (pending.revived) {
+      if (target.action && !target.action.impactResolved) {
+        cancelActionSchedule(state, target.entityId, target.action.abilityId);
+      }
       target.knockedOut = false;
       target.health = pending.revivedHealth ?? target.health;
       target.action = {
@@ -964,6 +1240,7 @@ function resolveImpacts(
         targetIds: [],
         impactResolved: true,
       };
+      scheduleAction(state, target, combatantIndexFor(state, target.entityId));
       emit(state, sink, {
         type: "revived",
         entityId: target.entityId,
@@ -975,6 +1252,7 @@ function resolveImpacts(
 
     for (const status of pending.statusesToApply) {
       applyStatus(
+        state,
         target,
         status.statusId,
         status.expiresAtMs,
@@ -995,6 +1273,7 @@ function resolveImpacts(
     }
     for (const status of pending.statusesToRefresh) {
       applyStatus(
+        state,
         target,
         status.statusId,
         status.expiresAtMs,
@@ -1018,109 +1297,21 @@ function resolveImpacts(
   cancelStunnedWindUps(state, index);
 }
 
-function resolveStatusTicks(
-  state: EngineState,
-  index: ContentIndex,
-  sink: EventSink,
-): void {
+function resolveActionEnd(state: EngineState, entry: DueEntry): void {
   const attempt = state.attempt;
-  if (!attempt) {
+  if (!attempt || entry.key === undefined) {
     return;
   }
-
-  let hasStatus = false;
-  for (const combatant of attempt.combatants) {
-    if (combatant.statuses.length > 0) {
-      hasStatus = true;
-      break;
-    }
-  }
-  if (!hasStatus) {
+  const combatant = combatantById(attempt.combatants, entry.entityId);
+  const action = combatant?.action;
+  if (!combatant || !action || action.abilityId !== entry.key) {
     return;
   }
-
-  for (const target of attempt.combatants) {
-    if (target.knockedOut) {
-      continue;
-    }
-
-    for (const status of target.statuses) {
-      if (status.nextTickAtMs !== state.simNowMs) {
-        continue;
-      }
-      if (status.nextTickAtMs >= status.expiresAtMs) {
-        continue;
-      }
-
-      const statusDef = index.statusesById.get(status.statusId);
-      if (!statusDef?.tickEffect || !status.sourceEntityId || !status.sourcePower) {
-        continue;
-      }
-
-      const actorStats: BaseStats = {
-        maxHealth: 0,
-        physical: status.sourcePower.physical,
-        spell: status.sourcePower.spell,
-        armor: 0,
-        elementalResistance: 0,
-        firePower: 0,
-        frostPower: 0,
-        lightningPower: 0,
-        lightPower: 0,
-        critChance: 0,
-        critDamage: 1.5,
-      };
-      const targetStats = combatantStats(state, index, target);
-      const outcome = resolveEffect(
-        statusDef.tickEffect,
-        actorStats,
-        {
-          stats: targetStats,
-          health: target.health,
-          maxHealth: target.maxHealth,
-          knockedOut: target.knockedOut,
-          statuses: target.statuses,
-        },
-        index.statusesById,
-      );
-
-      const results: Extract<EngineEvent, { type: "impact" }>["results"] = [];
-      if (outcome.damageDetail) {
-        const { amount, channel, element, crit } = outcome.damageDetail;
-        const healthAfter = Math.max(0, target.health - amount);
-        results.push({
-          targetId: target.entityId,
-          kind: "damage",
-          channel,
-          ...(element ? { element } : {}),
-          amount,
-          healthAfter,
-          ...(crit ? { crit: true } : {}),
-        });
-        target.health = healthAfter;
-      }
-
-      if (results.length > 0) {
-        emit(state, sink, {
-          type: "impact",
-          entityId: status.sourceEntityId,
-          abilityId: `status:${status.statusId}`,
-          results,
-        });
-      }
-
-      const tickEveryMs = statusDef.tickEveryMs;
-      if (tickEveryMs === undefined) {
-        continue;
-      }
-      const nextTickAtMs = state.simNowMs + tickEveryMs;
-      if (nextTickAtMs < status.expiresAtMs) {
-        status.nextTickAtMs = nextTickAtMs;
-      } else {
-        delete status.nextTickAtMs;
-      }
-    }
+  if (action.endsAtMs !== state.simNowMs) {
+    return;
   }
+  combatant.action = null;
+  state.dueQueue.cancel(combatant.entityId, "action-end", action.abilityId);
 }
 
 function cancelStunnedWindUps(state: EngineState, index: ContentIndex): void {
@@ -1135,6 +1326,7 @@ function cancelStunnedWindUps(state: EngineState, index: ContentIndex): void {
       !combatant.action.impactResolved &&
       isCombatantStunned(combatant, index.statusesById)
     ) {
+      cancelActionSchedule(state, combatant.entityId, combatant.action.abilityId);
       combatant.action = null;
     }
   }
@@ -1188,9 +1380,17 @@ function resolveKnockouts(
       combatant.knockedOut = true;
       combatant.health = 0;
       for (const status of combatant.statuses) {
+        if (status.nextTickAtMs !== undefined) {
+          state.dueQueue.cancel(combatant.entityId, "status-tick", status.statusId);
+        }
         delete status.nextTickAtMs;
       }
-      if (combatant.action && !combatant.action.impactResolved) {
+      if (combatant.action) {
+        if (!combatant.action.impactResolved) {
+          cancelActionSchedule(state, combatant.entityId, combatant.action.abilityId);
+        } else {
+          state.dueQueue.cancel(combatant.entityId, "action-end", combatant.action.abilityId);
+        }
         combatant.action = null;
       }
       emit(state, sink, { type: "knockout", entityId: combatant.entityId });
@@ -1263,6 +1463,7 @@ function evaluateEncounterOutcome(
 
     attempt.phase = "wave-transition";
     attempt.phaseEndsAtMs = state.simNowMs + WAVE_TRANSITION_MS;
+    schedulePhaseEnd(state);
     return;
   }
 
@@ -1270,6 +1471,7 @@ function evaluateEncounterOutcome(
     emit(state, sink, { type: "party-defeat", stage: attempt.stage });
     attempt.phase = "defeat-hold";
     attempt.phaseEndsAtMs = state.simNowMs + DEFEAT_HOLD_MS;
+    schedulePhaseEnd(state);
   }
 }
 
@@ -1295,20 +1497,8 @@ function clearStage(state: EngineState, index: ContentIndex, sink: EventSink): v
 
   state.attempt = null;
   state.statLedger = null;
+  state.dueQueue.clear();
   startFreshAttempt(state, index, nextStage, sink);
-}
-
-function completeRecoveries(state: EngineState): void {
-  const attempt = state.attempt;
-  if (!attempt) {
-    return;
-  }
-
-  for (const combatant of attempt.combatants) {
-    if (combatant.action?.endsAtMs === state.simNowMs) {
-      combatant.action = null;
-    }
-  }
 }
 
 function applyPendingEdits(
@@ -1391,6 +1581,9 @@ function applyPendingEdits(
     }
 
     if (edit.kind === "formation") {
+      const previousPartyEntityIds = partyCombatants(attempt.combatants).map(
+        (combatant) => combatant.entityId,
+      );
       state.progression.party = [...edit.order];
       const reordered = edit.order.map((classId, slotIndex) => {
         const existing = byClassId.get(classId);
@@ -1403,6 +1596,7 @@ function applyPendingEdits(
         };
       });
       attempt.combatants = [...reordered, ...opponentCombatants(attempt.combatants)];
+      reschedulePartyFormation(state, previousPartyEntityIds);
       for (const classId of edit.order) {
         state.statLedger?.invalidate(classId);
       }
@@ -1458,14 +1652,22 @@ function finishWaveTransition(
 
   applyPendingEdits(state, index, sink, state.simNowMs);
 
+  const previousOpponents = opponentCombatants(attempt.combatants);
   const stageDef = stageDefFor(index, attempt.stage);
   const nextEncounter = attempt.encounter + 1;
   const party = partyCombatants(attempt.combatants);
   attempt.encounter = nextEncounter;
   attempt.phase = "fighting";
   attempt.phaseEndsAtMs = null;
+  state.dueQueue.cancel(PHASE_END_ENTITY_ID, "phase-end");
+  for (const opponent of previousOpponents) {
+    state.dueQueue.cancelAllFor(opponent.entityId);
+  }
   attempt.combatants = [...party, ...spawnOpponents(index, attempt.stage, nextEncounter)];
   rollInitiativeForEncounter(state, attempt);
+  for (let combatantIndex = 0; combatantIndex < attempt.combatants.length; combatantIndex += 1) {
+    scheduleCombatant(state, attempt.combatants[combatantIndex]!, combatantIndex);
+  }
 
   emit(state, sink, {
     type: "wave-started",
@@ -1488,51 +1690,30 @@ function finishDefeatHold(state: EngineState, index: ContentIndex, sink: EventSi
   const stage = attempt.stage;
   state.attempt = null;
   state.statLedger = null;
+  state.dueQueue.clear();
   startFreshAttempt(state, index, stage, sink);
 }
 
-function nextBoundaryMs(state: Pick<EngineState, "attempt" | "simNowMs">): number | null {
+function nextBoundaryMs(state: EngineState): number | null {
+  return state.dueQueue.nextDueMs();
+}
+
+function resolvePhaseEnd(
+  state: EngineState,
+  index: ContentIndex,
+  sink: EventSink,
+): void {
   const attempt = state.attempt;
-  if (!attempt) {
-    return null;
+  if (!attempt || attempt.phaseEndsAtMs !== state.simNowMs) {
+    return;
   }
-
-  let min: number | null = null;
-  const consider = (candidate: number) => {
-    if (min === null || candidate < min) {
-      min = candidate;
-    }
-  };
-
-  if (attempt.phaseEndsAtMs !== null) {
-    consider(attempt.phaseEndsAtMs);
+  if (attempt.phase === "wave-transition") {
+    finishWaveTransition(state, index, sink);
+    return;
   }
-
-  for (const combatant of attempt.combatants) {
-    if (combatant.initiativeReadyAtMs > state.simNowMs) {
-      consider(combatant.initiativeReadyAtMs);
-    }
-    for (const status of combatant.statuses) {
-      consider(status.expiresAtMs);
-      if (
-        !combatant.knockedOut &&
-        status.nextTickAtMs !== undefined &&
-        status.nextTickAtMs < status.expiresAtMs
-      ) {
-        consider(status.nextTickAtMs);
-      }
-    }
-    const action = combatant.action;
-    if (!action) {
-      continue;
-    }
-    if (!action.impactResolved) {
-      consider(action.impactAtMs);
-    }
-    consider(action.endsAtMs);
+  if (attempt.phase === "defeat-hold") {
+    finishDefeatHold(state, index, sink);
   }
-
-  return min;
 }
 
 function resolveBatch(
@@ -1541,14 +1722,45 @@ function resolveBatch(
   sink: EventSink,
   awardDrops: boolean,
 ): void {
-  resolveStatusExpiries(state, sink);
-  resolveStatusTicks(state, index, sink);
-  resolveImpacts(state, index, sink);
+  const drained = state.dueQueue.drainAt(state.simNowMs);
+  const phaseEndEntries: DueEntry[] = [];
+  const actionEndEntries: DueEntry[] = [];
+  const impactEntries: DueEntry[] = [];
+
+  for (const entry of drained) {
+    switch (entry.kind as DueKind) {
+      case "phase-end":
+        phaseEndEntries.push(entry);
+        break;
+      case "initiative-ready":
+        break;
+      case "status-expiry":
+        resolveStatusExpiry(state, sink, entry);
+        break;
+      case "status-tick":
+        resolveStatusTick(state, index, sink, entry);
+        break;
+      case "action-impact":
+        impactEntries.push(entry);
+        break;
+      case "action-end":
+        actionEndEntries.push(entry);
+        break;
+    }
+  }
+
+  resolveImpactBatch(state, index, sink, impactEntries);
+
   resolveKnockouts(state, index, sink);
   evaluateEncounterOutcome(state, index, sink, awardDrops);
-  completeRecoveries(state);
-  finishWaveTransition(state, index, sink);
-  finishDefeatHold(state, index, sink);
+
+  for (const entry of actionEndEntries) {
+    resolveActionEnd(state, entry);
+  }
+
+  for (const _entry of phaseEndEntries) {
+    resolvePhaseEnd(state, index, sink);
+  }
 }
 
 function toSnapshot(state: EngineState, now: () => number): Snapshot {
@@ -1589,6 +1801,7 @@ function fromSnapshot(saved: Snapshot): EngineState {
     statLedger: null,
     pendingEdits: cloned.pendingEdits,
     dropIndex: rebuildDropIndex(cloned.progression.armory),
+    dueQueue: createDueQueue(),
   };
 }
 
@@ -1651,7 +1864,12 @@ export function createEngine(
         statLedger: null,
         pendingEdits: [],
         dropIndex: rebuildDropIndex(progression.armory),
+        dueQueue: createDueQueue(),
       };
+
+  if (saved?.attempt) {
+    rebuildDueQueue(state);
+  }
 
   const bootEvents: EngineEvent[] = [];
   if (!saved) {
@@ -1721,6 +1939,7 @@ export function createEngine(
     const stage = state.attempt?.stage ?? state.progression.unlockedStage;
     state.attempt = null;
     state.statLedger = null;
+    state.dueQueue.clear();
     startFreshAttempt(state, index, stage, sink);
     return events;
   }
@@ -1734,6 +1953,7 @@ export function createEngine(
     const sink = arrayEventSink(events);
     state.attempt = null;
     state.statLedger = null;
+    state.dueQueue.clear();
     startFreshAttempt(state, index, stage, sink);
     return events;
   }
