@@ -41,6 +41,19 @@ const MOONBERRY_OPPONENT_IDS = [
   "boss-1",
   "boss-2",
   "boss-3",
+  "brambling-1-7",
+  "lanternmoth-1-6",
+  "huskbeetle-1-5",
+  "dewsnail-1-5",
+  "brambling-2-7",
+  "brambling-2-6",
+  "lanternmoth-2-7",
+  "huskbeetle-2-6",
+  "dewsnail-2-6",
+  "brambling-3-8",
+  "lanternmoth-3-8",
+  "huskbeetle-3-8",
+  "dewsnail-3-8",
 ] as const;
 
 const FOWL_SPRITE_KEYS = [
@@ -167,7 +180,7 @@ describe("assembled Stage content", () => {
     expect(content.xpThresholds.slice(0, 6)).toEqual([0, 100, 250, 450, 650, 850]);
   });
 
-  it("reuses one Pipcap family for Moonberry Waves and three distinct Moonberry Bosses", () => {
+  it("ships five Moonberry ordinary families and three distinct Moonberry Bosses", () => {
     const moonberry = content.opponents.filter((opponent) =>
       MOONBERRY_OPPONENT_IDS.includes(opponent.id as (typeof MOONBERRY_OPPONENT_IDS)[number]),
     );
@@ -175,8 +188,12 @@ describe("assembled Stage content", () => {
     const bosses = moonberry.filter((opponent) => opponent.boss);
 
     expect(ordinary.length).toBeGreaterThan(0);
-    expect(new Set(ordinary.map((opponent) => opponent.family))).toEqual(new Set(["pipcap"]));
-    expect(new Set(ordinary.map((opponent) => opponent.spriteKey))).toEqual(new Set(["pipcap"]));
+    expect(new Set(ordinary.map((opponent) => opponent.family))).toEqual(
+      new Set(["pipcap", "brambling", "lanternmoth", "huskbeetle", "dewsnail"]),
+    );
+    expect(new Set(ordinary.map((opponent) => opponent.spriteKey))).toEqual(
+      new Set(["pipcap", "brambling", "lanternmoth", "huskbeetle", "dewsnail"]),
+    );
 
     expect(bosses).toHaveLength(3);
     expect(bosses.map((boss) => boss.id)).toEqual(["boss-1", "boss-2", "boss-3"]);

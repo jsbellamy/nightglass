@@ -4,6 +4,10 @@ import {
   fowlHarvestOpponents,
 } from "./fowl-harvest-opponents";
 import {
+  moonberryOpponentAbilities,
+  moonberryOpponents,
+} from "./moonberry-opponents";
+import {
   unwoundBelfryOpponentAbilities,
   unwoundBelfryOpponents,
 } from "./unwound-belfry-opponents";
@@ -197,6 +201,7 @@ export const opponentAbilities: AbilityDef[] = [
     recoveryMs: 850,
     cooldownMs: 10_000,
   },
+  ...moonberryOpponentAbilities,
   ...fowlHarvestOpponentAbilities,
   ...unwoundBelfryOpponentAbilities,
 ];
@@ -282,6 +287,7 @@ export const opponents: OpponentDef[] = [
     120,
     "boss-3",
   ),
+  ...moonberryOpponents,
   ...fowlHarvestOpponents,
   ...unwoundBelfryOpponents,
 ];
