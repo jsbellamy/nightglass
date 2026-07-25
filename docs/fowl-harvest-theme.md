@@ -77,6 +77,9 @@ match any `moonberry-glow@1` RGB value.
 | --- | --- | --- |
 | ordinary opponent | `burger-drake` | squat burger fusion; top hat, monocle, burger torso, yellow duck body |
 | ordinary opponent | `cornquacker` | tall corn-cob head/neck, leafy husk body, red eye, orange bill and feet |
+| ordinary opponent | `milkshake-mallard` | duck fused with a tall diner shake cup; straw crest, cream spill collar; tall smooth cylinder |
+| ordinary opponent | `balewaddle` | duck fused with a twine-bound hay bale; broad blocky cube |
+| ordinary opponent | `pie-widgeon` | duck fused with a lattice-crust pie in its tin; low wide disc |
 | Boss | `the-combine` | duck fused with rusted combine harvester |
 | Boss | `the-fryer` | duck fused with chrome roadside deep fryer (Stage 4) |
 | Boss | `scarequack` | duck fused with crooked scarecrow and fencepost (Stage 5) |
@@ -87,6 +90,16 @@ match any `moonberry-glow@1` RGB value.
 User-approved Burger Drake and Cornquacker portrait references informed early
 identity only; acquisition uses the self-contained descriptions and finished
 prompts below.
+
+### Ordinary-opponent silhouette separation
+
+The five ordinary Fowl Harvest silhouettes must stay mutually distinguishable at
+the 30×68 ordinary-opponent ceiling (see `docs/body-sprite-contract.md` → Hard
+fit ceilings): `burger-drake` squat and broad, `cornquacker` tall and lumpy,
+`milkshake-mallard` tall and smoothly cylindrical, `balewaddle` broad and
+blocky, `pie-widgeon` low and disc-flat. A candidate that reads as another
+family's silhouette is rejected at visual review even when every deterministic
+gate passes.
 
 ---
 
@@ -127,6 +140,66 @@ Show exactly one complete subject with generous empty clearance on every edge of
 ### Intended read
 
 At native 1× it reads in this order: hostile duck → corn-cob head/neck fusion → living husk body. It is tall and narrow where Burger Drake is squat and broad, but both clearly belong to one Fowl Harvest cohort. Corn yellow, leaf planes, red eye, orange bill/feet, and dark contour remain separate after quantization. It is not a duck in a vegetable costume.
+
+---
+
+## `milkshake-mallard` (ordinary opponent)
+
+### Generation prompt
+
+```text
+Single full-body Milkshake Mallard ordinary opponent game sprite, strict side profile facing LEFT. A tall mutant golden-yellow duck anatomically fused with a diner milkshake cup. Its torso is the cup: a tall smooth tapering diner-cream vessel banded with a restrained condiment-red stripe forms the whole body, a thick swirl of pale cream spills over the rim as a drooping collar around the neck, and a bent diner-teal straw rises from the back of the skull like a crest. The mutation is one living creature, not a duck standing in, holding, or drinking from a cup.
+
+Preserve its absurd unsettling identity: an oversized orange duck bill projecting clearly to the left, one narrowed visible condiment-red eye, the bent teal straw crest, the tall smooth cream cup torso with its red band, the drooping spilled-cream collar, one small yellow wing laid against the cup, and two complete orange webbed feet. Tall, narrow, smooth-sided silhouette with a slight forward lean. The bill, eye, straw crest, cup band, spill collar, wing, and both feet must remain distinct at native game scale.
+
+Chunky simplified flat-colour Fowl Harvest rural-mutation pixel art matching the accepted Burger Drake and Cornquacker in block size, selective oil-black / bruise-plum contour, saturation discipline, and 70% absurd / 30% unsettling tone. Use only named fowl-harvest-24 colors: duck and yolk golds, beak orange, diner cream, restrained diner teal, condiment red, and oily near-black. No gore, wounds, exposed organs, realism, gradients, anti-aliasing, blur, or dithering.
+
+Show exactly one complete subject with generous empty clearance on every edge of an opaque flat solid magenta #ff00ff background. No shadow, floor, glow, drips, splashes, sparkles, particles, Ability effect, text, watermark, scenery, UI, transparency, other drink, or other subject.
+```
+
+### Intended read
+
+At native 1× it reads in order: duck → milkshake-cup torso → straw-crested diner mutant. It is tall like Cornquacker but smooth and cylindrical where Cornquacker is lumpy and leafy, so the two tall Fowl silhouettes stay distinguishable. Cup, red band, spill collar, straw, bill, and both feet survive quantization as separate planes. It is not a duck in a cup.
+
+---
+
+## `balewaddle` (ordinary opponent)
+
+### Generation prompt
+
+```text
+Single full-body Balewaddle ordinary opponent game sprite, strict side profile facing LEFT. A broad squat mutant golden-yellow duck anatomically fused with a twine-bound hay bale. Its torso is the bale: a wide blocky rectangular mass of dry field-gold straw with clearly cut flat ends, bound by two taut dark twine bands that bite into the body and raise ridges of straw between them. Loose stalks bristle from the shoulders and the underside; the mutation is one living creature, not a duck sitting on, behind, or inside a bale.
+
+Preserve its absurd unsettling identity: an oversized orange duck bill projecting clearly to the left, one small angry visible condiment-red eye, a short thick neck sunk into the bale, the blocky straw torso with two twine bands and bristling loose stalks, one small yellow wing breaking the straw plane, and two complete orange webbed feet planted wide beneath the mass. Broad, blocky, cube-like silhouette with a very low centre of gravity. The bill, eye, both twine bands, straw bristle, wing, and both feet must remain distinct at native game scale.
+
+Chunky simplified flat-colour Fowl Harvest rural-mutation pixel art matching the accepted Burger Drake and Cornquacker in block size, selective oil-black / bruise-plum contour, saturation discipline, and 70% absurd / 30% unsettling tone. Use only named fowl-harvest-24 colors: duck, yolk and field golds, beak orange, toast browns, husk greens, oily near-black, and restrained condiment red. No gore, wounds, exposed organs, realism, gradients, anti-aliasing, blur, or dithering.
+
+Show exactly one complete subject with generous empty clearance on every edge of an opaque flat solid magenta #ff00ff background. No shadow, floor, glow, falling straw, chaff, dust, sparkles, particles, Ability effect, text, watermark, scenery, UI, transparency, other bale, or other subject.
+```
+
+### Intended read
+
+At native 1× it reads in order: duck → hay-bale torso → squat blocky farm mutant. It is broader and harder-edged than Burger Drake's rounded burger mass, and unmistakable from the two tall families. Twine bands, straw bristle, bill, eye, and both feet survive quantization. It is not a duck peering over a bale.
+
+---
+
+## `pie-widgeon` (ordinary opponent)
+
+### Generation prompt
+
+```text
+Single full-body Pie Widgeon ordinary opponent game sprite, strict side profile facing LEFT. A low wide mutant golden-yellow duck anatomically fused with a cooling lattice-crust pie still in its tin. Its whole body is the pie: a shallow crimped toast-brown crust disc sits in a dull storm-slate tin, a woven lattice of crust strips crosses the back with dark condiment-red filling showing between the gaps, and the crimped rim runs the full width of the creature. A small duck head and neck rise from the front edge of the crust. The mutation is one living creature, not a duck standing behind or eating a pie.
+
+Preserve its absurd unsettling identity: an oversized orange duck bill projecting clearly to the left, one narrowed visible condiment-red eye, the crimped crust rim, the woven lattice strips with red filling between them, the dull slate tin edge beneath, one small yellow wing tucked against the crust, and two complete orange webbed feet reaching down past the tin. Low, wide, disc-flat silhouette with a long horizontal base. The bill, eye, crimped rim, individual lattice strips, tin edge, wing, and both feet must remain distinct at native game scale.
+
+Chunky simplified flat-colour Fowl Harvest rural-mutation pixel art matching the accepted Burger Drake and Cornquacker in block size, selective oil-black / bruise-plum contour, saturation discipline, and 70% absurd / 30% unsettling tone. Use only named fowl-harvest-24 colors: duck and yolk golds, beak orange, toast and patty browns, diner cream, storm slate, condiment red, and oily near-black. No gore, wounds, exposed organs, realism, gradients, anti-aliasing, blur, or dithering.
+
+Show exactly one complete subject with generous empty clearance on every edge of an opaque flat solid magenta #ff00ff background. No shadow, floor, glow, steam, crumbs, sparkles, particles, Ability effect, text, watermark, scenery, UI, transparency, other food, or other subject.
+```
+
+### Intended read
+
+At native 1× it reads in order: duck → lattice pie in a tin → low wide diner mutant. It is the flattest and widest of the five Fowl silhouettes, clearly separate from Burger Drake's tall-stacked burger layers. Crimped rim, lattice strips, red filling, tin edge, bill, and both feet survive quantization. It is not a duck behind a pie on a table.
 
 ---
 
