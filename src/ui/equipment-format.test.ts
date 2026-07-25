@@ -8,6 +8,8 @@ import {
   equipmentBaseInitials,
   rareOrEpicDropNames,
   sortArmoryDrops,
+  sweepableDropsAtItemLevel,
+  sweepableItemLevels,
 } from "./equipment-format";
 import { compareEquipmentStatDeltas } from "./snapshot-view";
 
@@ -145,6 +147,42 @@ describe("equipment-format filters and sorts", () => {
     expect(rareOrEpicDropNames(armory, fixtureContent)).toEqual([
       "Fixture Armor",
       "Fixture Blade II",
+    ]);
+  });
+});
+
+describe("sweepable Item Level helpers", () => {
+  const armory: DropInstance[] = [
+    drop({ dropId: 10, baseId: "fixture-blade", itemLevel: 1 }),
+    drop({
+      dropId: 11,
+      baseId: "fixture-armor",
+      itemLevel: 1,
+      locked: true,
+    }),
+    drop({
+      dropId: 12,
+      baseId: "fixture-charm",
+      itemLevel: 1,
+      assignedTo: { classId: "knight", slot: "charm" },
+    }),
+    drop({ dropId: 20, baseId: "fixture-blade-ii", itemLevel: 2, rarity: "rare" }),
+    drop({ dropId: 21, baseId: "fixture-focus", itemLevel: 2 }),
+    drop({ dropId: 30, baseId: "fixture-blade", itemLevel: 3, rarity: "epic" }),
+    drop({ dropId: 31, baseId: "fixture-armor", itemLevel: 3 }),
+  ];
+
+  it("lists sweepable drops at an Item Level in ascending dropId order", () => {
+    expect(sweepableDropsAtItemLevel(armory, 1).map((entry) => entry.dropId)).toEqual([10]);
+    expect(sweepableDropsAtItemLevel(armory, 2).map((entry) => entry.dropId)).toEqual([20, 21]);
+    expect(sweepableDropsAtItemLevel(armory, 3).map((entry) => entry.dropId)).toEqual([30, 31]);
+  });
+
+  it("lists Item Levels with sweepable counts in ascending order", () => {
+    expect(sweepableItemLevels(armory)).toEqual([
+      { itemLevel: 1, count: 1 },
+      { itemLevel: 2, count: 2 },
+      { itemLevel: 3, count: 2 },
     ]);
   });
 });

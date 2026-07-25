@@ -1204,6 +1204,182 @@ describe("Armory surface", () => {
     });
   });
 
+  describe("item level broom", () => {
+    function sweepableArmory(): DropInstance[] {
+      return [
+        drop({ dropId: 1, baseId: "fixture-blade", itemLevel: 1 }),
+        drop({ dropId: 2, baseId: "fixture-armor", itemLevel: 1 }),
+        drop({ dropId: 3, baseId: "fixture-charm", itemLevel: 1 }),
+        drop({ dropId: 4, baseId: "fixture-blade-ii", itemLevel: 2, rarity: "rare" }),
+        drop({ dropId: 5, baseId: "fixture-focus", itemLevel: 2 }),
+        drop({
+          dropId: 6,
+          baseId: "fixture-blade",
+          itemLevel: 1,
+          locked: true,
+        }),
+        drop({
+          dropId: 7,
+          baseId: "fixture-armor",
+          itemLevel: 1,
+          assignedTo: { classId: "knight", slot: "armor" },
+        }),
+      ];
+    }
+
+    it("renders sweep options from sweepableItemLevels and disables controls when empty", () => {
+      const root = document.createElement("div");
+      const selected = { current: "knight" as ClassId };
+      const snapshot = armorySnapshot(sweepableArmory());
+      const surface = mountWithSelection(root, selected);
+      renderArmory(surface, snapshot);
+
+      const options = [...root.querySelectorAll<HTMLOptionElement>(
+        '[data-sweep-item-level="true"] option',
+      )];
+      expect(options.map((option) => option.textContent)).toEqual([
+        "Item Level…",
+        "Item Level 1 (3)",
+        "Item Level 2 (2)",
+      ]);
+      expect(root.querySelector<HTMLButtonElement>('[data-sweep="true"]')?.disabled).toBe(true);
+
+      const emptySnapshot = armorySnapshot([
+        drop({
+          dropId: 1,
+          baseId: "fixture-blade",
+          assignedTo: { classId: "knight", slot: "weapon" },
+        }),
+      ]);
+      renderArmory(surface, emptySnapshot);
+      expect(root.querySelector<HTMLSelectElement>('[data-sweep-item-level="true"]')?.disabled).toBe(
+        true,
+      );
+      expect(root.querySelector<HTMLButtonElement>('[data-sweep="true"]')?.disabled).toBe(true);
+
+      surface.destroy();
+    });
+
+    it("labels Sweep with the selected Item Level and count", () => {
+      const root = document.createElement("div");
+      const selected = { current: "knight" as ClassId };
+      const snapshot = armorySnapshot(sweepableArmory());
+      const surface = mountWithSelection(root, selected);
+      renderArmory(surface, snapshot);
+
+      const select = root.querySelector<HTMLSelectElement>('[data-sweep-item-level="true"]')!;
+      select.value = "2";
+      select.dispatchEvent(new Event("change"));
+      renderArmory(surface, snapshot);
+
+      const sweep = root.querySelector<HTMLButtonElement>('[data-sweep="true"]');
+      expect(sweep?.disabled).toBe(false);
+      expect(sweep?.textContent).toBe("Sweep Item Level 2 (2)");
+
+      surface.destroy();
+    });
+
+    it("renders sweep confirm copy and Rare/Epic disclosure", () => {
+      const root = document.createElement("div");
+      const selected = { current: "knight" as ClassId };
+      const snapshot = armorySnapshot(sweepableArmory());
+      const surface = mountWithSelection(root, selected);
+      renderArmory(surface, snapshot);
+
+      root.querySelector<HTMLSelectElement>('[data-sweep-item-level="true"]')!.value = "2";
+      root
+        .querySelector<HTMLSelectElement>('[data-sweep-item-level="true"]')!
+        .dispatchEvent(new Event("change"));
+      renderArmory(surface, snapshot);
+      root.querySelector<HTMLButtonElement>('[data-sweep="true"]')?.click();
+      renderArmory(surface, snapshot);
+
+      const confirm = root.querySelector('[data-sweep-confirm="true"]');
+      expect(confirm?.querySelectorAll(".armory-confirm-copy")[0]?.textContent).toBe(
+        "Discard 2 piece(s) at Item Level 2?",
+      );
+      expect(confirm?.querySelectorAll(".armory-confirm-copy")[1]?.textContent).toBe(
+        "Rare/Epic: Fixture Blade II",
+      );
+
+      surface.destroy();
+    });
+
+    it("publishes discard once on confirm and resets the selector", () => {
+      const root = document.createElement("div");
+      const commands: import("./bus").TileCommand[] = [];
+      const selected = { current: "knight" as ClassId };
+      const snapshot = armorySnapshot(sweepableArmory());
+      const surface = mountWithSelection(root, selected, (command) => commands.push(command));
+      renderArmory(surface, snapshot);
+
+      const select = root.querySelector<HTMLSelectElement>('[data-sweep-item-level="true"]')!;
+      select.value = "1";
+      select.dispatchEvent(new Event("change"));
+      renderArmory(surface, snapshot);
+      root.querySelector<HTMLButtonElement>('[data-sweep="true"]')?.click();
+      renderArmory(surface, snapshot);
+      root.querySelector<HTMLButtonElement>('[data-sweep-confirm-yes="true"]')?.click();
+
+      expect(commands).toEqual([{ cmd: "discard", args: [[1, 2, 3]] }]);
+      expect(root.querySelector('[data-sweep-confirm="true"]')).toBeNull();
+      expect(
+        root.querySelector<HTMLSelectElement>('[data-sweep-item-level="true"]')?.value,
+      ).toBe("");
+
+      surface.destroy();
+    });
+
+    it("closes sweep confirm without publishing on cancel", () => {
+      const root = document.createElement("div");
+      const commands: import("./bus").TileCommand[] = [];
+      const selected = { current: "knight" as ClassId };
+      const snapshot = armorySnapshot(sweepableArmory());
+      const surface = mountWithSelection(root, selected, (command) => commands.push(command));
+      renderArmory(surface, snapshot);
+
+      root.querySelector<HTMLSelectElement>('[data-sweep-item-level="true"]')!.value = "1";
+      root
+        .querySelector<HTMLSelectElement>('[data-sweep-item-level="true"]')!
+        .dispatchEvent(new Event("change"));
+      renderArmory(surface, snapshot);
+      root.querySelector<HTMLButtonElement>('[data-sweep="true"]')?.click();
+      renderArmory(surface, snapshot);
+      root.querySelector<HTMLButtonElement>('[data-sweep-confirm-no="true"]')?.click();
+      renderArmory(surface, snapshot);
+
+      expect(commands).toEqual([]);
+      expect(root.querySelector('[data-sweep-confirm="true"]')).toBeNull();
+
+      surface.destroy();
+    });
+
+    it("sweeps the whole Armory regardless of slot filter", () => {
+      const root = document.createElement("div");
+      const commands: import("./bus").TileCommand[] = [];
+      const selected = { current: "knight" as ClassId };
+      const snapshot = armorySnapshot(sweepableArmory());
+      const surface = mountWithSelection(root, selected, (command) => commands.push(command));
+      renderArmory(surface, snapshot);
+
+      root.querySelector<HTMLButtonElement>('[data-slot-filter="weapon"]')?.click();
+      renderArmory(surface, snapshot);
+
+      root.querySelector<HTMLSelectElement>('[data-sweep-item-level="true"]')!.value = "1";
+      root
+        .querySelector<HTMLSelectElement>('[data-sweep-item-level="true"]')!
+        .dispatchEvent(new Event("change"));
+      renderArmory(surface, snapshot);
+      root.querySelector<HTMLButtonElement>('[data-sweep="true"]')?.click();
+      renderArmory(surface, snapshot);
+      root.querySelector<HTMLButtonElement>('[data-sweep-confirm-yes="true"]')?.click();
+
+      expect(commands).toEqual([{ cmd: "discard", args: [[1, 2, 3]] }]);
+
+      surface.destroy();
+    });
+  });
+
   it("hides bulk discard until at least one tile is selected", () => {
     const root = document.createElement("div");
     const selected = { current: "knight" as ClassId };

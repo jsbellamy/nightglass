@@ -15,6 +15,8 @@ import {
   selectSalvageBatch,
   SLOT_LABELS,
   sortArmoryDrops,
+  sweepableDropsAtItemLevel,
+  sweepableItemLevels,
 } from "./equipment-format";
 import { bindPressable } from "./keyboard";
 import { EMPTY_ENGINE_LEGALITY, type EngineLegalityView } from "./engine-legality";
@@ -117,6 +119,8 @@ export function mountArmorySurface(
   let browseCompatibility: BrowseCompatibility | null = null;
   let selectedDiscard = new Set<number>();
   let discardConfirmOpen = false;
+  let sweepItemLevel: ItemLevel | null = null;
+  let sweepConfirmOpen = false;
   let stagedSalvageIds = new Set<number>();
   let stagedSalvageMeta: SalvageStageMeta | null = null;
   let pendingSalvageResult: SalvagePendingResult | null = null;
@@ -980,6 +984,125 @@ export function mountArmorySurface(
     toolbar.append(
       el("label", { class: "armory-sort-label", text: "Sort" }, [sortSelect]),
     );
+
+    const sweepLevels = sweepableItemLevels(snapshot.progression.armory);
+    const sweepLevelSelect = el("select", {
+      class: "armory-sweep-item-level-select focus-ring",
+      data: { sweepItemLevel: "true" },
+      aria: { label: "Sweep Item Level" },
+      props: { disabled: sweepLevels.length === 0 },
+    });
+    sweepLevelSelect.append(
+      el("option", {
+        props: { value: "", selected: sweepItemLevel === null },
+        text: "Item Level…",
+      }),
+    );
+    for (const entry of sweepLevels) {
+      sweepLevelSelect.append(
+        el("option", {
+          props: {
+            value: String(entry.itemLevel),
+            selected: sweepItemLevel === entry.itemLevel,
+          },
+          text: `Item Level ${entry.itemLevel} (${entry.count})`,
+        }),
+      );
+    }
+    sweepLevelSelect.addEventListener("change", () => {
+      const value = sweepLevelSelect.value;
+      sweepItemLevel = value === "" ? null : (Number(value) as ItemLevel);
+      sweepConfirmOpen = false;
+      render(snapshot);
+    });
+
+    const selectedSweepCount =
+      sweepItemLevel === null
+        ? 0
+        : sweepableDropsAtItemLevel(snapshot.progression.armory, sweepItemLevel).length;
+    const sweepButton = el("button", {
+      class: "armory-sweep-button focus-ring",
+      data: { sweep: "true" },
+      props: {
+        type: "button",
+        disabled: sweepItemLevel === null || sweepLevels.length === 0,
+      },
+      text:
+        sweepItemLevel === null
+          ? "Sweep"
+          : `Sweep Item Level ${sweepItemLevel} (${selectedSweepCount})`,
+    });
+    bindPressable(sweepButton, () => {
+      if (sweepItemLevel === null) {
+        return;
+      }
+      sweepConfirmOpen = true;
+      render(snapshot);
+    });
+    toolbar.append(
+      el("div", { class: "armory-bulk-actions", data: { sweepStrip: "true" } }, [
+        el("label", { class: "armory-sweep-label", text: "Sweep" }, [sweepLevelSelect]),
+        sweepButton,
+      ]),
+    );
+
+    if (sweepConfirmOpen && sweepItemLevel !== null) {
+      const sweptDrops = sweepableDropsAtItemLevel(
+        snapshot.progression.armory,
+        sweepItemLevel,
+      );
+      const sweptCount = sweptDrops.length;
+      const rareEpic = rareOrEpicDropNames(sweptDrops, content);
+      const confirmCopy: HTMLElement[] = [
+        el("p", {
+          class: "armory-confirm-copy",
+          text: `Discard ${sweptCount} piece(s) at Item Level ${sweepItemLevel}?`,
+        }),
+      ];
+      if (rareEpic.length > 0) {
+        confirmCopy.push(
+          el("p", {
+            class: "armory-confirm-copy",
+            text: `Rare/Epic: ${rareEpic.join(", ")}`,
+          }),
+        );
+      }
+      const yes = el("button", {
+        class: "armory-confirm-yes focus-ring",
+        data: { sweepConfirmYes: "true" },
+        props: { type: "button" },
+        text: "Discard",
+      });
+      bindPressable(yes, () => {
+        if (!lastSnapshot || sweepItemLevel === null) {
+          return;
+        }
+        const dropIds = sweepableDropsAtItemLevel(
+          lastSnapshot.progression.armory,
+          sweepItemLevel,
+        ).map((entry) => entry.dropId);
+        publish({ cmd: "discard", args: [dropIds] });
+        sweepItemLevel = null;
+        sweepConfirmOpen = false;
+        render(lastSnapshot);
+      });
+      const no = el("button", {
+        class: "armory-confirm-no focus-ring",
+        data: { sweepConfirmNo: "true" },
+        props: { type: "button" },
+        text: "Cancel",
+      });
+      bindPressable(no, () => {
+        sweepConfirmOpen = false;
+        render(snapshot);
+      });
+      toolbar.append(
+        el("div", { class: "armory-confirm", data: { sweepConfirm: "true" } }, [
+          ...confirmCopy,
+          el("div", { class: "armory-confirm-actions" }, [yes, no]),
+        ]),
+      );
+    }
 
     if (selectedDiscard.size > 0) {
       const discardButton = el("button", {

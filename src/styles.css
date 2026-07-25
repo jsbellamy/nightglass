@@ -2411,6 +2411,7 @@ html.dock-window body {
 
 .armory-discard-button,
 .armory-equip-button,
+.armory-sweep-button,
 .equipment-lock-toggle,
 .armory-confirm-yes,
 .armory-confirm-no {
@@ -2435,13 +2436,15 @@ html.dock-window body {
 }
 
 .armory-sort-label,
-.armory-state-label {
+.armory-state-label,
+.armory-sweep-label {
   font-size: 11px;
   color: var(--dock-text-muted, #d8d0bf);
 }
 
 .armory-sort-select,
-.armory-state-select {
+.armory-state-select,
+.armory-sweep-item-level-select {
   margin-left: 6px;
   padding: 2px 4px;
   border-radius: 4px;

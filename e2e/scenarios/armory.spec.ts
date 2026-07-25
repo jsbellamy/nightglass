@@ -200,7 +200,7 @@ test.describe("Armory evidence scenarios", () => {
   defineEvidenceScenario(
     {
       id: "armory-salvage",
-      slugs: ["armory-salvage-tray"],
+      slugs: ["armory-salvage-tray", "armory-item-level-broom"],
       spec: {
         id: "rendered-evidence:armory-salvage",
         path: "e2e/scenarios/armory.spec.ts",
@@ -222,6 +222,66 @@ test.describe("Armory evidence scenarios", () => {
 
     await dock.click('[data-dock-tab="armory"]');
     await dock.waitForSelector('[data-salvage-tray="true"]');
+
+    await dock.selectOption('[data-sweep-item-level="true"]', "3");
+    await dock.click('[data-sweep="true"]');
+
+    const sweepConfirmLayout = await dock.evaluate(() => {
+      const panel = document.querySelector<HTMLElement>(".dock-panel");
+      const body = document.querySelector<HTMLElement>(".armory-body--compare-host");
+      const confirm = document.querySelector<HTMLElement>('[data-sweep-confirm="true"]');
+      if (!panel || !body || !confirm) {
+        return null;
+      }
+      return {
+        confirmVisible: confirm !== null,
+        panelScrollable: panel.scrollHeight > panel.clientHeight + 1,
+        bodyScrollable: body.scrollHeight > body.clientHeight + 1,
+      };
+    });
+    expect(sweepConfirmLayout).not.toBeNull();
+    expect(sweepConfirmLayout!.confirmVisible).toBe(true);
+    expect(sweepConfirmLayout!.panelScrollable).toBe(false);
+    expect(sweepConfirmLayout!.bodyScrollable).toBe(false);
+
+    const itemLevelThreeCommonIds = [202, 205, 208, 211];
+
+    await dock.evaluate((channelName) => {
+      const w = window as unknown as { __ngCmdLog?: unknown[]; __ngCmdSpy?: BroadcastChannel };
+      w.__ngCmdLog = [];
+      w.__ngCmdSpy?.close();
+      const channel = new BroadcastChannel(channelName);
+      channel.onmessage = (event: MessageEvent<{ type: string; command?: unknown }>) => {
+        if (event.data.type === "command") {
+          w.__ngCmdLog?.push(event.data.command);
+        }
+      };
+      w.__ngCmdSpy = channel;
+    }, NIGHTGLASS_BUS_CHANNEL);
+
+    await dock.click('[data-sweep-confirm-yes="true"]');
+
+    const discardCommands = await dock.evaluate(() => {
+      const w = window as unknown as { __ngCmdLog?: unknown[] };
+      return w.__ngCmdLog ?? [];
+    });
+    expect(
+      discardCommands.some((command) => {
+        if (
+          typeof command === "object" &&
+          command !== null &&
+          "cmd" in command &&
+          command.cmd === "discard" &&
+          "args" in command &&
+          Array.isArray(command.args) &&
+          Array.isArray(command.args[0])
+        ) {
+          return command.args[0].length === itemLevelThreeCommonIds.length &&
+            itemLevelThreeCommonIds.every((dropId, index) => command.args[0][index] === dropId);
+        }
+        return false;
+      }),
+    ).toBe(true);
 
     const trayReady = await dock.evaluate(() => {
       const autofill = document.querySelector<HTMLButtonElement>('[data-salvage-autofill="true"]');
