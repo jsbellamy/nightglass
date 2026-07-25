@@ -20,6 +20,20 @@ const EXPECTED_OPPONENT_IDS = [
   "astrolabe-spider-s8-48b",
   "astrolabe-spider-s9-70a",
   "astrolabe-spider-s9-70b",
+  "pendulum-rat-s7-44",
+  "pendulum-rat-s7-40",
+  "pendulum-rat-s8-48",
+  "pendulum-rat-s8-38",
+  "pendulum-rat-s9-70",
+  "pendulum-rat-s9-52",
+  "sundial-gargoyle-s7-36",
+  "sundial-gargoyle-s7-40",
+  "sundial-gargoyle-s8-47",
+  "sundial-gargoyle-s8-38",
+  "sundial-gargoyle-s9-60",
+  "sundial-gargoyle-s9-52",
+  "astrolabe-spider-s8-38",
+  "astrolabe-spider-s9-52",
   "the-vigil",
   "the-tocsin",
   "the-unwound",
@@ -84,7 +98,9 @@ describe("Unwound Belfry Opponents", () => {
       const opponent = opponentById(unwoundBelfryOpponents, id);
       expect(opponent.boss).toBe(false);
       expect(opponent.family).toBe(opponent.spriteKey);
-      expect(["tickmoth", "tollbat", "astrolabe-spider"]).toContain(opponent.spriteKey);
+      expect(["tickmoth", "tollbat", "astrolabe-spider", "pendulum-rat", "sundial-gargoyle"]).toContain(
+        opponent.spriteKey,
+      );
     }
 
     const vigil = opponentById(unwoundBelfryOpponents, "the-vigil");
@@ -589,12 +605,157 @@ describe("Unwound Belfry Opponents", () => {
     ]);
   });
 
-  it("keeps every core ability on a positive cooldown", async () => {
+  it("authors Pendulum Rat and Sundial Gargoyle kits with specials before Basic", async () => {
+    const { unwoundBelfryOpponentAbilities, unwoundBelfryOpponents } = await import(
+      "./unwound-belfry-opponents"
+    );
+
+    expect(abilityById(unwoundBelfryOpponentAbilities, "pendulum-rat-swing-tail")).toMatchObject({
+      name: "Swing Tail",
+      classId: "knight",
+      slot: "core",
+      targeting: { kind: "all-opponents" },
+      windUpMs: 580,
+      recoveryMs: 720,
+      cooldownMs: 9_000,
+      effects: [
+        { kind: "damage", channel: "physical", coefficient: 0.65 },
+        { kind: "apply-status", statusId: "tolling" },
+      ],
+    });
+    expect(abilityById(unwoundBelfryOpponentAbilities, "pendulum-rat-gnaw")).toMatchObject({
+      name: "Gnaw",
+      classId: "knight",
+      slot: "basic",
+      targeting: { kind: "closest-opponent" },
+      windUpMs: 400,
+      recoveryMs: 640,
+      cooldownMs: 0,
+      effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
+    });
+
+    expect(
+      abilityById(unwoundBelfryOpponentAbilities, "sundial-gargoyle-shadow-cast"),
+    ).toMatchObject({
+      name: "Shadow Cast",
+      classId: "knight",
+      slot: "core",
+      targeting: { kind: "all-opponents" },
+      windUpMs: 620,
+      recoveryMs: 760,
+      cooldownMs: 9_500,
+      effects: [
+        { kind: "damage", channel: "elemental", element: "frost", coefficient: 0.6 },
+        { kind: "apply-status", statusId: "timeslip" },
+      ],
+    });
+    expect(
+      abilityById(unwoundBelfryOpponentAbilities, "sundial-gargoyle-stone-swipe"),
+    ).toMatchObject({
+      name: "Stone Swipe",
+      classId: "knight",
+      slot: "basic",
+      targeting: { kind: "closest-opponent" },
+      windUpMs: 470,
+      recoveryMs: 700,
+      cooldownMs: 0,
+      effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
+    });
+
+    expect(opponentById(unwoundBelfryOpponents, "pendulum-rat-s7-44").abilityIds).toEqual([
+      "pendulum-rat-swing-tail",
+      "pendulum-rat-gnaw",
+    ]);
+    expect(opponentById(unwoundBelfryOpponents, "sundial-gargoyle-s8-47").abilityIds).toEqual([
+      "sundial-gargoyle-shadow-cast",
+      "sundial-gargoyle-stone-swipe",
+    ]);
+  });
+
+  it("reuses shipped stat blocks for Pendulum Rat, Sundial Gargoyle, and extra Astrolabe-Spider slots", async () => {
+    const { unwoundBelfryOpponents } = await import("./unwound-belfry-opponents");
+
+    const tollbatS7 = opponentById(unwoundBelfryOpponents, "tollbat-s7-44a").base;
+    const tollbatS8 = opponentById(unwoundBelfryOpponents, "tollbat-s8-47a").base;
+    const tollbatS9 = opponentById(unwoundBelfryOpponents, "tollbat-s9-60").base;
+    const spiderS8 = opponentById(unwoundBelfryOpponents, "astrolabe-spider-s8-48a").base;
+    const spiderS9 = opponentById(unwoundBelfryOpponents, "astrolabe-spider-s9-70a").base;
+
+    const expectOpponent = (
+      id: string,
+      expectedBase: OpponentDef["base"],
+      family: string,
+      xpAward: number,
+      abilityIds: readonly string[],
+    ) => {
+      const opponent = opponentById(unwoundBelfryOpponents, id);
+      expect(opponent.base).toBe(expectedBase);
+      expect(opponent.xpAward).toBe(xpAward);
+      expect(opponent.family).toBe(family);
+      expect(opponent.spriteKey).toBe(family);
+      expect(opponent.boss).toBe(false);
+      expect(opponent.abilityIds).toEqual([...abilityIds]);
+    };
+
+    for (const id of ["pendulum-rat-s7-44", "pendulum-rat-s7-40"]) {
+      expectOpponent(id, tollbatS7, "pendulum-rat", xpFromOpponentId(id), [
+        "pendulum-rat-swing-tail",
+        "pendulum-rat-gnaw",
+      ]);
+    }
+    for (const id of ["pendulum-rat-s8-48", "pendulum-rat-s8-38"]) {
+      expectOpponent(id, tollbatS8, "pendulum-rat", xpFromOpponentId(id), [
+        "pendulum-rat-swing-tail",
+        "pendulum-rat-gnaw",
+      ]);
+    }
+    for (const id of ["pendulum-rat-s9-70", "pendulum-rat-s9-52"]) {
+      expectOpponent(id, tollbatS9, "pendulum-rat", xpFromOpponentId(id), [
+        "pendulum-rat-swing-tail",
+        "pendulum-rat-gnaw",
+      ]);
+    }
+
+    expectOpponent("sundial-gargoyle-s7-36", tollbatS7, "sundial-gargoyle", 36, [
+      "sundial-gargoyle-shadow-cast",
+      "sundial-gargoyle-stone-swipe",
+    ]);
+    expectOpponent("sundial-gargoyle-s7-40", tollbatS7, "sundial-gargoyle", 40, [
+      "sundial-gargoyle-shadow-cast",
+      "sundial-gargoyle-stone-swipe",
+    ]);
+    for (const id of ["sundial-gargoyle-s8-47", "sundial-gargoyle-s8-38"]) {
+      expectOpponent(id, spiderS8, "sundial-gargoyle", xpFromOpponentId(id), [
+        "sundial-gargoyle-shadow-cast",
+        "sundial-gargoyle-stone-swipe",
+      ]);
+    }
+    for (const id of ["sundial-gargoyle-s9-60", "sundial-gargoyle-s9-52"]) {
+      expectOpponent(id, spiderS9, "sundial-gargoyle", xpFromOpponentId(id), [
+        "sundial-gargoyle-shadow-cast",
+        "sundial-gargoyle-stone-swipe",
+      ]);
+    }
+
+    expectOpponent("astrolabe-spider-s8-38", spiderS8, "astrolabe-spider", 38, [
+      "astrolabe-spider-verdigris-web",
+      "astrolabe-spider-caliper-bite",
+    ]);
+    expectOpponent("astrolabe-spider-s9-52", spiderS9, "astrolabe-spider", 52, [
+      "astrolabe-spider-verdigris-web",
+      "astrolabe-spider-caliper-bite",
+    ]);
+  });
+
+  it("keeps every core ability on a positive cooldown and every basic at zero", async () => {
     const { unwoundBelfryOpponentAbilities } = await import("./unwound-belfry-opponents");
 
     for (const ability of unwoundBelfryOpponentAbilities) {
       if (ability.slot === "core") {
         expect(ability.cooldownMs).toBeGreaterThan(0);
+      }
+      if (ability.slot === "basic") {
+        expect(ability.cooldownMs).toBe(0);
       }
     }
   });

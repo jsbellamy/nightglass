@@ -176,6 +176,11 @@ const ASTROLABE_SPIDER_ABILITY_IDS = [
   "astrolabe-spider-verdigris-web",
   "astrolabe-spider-caliper-bite",
 ] as const;
+const PENDULUM_RAT_ABILITY_IDS = ["pendulum-rat-swing-tail", "pendulum-rat-gnaw"] as const;
+const SUNDIAL_GARGOYLE_ABILITY_IDS = [
+  "sundial-gargoyle-shadow-cast",
+  "sundial-gargoyle-stone-swipe",
+] as const;
 const THE_VIGIL_ABILITY_IDS = [
   "the-vigil-stopped-hour",
   "the-vigil-hollow-gaze",
@@ -469,6 +474,56 @@ export const unwoundBelfryOpponentAbilities: AbilityDef[] = [
     recoveryMs: 650,
     cooldownMs: 0,
   },
+  {
+    id: "pendulum-rat-swing-tail",
+    name: "Swing Tail",
+    classId: "knight",
+    slot: "core",
+    targeting: { kind: "all-opponents" },
+    effects: [
+      { kind: "damage", channel: "physical", coefficient: 0.65 },
+      { kind: "apply-status", statusId: "tolling" },
+    ],
+    windUpMs: 580,
+    recoveryMs: 720,
+    cooldownMs: 9_000,
+  },
+  {
+    id: "pendulum-rat-gnaw",
+    name: "Gnaw",
+    classId: "knight",
+    slot: "basic",
+    targeting: { kind: "closest-opponent" },
+    effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
+    windUpMs: 400,
+    recoveryMs: 640,
+    cooldownMs: 0,
+  },
+  {
+    id: "sundial-gargoyle-shadow-cast",
+    name: "Shadow Cast",
+    classId: "knight",
+    slot: "core",
+    targeting: { kind: "all-opponents" },
+    effects: [
+      { kind: "damage", channel: "elemental", element: "frost", coefficient: 0.6 },
+      { kind: "apply-status", statusId: "timeslip" },
+    ],
+    windUpMs: 620,
+    recoveryMs: 760,
+    cooldownMs: 9_500,
+  },
+  {
+    id: "sundial-gargoyle-stone-swipe",
+    name: "Stone Swipe",
+    classId: "knight",
+    slot: "basic",
+    targeting: { kind: "closest-opponent" },
+    effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
+    windUpMs: 470,
+    recoveryMs: 700,
+    cooldownMs: 0,
+  },
 ];
 
 function tickmoth(id: string, stats: BaseStats, xpAward: number): OpponentDef {
@@ -510,6 +565,32 @@ function astrolabeSpider(id: string, stats: BaseStats, xpAward: number): Opponen
   };
 }
 
+function pendulumRat(id: string, stats: BaseStats, xpAward: number): OpponentDef {
+  return {
+    id,
+    name: "Pendulum Rat",
+    family: "pendulum-rat",
+    boss: false,
+    base: stats,
+    abilityIds: [...PENDULUM_RAT_ABILITY_IDS],
+    xpAward,
+    spriteKey: "pendulum-rat",
+  };
+}
+
+function sundialGargoyle(id: string, stats: BaseStats, xpAward: number): OpponentDef {
+  return {
+    id,
+    name: "Sundial Gargoyle",
+    family: "sundial-gargoyle",
+    boss: false,
+    base: stats,
+    abilityIds: [...SUNDIAL_GARGOYLE_ABILITY_IDS],
+    xpAward,
+    spriteKey: "sundial-gargoyle",
+  };
+}
+
 function belfryBoss(
   id: string,
   name: string,
@@ -547,6 +628,23 @@ export const unwoundBelfryOpponents: OpponentDef[] = [
   astrolabeSpider("astrolabe-spider-s8-48b", SPIDER_S8_STATS, 48),
   astrolabeSpider("astrolabe-spider-s9-70a", SPIDER_S9_STATS, 70),
   astrolabeSpider("astrolabe-spider-s9-70b", SPIDER_S9_STATS, 70),
+
+  pendulumRat("pendulum-rat-s7-44", TOLLBAT_S7_STATS, 44),
+  pendulumRat("pendulum-rat-s7-40", TOLLBAT_S7_STATS, 40),
+  pendulumRat("pendulum-rat-s8-48", TOLLBAT_S8_STATS, 48),
+  pendulumRat("pendulum-rat-s8-38", TOLLBAT_S8_STATS, 38),
+  pendulumRat("pendulum-rat-s9-70", TOLLBAT_S9_STATS, 70),
+  pendulumRat("pendulum-rat-s9-52", TOLLBAT_S9_STATS, 52),
+
+  sundialGargoyle("sundial-gargoyle-s7-36", TOLLBAT_S7_STATS, 36),
+  sundialGargoyle("sundial-gargoyle-s7-40", TOLLBAT_S7_STATS, 40),
+  sundialGargoyle("sundial-gargoyle-s8-47", SPIDER_S8_STATS, 47),
+  sundialGargoyle("sundial-gargoyle-s8-38", SPIDER_S8_STATS, 38),
+  sundialGargoyle("sundial-gargoyle-s9-60", SPIDER_S9_STATS, 60),
+  sundialGargoyle("sundial-gargoyle-s9-52", SPIDER_S9_STATS, 52),
+
+  astrolabeSpider("astrolabe-spider-s8-38", SPIDER_S8_STATS, 38),
+  astrolabeSpider("astrolabe-spider-s9-52", SPIDER_S9_STATS, 52),
 
   belfryBoss("the-vigil", "The Vigil", VIGIL_STATS, THE_VIGIL_ABILITY_IDS, 480),
   belfryBoss("the-tocsin", "The Tocsin", TOCSIN_STATS, THE_TOCSIN_ABILITY_IDS, 570),
