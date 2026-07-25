@@ -117,6 +117,12 @@ const THE_COMBINE_ABILITY_IDS = [
   "the-combine-reaping-pass",
   "the-combine-thresher-bite",
 ] as const;
+const MILKSHAKE_MALLARD_ABILITY_IDS = [
+  "milkshake-mallard-brainfreeze",
+  "milkshake-mallard-straw-jab",
+] as const;
+const BALEWADDLE_ABILITY_IDS = ["balewaddle-chaff-burst", "balewaddle-bale-bump"] as const;
+const PIE_WIDGEON_ABILITY_IDS = ["pie-widgeon-scalding-slice", "pie-widgeon-crust-peck"] as const;
 
 export const fowlHarvestOpponentAbilities: AbilityDef[] = [
   {
@@ -281,6 +287,81 @@ export const fowlHarvestOpponentAbilities: AbilityDef[] = [
     recoveryMs: 650,
     cooldownMs: 0,
   },
+  {
+    id: "milkshake-mallard-brainfreeze",
+    name: "Brainfreeze",
+    classId: "knight",
+    slot: "core",
+    targeting: { kind: "closest-opponent" },
+    effects: [
+      { kind: "damage", channel: "elemental", element: "frost", coefficient: 0.9 },
+      { kind: "apply-status", statusId: "timeslip" },
+    ],
+    windUpMs: 470,
+    recoveryMs: 690,
+    cooldownMs: 8_500,
+  },
+  {
+    id: "milkshake-mallard-straw-jab",
+    name: "Straw Jab",
+    classId: "knight",
+    slot: "basic",
+    targeting: { kind: "closest-opponent" },
+    effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
+    windUpMs: 410,
+    recoveryMs: 670,
+    cooldownMs: 0,
+  },
+  {
+    id: "balewaddle-chaff-burst",
+    name: "Chaff Burst",
+    classId: "knight",
+    slot: "core",
+    targeting: { kind: "all-opponents" },
+    effects: [
+      { kind: "damage", channel: "physical", coefficient: 0.55 },
+      { kind: "apply-status", statusId: "shaken" },
+    ],
+    windUpMs: 590,
+    recoveryMs: 710,
+    cooldownMs: 9_000,
+  },
+  {
+    id: "balewaddle-bale-bump",
+    name: "Bale Bump",
+    classId: "knight",
+    slot: "basic",
+    targeting: { kind: "closest-opponent" },
+    effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
+    windUpMs: 440,
+    recoveryMs: 690,
+    cooldownMs: 0,
+  },
+  {
+    id: "pie-widgeon-scalding-slice",
+    name: "Scalding Slice",
+    classId: "knight",
+    slot: "core",
+    targeting: { kind: "closest-opponent" },
+    effects: [
+      { kind: "damage", channel: "elemental", element: "fire", coefficient: 0.85 },
+      { kind: "apply-status", statusId: "scalded" },
+    ],
+    windUpMs: 460,
+    recoveryMs: 680,
+    cooldownMs: 8_000,
+  },
+  {
+    id: "pie-widgeon-crust-peck",
+    name: "Crust Peck",
+    classId: "knight",
+    slot: "basic",
+    targeting: { kind: "closest-opponent" },
+    effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
+    windUpMs: 430,
+    recoveryMs: 660,
+    cooldownMs: 0,
+  },
 ];
 
 function burgerDrake(id: string, stats: BaseStats, xpAward: number): OpponentDef {
@@ -306,6 +387,45 @@ function cornquacker(id: string, stats: BaseStats, xpAward: number): OpponentDef
     abilityIds: [...CORNQUACKER_ABILITY_IDS],
     xpAward,
     spriteKey: "cornquacker",
+  };
+}
+
+function milkshakeMallard(id: string, stats: BaseStats, xpAward: number): OpponentDef {
+  return {
+    id,
+    name: "Milkshake Mallard",
+    family: "milkshake-mallard",
+    boss: false,
+    base: stats,
+    abilityIds: [...MILKSHAKE_MALLARD_ABILITY_IDS],
+    xpAward,
+    spriteKey: "milkshake-mallard",
+  };
+}
+
+function balewaddle(id: string, stats: BaseStats, xpAward: number): OpponentDef {
+  return {
+    id,
+    name: "Balewaddle",
+    family: "balewaddle",
+    boss: false,
+    base: stats,
+    abilityIds: [...BALEWADDLE_ABILITY_IDS],
+    xpAward,
+    spriteKey: "balewaddle",
+  };
+}
+
+function pieWidgeon(id: string, stats: BaseStats, xpAward: number): OpponentDef {
+  return {
+    id,
+    name: "Pie Widgeon",
+    family: "pie-widgeon",
+    boss: false,
+    base: stats,
+    abilityIds: [...PIE_WIDGEON_ABILITY_IDS],
+    xpAward,
+    spriteKey: "pie-widgeon",
   };
 }
 
@@ -346,6 +466,20 @@ export const fowlHarvestOpponents: OpponentDef[] = [
   cornquacker("cornquacker-s6-33", CORN_S6_STATS, 33),
   cornquacker("cornquacker-s6-32", CORN_S6_STATS, 32),
   cornquacker("cornquacker-s6-26", CORN_S6_STATS, 26),
+
+  milkshakeMallard("milkshake-mallard-s4-27", BURGER_S4_STATS, 27),
+  milkshakeMallard("milkshake-mallard-s4-20", BURGER_S4_STATS, 20),
+  balewaddle("balewaddle-s4-26", BURGER_S4_STATS, 26),
+  pieWidgeon("pie-widgeon-s4-20", BURGER_S4_STATS, 20),
+  milkshakeMallard("milkshake-mallard-s5-20", CORN_S5_STATS, 20),
+  balewaddle("balewaddle-s5-33", CORN_S5_STATS, 33),
+  balewaddle("balewaddle-s5-20", CORN_S5_STATS, 20),
+  pieWidgeon("pie-widgeon-s5-33", CORN_S5_STATS, 33),
+  pieWidgeon("pie-widgeon-s5-20", CORN_S5_STATS, 20),
+  milkshakeMallard("milkshake-mallard-s6-32", BURGER_S6_STATS, 32),
+  balewaddle("balewaddle-s6-32", CORN_S6_STATS, 32),
+  balewaddle("balewaddle-s6-26", CORN_S6_STATS, 26),
+  pieWidgeon("pie-widgeon-s6-26", BURGER_S6_STATS, 26),
 
   fowlBoss("the-fryer", "The Fryer", THE_FRYER_STATS, THE_FRYER_ABILITY_IDS, 240),
   fowlBoss("scarequack", "Scarequack", SCAREQUACK_STATS, SCAREQUACK_ABILITY_IDS, 300),
