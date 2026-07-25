@@ -1006,7 +1006,7 @@ describe("element-keyed effect frames", () => {
     document.body.replaceChildren();
   });
 
-  it("renders spell-bolt-fire for arc-spark when action-started carries fire element", () => {
+  it("draws a Fire-adapted Arc Spark bolt during Wind-up", () => {
     const { effectLane, presentation, addCombatant } = mountPresentationHarness();
     addCombatant("party:wizard:middle", "40px");
     addCombatant("opp:1:0", "260px");
@@ -1033,7 +1033,7 @@ describe("element-keyed effect frames", () => {
     presentation.destroy();
   });
 
-  it("renders spell-bolt-lightning for arc-spark when action-started omits element", () => {
+  it("falls back to the authored Lightning bolt when Wind-up omits Element", () => {
     const { effectLane, presentation, addCombatant } = mountPresentationHarness();
     addCombatant("party:wizard:middle", "40px");
     addCombatant("opp:1:0", "260px");

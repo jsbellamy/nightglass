@@ -3868,7 +3868,7 @@ describe("adaptive Basic Attack Element", () => {
   });
 });
 
-describe("action-started Element for adaptive Basic Attacks", () => {
+describe("Wind-up Element for adaptive Basic Attacks", () => {
   const fireWizardContent: Content = {
     ...productionContent,
     classes: productionContent.classes.map((classKit) =>
@@ -3898,7 +3898,7 @@ describe("action-started Element for adaptive Basic Attacks", () => {
     return undefined;
   }
 
-  it("carries the resolved Element on action-started for a Fire-adapted arc-spark", () => {
+  it("reports Fire as the Wind-up Element for a Fire-adapted Arc Spark", () => {
     const snap = scenario(fireWizardContent)
       .withParty(["wizard", "knight", "priest"], "hunter")
       .build();
@@ -3912,7 +3912,7 @@ describe("action-started Element for adaptive Basic Attacks", () => {
     expect(started).toMatchObject({ abilityId: "arc-spark", element: "fire" });
   });
 
-  it("omits element on action-started for a physical Basic Attack", () => {
+  it("omits Wind-up Element for a physical Basic Attack", () => {
     const snap = scenario(productionContent)
       .withParty(["knight", "wizard", "priest"], "hunter")
       .build();
@@ -3927,7 +3927,7 @@ describe("action-started Element for adaptive Basic Attacks", () => {
     expect(started).not.toHaveProperty("element");
   });
 
-  it("omits element on action-started for a non-basic Ability", () => {
+  it("omits Wind-up Element for a Core Ability", () => {
     const snap = scenario(productionContent)
       .withParty(["wizard", "knight", "priest"], "hunter")
       .build();
