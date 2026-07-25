@@ -8,7 +8,8 @@
 Nightglass simulation behavior must be testable without DOM, Tauri, or real time.
 `docs/agents/code-style.md` defines one **Engine seam**:
 `createEngine(content, saved?, lootSeed?, now?)` → commands → `advanceBy(ms)` /
-`advanceOffline(ms)` (ordered Presentation Events) → `snapshot()`, driven with
+`advanceOffline(ms)` (ordered Presentation Events) / `advanceOfflineSummary(ms)`
+(folded offline totals) → `snapshot()`, driven with
 fixture Content and a seeded loot stream. Chunk neutrality is part of that
 contract: many small `advanceBy` calls and one large call must yield identical
 event batches and Snapshots where timing matters.
@@ -25,8 +26,8 @@ orchestrated sub-engines: the interface-to-implementation ratio is already the
 healthiest boundary in the repo, and fragmentation would widen what callers must
 know without hiding the real ordering and state coupling inside `advanceBy`.
 
-Internal logic stays reachable only through `advanceBy` / `advanceOffline` and
-the command methods on `Engine`. That is why `src/core/engine.test.ts` is large:
+Internal logic stays reachable only through `advanceBy` / `advanceOffline` /
+`advanceOfflineSummary` and the command methods on `Engine`. That is why `src/core/engine.test.ts` is large:
 broad behavior is exercised through the public seam, and that test cost is
 accepted deliberately.
 
@@ -45,4 +46,7 @@ read-only queries and must not mutate state or bypass advancement.
 - Large `engine.test.ts` is expected; prefer extending the seam tests over reaching
   into private helpers.
 - Legality predicates remain read-only queries; they must not mutate state or
-  bypass `advanceBy` / `advanceOffline`.
+  bypass `advanceBy` / `advanceOffline` / `advanceOfflineSummary`.
+- `advanceOfflineSummary` is the sanctioned widening for Offline Progress boot:
+  callers need stage-clear totals without subscribing to the full Presentation
+  Event vocabulary, so the Engine may return a folded result on that path only.

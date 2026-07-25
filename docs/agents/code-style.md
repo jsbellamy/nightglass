@@ -25,9 +25,12 @@ Test at these public boundaries, nowhere internal:
 
 - **Engine seam** — `createEngine(content, saved?, lootSeed?, now?)` →
   commands → `advanceBy(ms)` / `advanceOffline(ms)` (returning ordered
-  Presentation Events) → `snapshot()`. `advanceBy` is the live and accelerated
+  Presentation Events) / `advanceOfflineSummary(ms)` (returning folded offline
+  totals) → `snapshot()`. `advanceBy` is the live and accelerated
   path (including Drop awards); `advanceOffline` advances the same combat and
-  XP schedule but awards no Drops, for Offline Progress catch-up. Drive it with
+  XP schedule but awards no Drops, for Offline Progress catch-up;
+  `advanceOfflineSummary` is the boot-path variant that counts
+  `stage-cleared` events without materialising the full stream. Drive it with
   fixture Content and a seeded loot stream; pump time synchronously. **Chunk
   neutrality is itself a seam property**: where timing behavior is in scope,
   assert that many small `advanceBy` calls and one large call produce identical

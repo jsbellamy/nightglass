@@ -38,6 +38,7 @@ function createStubEngine(): Engine {
   return {
     advanceBy: vi.fn(() => []),
     advanceOffline: vi.fn(() => []),
+    advanceOfflineSummary: vi.fn(() => ({ stagesCleared: 0 })),
     snapshot: vi.fn(),
     beginFreshAttempt: vi.fn(() => []),
     selectStage: vi.fn(

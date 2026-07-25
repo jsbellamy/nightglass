@@ -27,4 +27,16 @@ describe("offline progress CI timing budget", () => {
     }
     expect(Math.min(...samples)).toBeLessThan(2000);
   }, 60_000);
+
+  it("summarises real content by the full 8h cap in under 2s wall time", () => {
+    const samples: number[] = [];
+    for (let run = 0; run < 3; run += 1) {
+      const engine = createEngine(fullContent, undefined, DEFAULT_LOOT_SEED);
+      engine.advanceBy(1);
+      const start = performance.now();
+      engine.advanceOfflineSummary(OFFLINE_CAP_MS);
+      samples.push(performance.now() - start);
+    }
+    expect(Math.min(...samples)).toBeLessThan(2000);
+  }, 60_000);
 });
