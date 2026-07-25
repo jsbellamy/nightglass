@@ -798,5 +798,37 @@
       "provider": "Cursor GenerateImage",
       "raw_sha256": "985c4c599a54775d0c97abfeb0612eed7333442995ddf6340d00d85efca22f3e"
     }
+  },
+  "balewaddle": {
+    "action": "still",
+    "frame_size": [
+      30,
+      19
+    ],
+    "visual_bounds": [
+      0,
+      0,
+      30,
+      19
+    ],
+    "foot_anchor": [
+      15,
+      19
+    ],
+    "palette": "fowl-harvest-24",
+    "baseline_row": 18,
+    "total_ms": 1,
+    "frames": [
+      {
+        "name": "balewaddle",
+        "duration_ms": 1,
+        "sha256": "982565167a71b7e86ebb180da8731c636d1b69a57930fa57aa7f6a869d4aae82"
+      }
+    ],
+    "cues_ms": {},
+    "source": {
+      "provider": "Cursor GenerateImage",
+      "raw_sha256": "234802b62cd215cc87f13d70787931d3a74a9e07aab68b71817983c70ea99517"
+    }
   }
 }
