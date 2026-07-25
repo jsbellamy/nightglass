@@ -1227,7 +1227,7 @@ describe("Armory surface", () => {
       ];
     }
 
-    it("renders sweep options from sweepableItemLevels and disables controls when empty", () => {
+    it("renders Item Level sweep options and disables controls when nothing is sweepable", () => {
       const root = document.createElement("div");
       const selected = { current: "knight" as ClassId };
       const snapshot = armorySnapshot(sweepableArmory());

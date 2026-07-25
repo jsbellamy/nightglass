@@ -151,7 +151,7 @@ describe("equipment-format filters and sorts", () => {
   });
 });
 
-describe("sweepable Item Level helpers", () => {
+describe("Item Level sweep eligibility", () => {
   const armory: DropInstance[] = [
     drop({ dropId: 10, baseId: "fixture-blade", itemLevel: 1 }),
     drop({
