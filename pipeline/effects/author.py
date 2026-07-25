@@ -271,6 +271,254 @@ def buff_halo() -> Image.Image:
     return im
 
 
+def aegis_wall() -> Image.Image:
+    """Curved wall of overlapping interlocked shields — buff read, arc ramp."""
+    w = h = 30
+    c = (w - 1) / 2.0
+    im = canvas(w, h)
+    ramp = PALETTE["families"]["arc"]
+    for i, (cx_off, cy_off, tilt) in enumerate(
+        ((-5.5, 1.0, -18), (-1.5, -1.0, 0), (3.5, 1.0, 18))
+    ):
+        scx, scy = c + cx_off, c + cy_off
+        for y in range(h):
+            for x in range(w):
+                dx, dy = x - scx, y - scy
+                ang = math.degrees(math.atan2(dy, dx)) - tilt
+                if not (-48 <= ang <= 48):
+                    continue
+                shield_y = dy + 0.35 * (dx * dx) / 9.0
+                if not (-7.5 <= shield_y <= 7.5):
+                    continue
+                edge = abs(shield_y) / 7.5
+                tip = abs(ang) / 48.0
+                put(
+                    im,
+                    x,
+                    y,
+                    ramp_pick(ramp, min(1.0, 0.45 * edge + 0.65 * tip + 0.1 * i)),
+                )
+        for sx in (-3, 0, 3):
+            put(im, int(scx + sx), int(scy - 4), GLOW["glow-core"])
+    for y in range(int(c) - 6, int(c) + 7):
+        for x in range(int(c) - 10, int(c) + 11):
+            if 0 <= x < w and 0 <= y < h:
+                dx = (x - c) / 10.0
+                if abs(dx) <= 1.0 and abs(y - c) <= 6.5 - 2.0 * abs(dx):
+                    put(im, x, y, ramp_pick(ramp, 0.25 + 0.5 * abs(dx)))
+    return im
+
+
+def titans_cleave() -> Image.Image:
+    """Enormous greatsword mid downward cleave — wide heavy arc, arc ramp."""
+    w = h = 30
+    cx, cy = 8.0, h / 2.0 + 1.0
+    im = canvas(w, h)
+    ramp = PALETTE["families"]["arc"]
+    r_out, r_in = 22.0, 15.0
+    for y in range(h):
+        for x in range(w):
+            dx, dy = x - cx, y - cy
+            r = math.hypot(dx, dy)
+            if not (r_in <= r <= r_out):
+                continue
+            ang = math.degrees(math.atan2(dy, dx))
+            if not (-72 <= ang <= 38):
+                continue
+            edge = abs(r - (r_in + r_out) / 2) / ((r_out - r_in) / 2)
+            tip = abs(ang + 18) / 55.0
+            put(im, x, y, ramp_pick(ramp, min(1.0, 0.5 * edge + 0.8 * tip)))
+    blade_ang = math.radians(-42)
+    ca, sa = math.cos(blade_ang), math.sin(blade_ang)
+    for step in range(18):
+        bx = cx + ca * step
+        by = cy + sa * step
+        for off in range(-2, 3):
+            x = int(round(bx - sa * off))
+            y = int(round(by + ca * off))
+            put(im, x, y, ramp_pick(ramp, 0.55 + 0.35 * step / 17.0))
+    put(im, int(cx + ca * 17), int(cy + sa * 17), GLOW["glow-core"])
+    put(im, int(cx + ca * 16), int(cy + sa * 16), GLOW["glow-cream"])
+    return im
+
+
+def comet_fall() -> Image.Image:
+    """Warm cream-and-berry comet streaking down — bloom ramp warm."""
+    w = h = 30
+    c = (w - 1) / 2.0
+    im = canvas(w, h)
+    ramp = PALETTE["families"]["bloom"]
+    # head
+    hx, hy = c + 2.0, c - 7.0
+    for y in range(h):
+        for x in range(w):
+            r = math.hypot(x - hx, y - hy)
+            if r <= 4.5:
+                t = r / 4.5
+                if r <= 1.8:
+                    put(im, x, y, GLOW["glow-core"])
+                else:
+                    put(im, x, y, ramp_pick(ramp, 0.55 + 0.4 * (1 - t)))
+    # tapering tail (down-left streak)
+    for step in range(16):
+        t = step / 15.0
+        tx = hx - step * 1.1
+        ty = hy + step * 1.35
+        half = max(0, int(2.5 * (1 - t)))
+        for off in range(-half, half + 1):
+            x = int(round(tx + off * 0.35))
+            y = int(round(ty))
+            put(im, x, y, ramp_pick(ramp, 0.35 + 0.55 * (1 - t)))
+    for dx, dy in ((0, -1), (1, 0), (-1, 1)):
+        put(im, int(hx + dx), int(hy + dy), GLOW["glow-berry-bright"])
+    return im
+
+
+def glacial_prison() -> Image.Image:
+    """Faceted mint ice-crystal prism — arc mint + bloom violet accents."""
+    w = h = 30
+    c = (w - 1) / 2.0
+    im = canvas(w, h)
+    arc = PALETTE["families"]["arc"]
+    bloom = PALETTE["families"]["bloom"]
+    facets = [
+        (0, -9, 0),
+        (7, -2, 55),
+        (6, 7, 125),
+        (-6, 7, -125),
+        (-7, -2, -55),
+    ]
+    for i, (fx, fy, tilt) in enumerate(facets):
+        fcx, fcy = c + fx, c + fy
+        for y in range(h):
+            for x in range(w):
+                dx, dy = x - fcx, y - fcy
+                ang = math.degrees(math.atan2(dy, dx)) - tilt
+                if not (-22 <= ang <= 22):
+                    continue
+                span = abs(dy * math.cos(math.radians(tilt)) - dx * math.sin(math.radians(tilt)))
+                if span > 8.5:
+                    continue
+                edge = span / 8.5
+                put(im, x, y, ramp_pick(arc, min(1.0, 0.35 + 0.55 * edge + 0.08 * i)))
+    for y in range(h):
+        for x in range(w):
+            r = math.hypot(x - c, y - c)
+            if 1.5 <= r <= 3.0 and (x + y) % 2 == 0:
+                put(im, x, y, GLOW["glow-core"])
+            elif 3.5 <= r <= 5.0:
+                put(im, x, y, ramp_pick(bloom, 0.7))
+    for a in (30, 150, 270):
+        rad = math.radians(a)
+        put(
+            im,
+            int(round(c + 6.5 * math.cos(rad))),
+            int(round(c + 6.5 * math.sin(rad))),
+            GLOW["glow-violet"],
+        )
+    return im
+
+
+def radiant_bulwark() -> Image.Image:
+    """Domed cream-gold light barrier arcing upward — arc ramp, rising read."""
+    w = h = 30
+    im = canvas(w, h)
+    ramp = PALETTE["families"]["arc"]
+    cx = w / 2.0
+    base_y = h - 4
+    for y in range(h):
+        for x in range(w):
+            if y < base_y - 14:
+                continue
+            rel_x = (x - cx) / 11.0
+            dome_top = base_y - 14 * max(0.0, 1.0 - rel_x * rel_x)
+            if y < dome_top or y > base_y + 1:
+                continue
+            height = (base_y - y) / max(1.0, base_y - dome_top)
+            edge = abs(rel_x)
+            put(im, x, y, ramp_pick(ramp, min(1.0, 0.3 + 0.55 * height + 0.2 * edge)))
+    for x in range(int(cx) - 8, int(cx) + 9):
+        put(im, x, int(base_y), GLOW["glow-mint"])
+        put(im, x, int(base_y - 1), ramp_pick(ramp, 0.4))
+    for dx in (-4, 0, 4):
+        put(im, int(cx + dx), int(base_y - 10), GLOW["glow-core"])
+    return im
+
+
+def solar_verdict() -> Image.Image:
+    """Tapered cream-gold spear of light — lane-travel projectile, arc ramp."""
+    w = h = 30
+    im = canvas(w, h)
+    ramp = PALETTE["families"]["arc"]
+    cy = h // 2
+    shaft_start, shaft_end = 4, 22
+    for x in range(shaft_start, shaft_end):
+        t = (x - shaft_start) / max(1, shaft_end - shaft_start - 1)
+        put(im, x, cy, ramp_pick(ramp, 0.4 + 0.45 * t))
+        for dy in (-1, 1):
+            if t > 0.25:
+                put(im, x, cy + dy, ramp_pick(ramp, 0.3 + 0.35 * t))
+    tip_x = w - 5
+    for dy in range(-3, 4):
+        width = max(0, 3 - abs(dy))
+        for dx in range(width):
+            put(im, tip_x + dx, cy + dy, ramp_pick(ramp, 0.65 + 0.3 * (1 - abs(dy) / 3.0)))
+    put(im, tip_x + 2, cy, GLOW["glow-core"])
+    put(im, tip_x + 1, cy, GLOW["glow-cream"])
+    for x in range(2, shaft_start):
+        t = x / max(1, shaft_start - 1)
+        put(im, x, cy, ramp_pick(ramp, 0.2 + 0.25 * t))
+    return im
+
+
+def death_rain() -> Image.Image:
+    """Tight fan of three parallel descending arrows — mint arc ramp."""
+    w = h = 30
+    im = canvas(w, h)
+    ramp = PALETTE["families"]["arc"]
+    for row, cy_off in enumerate((-6, 0, 6)):
+        cy = h // 2 + cy_off
+        for x in range(6, 24):
+            t = (x - 6) / 17.0
+            put(im, x, cy, ramp_pick(ramp, 0.35 + 0.5 * t))
+            if cy > 0:
+                put(im, x, cy - 1, ramp_pick(ramp, 0.5 + 0.35 * t))
+            if cy + 1 < h:
+                put(im, x, cy + 1, ramp_pick(ramp, 0.5 + 0.35 * t))
+        tip_x = 24
+        for dy in (-1, 0, 1):
+            put(im, tip_x, cy + dy, GLOW["glow-core"])
+        put(im, tip_x - 1, cy, ramp_pick(ramp, 0.85))
+        put(im, 5, cy, GLOW["glow-mint"] if row == 1 else GLOW["glow-mint-bright"])
+    return im
+
+
+def killshot() -> Image.Image:
+    """Single heavy broadhead arrow — longer/thicker than arrow-bolt, arc ramp."""
+    w = h = 30
+    im = canvas(w, h)
+    ramp = PALETTE["families"]["arc"]
+    cy = h // 2
+    for x in range(3, 24):
+        t = (x - 3) / 20.0
+        put(im, x, cy, ramp_pick(ramp, 0.35 + 0.5 * t))
+        for dy in (-2, -1, 1, 2):
+            if 0 <= cy + dy < h:
+                put(im, x, cy + dy, ramp_pick(ramp, 0.45 + 0.4 * t))
+    tip_x = 25
+    for dy in range(-3, 4):
+        width = max(0, 3 - abs(dy))
+        for dx in range(width):
+            put(im, tip_x + dx, cy + dy, ramp_pick(ramp, 0.7 + 0.25 * (1 - abs(dy) / 3.0)))
+    put(im, tip_x + 2, cy, GLOW["glow-core"])
+    put(im, tip_x + 1, cy, GLOW["glow-cream"])
+    for y in (cy - 3, cy + 3):
+        if 0 <= y < h:
+            put(im, 4, y, GLOW["glow-mint"])
+            put(im, 5, y, GLOW["glow-mint-bright"])
+    return im
+
+
 SOURCES = {
     "arc-slash": arc_slash,
     "arc-impact": arc_impact,
@@ -284,6 +532,14 @@ SOURCES = {
     "heal-rise": heal_rise,
     "revive-burst": revive_burst,
     "buff-halo": buff_halo,
+    "aegis-wall": aegis_wall,
+    "titans-cleave": titans_cleave,
+    "comet-fall": comet_fall,
+    "glacial-prison": glacial_prison,
+    "radiant-bulwark": radiant_bulwark,
+    "solar-verdict": solar_verdict,
+    "death-rain": death_rain,
+    "killshot": killshot,
 }
 
 
