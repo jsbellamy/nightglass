@@ -668,6 +668,346 @@
       "generator": null
     }
   },
+  "aegis-wall": {
+    "frame_size": [
+      30,
+      30
+    ],
+    "palette": "moonberry-glow@1",
+    "anchor": "strike_target",
+    "anchor_dx": 0,
+    "strike_dy": -26,
+    "align_to": "impact_expected",
+    "cues_ms": {
+      "impact_expected": 80
+    },
+    "total_ms": 300,
+    "frames": [
+      {
+        "file": "aegis-wall/aegis-wall_0.png",
+        "duration_ms": 80,
+        "sha256": "89d0ef0fef6bcf8bf15f25be94fb31c6f8bfcca5202735e27c7d6697df08524b",
+        "opaque_px": 196
+      },
+      {
+        "file": "aegis-wall/aegis-wall_1.png",
+        "duration_ms": 120,
+        "sha256": "659bd7bb270a880a31c9c41b1dae0e8cf19e8b0402da0028e5cf0af7b1ece5b4",
+        "opaque_px": 390
+      },
+      {
+        "file": "aegis-wall/aegis-wall_2.png",
+        "duration_ms": 100,
+        "sha256": "54847863ebf241716c0f1794698c7b6bf14448469d5b53e60a19d3b79a2f9a6b",
+        "opaque_px": 330
+      }
+    ],
+    "source": {
+      "still": "aegis-wall.png",
+      "sha256": "964a7473362efe2fa4a398937bc5ad795dbbf896ee19ae9d436730eb8ad5ee39",
+      "authored_by": "pipeline/effects/author.py",
+      "generator": null
+    }
+  },
+  "titans-cleave": {
+    "frame_size": [
+      30,
+      30
+    ],
+    "palette": "moonberry-glow@1",
+    "anchor": "strike_target",
+    "anchor_dx": -15,
+    "strike_dy": -26,
+    "align_to": "impact_expected",
+    "cues_ms": {
+      "impact_expected": 160
+    },
+    "total_ms": 330,
+    "frames": [
+      {
+        "file": "titans-cleave/titans-cleave_0.png",
+        "duration_ms": 80,
+        "sha256": "400390443be584c4f5bc10a7daa44f849526f7f6add1b9e6b33e00ab6b0a15e6",
+        "opaque_px": 164
+      },
+      {
+        "file": "titans-cleave/titans-cleave_1.png",
+        "duration_ms": 80,
+        "sha256": "5defa812d5e7c6711f9075953e82717f16f0d5e0f8cb7cd4d55447cd24a4e19b",
+        "opaque_px": 191
+      },
+      {
+        "file": "titans-cleave/titans-cleave_2.png",
+        "duration_ms": 80,
+        "sha256": "bccca9a6209ba6bff497c436acff1257586c3fb3920d74675fdc285935577100",
+        "opaque_px": 120
+      },
+      {
+        "file": "titans-cleave/titans-cleave_3.png",
+        "duration_ms": 90,
+        "sha256": "97b99c57bb339017bace60db8f591e379fb660438d855dbc6ab178d7656b44e2",
+        "opaque_px": 125
+      }
+    ],
+    "source": {
+      "still": "titans-cleave.png",
+      "sha256": "438a176398968b27273a2908f25aae597a17264202688d552be9dc66735cc9f6",
+      "authored_by": "pipeline/effects/author.py",
+      "generator": null
+    }
+  },
+  "comet-fall": {
+    "frame_size": [
+      30,
+      30
+    ],
+    "palette": "moonberry-glow@1",
+    "anchor": "strike_target",
+    "anchor_dx": 0,
+    "strike_dy": -26,
+    "align_to": "impact_expected",
+    "cues_ms": {
+      "impact_expected": 0
+    },
+    "total_ms": 260,
+    "frames": [
+      {
+        "file": "comet-fall/comet-fall_0.png",
+        "duration_ms": 60,
+        "sha256": "c1de5ff8f097d2d77ae3ac0e842427dfb9d9c11aeddccb74502f55ab5e8b1a88",
+        "opaque_px": 33
+      },
+      {
+        "file": "comet-fall/comet-fall_1.png",
+        "duration_ms": 70,
+        "sha256": "4d5abce9aa53090b08fa4107cbbc3462518d244d7dd71deb84cfebb5e798ce0f",
+        "opaque_px": 67
+      },
+      {
+        "file": "comet-fall/comet-fall_2.png",
+        "duration_ms": 70,
+        "sha256": "5e5d5327de8b4bfcb912b1ed0e667a73c29f8d7e6ded3021da0b7a45a30097fb",
+        "opaque_px": 96
+      },
+      {
+        "file": "comet-fall/comet-fall_3.png",
+        "duration_ms": 60,
+        "sha256": "8ee19cc6bbcf2281d4c7c9dfa6d9628c821b08a767d5bd05954c5c91f55b0264",
+        "opaque_px": 42
+      }
+    ],
+    "source": {
+      "still": "comet-fall.png",
+      "sha256": "b8b3ea2320305b1732a145e63b0c49e3a26309a03c9c7fbcffb8d91786d5583d",
+      "authored_by": "pipeline/effects/author.py",
+      "generator": null
+    }
+  },
+  "glacial-prison": {
+    "frame_size": [
+      30,
+      30
+    ],
+    "palette": "moonberry-glow@1",
+    "anchor": "strike_target",
+    "anchor_dx": 0,
+    "strike_dy": -26,
+    "align_to": "impact_expected",
+    "cues_ms": {
+      "impact_expected": 0
+    },
+    "total_ms": 260,
+    "frames": [
+      {
+        "file": "glacial-prison/glacial-prison_0.png",
+        "duration_ms": 60,
+        "sha256": "fc9b30c5be1bc26f388bf992b3e73f58d83861af231813dc9b2b8072ecd299f1",
+        "opaque_px": 220
+      },
+      {
+        "file": "glacial-prison/glacial-prison_1.png",
+        "duration_ms": 70,
+        "sha256": "8624b1a88a8766aff1aa7cdfe46d4693fd7a43be169be2ec25fa829259dbfcb7",
+        "opaque_px": 444
+      },
+      {
+        "file": "glacial-prison/glacial-prison_2.png",
+        "duration_ms": 70,
+        "sha256": "1c49466b9f369d3eaaff55c6f15684ac6c2db4b5abd661bd5025bd12fd45f329",
+        "opaque_px": 479
+      },
+      {
+        "file": "glacial-prison/glacial-prison_3.png",
+        "duration_ms": 60,
+        "sha256": "d46b8eb6b302b34b74ce4886dc8b8ab4e457b64e39794fdfddcdf78e67aaa700",
+        "opaque_px": 153
+      }
+    ],
+    "source": {
+      "still": "glacial-prison.png",
+      "sha256": "c7e13551bde5e760c0416c67a3e6f490c860e8cc49d30c06e1d91504e3452f1d",
+      "authored_by": "pipeline/effects/author.py",
+      "generator": null
+    }
+  },
+  "radiant-bulwark": {
+    "frame_size": [
+      30,
+      30
+    ],
+    "palette": "moonberry-glow@1",
+    "anchor": "band",
+    "anchor_dx": 0,
+    "strike_dy": -26,
+    "align_to": "impact_expected",
+    "cues_ms": {
+      "impact_expected": 240
+    },
+    "total_ms": 390,
+    "frames": [
+      {
+        "file": "radiant-bulwark/radiant-bulwark_0.png",
+        "duration_ms": 80,
+        "sha256": "4c78cce28fe50fceaeb3d42e7e3fcd5fb4edea4619cdf65f3af2afd1bf7674cb",
+        "opaque_px": 140
+      },
+      {
+        "file": "radiant-bulwark/radiant-bulwark_1.png",
+        "duration_ms": 80,
+        "sha256": "3de69b9ebeb6032d04419fdfb2eb7071690ff70c4f05a1e59939a443f4afb96c",
+        "opaque_px": 228
+      },
+      {
+        "file": "radiant-bulwark/radiant-bulwark_2.png",
+        "duration_ms": 80,
+        "sha256": "171726e39332bbb46c7663e1889e307e92174d2fa8a6282798bdef7ed24fd1c0",
+        "opaque_px": 254
+      },
+      {
+        "file": "radiant-bulwark/radiant-bulwark_3.png",
+        "duration_ms": 80,
+        "sha256": "171726e39332bbb46c7663e1889e307e92174d2fa8a6282798bdef7ed24fd1c0",
+        "opaque_px": 254
+      },
+      {
+        "file": "radiant-bulwark/radiant-bulwark_4.png",
+        "duration_ms": 70,
+        "sha256": "5cee6a3dd0af449ed037c030254fd9ef5e658beeeca04c762dfd939e987e0bfd",
+        "opaque_px": 210
+      }
+    ],
+    "source": {
+      "still": "radiant-bulwark.png",
+      "sha256": "5f50c582310f6938632baf9110305f42e54427b1a6291a852cb85f21ddbfeb80",
+      "authored_by": "pipeline/effects/author.py",
+      "generator": null
+    }
+  },
+  "solar-verdict": {
+    "frame_size": [
+      30,
+      30
+    ],
+    "palette": "moonberry-glow@1",
+    "anchor": "lane_travel",
+    "anchor_dx": 0,
+    "strike_dy": -26,
+    "align_to": "release_projectile",
+    "cues_ms": {
+      "release_projectile": 0
+    },
+    "total_ms": 100,
+    "frames": [
+      {
+        "file": "solar-verdict/solar-verdict_0.png",
+        "duration_ms": 50,
+        "sha256": "4c6f0a7c92168f2a1e5d3580bd2d009ea1aacbb1f521df3f90a888e5230f5e6b",
+        "opaque_px": 55
+      },
+      {
+        "file": "solar-verdict/solar-verdict_1.png",
+        "duration_ms": 50,
+        "sha256": "fd31e70d54629142b2012e980e3084992b1967908b2217c2bccd1e48ace32404",
+        "opaque_px": 54
+      }
+    ],
+    "source": {
+      "still": "solar-verdict.png",
+      "sha256": "8b15b161a20d6ade92debe23b0c24ff01506f39045c7fe150d123c321aa5a201",
+      "authored_by": "pipeline/effects/author.py",
+      "generator": null
+    }
+  },
+  "death-rain": {
+    "frame_size": [
+      30,
+      30
+    ],
+    "palette": "moonberry-glow@1",
+    "anchor": "lane_travel",
+    "anchor_dx": 0,
+    "strike_dy": -26,
+    "align_to": "release_projectile",
+    "cues_ms": {
+      "release_projectile": 0
+    },
+    "total_ms": 100,
+    "frames": [
+      {
+        "file": "death-rain/death-rain_0.png",
+        "duration_ms": 50,
+        "sha256": "6cd1858d21c90ad23e2b55704ee17cb369d0523582e9fee46cd7002e5638221f",
+        "opaque_px": 174
+      },
+      {
+        "file": "death-rain/death-rain_1.png",
+        "duration_ms": 50,
+        "sha256": "875617d168f5242cc1eb086386ca77e0c3534fd02a73983e3827021b153497b4",
+        "opaque_px": 166
+      }
+    ],
+    "source": {
+      "still": "death-rain.png",
+      "sha256": "d167a37672a69cf8714bb3f1a85c9758ce003fe7f59db7c7daab30773ee7489d",
+      "authored_by": "pipeline/effects/author.py",
+      "generator": null
+    }
+  },
+  "killshot": {
+    "frame_size": [
+      30,
+      30
+    ],
+    "palette": "moonberry-glow@1",
+    "anchor": "lane_travel",
+    "anchor_dx": 0,
+    "strike_dy": -26,
+    "align_to": "release_projectile",
+    "cues_ms": {
+      "release_projectile": 0
+    },
+    "total_ms": 100,
+    "frames": [
+      {
+        "file": "killshot/killshot_0.png",
+        "duration_ms": 50,
+        "sha256": "086d15bfa4bc77a5d14ec15f9723c2a43d0746947698e2704013b9b4de7d5517",
+        "opaque_px": 118
+      },
+      {
+        "file": "killshot/killshot_1.png",
+        "duration_ms": 50,
+        "sha256": "c3460743babf1abbe30c20bdca5e2ff9482504989977e79b3a1794c1f4986f60",
+        "opaque_px": 113
+      }
+    ],
+    "source": {
+      "still": "killshot.png",
+      "sha256": "696b1787d955391eecd169320d8babbdcc1479d53fdf784320440dff26467f9b",
+      "authored_by": "pipeline/effects/author.py",
+      "generator": null
+    }
+  },
   "spell-bolt-fire": {
     "frame_size": [
       11,
