@@ -18,6 +18,7 @@ const SAMPLE_COMMANDS = [
   { cmd: "equip", args: [1, "knight", "weapon"] },
   { cmd: "unequip", args: ["knight", "weapon"] },
   { cmd: "discard", args: [[1, 2]] },
+  { cmd: "salvage", args: [[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]] },
   { cmd: "setLocked", args: [1, true] },
   { cmd: "markSeen", args: [[1, 2]] },
 ] as const satisfies readonly TileCommand[];
@@ -57,6 +58,7 @@ function createStubEngine(): Engine {
     setLocked: vi.fn(),
     markSeen: vi.fn(),
     discard: vi.fn(),
+    salvage: vi.fn(),
   };
 }
 

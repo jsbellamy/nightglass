@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createEngine } from "./engine";
+import { createEngine, SCHEMA_VERSION } from "./engine";
 import type { EngineEvent } from "./events";
 import { partyEntityId } from "./entity-id";
 import type { DropInstance, Snapshot } from "./snapshot";
@@ -3213,6 +3213,179 @@ describe("Equipment and Drops", () => {
     expect(restored.snapshot().progression.armory[0]).toEqual(
       reloaded.snapshot().progression.armory[0],
     );
+  });
+});
+
+describe("salvage command", () => {
+  const salvageBatchIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
+
+  function armoryWithTenCommons() {
+    return scenario(fixtureContent)
+      .withArmory([
+        { rarity: "common", itemLevel: 3 },
+        { rarity: "common", itemLevel: 3 },
+        { rarity: "common", itemLevel: 2 },
+        { rarity: "common", itemLevel: 2 },
+        { rarity: "common", itemLevel: 2 },
+        { rarity: "common", itemLevel: 2 },
+        { rarity: "common", itemLevel: 2 },
+        { rarity: "common", itemLevel: 2 },
+        { rarity: "common", itemLevel: 2 },
+        { rarity: "common", itemLevel: 1 },
+      ])
+      .build();
+  }
+
+  it.each([
+    {
+      label: "wrong batch size",
+      dropIds: [1, 2, 3],
+      arrange: () => armoryWithTenCommons(),
+      message: "Salvage requires exactly 10 Drops, got 3",
+    },
+    {
+      label: "duplicate Drop id",
+      dropIds: [1, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+      arrange: () => armoryWithTenCommons(),
+      message: "Salvage received duplicate Drop 1",
+    },
+    {
+      label: "unknown Drop id",
+      dropIds: salvageBatchIds,
+      arrange: () => scenario(fixtureContent).withArmory([{ count: 9 }]).build(),
+      message: "Unknown Drop 10",
+    },
+    {
+      label: "equipped Drop",
+      dropIds: salvageBatchIds,
+      arrange: () => {
+        const saved = armoryWithTenCommons();
+        saved.progression.armory[0]!.assignedTo = { classId: "knight", slot: "weapon" };
+        return saved;
+      },
+      message: "Cannot salvage equipped Drop 1",
+    },
+    {
+      label: "Locked Drop",
+      dropIds: salvageBatchIds,
+      arrange: () => {
+        const saved = armoryWithTenCommons();
+        saved.progression.armory[4]!.locked = true;
+        return saved;
+      },
+      message: "Cannot salvage Locked Drop 5",
+    },
+    {
+      label: "mixed Rarity batch",
+      dropIds: salvageBatchIds,
+      arrange: () =>
+        scenario(fixtureContent)
+          .withArmory([{ count: 9, rarity: "common" }, { rarity: "uncommon" }])
+          .build(),
+      message: "Salvage requires one Rarity",
+    },
+    {
+      label: "Epic batch",
+      dropIds: salvageBatchIds,
+      arrange: () => scenario(fixtureContent).withArmory([{ count: 10, rarity: "epic" }]).build(),
+      message: "Epic Equipment cannot be salvaged",
+    },
+  ])("rejects $label before mutating Armory or loot RNG", ({ dropIds, arrange, message }) => {
+    const saved = arrange();
+    saved.lootRngState = LOOT_SEED;
+    saved.nextDropId = 11;
+    const engine = createEngine(fixtureContent, saved, LOOT_SEED);
+    const before = structuredClone(engine.snapshot());
+
+    expect(() => engine.salvage([...dropIds])).toThrow(message);
+    expect(engine.snapshot().progression.armory).toEqual(before.progression.armory);
+    expect(engine.snapshot().lootRngState).toBe(before.lootRngState);
+    expect(engine.snapshot().nextDropId).toBe(before.nextDropId);
+  });
+
+  it("consumes ten Commons and awards one Uncommon at the minimum Item Level", () => {
+    const saved = armoryWithTenCommons();
+    saved.lootRngState = LOOT_SEED;
+    saved.nextDropId = 11;
+    saved.simNowMs = 5_000;
+    const engine = createEngine(fixtureContent, saved, LOOT_SEED);
+
+    engine.salvage([...salvageBatchIds]);
+
+    const snapshot = engine.snapshot();
+    expect(snapshot.progression.armory).toHaveLength(1);
+    expect(snapshot.progression.armory[0]).toEqual({
+      dropId: 11,
+      baseId: "fixture-armor",
+      itemLevel: 1,
+      rarity: "uncommon",
+      affixes: [{ id: "flat-elemental-resistance", value: 2 }],
+      awardedAtMs: 5_000,
+      seen: false,
+      locked: false,
+      assignedTo: null,
+    });
+    expect(snapshot.progression.armory.some((drop) => salvageBatchIds.includes(drop.dropId as 1))).toBe(
+      false,
+    );
+    expect(snapshot.nextDropId).toBe(12);
+  });
+
+  it("returns void and does not emit drop-awarded from salvage", () => {
+    const saved = armoryWithTenCommons();
+    saved.lootRngState = LOOT_SEED;
+    saved.nextDropId = 11;
+    const engine = createEngine(fixtureContent, saved, LOOT_SEED);
+
+    expect(engine.salvage([...salvageBatchIds])).toBeUndefined();
+    expect(engine.advanceBy(0).some((event) => event.type === "drop-awarded")).toBe(false);
+  });
+
+  it("round-trips salvage through snapshot reload without changing Armory or the next Drop", () => {
+    const saved = armoryWithTenCommons();
+    saved.lootRngState = LOOT_SEED;
+    saved.nextDropId = 11;
+    saved.simNowMs = 5_000;
+    const engine = createEngine(fixtureContent, saved, LOOT_SEED);
+    engine.salvage([...salvageBatchIds]);
+    const afterSalvage = engine.snapshot();
+    expect(afterSalvage.schemaVersion).toBe(SCHEMA_VERSION);
+
+    const reloaded = createEngine(fixtureContent, afterSalvage, LOOT_SEED);
+    expect(reloaded.snapshot().progression.armory).toEqual(afterSalvage.progression.armory);
+    expect(reloaded.snapshot().lootRngState).toBe(afterSalvage.lootRngState);
+    expect(reloaded.snapshot().nextDropId).toBe(afterSalvage.nextDropId);
+
+    const continuous = createEngine(fixtureContent, saved, LOOT_SEED);
+    continuous.salvage([...salvageBatchIds]);
+    continuous.advanceBy(1);
+    let continuousDrop: number | null = null;
+    let elapsed = 0;
+    while (elapsed < 300_000) {
+      elapsed += 1;
+      const events = driveBy(continuous, 1);
+      const awarded = events.find((event) => event.type === "drop-awarded");
+      if (awarded) {
+        continuousDrop = awarded.dropId;
+        break;
+      }
+    }
+
+    const restored = createEngine(fixtureContent, afterSalvage, LOOT_SEED);
+    restored.advanceBy(1);
+    let restoredDrop: number | null = null;
+    let restoredElapsed = 0;
+    while (restoredElapsed < 300_000) {
+      restoredElapsed += 1;
+      const events = driveBy(restored, 1);
+      const awarded = events.find((event) => event.type === "drop-awarded");
+      if (awarded) {
+        restoredDrop = awarded.dropId;
+        break;
+      }
+    }
+
+    expect(restoredDrop).toBe(continuousDrop);
   });
 });
 

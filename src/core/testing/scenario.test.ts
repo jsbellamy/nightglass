@@ -321,6 +321,63 @@ describe("scenario builder", () => {
   });
 });
 
+describe("scenario builder armory", () => {
+  it("expands withArmory specs into ordered Drops with explicit Rarity and Item Level", () => {
+    const saved = scenario()
+      .withArmory([
+        { count: 2, rarity: "uncommon", itemLevel: 2 },
+        { rarity: "rare", itemLevel: 3, locked: true },
+      ])
+      .build();
+
+    expect(saved.progression.armory).toEqual([
+      {
+        dropId: 1,
+        baseId: "fixture-blade",
+        itemLevel: 2,
+        rarity: "uncommon",
+        affixes: [],
+        awardedAtMs: 1,
+        seen: false,
+        locked: false,
+        assignedTo: null,
+      },
+      {
+        dropId: 2,
+        baseId: "fixture-blade",
+        itemLevel: 2,
+        rarity: "uncommon",
+        affixes: [],
+        awardedAtMs: 2,
+        seen: false,
+        locked: false,
+        assignedTo: null,
+      },
+      {
+        dropId: 3,
+        baseId: "fixture-blade",
+        itemLevel: 3,
+        rarity: "rare",
+        affixes: [],
+        awardedAtMs: 3,
+        seen: false,
+        locked: true,
+        assignedTo: null,
+      },
+    ]);
+    expect(saved.nextDropId).toBe(4);
+  });
+
+  it("keeps withDrops observable behavior for existing Arrange coverage", () => {
+    const saved = scenario().withDrops(2).build();
+    expect(saved.progression.armory).toHaveLength(2);
+    expect(saved.progression.armory.map((drop) => drop.dropId)).toEqual([1, 2]);
+    expect(saved.progression.armory.every((drop) => drop.rarity === "common")).toBe(true);
+    expect(saved.progression.armory.every((drop) => drop.itemLevel === 1)).toBe(true);
+    expect(saved.nextDropId).toBe(3);
+  });
+});
+
 describe("driveBy", () => {
   it("is chunk-neutral: many small calls match one large call", () => {
     const saved = scenario().withParty(["knight", "wizard", "priest"], "hunter").build();

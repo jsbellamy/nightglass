@@ -21,7 +21,10 @@ import {
   discardDrops,
   equipmentModifiersForLoadout,
   findDrop,
+  nextRarity,
   rollDrop,
+  rollSalvageDrop,
+  SALVAGE_BATCH_SIZE,
   snapshotEquipmentLoadouts,
   unequipSlot,
   validateEquip,
@@ -62,6 +65,7 @@ import type {
   Content,
   Element,
   EquipmentSlotId,
+  ItemLevel,
   OpponentDef,
   StageDef,
   StageId,
@@ -102,6 +106,7 @@ export interface Engine {
   setLocked(dropId: number, locked: boolean): void;
   markSeen(dropIds: number[]): void;
   discard(dropIds: number[]): void;
+  salvage(dropIds: number[]): void;
 }
 
 interface EngineState {
@@ -1751,6 +1756,63 @@ export function createEngine(
     state.progression.armory = discardDrops(state.progression.armory, dropIds);
   }
 
+  function salvage(dropIds: number[]): void {
+    if (dropIds.length !== SALVAGE_BATCH_SIZE) {
+      throw new Error(`Salvage requires exactly 10 Drops, got ${dropIds.length}`);
+    }
+
+    const seen = new Set<number>();
+    const batch: DropInstance[] = [];
+    for (const dropId of dropIds) {
+      if (seen.has(dropId)) {
+        throw new Error(`Salvage received duplicate Drop ${dropId}`);
+      }
+      seen.add(dropId);
+
+      const drop = findDrop(state.progression.armory, dropId);
+      if (!drop) {
+        throw new Error(`Unknown Drop ${dropId}`);
+      }
+      if (drop.assignedTo !== null) {
+        throw new Error(`Cannot salvage equipped Drop ${dropId}`);
+      }
+      if (drop.locked) {
+        throw new Error(`Cannot salvage Locked Drop ${dropId}`);
+      }
+      batch.push(drop);
+    }
+
+    const batchRarity = batch[0]!.rarity;
+    if (!batch.every((drop) => drop.rarity === batchRarity)) {
+      throw new Error("Salvage requires one Rarity");
+    }
+    if (batchRarity === "epic") {
+      throw new Error("Epic Equipment cannot be salvaged");
+    }
+
+    const upgradedRarity = nextRarity(batchRarity);
+    if (!upgradedRarity) {
+      throw new Error("Epic Equipment cannot be salvaged");
+    }
+
+    const toRemove = new Set(dropIds);
+    state.progression.armory = state.progression.armory.filter(
+      (drop) => !toRemove.has(drop.dropId),
+    );
+
+    const rolled = rollSalvageDrop({
+      content: index.content,
+      itemLevel: Math.min(...batch.map((drop) => drop.itemLevel)) as ItemLevel,
+      rarity: upgradedRarity,
+      lootRng: { state: state.lootRngState },
+      dropId: state.nextDropId,
+      awardedAtMs: state.simNowMs,
+    });
+    state.lootRngState = rolled.lootRng.state;
+    state.nextDropId += 1;
+    state.progression.armory.push(rolled.drop);
+  }
+
   return {
     advanceBy,
     advanceOffline,
@@ -1770,5 +1832,6 @@ export function createEngine(
     setLocked,
     markSeen,
     discard,
+    salvage,
   };
 }
