@@ -80,8 +80,6 @@ export function mergeDamageNumbers(
       prior.atMs = entry.atMs;
       if (Boolean(prior.crit) || Boolean(entry.crit)) {
         prior.crit = true;
-      } else {
-        delete prior.crit;
       }
       prior.mergedCount += 1;
       continue;

@@ -114,8 +114,6 @@ type CriticalDamageSample = {
   bounds: Rect;
   fontSize: number;
   fontWeight: number;
-  baseFontSize: number;
-  baseFontWeight: number;
 };
 
 function assertDamageNumberInsideTile(tileRoot: Rect, sample: CriticalDamageSample): void {
@@ -365,15 +363,19 @@ test.describe("Battle Tile evidence scenarios", () => {
           bounds: r(criticalEl),
           fontSize: Number.parseFloat(style.fontSize),
           fontWeight: Number.parseInt(style.fontWeight, 10),
-          baseFontSize: 8,
-          baseFontWeight: 800,
         };
         document.querySelector(".battlefield")?.classList.add("reduced-motion");
         const retained = document.querySelector<HTMLElement>(".damage-number.critical");
+        if (!retained) {
+          return null;
+        }
+        const retainedStyle = getComputedStyle(retained);
         return {
           tileRoot: r(document.querySelector(".battle-tile")),
           critical,
-          reducedMotionText: retained?.textContent ?? "",
+          reducedMotionText: retained.textContent ?? "",
+          reducedMotionFontSize: Number.parseFloat(retainedStyle.fontSize),
+          reducedMotionFontWeight: Number.parseInt(retainedStyle.fontWeight, 10),
         };
       });
       if (!payload) {
@@ -382,6 +384,10 @@ test.describe("Battle Tile evidence scenarios", () => {
       assertDamageNumberInsideTile(payload.tileRoot, payload.critical);
       expect(payload.reducedMotionText.endsWith("!"), "critical glyph retained under reduced motion").toBe(
         true,
+      );
+      expect(payload.reducedMotionFontSize, "critical font size under reduced motion").toBeGreaterThan(8);
+      expect(payload.reducedMotionFontWeight, "critical font weight under reduced motion").toBeGreaterThan(
+        800,
       );
       criticalEvidence = payload.critical;
       return true;
