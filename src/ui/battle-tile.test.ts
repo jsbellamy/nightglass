@@ -752,4 +752,152 @@ describe("Battle Tile renderer", () => {
 
     createSfxSpy.mockRestore();
   });
+
+  describe("cooldown pips", () => {
+    function mountRenderedSnapshot(snapshot: Snapshot, nowMs?: number): HTMLElement {
+      const style = document.createElement("style");
+      style.textContent = `
+        .combatant {
+          position: absolute;
+          bottom: 6px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+        .cooldown-pips {
+          position: absolute;
+          top: -11px;
+        }
+        .cooldown-pip {
+          width: 5px;
+          height: 2px;
+          overflow: hidden;
+        }
+        .cooldown-pip-fill {
+          height: 100%;
+        }
+      `;
+      document.head.append(style);
+      const root = document.createElement("main");
+      document.body.append(root);
+      const tile = mountBattleTile(root, fixtureContent);
+      tile.render(snapshot, nowMs);
+      root.addEventListener(
+        "remove",
+        () => {
+          style.remove();
+        },
+        { once: true },
+      );
+      return root;
+    }
+
+    it("keeps the pip row absolutely positioned on the combatant without shifting bottom anchor", () => {
+      const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
+      const root = mountRenderedSnapshot(engine.snapshot());
+      const combatant = root.querySelector<HTMLElement>(".combatant.party");
+      const pipRow = combatant?.querySelector<HTMLElement>(".cooldown-pips");
+      expect(pipRow).not.toBeNull();
+      expect(pipRow?.parentElement).toBe(combatant);
+      expect(combatant?.querySelector(".combatant-stack")?.contains(pipRow!)).toBe(false);
+      expect(getComputedStyle(pipRow!).position).toBe("absolute");
+      expect(getComputedStyle(combatant!).bottom).toBe("6px");
+      root.remove();
+    });
+
+    it("renders three pips for Party Members and none for Opponents or Bosses", () => {
+      const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
+      const snapshot = structuredClone(engine.snapshot());
+      const attempt = snapshot.attempt;
+      if (!attempt) {
+        throw new Error("missing attempt");
+      }
+      attempt.encounter = 3;
+      attempt.combatants = [
+        ...attempt.combatants.filter((entry) => entry.side === "party"),
+        {
+          entityId: "opp:3:0",
+          side: "opponent",
+          defId: "fixture-boss",
+          health: 180,
+          maxHealth: 200,
+          knockedOut: false,
+          action: null,
+          cooldownReadyAtMs: {},
+          statuses: [],
+        },
+      ];
+      const root = mountRenderedSnapshot(snapshot);
+      for (const party of root.querySelectorAll<HTMLElement>(".combatant.party")) {
+        expect(party.querySelectorAll(".cooldown-pip")).toHaveLength(3);
+      }
+      for (const opponent of root.querySelectorAll<HTMLElement>(".combatant.opponent")) {
+        expect(opponent.querySelector(".cooldown-pips")).toBeNull();
+      }
+      root.remove();
+    });
+
+    it("maps pip fills from applied Loadout cooldown state at render time", () => {
+      const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
+      const snapshot = structuredClone(engine.snapshot());
+      const attempt = snapshot.attempt;
+      if (!attempt) {
+        throw new Error("missing attempt");
+      }
+      const knight = attempt.combatants.find((entry) => entry.defId === "knight");
+      if (!knight) {
+        throw new Error("missing knight");
+      }
+      knight.cooldownReadyAtMs = {
+        "k-shield-brace": 10_000,
+        "k-rally": 0,
+        "k-sweep": 0,
+      };
+      snapshot.pendingEdits = [
+        {
+          kind: "loadout",
+          classId: "knight",
+          loadout: ["k-pommel", "k-rally", "k-sweep"],
+        },
+      ];
+      const root = mountRenderedSnapshot(snapshot, 5_500);
+      const knightElement = root.querySelector<HTMLElement>('[data-entity-id="party:knight:front"]');
+      const fills = [
+        ...knightElement!.querySelectorAll<HTMLElement>(".cooldown-pip-fill"),
+      ].map((element) => element.dataset["fillFraction"]);
+      expect(fills).toEqual(["0.5", "1", "1"]);
+      root.remove();
+    });
+
+    it("carries readiness by rendered fill width, not colour alone", () => {
+      const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
+      const snapshot = structuredClone(engine.snapshot());
+      const attempt = snapshot.attempt;
+      if (!attempt) {
+        throw new Error("missing attempt");
+      }
+      const knight = attempt.combatants.find((entry) => entry.defId === "knight");
+      if (!knight) {
+        throw new Error("missing knight");
+      }
+      knight.cooldownReadyAtMs = {
+        "k-shield-brace": 10_000,
+        "k-rally": 0,
+        "k-sweep": 0,
+      };
+      const root = mountRenderedSnapshot(snapshot, 5_500);
+      const knightElement = root.querySelector<HTMLElement>('[data-entity-id="party:knight:front"]');
+      const fillElements = [
+        ...knightElement!.querySelectorAll<HTMLElement>(".cooldown-pip-fill"),
+      ];
+      const widths = fillElements.map((element) => Number.parseFloat(element.style.width));
+      expect(widths[0]).toBeGreaterThan(0);
+      expect(widths[0]!).toBeLessThan(widths[1]!);
+      knightElement!.style.filter = "grayscale(1)";
+      const greyWidths = fillElements.map((element) => Number.parseFloat(element.style.width));
+      expect(greyWidths[0]).toBe(widths[0]);
+      expect(greyWidths[0]!).toBeLessThan(greyWidths[1]!);
+      root.remove();
+    });
+  });
 });

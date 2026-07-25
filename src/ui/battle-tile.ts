@@ -10,12 +10,14 @@ import theMainspringUrl from "../assets/backdrops/the-mainspring.png";
 import theOculusUrl from "../assets/backdrops/the-oculus.png";
 import type { EngineEvent } from "../core/events";
 import type { CombatantState, ReadonlySnapshot } from "../core/snapshot";
-import type { Content, StageDef, StageId } from "../core/types";
+import type { AbilityDef, ClassId, Content, StageDef, StageId } from "../core/types";
+import { cooldownRemainingMs } from "./ability-format";
 import { createPresentation, type Presentation } from "./presentation";
 import { createSfx, type SfxController } from "./sfx";
 import { footAnchorXForCombatant } from "./battle-tile-anchors";
 import {
   FORMATION_SLOT_BY_INDEX,
+  appliedLoadout,
   opponentCombatants,
   parseEntityId,
   partyCombatants,
@@ -90,6 +92,67 @@ function healthFillPercent(health: number, maxHealth: number): number {
     return 0;
   }
   return Math.max(0, Math.min(100, Math.round((health / maxHealth) * 100)));
+}
+
+function cooldownPipFillFraction(ability: AbilityDef, readyAtMs: number, nowMs: number): number {
+  const remaining = cooldownRemainingMs(readyAtMs, nowMs);
+  if (ability.cooldownMs <= 0) {
+    return 1;
+  }
+  return Math.max(0, Math.min(1, 1 - remaining / ability.cooldownMs));
+}
+
+function ensureCooldownPips(element: HTMLElement): HTMLElement {
+  let row = element.querySelector<HTMLElement>(".cooldown-pips");
+  if (row) {
+    return row;
+  }
+  row = document.createElement("div");
+  row.className = "cooldown-pips";
+  row.setAttribute("aria-hidden", "true");
+  for (let index = 0; index < 3; index += 1) {
+    const pip = document.createElement("div");
+    pip.className = "cooldown-pip";
+    const fill = document.createElement("div");
+    fill.className = "cooldown-pip-fill";
+    pip.append(fill);
+    row.append(pip);
+  }
+  element.prepend(row);
+  return row;
+}
+
+function updateCooldownPips(
+  element: HTMLElement,
+  combatant: CombatantState,
+  snapshot: ReadonlySnapshot,
+  content: Content,
+  nowMs: number,
+): void {
+  if (combatant.side !== "party") {
+    element.querySelector(".cooldown-pips")?.remove();
+    return;
+  }
+
+  const row = ensureCooldownPips(element);
+  const loadout = appliedLoadout(snapshot, combatant.defId as ClassId);
+  const abilitiesById = new Map(content.abilities.map((ability) => [ability.id, ability]));
+  const pips = [...row.querySelectorAll<HTMLElement>(".cooldown-pip")];
+  for (let index = 0; index < 3; index += 1) {
+    const abilityId = loadout[index]!;
+    const ability = abilitiesById.get(abilityId);
+    const pip = pips[index];
+    if (!ability || !pip) {
+      continue;
+    }
+    const readyAt = combatant.cooldownReadyAtMs[abilityId] ?? 0;
+    const fill = cooldownPipFillFraction(ability, readyAt, nowMs);
+    const fillElement = pip.querySelector<HTMLElement>(".cooldown-pip-fill");
+    if (fillElement) {
+      fillElement.style.width = `${fill * 100}%`;
+      fillElement.dataset["fillFraction"] = String(fill);
+    }
+  }
 }
 
 function stageWaveLabel(snapshot: ReadonlySnapshot, content: Content): string {
@@ -225,6 +288,10 @@ function ensureCombatantElement(
   healthText.className = "health-text";
   healthBar.append(healthFill, healthText);
 
+  if (isParty) {
+    ensureCooldownPips(element);
+  }
+
   if (lookup.isBoss(combatant)) {
     element.classList.add("boss-combatant");
     element.append(stack);
@@ -240,6 +307,9 @@ function updateCombatantElement(
   element: HTMLElement,
   combatant: CombatantState,
   lookup: CombatantLookup,
+  snapshot: ReadonlySnapshot,
+  content: Content,
+  nowMs: number,
 ): void {
   const fill = element.querySelector<HTMLElement>(".health-fill");
   const text = element.querySelector<HTMLElement>(".health-text");
@@ -253,6 +323,7 @@ function updateCombatantElement(
   }
   element.classList.toggle("knocked-out", combatant.knockedOut);
   element.classList.toggle("boss-combatant", lookup.isBoss(combatant));
+  updateCooldownPips(element, combatant, snapshot, content, nowMs);
 }
 
 function syncCombatants(
@@ -260,12 +331,15 @@ function syncCombatants(
   combatants: CombatantState[],
   lookup: CombatantLookup,
   opponentStressLayout: boolean,
+  snapshot: ReadonlySnapshot,
+  content: Content,
+  nowMs: number,
 ): void {
   const seen = new Set<string>();
   for (const combatant of combatants) {
     seen.add(combatant.entityId);
     const element = ensureCombatantElement(container, combatant, lookup, opponentStressLayout);
-    updateCombatantElement(element, combatant, lookup);
+    updateCombatantElement(element, combatant, lookup, snapshot, content, nowMs);
   }
   for (const element of [...container.querySelectorAll<HTMLElement>(".combatant")]) {
     if (!seen.has(element.dataset["entityId"] ?? "")) {
@@ -428,8 +502,24 @@ export function mountBattleTile(
     const boss = opponents.find((combatant) => lookup.isBoss(combatant));
     const opponentStressLayout = opponents.length >= 5;
 
-    syncCombatants(partyZone, party, lookup, opponentStressLayout);
-    syncCombatants(opponentZone, opponents, lookup, opponentStressLayout);
+    syncCombatants(
+      partyZone,
+      party,
+      lookup,
+      opponentStressLayout,
+      snapshot,
+      content,
+      presentationNowMs,
+    );
+    syncCombatants(
+      opponentZone,
+      opponents,
+      lookup,
+      opponentStressLayout,
+      snapshot,
+      content,
+      presentationNowMs,
+    );
     updateBossBar(battlefield, boss);
     battlefield.classList.toggle("opponent-stress-layout", opponentStressLayout);
     presentation.render(presentationNowMs, snapshot);

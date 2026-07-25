@@ -393,6 +393,31 @@ body {
   align-items: center;
 }
 
+.cooldown-pips {
+  position: absolute;
+  top: -11px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 1px;
+  width: 17px;
+  height: 2px;
+  pointer-events: none;
+}
+
+.cooldown-pip {
+  width: 5px;
+  height: 2px;
+  overflow: hidden;
+  background: rgba(255, 249, 233, 0.22);
+}
+
+.cooldown-pip-fill {
+  height: 100%;
+  width: 100%;
+  background: rgba(255, 249, 233, 0.82);
+}
+
 .status-icon {
   width: 7px;
   height: 7px;

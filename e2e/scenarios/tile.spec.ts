@@ -20,6 +20,91 @@ function overlaps(a: Rect, b: Rect): boolean {
   return a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
 }
 
+type CooldownPipSample = {
+  pip: Rect;
+  fillFraction: string | null;
+};
+
+type CooldownPipCombatant = {
+  id: string | null;
+  pips: CooldownPipSample[];
+  statusIcons: Rect | null;
+};
+
+function assertCooldownPipLayout(
+  tileRoot: Rect,
+  party: CooldownPipCombatant[],
+  opponents: { pipCount: number }[],
+  bossPipCount: number,
+): void {
+  expect(opponents.every((entry) => entry.pipCount === 0), "opponent cooldown pips").toBe(true);
+  expect(bossPipCount, "boss cooldown pips").toBe(0);
+  for (const combatant of party) {
+    expect(combatant.pips, `${combatant.id} pip count`).toHaveLength(3);
+    for (const pip of combatant.pips) {
+      expect(pip.pip.w, `${combatant.id} pip width`).toBeGreaterThan(0);
+      expect(pip.pip.h, `${combatant.id} pip height`).toBeGreaterThan(0);
+      expect(pip.pip.x, `${combatant.id} pip inside tile`).toBeGreaterThanOrEqual(tileRoot.x - 0.5);
+      expect(pip.pip.y, `${combatant.id} pip inside tile`).toBeGreaterThanOrEqual(tileRoot.y - 0.5);
+      expect(pip.pip.x + pip.pip.w, `${combatant.id} pip inside tile`).toBeLessThanOrEqual(
+        tileRoot.x + tileRoot.w + 0.5,
+      );
+      expect(pip.pip.y + pip.pip.h, `${combatant.id} pip inside tile`).toBeLessThanOrEqual(
+        tileRoot.y + tileRoot.h + 0.5,
+      );
+      if (combatant.statusIcons) {
+        expect(
+          overlaps(pip.pip, combatant.statusIcons),
+          `${combatant.id} pip overlaps status-icons`,
+        ).toBe(false);
+      }
+    }
+  }
+}
+
+async function readCooldownPipState(
+  tile: import("@playwright/test").Page,
+): Promise<{
+  tileRoot: Rect;
+  party: CooldownPipCombatant[];
+  opponents: { pipCount: number }[];
+  bossPipCount: number;
+}> {
+  return tile.evaluate(() => {
+    const r = (el: Element | null): Rect => {
+      if (!el) {
+        return { x: 0, y: 0, w: 0, h: 0 };
+      }
+      const bounds = el.getBoundingClientRect();
+      return { x: bounds.x, y: bounds.y, w: bounds.width, h: bounds.height };
+    };
+    const tileRoot = r(document.querySelector(".battle-tile"));
+    const party = [...document.querySelectorAll(".party-zone .combatant")].map((combatant) => ({
+      id: combatant.getAttribute("data-entity-id"),
+      pips: [...combatant.querySelectorAll(".cooldown-pip")].map((pip) => ({
+        pip: r(pip),
+        fillFraction: pip
+          .querySelector<HTMLElement>(".cooldown-pip-fill")
+          ?.dataset["fillFraction"] ?? null,
+      })),
+      statusIcons: combatant.querySelector(".status-icons")
+        ? r(combatant.querySelector(".status-icons"))
+        : null,
+    }));
+    const opponents = [...document.querySelectorAll(".opponent-zone .combatant")].map(
+      (combatant) => ({
+        pipCount: combatant.querySelectorAll(".cooldown-pip").length,
+      }),
+    );
+    return {
+      tileRoot,
+      party,
+      opponents,
+      bossPipCount: document.querySelectorAll(".boss-combatant .cooldown-pip").length,
+    };
+  });
+}
+
 function assertCombatantsFitTile(combatants: Rect[]): void {
   const collisions: string[] = [];
   for (let i = 0; i < combatants.length; i++) {
@@ -79,7 +164,13 @@ test.describe("Battle Tile evidence scenarios", () => {
   defineEvidenceScenario(
     {
       id: "tile-baseline-combat",
-      slugs: ["tile-geometry", "native-1x-scaling", "aa-contrast", "effect-image-loading"],
+      slugs: [
+        "tile-geometry",
+        "native-1x-scaling",
+        "aa-contrast",
+        "effect-image-loading",
+        "cooldown-pips",
+      ],
       spec: {
         id: "rendered-evidence:tile-baseline-combat",
         path: "e2e/scenarios/tile.spec.ts",
@@ -126,6 +217,14 @@ test.describe("Battle Tile evidence scenarios", () => {
 
     const all = [...geometry.opponents, ...geometry.party];
     assertCombatantsFitTile(all);
+
+    const initialPips = await readCooldownPipState(tile);
+    assertCooldownPipLayout(
+      initialPips.tileRoot,
+      initialPips.party,
+      initialPips.opponents,
+      initialPips.bossPipCount,
+    );
 
     const sprites = await tile.evaluate(() =>
       [...document.querySelectorAll("img.combatant-sprite")].map((img) => {
@@ -195,6 +294,36 @@ test.describe("Battle Tile evidence scenarios", () => {
       brokenFrames: [],
       brokenIcons: [],
     });
+
+    let cooldownEvidence: {
+      partial: boolean;
+      fullUnused: boolean;
+    } | null = null;
+    await advanceUntil(tile, async () => {
+      const state = await readCooldownPipState(tile);
+      assertCooldownPipLayout(
+        state.tileRoot,
+        state.party,
+        state.opponents,
+        state.bossPipCount,
+      );
+      const fills = state.party.flatMap((combatant) =>
+        combatant.pips.map((pip) => Number.parseFloat(pip.fillFraction ?? "1")),
+      );
+      const partial = fills.some((fill) => fill > 0 && fill < 1);
+      const fullUnused = fills.some((fill) => fill >= 0.999);
+      cooldownEvidence = { partial, fullUnused };
+      return partial && fullUnused;
+    });
+    expect(cooldownEvidence?.partial, "used ability slot shows partial pip fill").toBe(true);
+    expect(cooldownEvidence?.fullUnused, "unused slot stays full").toBe(true);
+
+    const reducedMotionPips = await tile.evaluate(() => {
+      const battlefield = document.querySelector(".battlefield");
+      battlefield?.classList.add("reduced-motion");
+      return [...document.querySelectorAll(".party-zone .cooldown-pip")].length;
+    });
+    expect(reducedMotionPips, "cooldown pips retained under reduced motion").toBe(9);
 
     await advanceUntilVisible(tile, tile.locator(".combatant.knocked-out"));
     await expect(tile.locator(".combatant.knocked-out")).toBeVisible();
