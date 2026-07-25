@@ -113,7 +113,6 @@ function ensureCooldownPips(element: HTMLElement): HTMLElement {
   for (let index = 0; index < 3; index += 1) {
     const pip = document.createElement("div");
     pip.className = "cooldown-pip";
-    pip.dataset["slotIndex"] = String(index);
     const fill = document.createElement("div");
     fill.className = "cooldown-pip-fill";
     pip.append(fill);

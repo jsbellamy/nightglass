@@ -22,7 +22,6 @@ function overlaps(a: Rect, b: Rect): boolean {
 
 type CooldownPipSample = {
   pip: Rect;
-  fill: Rect;
   fillFraction: string | null;
 };
 
@@ -84,7 +83,6 @@ async function readCooldownPipState(
       id: combatant.getAttribute("data-entity-id"),
       pips: [...combatant.querySelectorAll(".cooldown-pip")].map((pip) => ({
         pip: r(pip),
-        fill: r(pip.querySelector(".cooldown-pip-fill")),
         fillFraction: pip
           .querySelector<HTMLElement>(".cooldown-pip-fill")
           ?.dataset["fillFraction"] ?? null,
