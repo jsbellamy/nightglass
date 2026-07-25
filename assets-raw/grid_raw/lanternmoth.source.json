@@ -1,0 +1,32 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "8e19f3590e86c31e1200d28adff4a2ce43f7540c5f0e5ce04364bce3afcef95e",
+  "acquisition": "flexible",
+  "identity_profile": {
+    "asset_class": "opponent",
+    "role": "ordinary-opponent",
+    "facing": "left"
+  },
+  "cursor_stamp_removed": false,
+  "identity": "lanternmoth",
+  "asset_class": "opponent",
+  "runtime_destination": "src/assets/sprites/lanternmoth.png",
+  "candidate": "lanternmoth.png",
+  "facing": "left",
+  "role": "ordinary-opponent",
+  "palette": "moonberry-16@1",
+  "style_references": [
+    {
+      "path": "src/assets/sprites/pipcap.png",
+      "sha256": "9fc03d2c05604818e2b45fb30d50186a9c53062777c9008fa677a65ce4da54d2",
+      "role": "style"
+    },
+    {
+      "path": "src/assets/sprites/brambling.png",
+      "sha256": "5add87c3d42694cda0da0e328635bab67183e0d8b5308090a76910c3a69c8fe5",
+      "role": "style"
+    }
+  ],
+  "prompt": "Single full-body Lanternmoth ordinary opponent game sprite, strict side profile facing LEFT. An orchard moth whose abdomen has swollen into a hanging cream lantern-bulb. Broad dusty mint-and-sage wings spread wide from a small furred berry-dark thorax, and the bulbous cream-gold lantern abdomen hangs low beneath the body like a paper lamp, its seams reading as flat panel lines with one pale cream-lit pane. The mutation is one living creature, not a moth carrying, towing, or perched on a lantern.\n\nPreserve its enchanted wrong identity: a small furred head with two broad feathered antennae, a compact berry-dark thorax, two wide dusty mint wings held in a broad spread, and the swollen cream-gold lantern abdomen with flat panel seams and one pale lit pane. Wide, top-heavy winged silhouette. Antennae, wing edges, thorax, panel seams, and the lit pane must remain distinct at native game scale.\n\nChunky simplified flat-colour Moonberry storybook night-garden pixel art with large readable shapes, selective contour-plum outline, and only named moonberry-16 colors: contour plums, berry reds, twilight slate, mint and sage greens, cream-gold and cream. Tone is 60% enchanted and 40% wrong. No gore, wounds, exposed organs, realism, gradients, anti-aliasing, blur, or dithering.\n\nShow exactly one complete subject with generous empty clearance on every edge of an opaque flat solid magenta #ff00ff background. No shadow, floor, glow, light rays, dust motes, sparkles, particles, Ability effect, text, watermark, scenery, UI, transparency, other insect, or other subject.\n"
+}

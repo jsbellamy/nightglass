@@ -670,5 +670,37 @@
       "provider": "Cursor GenerateImage",
       "raw_sha256": "f90b6152fe0862683b7027348219b57ebe08b071655b6d4daf5316adc4552937"
     }
+  },
+  "lanternmoth": {
+    "action": "still",
+    "frame_size": [
+      30,
+      29
+    ],
+    "visual_bounds": [
+      0,
+      0,
+      30,
+      29
+    ],
+    "foot_anchor": [
+      15,
+      29
+    ],
+    "palette": "moonberry-16",
+    "baseline_row": 28,
+    "total_ms": 1,
+    "frames": [
+      {
+        "name": "lanternmoth",
+        "duration_ms": 1,
+        "sha256": "5e91651a50c2413d2a636fe5f759c5c1a0c6a136f2828aa6f5a8b8896cf49575"
+      }
+    ],
+    "cues_ms": {},
+    "source": {
+      "provider": "Cursor GenerateImage",
+      "raw_sha256": "8e19f3590e86c31e1200d28adff4a2ce43f7540c5f0e5ce04364bce3afcef95e"
+    }
   }
 }
