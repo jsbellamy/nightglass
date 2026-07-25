@@ -137,7 +137,8 @@ test.describe("Armory evidence scenarios", () => {
       return {
         panelScrollable: panel.scrollHeight > panel.clientHeight + 1,
         bodyScrollable: body.scrollHeight > body.clientHeight + 1,
-        hasDetail: document.querySelector('[data-armory-detail="true"]') !== null,
+        hasDetail:
+          document.querySelector<HTMLElement>('[data-armory-detail="true"]')?.hidden === false,
       };
     });
     expect(layoutBeforeDrag?.hasDetail).toBe(false);
@@ -200,7 +201,7 @@ test.describe("Armory evidence scenarios", () => {
   defineEvidenceScenario(
     {
       id: "armory-salvage",
-      slugs: ["armory-salvage-tray", "armory-item-level-broom"],
+      slugs: ["armory-salvage-pane", "armory-discard-tier-pane"],
       spec: {
         id: "rendered-evidence:armory-salvage",
         path: "e2e/scenarios/armory.spec.ts",
@@ -208,7 +209,7 @@ test.describe("Armory evidence scenarios", () => {
       fixture: "isolated-dock",
       reviewScenes: [],
       summary:
-        "persistent salvage tray with Auto-fill summary and salvage bus command at dock size",
+        "salvage and discard action panes with fill, confirm, and bus commands at dock size",
     },
     async ({ browser }) => {
     const session = await openEvidenceSession(browser, ARMORY_SESSION.preset, {
@@ -221,28 +222,37 @@ test.describe("Armory evidence scenarios", () => {
     }
 
     await dock.click('[data-dock-tab="armory"]');
-    await dock.waitForSelector('[data-salvage-tray="true"]');
 
-    await dock.selectOption('[data-sweep-item-level="true"]', "3");
-    await dock.click('[data-sweep="true"]');
+    await dock.click('[data-armory-discard-tier-open="true"]');
+    await dock.waitForSelector('[data-discard-tier-pane="true"]');
+    await dock.click('[data-discard-tier-pick="3"]');
+    await dock.click('[data-discard-tier-fill="true"]');
 
-    const sweepConfirmLayout = await dock.evaluate(() => {
-      const panel = document.querySelector<HTMLElement>(".dock-panel");
+    const discardPaneLayout = await dock.evaluate(() => {
+      const panel = document.querySelector<HTMLElement>('[data-dock-panel="armory"]');
       const body = document.querySelector<HTMLElement>(".armory-body--compare-host");
-      const confirm = document.querySelector<HTMLElement>('[data-sweep-confirm="true"]');
-      if (!panel || !body || !confirm) {
+      const panes = document.querySelector<HTMLElement>(".armory-panes");
+      const detail = document.querySelector<HTMLElement>('[data-armory-detail="true"]');
+      const summary = document.querySelector<HTMLElement>('[data-discard-tier-summary="true"]');
+      if (!panel || !body || !panes || !detail || !summary) {
         return null;
       }
       return {
-        confirmVisible: confirm !== null,
+        compact: panes.classList.contains("armory-panes--compact"),
+        detailVisible: !detail.hidden,
+        summaryText: summary.textContent,
+        stagedCount: document.querySelectorAll('[data-discard-tier-staged="true"]').length,
         panelScrollable: panel.scrollHeight > panel.clientHeight + 1,
         bodyScrollable: body.scrollHeight > body.clientHeight + 1,
       };
     });
-    expect(sweepConfirmLayout).not.toBeNull();
-    expect(sweepConfirmLayout!.confirmVisible).toBe(true);
-    expect(sweepConfirmLayout!.panelScrollable).toBe(false);
-    expect(sweepConfirmLayout!.bodyScrollable).toBe(false);
+    expect(discardPaneLayout).not.toBeNull();
+    expect(discardPaneLayout!.compact).toBe(true);
+    expect(discardPaneLayout!.detailVisible).toBe(true);
+    expect(discardPaneLayout!.summaryText).toMatch(/Item Level 3/);
+    expect(discardPaneLayout!.stagedCount).toBe(4);
+    expect(discardPaneLayout!.panelScrollable).toBe(false);
+    expect(discardPaneLayout!.bodyScrollable).toBe(false);
 
     const itemLevelThreeCommonIds = [202, 205, 208, 211];
 
@@ -259,7 +269,7 @@ test.describe("Armory evidence scenarios", () => {
       w.__ngCmdSpy = channel;
     }, NIGHTGLASS_BUS_CHANNEL);
 
-    await dock.click('[data-sweep-confirm-yes="true"]');
+    await dock.click('[data-discard-tier-confirm="true"]');
 
     const discardCommands = await dock.evaluate(() => {
       const w = window as unknown as { __ngCmdLog?: unknown[] };
@@ -283,19 +293,23 @@ test.describe("Armory evidence scenarios", () => {
       }),
     ).toBe(true);
 
-    const trayReady = await dock.evaluate(() => {
-      const autofill = document.querySelector<HTMLButtonElement>('[data-salvage-autofill="true"]');
+    await dock.click('[data-armory-salvage-open="true"]');
+    await dock.waitForSelector('[data-salvage-pane="true"]');
+
+    const salvageReady = await dock.evaluate(() => {
+      const fill = document.querySelector<HTMLButtonElement>('[data-salvage-fill="true"]');
+      const commonChip = document.querySelector<HTMLButtonElement>('[data-salvage-rarity-pick="common"]');
       return {
-        trayVisible: document.querySelector('[data-salvage-tray="true"]') !== null,
-        autofillEnabled: autofill !== null && !autofill.disabled,
-        autofillLabel: autofill?.textContent ?? null,
+        paneVisible: document.querySelector('[data-salvage-pane="true"]') !== null,
+        fillEnabled: fill !== null && !fill.disabled,
+        commonPressed: commonChip?.getAttribute("aria-pressed") === "true",
       };
     });
-    expect(trayReady.trayVisible).toBe(true);
-    expect(trayReady.autofillEnabled).toBe(true);
-    expect(trayReady.autofillLabel).toBe("Auto-fill · 10 Common");
+    expect(salvageReady.paneVisible).toBe(true);
+    expect(salvageReady.fillEnabled).toBe(true);
+    expect(salvageReady.commonPressed).toBe(true);
 
-    await dock.click('[data-salvage-autofill="true"]');
+    await dock.click('[data-salvage-fill="true"]');
 
     const stagedLayout = await dock.evaluate(() => {
       const panel = document.querySelector<HTMLElement>('[data-dock-panel="armory"]');

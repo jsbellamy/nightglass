@@ -99,14 +99,12 @@ test.describe("accessibility keyboard floor", () => {
     await expect(
       dock.locator('[data-slot-filter="all"][aria-pressed="true"]'),
     ).toBeVisible();
-    await dock.locator('[data-discard-select="1"]').focus();
-    await assertFocusRingVisible(dock, '[data-discard-select="1"]');
     await dock.locator('.equipment-card[data-drop-id="1"]').focus();
     await assertFocusRingVisible(dock, '.equipment-card[data-drop-id="1"]');
     await dock.locator('[data-tile-lock="1"]').focus();
     await assertFocusRingVisible(dock, '[data-tile-lock="1"]');
     await expect(dock.locator(".armory-grid")).toBeVisible();
-    await expect(dock.locator('[data-armory-detail="true"]')).toHaveCount(0);
+    await expect(dock.locator('[data-armory-detail="true"]')).toBeHidden();
     await expect(dock.locator('[data-equip-button="true"]')).toHaveCount(0);
     await expect(dock.locator('[data-armory-character-selector="true"]')).toHaveCount(0);
 

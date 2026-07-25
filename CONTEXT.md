@@ -144,6 +144,10 @@ _Avoid_: unclaimed item, unread drop
 Consuming ten unequipped, unlocked Equipment pieces of one Rarity to produce one newly rolled Drop at the next Rarity. The produced piece takes the lowest Item Level among the ten consumed; its Equipment Base and Affixes roll normally. Epic Equipment cannot be Salvaged.
 _Avoid_: scrap, dismantle, disenchant, breakdown
 
+**Discard (bulk)**:
+Removing unequipped, unlocked Equipment from the Armory. Bulk discard by Item Level stages every eligible piece at one Item Level (fill-from-tier or manual tile selection), lists Rare and Epic pieces explicitly, and confirms before removal. Equipped and Locked Equipment cannot be discarded.
+_Avoid_: sweep, delete all, mass sell
+
 **Weapon**:
 A Class-specific Equipment piece occupying the Weapon slot: Knight blade, Wizard focus, Priest relic, or Hunter bow.
 _Avoid_: main hand, class item

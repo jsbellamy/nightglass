@@ -11,11 +11,12 @@ import {
   isCompatibleWithSlot,
   nextRarity,
   RARITY_LABELS,
-  rareOrEpicDropNames,
   salvageEligibleAtRarity,
   selectSalvageBatchForRarity,
   SLOT_LABELS,
   sortArmoryDrops,
+  discardTierDropsAtItemLevel,
+  discardTierItemLevels,
 } from "./equipment-format";
 import { bindPressable } from "./keyboard";
 import { EMPTY_ENGINE_LEGALITY, type EngineLegalityView } from "./engine-legality";
@@ -120,13 +121,14 @@ export function mountArmorySurface(
   let filters: ArmoryFilters = {};
   let sort: ArmorySortId = "default";
   let browseCompatibility: BrowseCompatibility | null = null;
-  let selectedDiscard = new Set<number>();
-  let discardConfirmOpen = false;
   let actionMode: ArmoryActionMode | null = null;
   let salvagePickRarity: Rarity | null = null;
   let salvageFilled = false;
   let stagedSalvageIds = new Set<number>();
   let stagedSalvageMeta: SalvageStageMeta | null = null;
+  let discardPickItemLevel: ItemLevel | null = null;
+  let discardTierFilled = false;
+  let stagedDiscardTierIds = new Set<number>();
   let pendingSalvageResult: SalvagePendingResult | null = null;
   let salvageResultDropId: number | null = null;
   let activeDrag: ArmoryDragSource | null = null;
@@ -200,6 +202,21 @@ export function mountArmorySurface(
     clearSalvageFill();
   }
 
+  function defaultDiscardPickItemLevel(armory: readonly DropInstance[]): ItemLevel | null {
+    const levels = discardTierItemLevels([...armory]);
+    return levels[0]?.itemLevel ?? null;
+  }
+
+  function clearDiscardTierStaging(): void {
+    stagedDiscardTierIds = new Set();
+    discardTierFilled = false;
+  }
+
+  function resetDiscardTierPaneState(): void {
+    discardPickItemLevel = null;
+    clearDiscardTierStaging();
+  }
+
   function defaultSalvagePickRarity(armory: readonly DropInstance[]): Rarity {
     for (const rarity of SALVAGE_INPUT_RARITIES) {
       if (salvageEligibleAtRarity(armory, rarity).length >= 10) {
@@ -232,6 +249,7 @@ export function mountArmorySurface(
   function closeActionPane(): void {
     actionMode = null;
     resetSalvagePaneState();
+    resetDiscardTierPaneState();
     clearSalvageResult();
     setPaneLayout("full");
     delete detailEl.dataset["armoryActionMode"];
@@ -245,9 +263,14 @@ export function mountArmorySurface(
     }
     actionMode = mode;
     resetSalvagePaneState();
+    resetDiscardTierPaneState();
     clearSalvageResult();
-    if (mode === "salvage" && lastSnapshot) {
-      salvagePickRarity = defaultSalvagePickRarity(lastSnapshot.progression.armory);
+    if (lastSnapshot) {
+      if (mode === "salvage") {
+        salvagePickRarity = defaultSalvagePickRarity(lastSnapshot.progression.armory);
+      } else {
+        discardPickItemLevel = defaultDiscardPickItemLevel(lastSnapshot.progression.armory);
+      }
     }
     setPaneLayout("compact");
     detailEl.dataset["armoryActionMode"] = mode;
@@ -273,20 +296,202 @@ export function mountArmorySurface(
     if (mode === "salvage") {
       return renderSalvagePane(snapshot);
     }
-    return renderDiscardTierPlaceholder(snapshot);
+    return renderDiscardTierPane(snapshot);
   }
 
-  function renderDiscardTierPlaceholder(_snapshot: ReadonlySnapshot): HTMLElement {
-    const shell = el("div", { class: "armory-action-pane" });
-    shell.append(el("h3", { class: "armory-action-pane-title", text: "Discard" }));
-    shell.append(
-      el("p", {
-        class: "armory-action-pane-hint",
-        text: "Choose an Item Level, then fill from tier to review the batch.",
-      }),
-    );
-    shell.append(renderActionPaneClose());
-    return shell;
+  function renderDiscardTierPane(snapshot: ReadonlySnapshot): HTMLElement {
+    const armory = snapshot.progression.armory;
+    const levels = discardTierItemLevels([...armory]);
+    const pickItemLevel =
+      discardPickItemLevel ?? (levels[0]?.itemLevel ?? null);
+    discardPickItemLevel = pickItemLevel;
+
+    const pane = el("div", {
+      class: "armory-action-pane armory-discard-tier-pane",
+      data: { discardTierPane: "true" },
+    });
+    pane.append(el("h3", { class: "armory-action-pane-title", text: "Discard" }));
+
+    if (levels.length > 0) {
+      const picker = el("div", {
+        class: "armory-discard-tier-picker",
+        props: { role: "group" },
+        aria: { label: "Discard Item Level" },
+      });
+      for (const entry of levels) {
+        const chip = el("button", {
+          class: "armory-discard-tier-chip focus-ring",
+          data: { discardTierPick: String(entry.itemLevel) },
+          props: { type: "button" },
+          aria: {
+            pressed: pickItemLevel === entry.itemLevel ? "true" : "false",
+          },
+          text: `IL ${entry.itemLevel} (${entry.count})`,
+        });
+        bindPressable(chip, () => {
+          discardPickItemLevel = entry.itemLevel;
+          clearDiscardTierStaging();
+          if (lastSnapshot) {
+            render(lastSnapshot);
+          }
+        });
+        picker.append(chip);
+      }
+      pane.append(picker);
+    }
+
+    const tierDrops =
+      pickItemLevel === null ? [] : discardTierDropsAtItemLevel([...armory], pickItemLevel);
+    const fill = el("button", {
+      class: "armory-discard-tier-fill focus-ring",
+      data: { discardTierFill: "true" },
+      props: { type: "button", disabled: tierDrops.length === 0 },
+      text: "Fill from tier",
+    });
+    bindPressable(fill, () => {
+      if (pickItemLevel === null) {
+        return;
+      }
+      const drops = discardTierDropsAtItemLevel([...armory], pickItemLevel);
+      if (drops.length === 0) {
+        clearDiscardTierStaging();
+      } else {
+        stagedDiscardTierIds = new Set(drops.map((entry) => entry.dropId));
+        discardTierFilled = true;
+      }
+      if (lastSnapshot) {
+        render(lastSnapshot);
+      }
+    });
+
+    const fillRowChildren: HTMLElement[] = [fill];
+    if (stagedDiscardTierIds.size > 0) {
+      const clearFill = el("button", {
+        class: "armory-discard-tier-clear-fill focus-ring",
+        data: { discardTierClearFill: "true" },
+        props: { type: "button" },
+        text: "Clear",
+      });
+      bindPressable(clearFill, () => {
+        clearDiscardTierStaging();
+        if (lastSnapshot) {
+          render(lastSnapshot);
+        }
+      });
+      fillRowChildren.push(clearFill);
+    }
+    pane.append(el("div", { class: "armory-discard-tier-fill-row" }, fillRowChildren));
+
+    const stagedDrops = [...stagedDiscardTierIds]
+      .map((dropId) => dropById(armory, dropId))
+      .filter((entry): entry is DropInstance => entry !== undefined);
+
+    if (stagedDrops.length > 0) {
+      const precious = stagedDrops.filter(
+        (entry) => entry.rarity === "rare" || entry.rarity === "epic",
+      );
+      const preciousSuffix =
+        precious.length > 0 ? ` · ${precious.length} Rare/Epic` : "";
+      const tierBatch =
+        discardTierFilled &&
+        pickItemLevel !== null &&
+        stagedDrops.every((entry) => entry.itemLevel === pickItemLevel);
+      const summary = tierBatch
+        ? `Discard ${stagedDrops.length} at Item Level ${pickItemLevel}${preciousSuffix}`
+        : `Discard ${stagedDrops.length} piece(s)${preciousSuffix}`;
+      pane.append(
+        el("p", {
+          class: "armory-discard-tier-summary",
+          data: { discardTierSummary: "true" },
+          text: summary,
+        }),
+      );
+
+      const preciousSet = new Set(precious.map((entry) => entry.dropId));
+      const ordered = [
+        ...stagedDrops.filter((entry) => preciousSet.has(entry.dropId)),
+        ...stagedDrops.filter((entry) => !preciousSet.has(entry.dropId)),
+      ];
+      const list = el("div", { class: "armory-discard-tier-list" });
+      for (const entry of ordered) {
+        const base = equipmentBaseForDrop(entry, content);
+        const preciousRow = entry.rarity === "rare" || entry.rarity === "epic";
+        const row = el("div", {
+          class: `armory-discard-tier-row${preciousRow ? ` priority rarity-${entry.rarity}` : ""}`,
+          data: { discardTierRow: "true" },
+        });
+        row.append(
+          createEquipmentIconElement(base.iconKey, "content", { ariaLabel: base.name }),
+        );
+        const copy = el("div", { class: "armory-discard-tier-row-copy" });
+        copy.append(el("span", { class: "armory-discard-tier-row-name", text: base.name }));
+        copy.append(
+          el("span", {
+            class: "armory-discard-tier-row-meta",
+            text: `${SLOT_LABELS[base.slot]} · IL ${entry.itemLevel}`,
+          }),
+        );
+        row.append(copy);
+        row.append(
+          el("span", {
+            class: "armory-discard-tier-row-rarity",
+            text: RARITY_LABELS[entry.rarity],
+          }),
+        );
+        list.append(row);
+      }
+      pane.append(list);
+    } else if (levels.length === 0) {
+      pane.append(
+        el("p", {
+          class: "armory-discard-tier-empty",
+          text: "No unequipped, unlocked pieces to discard.",
+        }),
+      );
+    } else {
+      pane.append(
+        el("p", {
+          class: "armory-action-pane-hint",
+          text: "Fill from tier, or click pieces in the collection to stage them.",
+        }),
+      );
+    }
+
+    if (stagedDrops.length > 0) {
+      const confirm = el("button", {
+        class: "armory-discard-tier-confirm focus-ring",
+        data: { discardTierConfirm: "true" },
+        props: { type: "button" },
+        text: "Discard",
+      });
+      bindPressable(confirm, () => {
+        const dropIds = [...stagedDiscardTierIds];
+        publish({ cmd: "discard", args: [dropIds] });
+        clearDiscardTierStaging();
+        if (lastSnapshot) {
+          render(lastSnapshot);
+        }
+      });
+
+      const cancel = el("button", {
+        class: "armory-discard-tier-cancel focus-ring",
+        data: { discardTierCancel: "true" },
+        props: { type: "button" },
+        text: "Cancel",
+      });
+      bindPressable(cancel, () => {
+        clearDiscardTierStaging();
+        if (lastSnapshot) {
+          render(lastSnapshot);
+        }
+      });
+
+      pane.append(el("div", { class: "armory-discard-tier-actions" }, [confirm, cancel]));
+    } else {
+      pane.append(renderActionPaneClose());
+    }
+
+    return pane;
   }
 
   function renderActionPaneClose(): HTMLElement {
@@ -537,6 +742,21 @@ export function mountArmorySurface(
     }
   }
 
+  function syncStagedDiscardTier(armory: readonly DropInstance[]): void {
+    if (stagedDiscardTierIds.size === 0) {
+      return;
+    }
+    for (const dropId of [...stagedDiscardTierIds]) {
+      const entry = dropById(armory, dropId);
+      if (!entry || entry.assignedTo !== null || entry.locked) {
+        stagedDiscardTierIds.delete(dropId);
+      }
+    }
+    if (stagedDiscardTierIds.size === 0) {
+      clearDiscardTierStaging();
+    }
+  }
+
   function resolvePendingSalvageResult(snapshot: ReadonlySnapshot): void {
     if (!pendingSalvageResult) {
       return;
@@ -565,6 +785,19 @@ export function mountArmorySurface(
 
   function salvageStagedDrop(drop: DropInstance): boolean {
     return stagedSalvageIds.has(drop.dropId);
+  }
+
+  function discardTierStagedDrop(drop: DropInstance): boolean {
+    return stagedDiscardTierIds.has(drop.dropId);
+  }
+
+  function toggleDiscardTierSelection(dropId: number): void {
+    if (stagedDiscardTierIds.has(dropId)) {
+      stagedDiscardTierIds.delete(dropId);
+    } else {
+      stagedDiscardTierIds.add(dropId);
+    }
+    discardTierFilled = false;
   }
 
   function isDropSeen(drop: DropInstance): boolean {
@@ -1236,62 +1469,6 @@ export function mountArmorySurface(
       ]),
     );
 
-    if (selectedDiscard.size > 0) {
-      const discardButton = el("button", {
-        class: "armory-discard-button focus-ring",
-        data: { bulkDiscard: "true" },
-        props: { type: "button" },
-        text: `Discard selected (${selectedDiscard.size})`,
-      });
-      bindPressable(discardButton, () => {
-        discardConfirmOpen = true;
-        render(snapshot);
-      });
-      toolbar.append(
-        el("div", { class: "armory-bulk-actions", data: { bulkDiscardStrip: "true" } }, [
-          discardButton,
-        ]),
-      );
-    }
-
-    if (discardConfirmOpen && selectedDiscard.size > 0) {
-      const selectedDrops = [...selectedDiscard]
-        .map((dropId) => dropById(snapshot.progression.armory, dropId))
-        .filter((entry): entry is DropInstance => entry !== undefined);
-      const rareEpic = rareOrEpicDropNames(selectedDrops, content);
-      const yes = el("button", {
-        class: "armory-confirm-yes focus-ring",
-        props: { type: "button" },
-        text: "Discard",
-      });
-      bindPressable(yes, () => {
-        publish({ cmd: "discard", args: [[...selectedDiscard]] });
-        selectedDiscard = new Set();
-        discardConfirmOpen = false;
-      });
-      const no = el("button", {
-        class: "armory-confirm-no focus-ring",
-        props: { type: "button" },
-        text: "Cancel",
-      });
-      bindPressable(no, () => {
-        discardConfirmOpen = false;
-        render(snapshot);
-      });
-      toolbar.append(
-        el("div", { class: "armory-confirm", data: { discardConfirm: "true" } }, [
-          el("p", {
-            class: "armory-confirm-copy",
-            text:
-              rareEpic.length > 0
-                ? `Discard ${selectedDiscard.size} piece(s)? Rare/Epic: ${rareEpic.join(", ")}`
-                : `Discard ${selectedDiscard.size} piece(s)?`,
-          }),
-          el("div", { class: "armory-confirm-actions" }, [yes, no]),
-        ]),
-      );
-    }
-
     return toolbar;
   }
 
@@ -1311,19 +1488,22 @@ export function mountArmorySurface(
       drop.locked ? "L" : "",
       isDropSeen(drop) ? "S" : "",
       discardableDrop(drop) ? "d" : "",
-      selectedDiscard.has(drop.dropId) ? "D" : "",
       salvageStagedDrop(drop) ? "V" : "",
+      discardTierStagedDrop(drop) ? "T" : "",
     ].join("|");
   }
 
   function buildTile(drop: DropInstance, host: HTMLElement): HTMLElement {
-    const staged = salvageStagedDrop(drop);
+    const salvageStaged = salvageStagedDrop(drop);
+    const discardTierStaged = discardTierStagedDrop(drop);
+    const staged = salvageStaged || discardTierStaged;
     const tile = el("article", {
       class: `equipment-card focus-ring${drop.locked ? " locked-tile" : ""}${staged ? " armory-card--staged" : ""}`,
       data: {
         dropId: String(drop.dropId),
         tileStateKey: tileStateKey(drop),
-        ...(staged ? { salvageStaged: "true" } : {}),
+        ...(salvageStaged ? { salvageStaged: "true" } : {}),
+        ...(discardTierStaged ? { discardTierStaged: "true" } : {}),
       },
       props: { tabIndex: 0, role: "listitem" },
       aria: {
@@ -1332,33 +1512,21 @@ export function mountArmorySurface(
     });
     renderTileFace(tile, drop);
 
-    if (discardableDrop(drop) && !staged) {
-      const checkbox = el("input", {
-        class: "armory-discard-checkbox focus-ring",
-        data: { discardSelect: String(drop.dropId) },
-        props: {
-          type: "checkbox",
-          checked: selectedDiscard.has(drop.dropId),
-        },
-        aria: {
-          label: `Select ${equipmentBaseForDrop(drop, content).name} for discard`,
-        },
-      });
-      checkbox.addEventListener("click", (event) => {
-        event.stopPropagation();
-      });
-      checkbox.addEventListener("change", () => {
-        if (checkbox.checked) {
-          selectedDiscard.add(drop.dropId);
-        } else {
-          selectedDiscard.delete(drop.dropId);
-        }
-        if (lastSnapshot) {
-          render(lastSnapshot);
-        }
-      });
-      tile.append(checkbox);
-    }
+    tile.addEventListener("click", (event) => {
+      if (actionMode !== "discard-tier") {
+        return;
+      }
+      if ((event.target as HTMLElement).closest("[data-tile-lock]")) {
+        return;
+      }
+      if (!discardableDrop(drop)) {
+        return;
+      }
+      toggleDiscardTierSelection(drop.dropId);
+      if (lastSnapshot) {
+        render(lastSnapshot);
+      }
+    });
 
     const lockButton = el("button", {
       class: "armory-tile-lock focus-ring",
@@ -1450,6 +1618,7 @@ export function mountArmorySurface(
     body(snapshot) {
       if (snapshot) {
         syncStagedSalvage(snapshot.progression.armory);
+        syncStagedDiscardTier(snapshot.progression.armory);
         resolvePendingSalvageResult(snapshot);
       }
       currentToolbar = swapBodySection(currentToolbar, renderToolbar(snapshot));

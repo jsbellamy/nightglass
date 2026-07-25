@@ -2243,28 +2243,11 @@ html.dock-window body {
   flex-shrink: 0;
 }
 
-.armory-salvage-tray {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
-  min-height: 32px;
-  border: 1px solid rgba(255, 249, 233, 0.16);
-  border-radius: 6px;
-  background: rgba(25, 28, 38, 0.9);
-  padding: 6px 8px;
-}
-
-.armory-salvage-unavailable,
 .armory-salvage-summary {
   margin: 0;
   font-size: 11px;
   line-height: 1.4;
   color: var(--dock-text-muted, #d8d0bf);
-}
-
-.armory-salvage-summary {
   flex: 1 1 100%;
   min-height: 16px;
 }
@@ -2273,6 +2256,107 @@ html.dock-window body {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+}
+
+.armory-discard-tier-fill,
+.armory-discard-tier-clear-fill,
+.armory-discard-tier-confirm,
+.armory-discard-tier-cancel {
+  border: 1px solid rgba(255, 249, 233, 0.18);
+  border-radius: 4px;
+  background: #292d3d;
+  color: var(--dock-text, #fff9e9);
+  cursor: pointer;
+  padding: 4px 8px;
+  font-size: 11px;
+  text-align: left;
+}
+
+.armory-discard-tier-fill:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.armory-discard-tier-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.armory-discard-tier-chip {
+  border: 1px solid rgba(255, 249, 233, 0.18);
+  border-radius: 4px;
+  background: #292d3d;
+  color: var(--dock-text, #fff9e9);
+  cursor: pointer;
+  padding: 3px 6px;
+  font-size: 10px;
+}
+
+.armory-discard-tier-chip[aria-pressed="true"] {
+  border-color: #c47a6a;
+  background: #3a2f2d;
+}
+
+.armory-discard-tier-fill-row,
+.armory-discard-tier-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.armory-discard-tier-summary,
+.armory-discard-tier-empty {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--dock-text-muted, #d8d0bf);
+}
+
+.armory-discard-tier-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 0;
+  overflow: auto;
+}
+
+.armory-discard-tier-row {
+  display: grid;
+  grid-template-columns: 24px 1fr auto;
+  gap: 6px;
+  align-items: center;
+  padding: 4px;
+  border: 1px solid rgba(255, 249, 233, 0.12);
+  border-radius: 4px;
+  font-size: 10px;
+}
+
+.armory-discard-tier-row.priority {
+  border-color: rgba(126, 182, 255, 0.45);
+}
+
+.armory-discard-tier-row.priority.rarity-epic {
+  border-color: rgba(212, 160, 255, 0.45);
+}
+
+.armory-discard-tier-row-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.armory-discard-tier-row-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.armory-discard-tier-row-meta,
+.armory-discard-tier-row-rarity {
+  color: var(--dock-text-muted, #d8d0bf);
+  font-size: 9px;
 }
 
 .armory-salvage-fill,
@@ -2543,7 +2627,6 @@ html.dock-window body {
 
 .armory-discard-button,
 .armory-equip-button,
-.armory-sweep-button,
 .equipment-lock-toggle,
 .armory-confirm-yes,
 .armory-confirm-no {
@@ -2568,15 +2651,13 @@ html.dock-window body {
 }
 
 .armory-sort-label,
-.armory-state-label,
-.armory-sweep-label {
+.armory-state-label {
   font-size: 11px;
   color: var(--dock-text-muted, #d8d0bf);
 }
 
 .armory-sort-select,
-.armory-state-select,
-.armory-sweep-item-level-select {
+.armory-state-select {
   margin-left: 6px;
   padding: 2px 4px;
   border-radius: 4px;
@@ -2607,19 +2688,6 @@ html.dock-window body {
 
 .armory-grid .equipment-card.selected {
   border-color: #8ec8ff;
-}
-
-.armory-grid .armory-discard-checkbox {
-  position: absolute;
-  top: 2px;
-  right: 2px;
-  opacity: 0;
-  z-index: 1;
-}
-
-.armory-grid .equipment-card:hover .armory-discard-checkbox,
-.armory-grid .equipment-card:focus-within .armory-discard-checkbox {
-  opacity: 1;
 }
 
 .equipment-card-header {

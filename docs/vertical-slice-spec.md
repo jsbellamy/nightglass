@@ -353,19 +353,22 @@ bands, rarity odds; content data transcribes it directly).
   side-by-side from a Character's slot with statistic deltas and resulting raw
   Ability changes — no aggregate score, no auto-equip. Equipped and Locked
   pieces cannot be discarded; bulk Discard confirms, listing Rare/Epic
-  selections explicitly. A per-Item-Level **Sweep** discards every unequipped,
-  unlocked piece at one Item Level behind the same confirm, listing Rare/Epic
-  pieces explicitly.
+  selections explicitly. **Discard** (toolbar) opens a detail-pane flow: pick an
+  Item Level, **Fill from tier** (or stage tiles manually), review Rare/Epic in a
+  ledger, then confirm — discarding every unequipped, unlocked piece at that
+  Item Level.
 - **Salvage:** ten unequipped, unlocked pieces of one Rarity → one newly rolled
   Drop at the next Rarity (Common→Uncommon, Uncommon→Rare, Rare→Epic); Epic is
-  never an eligible input. **Auto-fill** stages the ten from the *lowest*
-  Rarity holding at least ten eligible pieces, taking highest Item Level first
-  and breaking ties oldest-first; **Salvage** consumes them. The produced piece
+  never an eligible input. The **Salvage** toolbar button opens the same detail
+  pane: pick Rarity, **Fill 10 slots** (or stage manually), review the summary,
+  then confirm. Fill takes the ten from the *lowest* Rarity holding at least
+  ten eligible pieces, highest Item Level first, oldest-first ties. **Salvage**
+  consumes them. The produced piece
   takes the **lowest** Item Level among the ten consumed, and rolls its slot,
   weapon Class, Equipment Base, and Affixes from the persisted loot stream —
   only Rarity and Item Level are pinned, so a reload cannot reroll it. Unseen
   and Rare/Epic pieces are eligible; Lock is the only protection beyond being
-  equipped. Salvage awards no Drop notification: the Armory tray shows the
+  equipped. Salvage awards no Drop notification: the detail pane shows the
   produced piece and it enters the Armory Unseen.
 - Drops never pause combat or open a modal: a status-line `Drop · <Rarity>`
   notification, an Armory-tab badge, and an Unseen marker. Characters start with empty

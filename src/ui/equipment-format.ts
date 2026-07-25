@@ -240,7 +240,7 @@ export function discardableDrop(drop: DropInstance): boolean {
   return !drop.assignedTo && !drop.locked;
 }
 
-export function sweepableDropsAtItemLevel(
+export function discardTierDropsAtItemLevel(
   armory: DropInstance[],
   itemLevel: ItemLevel,
 ): DropInstance[] {
@@ -249,7 +249,7 @@ export function sweepableDropsAtItemLevel(
     .sort((left, right) => left.dropId - right.dropId);
 }
 
-export function sweepableItemLevels(
+export function discardTierItemLevels(
   armory: DropInstance[],
 ): { itemLevel: ItemLevel; count: number }[] {
   const counts = new Map<ItemLevel, number>();
