@@ -5,6 +5,7 @@ import type {
   Content,
   EquipmentBaseDef,
   EquipmentSlotId,
+  ItemLevel,
   Rarity,
 } from "../core/types";
 import { affixToModifier, formatStatModifierPerRank, CLASS_LABELS, nextRarity, selectSalvageBatch } from "./snapshot-view";
@@ -224,6 +225,30 @@ export function isCompatibleWithSlot(
 
 export function discardableDrop(drop: DropInstance): boolean {
   return !drop.assignedTo && !drop.locked;
+}
+
+export function sweepableDropsAtItemLevel(
+  armory: DropInstance[],
+  itemLevel: ItemLevel,
+): DropInstance[] {
+  return armory
+    .filter((drop) => drop.itemLevel === itemLevel && discardableDrop(drop))
+    .sort((left, right) => left.dropId - right.dropId);
+}
+
+export function sweepableItemLevels(
+  armory: DropInstance[],
+): { itemLevel: ItemLevel; count: number }[] {
+  const counts = new Map<ItemLevel, number>();
+  for (const drop of armory) {
+    if (!discardableDrop(drop)) {
+      continue;
+    }
+    counts.set(drop.itemLevel, (counts.get(drop.itemLevel) ?? 0) + 1);
+  }
+  return [...counts.entries()]
+    .sort((left, right) => left[0] - right[0])
+    .map(([level, count]) => ({ itemLevel: level, count }));
 }
 
 export function rareOrEpicDropNames(

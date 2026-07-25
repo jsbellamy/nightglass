@@ -23,6 +23,7 @@ export const EVIDENCE_SLUG_CATALOG = [
   "armory-drag-equip-unequip",
   "armory-density-no-outer-scroll",
   "armory-salvage-tray",
+  "armory-item-level-broom",
   "equipment-icon-content-tier",
   "equipment-icon-chrome-legibility",
   "character-loadout-no-scroll",
