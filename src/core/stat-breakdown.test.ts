@@ -59,7 +59,7 @@ function baseSnapshot(overrides: Partial<Snapshot> = {}): Snapshot {
 }
 
 describe("characterStatBreakdown", () => {
-  it("lists all nine stats in contract order with labels", () => {
+  it("lists all eleven stats in contract order with labels", () => {
     const snapshot = baseSnapshot();
     const lines = characterStatBreakdown(snapshot, fixtureContent, "knight");
 
@@ -73,6 +73,8 @@ describe("characterStatBreakdown", () => {
       "frostPower",
       "lightningPower",
       "lightPower",
+      "critChance",
+      "critDamage",
     ]);
     expect(lines.map((line) => line.label)).toEqual([
       "Max Health",
@@ -84,6 +86,8 @@ describe("characterStatBreakdown", () => {
       "Frost Power",
       "Lightning Power",
       "Light Power",
+      "Critical Chance",
+      "Critical Damage",
     ]);
   });
 
@@ -177,6 +181,8 @@ describe("characterStatBreakdown", () => {
       expected.frostPower,
       expected.lightningPower,
       expected.lightPower,
+      expected.critChance,
+      expected.critDamage,
     ]);
   });
 

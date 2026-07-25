@@ -213,6 +213,8 @@ export const priestClass: ClassKitDef = {
     frostPower: 0,
     lightningPower: 0,
     lightPower: 0,
+    critChance: 0.05,
+    critDamage: 1.5,
   },
   basicAbilityId: "sun-mote",
   coreAbilityIds: ["mending-light", "dawn-recall", "war-hymn", "judgment"],

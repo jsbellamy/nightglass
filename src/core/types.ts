@@ -20,6 +20,8 @@ export interface BaseStats {
   frostPower: number;
   lightningPower: number;
   lightPower: number;
+  critChance: number;
+  critDamage: number;
 }
 
 export type AbilityTargeting =
@@ -146,7 +148,9 @@ export type AffixId =
   | "flat-max-health"
   | "percent-max-health"
   | "flat-armor"
-  | "flat-elemental-resistance";
+  | "flat-elemental-resistance"
+  | "flat-crit-chance"
+  | "flat-crit-damage";
 
 export interface EquipmentBaseDef {
   id: string;

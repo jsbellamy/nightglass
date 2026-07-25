@@ -125,6 +125,8 @@ describe("Unwound Belfry Opponents", () => {
       frostPower: 0,
       lightningPower: 0,
       lightPower: 0,
+      critChance: 0.05,
+      critDamage: 1.5,
     };
     for (const id of ["tickmoth-s7-36a", "tickmoth-s7-36b", "tickmoth-s7-40"]) {
       expectStats(id, tickmothS7);
@@ -140,6 +142,8 @@ describe("Unwound Belfry Opponents", () => {
       frostPower: 0,
       lightningPower: 0,
       lightPower: 0,
+      critChance: 0.05,
+      critDamage: 1.5,
     });
 
     const tickmothS9 = {
@@ -152,6 +156,8 @@ describe("Unwound Belfry Opponents", () => {
       frostPower: 0,
       lightningPower: 0,
       lightPower: 0,
+      critChance: 0.05,
+      critDamage: 1.5,
     };
     for (const id of ["tickmoth-s9-60", "tickmoth-s9-52"]) {
       expectStats(id, tickmothS9);
@@ -167,6 +173,8 @@ describe("Unwound Belfry Opponents", () => {
       frostPower: 0,
       lightningPower: 0,
       lightPower: 0,
+      critChance: 0.05,
+      critDamage: 1.5,
     };
     for (const id of ["tollbat-s7-44a", "tollbat-s7-44b"]) {
       expectStats(id, tollbatS7);
@@ -182,6 +190,8 @@ describe("Unwound Belfry Opponents", () => {
       frostPower: 0,
       lightningPower: 0,
       lightPower: 0,
+      critChance: 0.05,
+      critDamage: 1.5,
     };
     for (const id of ["tollbat-s8-47a", "tollbat-s8-47b"]) {
       expectStats(id, tollbatS8);
@@ -197,6 +207,8 @@ describe("Unwound Belfry Opponents", () => {
       frostPower: 0,
       lightningPower: 0,
       lightPower: 0,
+      critChance: 0.05,
+      critDamage: 1.5,
     });
 
     const spiderS8 = {
@@ -209,6 +221,8 @@ describe("Unwound Belfry Opponents", () => {
       frostPower: 0,
       lightningPower: 0,
       lightPower: 0,
+      critChance: 0.05,
+      critDamage: 1.5,
     };
     for (const id of ["astrolabe-spider-s8-48a", "astrolabe-spider-s8-48b"]) {
       expectStats(id, spiderS8);
@@ -224,6 +238,8 @@ describe("Unwound Belfry Opponents", () => {
       frostPower: 0,
       lightningPower: 0,
       lightPower: 0,
+      critChance: 0.05,
+      critDamage: 1.5,
     };
     for (const id of ["astrolabe-spider-s9-70a", "astrolabe-spider-s9-70b"]) {
       expectStats(id, spiderS9);
@@ -239,6 +255,8 @@ describe("Unwound Belfry Opponents", () => {
       frostPower: 0,
       lightningPower: 0,
       lightPower: 0,
+      critChance: 0.05,
+      critDamage: 1.5,
     });
     expectStats("the-tocsin", {
       maxHealth: 5720,
@@ -250,6 +268,8 @@ describe("Unwound Belfry Opponents", () => {
       frostPower: 0,
       lightningPower: 0,
       lightPower: 0,
+      critChance: 0.05,
+      critDamage: 1.5,
     });
     expectStats("the-unwound", {
       maxHealth: 8450,
@@ -261,6 +281,8 @@ describe("Unwound Belfry Opponents", () => {
       frostPower: 0,
       lightningPower: 0,
       lightPower: 0,
+      critChance: 0.05,
+      critDamage: 1.5,
     });
     expectStats("aphelion", {
       maxHealth: 11700,
@@ -272,6 +294,8 @@ describe("Unwound Belfry Opponents", () => {
       frostPower: 0,
       lightningPower: 0,
       lightPower: 0,
+      critChance: 0.05,
+      critDamage: 1.5,
     });
   });
 

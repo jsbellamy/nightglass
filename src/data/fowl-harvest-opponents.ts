@@ -12,6 +12,8 @@ const BURGER_S4_STATS: BaseStats = {
   frostPower: 0,
   lightningPower: 0,
   lightPower: 0,
+  critChance: 0.05,
+  critDamage: 1.5,
 };
 
 const CORN_S5_STATS: BaseStats = {
@@ -24,6 +26,8 @@ const CORN_S5_STATS: BaseStats = {
   frostPower: 0,
   lightningPower: 0,
   lightPower: 0,
+  critChance: 0.05,
+  critDamage: 1.5,
 };
 
 const BURGER_S6_STATS: BaseStats = {
@@ -36,6 +40,8 @@ const BURGER_S6_STATS: BaseStats = {
   frostPower: 0,
   lightningPower: 0,
   lightPower: 0,
+  critChance: 0.05,
+  critDamage: 1.5,
 };
 
 const CORN_S6_STATS: BaseStats = {
@@ -48,6 +54,8 @@ const CORN_S6_STATS: BaseStats = {
   frostPower: 0,
   lightningPower: 0,
   lightPower: 0,
+  critChance: 0.05,
+  critDamage: 1.5,
 };
 
 const THE_FRYER_STATS: BaseStats = {
@@ -60,6 +68,8 @@ const THE_FRYER_STATS: BaseStats = {
   frostPower: 0,
   lightningPower: 0,
   lightPower: 0,
+  critChance: 0.05,
+  critDamage: 1.5,
 };
 
 const SCAREQUACK_STATS: BaseStats = {
@@ -72,6 +82,8 @@ const SCAREQUACK_STATS: BaseStats = {
   frostPower: 0,
   lightningPower: 0,
   lightPower: 0,
+  critChance: 0.05,
+  critDamage: 1.5,
 };
 
 const THE_COMBINE_STATS: BaseStats = {
@@ -84,6 +96,8 @@ const THE_COMBINE_STATS: BaseStats = {
   frostPower: 0,
   lightningPower: 0,
   lightPower: 0,
+  critChance: 0.05,
+  critDamage: 1.5,
 };
 
 const BURGER_DRAKE_ABILITY_IDS = ["burger-drake-grease-spit", "burger-drake-bun-bash"] as const;

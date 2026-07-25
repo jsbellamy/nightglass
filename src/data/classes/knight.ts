@@ -215,6 +215,8 @@ export const knightClass: ClassKitDef = {
     frostPower: 0,
     lightningPower: 0,
     lightPower: 0,
+    critChance: 0.05,
+    critDamage: 1.5,
   },
   basicAbilityId: "steel-cut",
   coreAbilityIds: ["sweeping-arc", "shield-brace", "rallying-guard", "pommel-break"],

@@ -213,6 +213,8 @@ export const hunterClass: ClassKitDef = {
     frostPower: 0,
     lightningPower: 0,
     lightPower: 0,
+    critChance: 0.15,
+    critDamage: 1.6,
   },
   basicAbilityId: "quickshot",
   coreAbilityIds: ["pinpoint-shot", "barbed-arrow", "split-volley", "snareburst"],

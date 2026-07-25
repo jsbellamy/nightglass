@@ -12,6 +12,8 @@ const TICKMOTH_S7_STATS: BaseStats = {
   frostPower: 0,
   lightningPower: 0,
   lightPower: 0,
+  critChance: 0.05,
+  critDamage: 1.5,
 };
 
 const TICKMOTH_S8_STATS: BaseStats = {
@@ -24,6 +26,8 @@ const TICKMOTH_S8_STATS: BaseStats = {
   frostPower: 0,
   lightningPower: 0,
   lightPower: 0,
+  critChance: 0.05,
+  critDamage: 1.5,
 };
 
 const TICKMOTH_S9_STATS: BaseStats = {
@@ -36,6 +40,8 @@ const TICKMOTH_S9_STATS: BaseStats = {
   frostPower: 0,
   lightningPower: 0,
   lightPower: 0,
+  critChance: 0.05,
+  critDamage: 1.5,
 };
 
 const TOLLBAT_S7_STATS: BaseStats = {
@@ -48,6 +54,8 @@ const TOLLBAT_S7_STATS: BaseStats = {
   frostPower: 0,
   lightningPower: 0,
   lightPower: 0,
+  critChance: 0.05,
+  critDamage: 1.5,
 };
 
 const TOLLBAT_S8_STATS: BaseStats = {
@@ -60,6 +68,8 @@ const TOLLBAT_S8_STATS: BaseStats = {
   frostPower: 0,
   lightningPower: 0,
   lightPower: 0,
+  critChance: 0.05,
+  critDamage: 1.5,
 };
 
 const TOLLBAT_S9_STATS: BaseStats = {
@@ -72,6 +82,8 @@ const TOLLBAT_S9_STATS: BaseStats = {
   frostPower: 0,
   lightningPower: 0,
   lightPower: 0,
+  critChance: 0.05,
+  critDamage: 1.5,
 };
 
 const SPIDER_S8_STATS: BaseStats = {
@@ -84,6 +96,8 @@ const SPIDER_S8_STATS: BaseStats = {
   frostPower: 0,
   lightningPower: 0,
   lightPower: 0,
+  critChance: 0.05,
+  critDamage: 1.5,
 };
 
 const SPIDER_S9_STATS: BaseStats = {
@@ -96,6 +110,8 @@ const SPIDER_S9_STATS: BaseStats = {
   frostPower: 0,
   lightningPower: 0,
   lightPower: 0,
+  critChance: 0.05,
+  critDamage: 1.5,
 };
 
 const VIGIL_STATS: BaseStats = {
@@ -108,6 +124,8 @@ const VIGIL_STATS: BaseStats = {
   frostPower: 0,
   lightningPower: 0,
   lightPower: 0,
+  critChance: 0.05,
+  critDamage: 1.5,
 };
 
 const TOCSIN_STATS: BaseStats = {
@@ -120,6 +138,8 @@ const TOCSIN_STATS: BaseStats = {
   frostPower: 0,
   lightningPower: 0,
   lightPower: 0,
+  critChance: 0.05,
+  critDamage: 1.5,
 };
 
 const UNWOUND_STATS: BaseStats = {
@@ -132,6 +152,8 @@ const UNWOUND_STATS: BaseStats = {
   frostPower: 0,
   lightningPower: 0,
   lightPower: 0,
+  critChance: 0.05,
+  critDamage: 1.5,
 };
 
 const APHELION_STATS: BaseStats = {
@@ -144,6 +166,8 @@ const APHELION_STATS: BaseStats = {
   frostPower: 0,
   lightningPower: 0,
   lightPower: 0,
+  critChance: 0.05,
+  critDamage: 1.5,
 };
 
 const TICKMOTH_ABILITY_IDS = ["tickmoth-frostwing-flutter", "tickmoth-tick-peck"] as const;

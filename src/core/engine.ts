@@ -642,7 +642,7 @@ function projectHealthFromOutcome(
   ensurePending: (targetId: string) => PendingImpactChange,
 ): number {
   if (outcome.damageDetail) {
-    const { amount, channel, element } = outcome.damageDetail;
+    const { amount, channel, element, crit } = outcome.damageDetail;
     const healthAfter = Math.max(0, projectedHealth - amount);
     results.push({
       targetId,
@@ -651,6 +651,7 @@ function projectHealthFromOutcome(
       ...(element ? { element } : {}),
       amount,
       healthAfter,
+      ...(crit ? { crit: true } : {}),
     });
     ensurePending(targetId).healthDelta -= amount;
     return healthAfter;
@@ -803,6 +804,15 @@ function resolveImpacts(
                 element: adaptiveElementForBasic(effect, actorStats) ?? effect.element,
               }
             : effect;
+
+        let crit = false;
+        if (resolvedEffect.kind === "damage" && actorStats.critChance > 0) {
+          const [uniform, nextState] = mulberry32Step(state.combatRngState);
+          state.combatRngState = nextState;
+          const chance = Math.min(1, Math.max(0, actorStats.critChance));
+          crit = uniform < chance;
+        }
+
         const outcome = resolveEffect(
           resolvedEffect,
           actorStats,
@@ -814,6 +824,7 @@ function resolveImpacts(
             statuses: target.statuses,
           },
           index.statusesById,
+          crit,
         );
 
         projectedHealth = projectHealthFromOutcome(
@@ -952,6 +963,8 @@ function resolveStatusTicks(
         frostPower: 0,
         lightningPower: 0,
         lightPower: 0,
+        critChance: 0,
+        critDamage: 1.5,
       };
       const targetStats = statsForCombatant(index, target, state.progression, attempt);
       const outcome = resolveEffect(
@@ -969,7 +982,7 @@ function resolveStatusTicks(
 
       const results: Extract<EngineEvent, { type: "impact" }>["results"] = [];
       if (outcome.damageDetail) {
-        const { amount, channel, element } = outcome.damageDetail;
+        const { amount, channel, element, crit } = outcome.damageDetail;
         const healthAfter = Math.max(0, target.health - amount);
         results.push({
           targetId: target.entityId,
@@ -978,6 +991,7 @@ function resolveStatusTicks(
           ...(element ? { element } : {}),
           amount,
           healthAfter,
+          ...(crit ? { crit: true } : {}),
         });
         target.health = healthAfter;
       }

@@ -67,6 +67,8 @@ export function applyStatModifiers(
   const frostFlat = base.frostPower + (flat.frostPower ?? 0);
   const lightningFlat = base.lightningPower + (flat.lightningPower ?? 0);
   const lightFlat = base.lightPower + (flat.lightPower ?? 0);
+  const critChance = base.critChance + (flat.critChance ?? 0);
+  const critDamage = base.critDamage + (flat.critDamage ?? 0);
 
   const result: BaseStats = {
     maxHealth: Math.floor(maxHealth * (1 + percent.maxHealth)),
@@ -78,6 +80,8 @@ export function applyStatModifiers(
     frostPower: Math.floor(frostFlat * (1 + percent.frostPower)),
     lightningPower: Math.floor(lightningFlat * (1 + percent.lightningPower)),
     lightPower: Math.floor(lightFlat * (1 + percent.lightPower)),
+    critChance: Math.min(1, Math.max(0, critChance)),
+    critDamage: Math.max(1, critDamage),
   };
 
   powerComponentsByStats.set(result, {
@@ -122,6 +126,7 @@ export interface EffectOutcome {
     amount: number;
     channel: DamageChannel;
     element?: AbilityEffect["element"];
+    crit: boolean;
   };
   healDetail?: { amount: number };
 }
@@ -144,6 +149,7 @@ export function resolveEffect(
   actorStats: BaseStats,
   target: EffectTargetContext,
   statusesById: Map<string, StatusEffectDef>,
+  crit = false,
 ): EffectOutcome {
   const empty: EffectOutcome = { healthDelta: 0, revived: false };
 
@@ -152,13 +158,17 @@ export function resolveEffect(
       const channel = effect.channel ?? "physical";
       const power = powerForStats(actorStats, channel, effect.element);
       const raw = rawDamageFromEffect(power, effect);
-      const amount = mitigateDamage(raw, mitigationForChannel(target.stats, channel));
+      const critRaw = crit
+        ? Math.floor(raw * Math.max(1, actorStats.critDamage))
+        : raw;
+      const amount = mitigateDamage(critRaw, mitigationForChannel(target.stats, channel));
       return {
         healthDelta: -amount,
         revived: false,
         damageDetail: {
           amount,
           channel,
+          crit,
           ...(effect.element ? { element: effect.element } : {}),
         },
       };
