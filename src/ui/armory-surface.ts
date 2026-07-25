@@ -176,12 +176,26 @@ export function mountArmorySurface(
     stagedSalvageIds = new Set();
   }
 
+  function setPaneLayout(layout: "full" | "compact"): void {
+    if (layout === "full") {
+      armoryPanes.classList.add("armory-panes--full");
+      armoryPanes.classList.remove("armory-panes--compact");
+      detailEl.hidden = true;
+      detailEl.setAttribute("aria-hidden", "true");
+      return;
+    }
+
+    armoryPanes.classList.remove("armory-panes--full");
+    armoryPanes.classList.add("armory-panes--compact");
+    detailEl.hidden = false;
+    detailEl.removeAttribute("aria-hidden");
+  }
+
   function closeActionPane(): void {
     actionMode = null;
     clearSalvageStaging();
     clearSalvageResult();
-    detailEl.hidden = true;
-    armoryPanes.classList.add("armory-panes--full");
+    setPaneLayout("full");
     delete detailEl.dataset["armoryActionMode"];
     detailEl.replaceChildren();
   }
@@ -194,22 +208,19 @@ export function mountArmorySurface(
     actionMode = mode;
     clearSalvageStaging();
     clearSalvageResult();
-    armoryPanes.classList.remove("armory-panes--full");
-    detailEl.hidden = false;
+    setPaneLayout("compact");
     detailEl.dataset["armoryActionMode"] = mode;
   }
 
   function syncActionPane(snapshot: ReadonlySnapshot): void {
     if (actionMode === null) {
-      detailEl.hidden = true;
-      armoryPanes.classList.add("armory-panes--full");
+      setPaneLayout("full");
       detailEl.replaceChildren();
       delete detailEl.dataset["armoryActionMode"];
       return;
     }
 
-    armoryPanes.classList.remove("armory-panes--full");
-    detailEl.hidden = false;
+    setPaneLayout("compact");
     detailEl.dataset["armoryActionMode"] = actionMode;
     detailEl.replaceChildren(renderActionPaneBody(snapshot, actionMode));
   }

@@ -1049,8 +1049,11 @@ describe("Armory surface", () => {
       renderArmory(surface, snapshot);
 
       const panes = root.querySelector<HTMLElement>(".armory-panes");
+      const detail = root.querySelector<HTMLElement>('[data-armory-detail="true"]');
       expect(panes?.classList.contains("armory-panes--full")).toBe(true);
-      expect(root.querySelector('[data-armory-detail="true"]')?.hasAttribute("hidden")).toBe(true);
+      expect(panes?.classList.contains("armory-panes--compact")).toBe(false);
+      expect(detail?.hasAttribute("hidden")).toBe(true);
+      expect(detail?.getAttribute("aria-hidden")).toBe("true");
 
       surface.destroy();
     });
@@ -1067,8 +1070,10 @@ describe("Armory surface", () => {
 
       const panes = root.querySelector<HTMLElement>(".armory-panes");
       expect(panes?.classList.contains("armory-panes--full")).toBe(false);
+      expect(panes?.classList.contains("armory-panes--compact")).toBe(true);
       const detail = root.querySelector<HTMLElement>('[data-armory-detail="true"]');
       expect(detail?.hasAttribute("hidden")).toBe(false);
+      expect(detail?.getAttribute("aria-hidden")).toBeNull();
       expect(detail?.dataset["armoryActionMode"]).toBe("salvage");
       expect(
         root
@@ -1127,7 +1132,12 @@ describe("Armory surface", () => {
       expect(root.querySelector<HTMLElement>(".armory-panes")?.classList.contains("armory-panes--full")).toBe(
         true,
       );
-      expect(root.querySelector('[data-armory-detail="true"]')?.hasAttribute("hidden")).toBe(true);
+      expect(
+        root.querySelector<HTMLElement>(".armory-panes")?.classList.contains("armory-panes--compact"),
+      ).toBe(false);
+      const detail = root.querySelector<HTMLElement>('[data-armory-detail="true"]');
+      expect(detail?.hasAttribute("hidden")).toBe(true);
+      expect(detail?.getAttribute("aria-hidden")).toBe("true");
       expect(
         root
           .querySelector<HTMLButtonElement>('[data-armory-discard-tier-open="true"]')

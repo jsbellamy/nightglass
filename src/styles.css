@@ -2351,9 +2351,19 @@ html.dock-window body {
   flex: 1;
 }
 
+.armory-panes--full .armory-detail {
+  display: none;
+}
+
 .armory-panes--full .armory-grid {
   flex: 1;
   width: 100%;
+}
+
+.armory-panes--compact .armory-detail {
+  display: flex;
+  flex: 0 0 240px;
+  width: 240px;
 }
 
 .armory-body--collection-drag .armory-compare-popover,
@@ -2390,12 +2400,9 @@ html.dock-window body {
 }
 
 .armory-detail {
-  flex: 0 0 240px;
-  width: 240px;
   min-height: 0;
   overflow: auto;
   scrollbar-width: thin;
-  display: flex;
   flex-direction: column;
   gap: 6px;
 }
