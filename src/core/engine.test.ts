@@ -4535,7 +4535,7 @@ describe("boundary scan optimizations (#718)", () => {
     return nextBoundaryMsForSnapshot({ attempt, simNowMs });
   }
 
-  describe("C1 — nextBoundaryMs running minimum", () => {
+  describe("next boundary minimum timestamp", () => {
     it("returns null when there is no Attempt", () => {
       expect(nextBoundary(null)).toBeNull();
     });
@@ -4630,7 +4630,7 @@ describe("boundary scan optimizations (#718)", () => {
     });
   });
 
-  describe("C2 — status pass early returns", () => {
+  describe("status expiry and tick passes without Statuses", () => {
     function snapshotAtStatusBoundary(withStatus: boolean): Snapshot {
       const snap = scenario().build();
       snap.simNowMs = 999;
@@ -4663,7 +4663,7 @@ describe("boundary scan optimizations (#718)", () => {
       expect(seam.statusesRef(knightId)).toBe(statusesBefore);
     });
 
-    it("emits the same status-expired event stream when exactly one Status expires", () => {
+    it("expires exactly one Status at the next boundary with the same status-expired event", () => {
       const snap = snapshotAtStatusBoundary(true);
       stunCombatants(snap, snap.simNowMs);
       const engine = createEngine(fixtureContent, snap, LOOT_SEED, fixtureNow);
@@ -4679,7 +4679,7 @@ describe("boundary scan optimizations (#718)", () => {
     });
   });
 
-  describe("C3 — lazy pre-Impact maps", () => {
+  describe("Impact pre-resolution health snapshots", () => {
     it("reports unchanged healthAfter for a lone Impact in a full Party", () => {
       const snap = scenario(fixtureContent)
         .withParty(["wizard", "knight", "priest"], "hunter")
@@ -4833,7 +4833,7 @@ describe("boundary scan optimizations (#718)", () => {
     });
   });
 
-  describe("C4 — single-pass due actors", () => {
+  describe("simultaneous Impact resolution order", () => {
     it("preserves impact event seq order and seed-pinned Critical Hit outcomes", () => {
       const saved = scenario()
         .withParty(["knight", "wizard", "priest"], "hunter")
@@ -4929,7 +4929,7 @@ describe("boundary scan optimizations (#718)", () => {
     });
   });
 
-  describe("C5 — byte-identical behaviour", () => {
+  describe("unchanged combat behaviour after boundary-scan optimization", () => {
     it("stays chunk-neutral at 1ms and 7ms step sizes", () => {
       const oneMs = createEngine(engineContent, undefined, LOOT_SEED, fixtureNow);
       const sevenMs = createEngine(engineContent, undefined, LOOT_SEED, fixtureNow);
