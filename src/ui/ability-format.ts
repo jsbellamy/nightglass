@@ -3,7 +3,6 @@ import type {
   AbilityDef,
   AbilityEffect,
   AbilityTargeting,
-  BaseStats,
   DamageChannel,
   Element,
   StatModifiers,
@@ -14,6 +13,7 @@ import {
   previewEffectRaw,
   statLines,
   statusIdForValidity,
+  type ResolvedStats,
 } from "./snapshot-view";
 
 export function formatAbilityTimings(ability: AbilityDef): string {
@@ -172,7 +172,7 @@ function validWhilePrefix(
 function resolvedBasicElement(
   effect: AbilityEffect,
   ability: AbilityDef,
-  stats: BaseStats,
+  stats: ResolvedStats,
 ): Element | undefined {
   if (
     ability.slot === "basic" &&
@@ -187,7 +187,7 @@ function resolvedBasicElement(
 function rawDamageValue(
   effect: AbilityEffect,
   ability: AbilityDef,
-  stats: BaseStats,
+  stats: ResolvedStats,
 ): number | null {
   if (effect.kind !== "damage") {
     return null;
@@ -241,7 +241,7 @@ function formatReviveClause(
 
 function formatTickClause(
   status: StatusEffectDef,
-  stats: BaseStats,
+  stats: ResolvedStats,
   compact: boolean,
 ): string | null {
   if (!status.tickEveryMs || !status.tickEffect) {
@@ -263,7 +263,7 @@ function formatTickClause(
 function formatApplyStatusClause(
   effect: AbilityEffect,
   ability: AbilityDef,
-  stats: BaseStats,
+  stats: ResolvedStats,
   statuses: readonly StatusEffectDef[],
   compact: boolean,
 ): string | null {
@@ -325,7 +325,7 @@ function formatApplyStatusClause(
 
 function formatAbilityMechanics(
   ability: AbilityDef,
-  stats: BaseStats,
+  stats: ResolvedStats,
   statuses: readonly StatusEffectDef[],
   compact: boolean,
 ): string {
@@ -402,7 +402,7 @@ function formatAbilityMechanics(
 /** Mechanical body only (no ability name prefix). Use when the name is shown separately. */
 export function formatAbilityInlineMechanics(
   ability: AbilityDef,
-  stats: BaseStats,
+  stats: ResolvedStats,
   statuses: readonly StatusEffectDef[],
 ): string {
   return formatAbilityMechanics(ability, stats, statuses, false);
@@ -410,7 +410,7 @@ export function formatAbilityInlineMechanics(
 
 export function formatAbilityDescription(
   ability: AbilityDef,
-  stats: BaseStats,
+  stats: ResolvedStats,
   statuses: readonly StatusEffectDef[],
 ): string {
   return `${ability.name}: ${formatAbilityInlineMechanics(ability, stats, statuses)}`;
@@ -418,7 +418,7 @@ export function formatAbilityDescription(
 
 export function formatAbilityChoiceLabel(
   ability: AbilityDef,
-  stats: BaseStats,
+  stats: ResolvedStats,
   statuses: readonly StatusEffectDef[],
 ): string {
   return `${ability.name} — ${formatAbilityMechanics(ability, stats, statuses, true)}`;

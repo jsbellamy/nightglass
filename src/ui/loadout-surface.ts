@@ -1,5 +1,6 @@
 import type { ReadonlySnapshot } from "../core/snapshot";
-import type { AbilityDef, BaseStats, ClassId, Content, StatusEffectDef } from "../core/types";
+import type { AbilityDef, ClassId, Content, StatusEffectDef } from "../core/types";
+import type { ResolvedStats } from "./snapshot-view";
 import {
   formatAbilityDescription,
   formatAbilityTimings,
@@ -294,7 +295,7 @@ export function mountLoadoutSurface(
 
   function fillDetailPopover(
     ability: AbilityDef,
-    stats: BaseStats,
+    stats: ResolvedStats,
     statuses: readonly StatusEffectDef[],
     activationDelayPending: boolean,
   ): string {
@@ -326,7 +327,7 @@ export function mountLoadoutSurface(
 
   function showDetailPopover(
     ability: AbilityDef,
-    stats: BaseStats,
+    stats: ResolvedStats,
     statuses: readonly StatusEffectDef[],
     anchor: HTMLElement,
     activationDelayPending: boolean,

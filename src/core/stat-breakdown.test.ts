@@ -142,7 +142,7 @@ describe("characterStatBreakdown", () => {
     expect(physical.equipment.flat).toBe(2);
     expect(physical.equipment.percent).toBe(0.1);
     expect(physical.talents.percent).toBe(0.1);
-    expect(physical.total).toBe(characterStatsFor(snapshot, fixtureContent, "knight").physical);
+    expect(physical.total).toBe(characterStatsFor(snapshot, fixtureContent, "knight").stats.physical);
   });
 
   it("reports zero percent on Armor and Elemental Resistance", () => {
@@ -172,17 +172,17 @@ describe("characterStatBreakdown", () => {
     const lines = characterStatBreakdown(snapshot, fixtureContent, "knight");
     const expected = characterStatsFor(snapshot, fixtureContent, "knight");
     expect(lines.map((line) => line.total)).toEqual([
-      expected.maxHealth,
-      expected.physical,
-      expected.spell,
-      expected.armor,
-      expected.elementalResistance,
-      expected.firePower,
-      expected.frostPower,
-      expected.lightningPower,
-      expected.lightPower,
-      expected.critChance,
-      expected.critDamage,
+      expected.stats.maxHealth,
+      expected.stats.physical,
+      expected.stats.spell,
+      expected.stats.armor,
+      expected.stats.elementalResistance,
+      expected.stats.firePower,
+      expected.stats.frostPower,
+      expected.stats.lightningPower,
+      expected.stats.lightPower,
+      expected.stats.critChance,
+      expected.stats.critDamage,
     ]);
   });
 
