@@ -839,6 +839,10 @@ html.dock-window body {
   display: flex;
   flex-direction: column;
   min-height: 0;
+  padding: 8px;
+  border: 1px solid rgba(255, 249, 233, 0.12);
+  border-radius: 6px;
+  background: rgba(28, 33, 48, 0.92);
 }
 
 .character-build-board [data-character-section="loadout"] .loadout-surface,
