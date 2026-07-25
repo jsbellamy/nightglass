@@ -8,6 +8,10 @@ const TICKMOTH_S7_STATS: BaseStats = {
   spell: 34,
   armor: 20,
   elementalResistance: 26,
+  firePower: 0,
+  frostPower: 0,
+  lightningPower: 0,
+  lightPower: 0,
 };
 
 const TICKMOTH_S8_STATS: BaseStats = {
@@ -16,6 +20,10 @@ const TICKMOTH_S8_STATS: BaseStats = {
   spell: 40,
   armor: 24,
   elementalResistance: 30,
+  firePower: 0,
+  frostPower: 0,
+  lightningPower: 0,
+  lightPower: 0,
 };
 
 const TICKMOTH_S9_STATS: BaseStats = {
@@ -24,6 +32,10 @@ const TICKMOTH_S9_STATS: BaseStats = {
   spell: 52,
   armor: 30,
   elementalResistance: 38,
+  firePower: 0,
+  frostPower: 0,
+  lightningPower: 0,
+  lightPower: 0,
 };
 
 const TOLLBAT_S7_STATS: BaseStats = {
@@ -32,6 +44,10 @@ const TOLLBAT_S7_STATS: BaseStats = {
   spell: 16,
   armor: 30,
   elementalResistance: 22,
+  firePower: 0,
+  frostPower: 0,
+  lightningPower: 0,
+  lightPower: 0,
 };
 
 const TOLLBAT_S8_STATS: BaseStats = {
@@ -40,6 +56,10 @@ const TOLLBAT_S8_STATS: BaseStats = {
   spell: 18,
   armor: 34,
   elementalResistance: 26,
+  firePower: 0,
+  frostPower: 0,
+  lightningPower: 0,
+  lightPower: 0,
 };
 
 const TOLLBAT_S9_STATS: BaseStats = {
@@ -48,6 +68,10 @@ const TOLLBAT_S9_STATS: BaseStats = {
   spell: 24,
   armor: 42,
   elementalResistance: 34,
+  firePower: 0,
+  frostPower: 0,
+  lightningPower: 0,
+  lightPower: 0,
 };
 
 const SPIDER_S8_STATS: BaseStats = {
@@ -56,6 +80,10 @@ const SPIDER_S8_STATS: BaseStats = {
   spell: 30,
   armor: 36,
   elementalResistance: 32,
+  firePower: 0,
+  frostPower: 0,
+  lightningPower: 0,
+  lightPower: 0,
 };
 
 const SPIDER_S9_STATS: BaseStats = {
@@ -64,6 +92,10 @@ const SPIDER_S9_STATS: BaseStats = {
   spell: 40,
   armor: 46,
   elementalResistance: 42,
+  firePower: 0,
+  frostPower: 0,
+  lightningPower: 0,
+  lightPower: 0,
 };
 
 const VIGIL_STATS: BaseStats = {
@@ -72,6 +104,10 @@ const VIGIL_STATS: BaseStats = {
   spell: 40,
   armor: 34,
   elementalResistance: 34,
+  firePower: 0,
+  frostPower: 0,
+  lightningPower: 0,
+  lightPower: 0,
 };
 
 const TOCSIN_STATS: BaseStats = {
@@ -80,6 +116,10 @@ const TOCSIN_STATS: BaseStats = {
   spell: 34,
   armor: 40,
   elementalResistance: 38,
+  firePower: 0,
+  frostPower: 0,
+  lightningPower: 0,
+  lightPower: 0,
 };
 
 const UNWOUND_STATS: BaseStats = {
@@ -88,6 +128,10 @@ const UNWOUND_STATS: BaseStats = {
   spell: 44,
   armor: 50,
   elementalResistance: 46,
+  firePower: 0,
+  frostPower: 0,
+  lightningPower: 0,
+  lightPower: 0,
 };
 
 const APHELION_STATS: BaseStats = {
@@ -96,6 +140,10 @@ const APHELION_STATS: BaseStats = {
   spell: 70,
   armor: 58,
   elementalResistance: 58,
+  firePower: 0,
+  frostPower: 0,
+  lightningPower: 0,
+  lightPower: 0,
 };
 
 const TICKMOTH_ABILITY_IDS = ["tickmoth-frostwing-flutter", "tickmoth-tick-peck"] as const;

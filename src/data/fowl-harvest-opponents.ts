@@ -8,6 +8,10 @@ const BURGER_S4_STATS: BaseStats = {
   spell: 20,
   armor: 12,
   elementalResistance: 14,
+  firePower: 0,
+  frostPower: 0,
+  lightningPower: 0,
+  lightPower: 0,
 };
 
 const CORN_S5_STATS: BaseStats = {
@@ -16,6 +20,10 @@ const CORN_S5_STATS: BaseStats = {
   spell: 8,
   armor: 17,
   elementalResistance: 16,
+  firePower: 0,
+  frostPower: 0,
+  lightningPower: 0,
+  lightPower: 0,
 };
 
 const BURGER_S6_STATS: BaseStats = {
@@ -24,6 +32,10 @@ const BURGER_S6_STATS: BaseStats = {
   spell: 30,
   armor: 22,
   elementalResistance: 22,
+  firePower: 0,
+  frostPower: 0,
+  lightningPower: 0,
+  lightPower: 0,
 };
 
 const CORN_S6_STATS: BaseStats = {
@@ -32,6 +44,10 @@ const CORN_S6_STATS: BaseStats = {
   spell: 10,
   armor: 24,
   elementalResistance: 20,
+  firePower: 0,
+  frostPower: 0,
+  lightningPower: 0,
+  lightPower: 0,
 };
 
 const THE_FRYER_STATS: BaseStats = {
@@ -40,6 +56,10 @@ const THE_FRYER_STATS: BaseStats = {
   spell: 32,
   armor: 25,
   elementalResistance: 28,
+  firePower: 0,
+  frostPower: 0,
+  lightningPower: 0,
+  lightPower: 0,
 };
 
 const SCAREQUACK_STATS: BaseStats = {
@@ -48,6 +68,10 @@ const SCAREQUACK_STATS: BaseStats = {
   spell: 18,
   armor: 32,
   elementalResistance: 30,
+  firePower: 0,
+  frostPower: 0,
+  lightningPower: 0,
+  lightPower: 0,
 };
 
 const THE_COMBINE_STATS: BaseStats = {
@@ -56,6 +80,10 @@ const THE_COMBINE_STATS: BaseStats = {
   spell: 24,
   armor: 38,
   elementalResistance: 36,
+  firePower: 0,
+  frostPower: 0,
+  lightningPower: 0,
+  lightPower: 0,
 };
 
 const BURGER_DRAKE_ABILITY_IDS = ["burger-drake-grease-spit", "burger-drake-bun-bash"] as const;

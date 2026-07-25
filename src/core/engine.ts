@@ -937,6 +937,10 @@ function resolveStatusTicks(
         spell: status.sourcePower.spell,
         armor: 0,
         elementalResistance: 0,
+        firePower: 0,
+        frostPower: 0,
+        lightningPower: 0,
+        lightPower: 0,
       };
       const targetStats = statsForCombatant(index, target, state.progression, attempt);
       const outcome = resolveEffect(

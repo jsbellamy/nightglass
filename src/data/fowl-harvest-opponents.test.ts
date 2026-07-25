@@ -111,6 +111,10 @@ describe("Fowl Harvest Opponents", () => {
       spell: 20,
       armor: 12,
       elementalResistance: 14,
+      firePower: 0,
+      frostPower: 0,
+      lightningPower: 0,
+      lightPower: 0,
     };
     for (const id of ["burger-drake-s4-27a", "burger-drake-s4-27b", "burger-drake-s4-26", "burger-drake-s4-20"]) {
       expectStats(id, burgerS4);
@@ -122,6 +126,10 @@ describe("Fowl Harvest Opponents", () => {
       spell: 8,
       armor: 17,
       elementalResistance: 16,
+      firePower: 0,
+      frostPower: 0,
+      lightningPower: 0,
+      lightPower: 0,
     };
     for (const id of ["cornquacker-s5-34", "cornquacker-s5-33a", "cornquacker-s5-33b", "cornquacker-s5-20"]) {
       expectStats(id, cornS5);
@@ -133,6 +141,10 @@ describe("Fowl Harvest Opponents", () => {
       spell: 30,
       armor: 22,
       elementalResistance: 22,
+      firePower: 0,
+      frostPower: 0,
+      lightningPower: 0,
+      lightPower: 0,
     };
     for (const id of ["burger-drake-s6-33", "burger-drake-s6-32", "burger-drake-s6-26"]) {
       expectStats(id, burgerS6);
@@ -144,6 +156,10 @@ describe("Fowl Harvest Opponents", () => {
       spell: 10,
       armor: 24,
       elementalResistance: 20,
+      firePower: 0,
+      frostPower: 0,
+      lightningPower: 0,
+      lightPower: 0,
     };
     for (const id of ["cornquacker-s6-33", "cornquacker-s6-32", "cornquacker-s6-26"]) {
       expectStats(id, cornS6);
@@ -155,6 +171,10 @@ describe("Fowl Harvest Opponents", () => {
       spell: 32,
       armor: 25,
       elementalResistance: 28,
+      firePower: 0,
+      frostPower: 0,
+      lightningPower: 0,
+      lightPower: 0,
     });
     expectStats("scarequack", {
       maxHealth: 2730,
@@ -162,6 +182,10 @@ describe("Fowl Harvest Opponents", () => {
       spell: 18,
       armor: 32,
       elementalResistance: 30,
+      firePower: 0,
+      frostPower: 0,
+      lightningPower: 0,
+      lightPower: 0,
     });
     expectStats("the-combine", {
       maxHealth: 3900,
@@ -169,6 +193,10 @@ describe("Fowl Harvest Opponents", () => {
       spell: 24,
       armor: 38,
       elementalResistance: 36,
+      firePower: 0,
+      frostPower: 0,
+      lightningPower: 0,
+      lightPower: 0,
     });
   });
 

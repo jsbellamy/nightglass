@@ -333,6 +333,54 @@ describe("production Equipment Drop rolling", () => {
   });
 });
 
+describe("Element Affix pool placement", () => {
+  const ELEMENT_AFFIXES: AffixId[] = [
+    "flat-fire",
+    "percent-fire-power",
+    "flat-frost",
+    "percent-frost-power",
+    "flat-lightning",
+    "percent-lightning-power",
+    "flat-light",
+    "percent-light-power",
+  ];
+
+  function rollWithSeed(seed: number) {
+    return rollDrop({
+      content: fixtureContent,
+      stage: STAGE,
+      itemLevel: 1,
+      lootRng: { state: initialLootRngState(seed) },
+      dropId: 1,
+      awardedAtMs: 100,
+    }).drop;
+  }
+
+  it("can roll an Element Affix on a Charm", () => {
+    const charmDrop = rollWithSeed(20);
+    expect(charmDrop.baseId).toBe("fixture-charm");
+    expect(charmDrop.affixes.some((affix) => ELEMENT_AFFIXES.includes(affix.id))).toBe(true);
+  });
+
+  it("never rolls an Element Affix on a Knight Weapon", () => {
+    const knightWeapons = Array.from({ length: 500 }, (_, index) => rollWithSeed(index + 1)).filter(
+      (drop) => drop.baseId === "fixture-blade",
+    );
+    expect(knightWeapons.length).toBeGreaterThan(0);
+    for (const drop of knightWeapons) {
+      expect(drop.affixes.every((affix) => !ELEMENT_AFFIXES.includes(affix.id))).toBe(true);
+    }
+  });
+
+  it("can roll an Element Affix on a Wizard Weapon", () => {
+    const wizardWeapon = rollWithSeed(52);
+    expect(wizardWeapon.baseId).toBe("fixture-focus");
+    expect(
+      wizardWeapon.affixes.some((affix) => ELEMENT_AFFIXES.includes(affix.id)),
+    ).toBe(true);
+  });
+});
+
 describe("Armory assignment", () => {
   it("empties the other slot when a piece is assigned exclusively elsewhere", () => {
     const armory: DropInstance[] = [

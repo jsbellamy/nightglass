@@ -121,6 +121,10 @@ describe("Unwound Belfry Opponents", () => {
       spell: 34,
       armor: 20,
       elementalResistance: 26,
+      firePower: 0,
+      frostPower: 0,
+      lightningPower: 0,
+      lightPower: 0,
     };
     for (const id of ["tickmoth-s7-36a", "tickmoth-s7-36b", "tickmoth-s7-40"]) {
       expectStats(id, tickmothS7);
@@ -132,6 +136,10 @@ describe("Unwound Belfry Opponents", () => {
       spell: 40,
       armor: 24,
       elementalResistance: 30,
+      firePower: 0,
+      frostPower: 0,
+      lightningPower: 0,
+      lightPower: 0,
     });
 
     const tickmothS9 = {
@@ -140,6 +148,10 @@ describe("Unwound Belfry Opponents", () => {
       spell: 52,
       armor: 30,
       elementalResistance: 38,
+      firePower: 0,
+      frostPower: 0,
+      lightningPower: 0,
+      lightPower: 0,
     };
     for (const id of ["tickmoth-s9-60", "tickmoth-s9-52"]) {
       expectStats(id, tickmothS9);
@@ -151,6 +163,10 @@ describe("Unwound Belfry Opponents", () => {
       spell: 16,
       armor: 30,
       elementalResistance: 22,
+      firePower: 0,
+      frostPower: 0,
+      lightningPower: 0,
+      lightPower: 0,
     };
     for (const id of ["tollbat-s7-44a", "tollbat-s7-44b"]) {
       expectStats(id, tollbatS7);
@@ -162,6 +178,10 @@ describe("Unwound Belfry Opponents", () => {
       spell: 18,
       armor: 34,
       elementalResistance: 26,
+      firePower: 0,
+      frostPower: 0,
+      lightningPower: 0,
+      lightPower: 0,
     };
     for (const id of ["tollbat-s8-47a", "tollbat-s8-47b"]) {
       expectStats(id, tollbatS8);
@@ -173,6 +193,10 @@ describe("Unwound Belfry Opponents", () => {
       spell: 24,
       armor: 42,
       elementalResistance: 34,
+      firePower: 0,
+      frostPower: 0,
+      lightningPower: 0,
+      lightPower: 0,
     });
 
     const spiderS8 = {
@@ -181,6 +205,10 @@ describe("Unwound Belfry Opponents", () => {
       spell: 30,
       armor: 36,
       elementalResistance: 32,
+      firePower: 0,
+      frostPower: 0,
+      lightningPower: 0,
+      lightPower: 0,
     };
     for (const id of ["astrolabe-spider-s8-48a", "astrolabe-spider-s8-48b"]) {
       expectStats(id, spiderS8);
@@ -192,6 +220,10 @@ describe("Unwound Belfry Opponents", () => {
       spell: 40,
       armor: 46,
       elementalResistance: 42,
+      firePower: 0,
+      frostPower: 0,
+      lightningPower: 0,
+      lightPower: 0,
     };
     for (const id of ["astrolabe-spider-s9-70a", "astrolabe-spider-s9-70b"]) {
       expectStats(id, spiderS9);
@@ -203,6 +235,10 @@ describe("Unwound Belfry Opponents", () => {
       spell: 40,
       armor: 34,
       elementalResistance: 34,
+      firePower: 0,
+      frostPower: 0,
+      lightningPower: 0,
+      lightPower: 0,
     });
     expectStats("the-tocsin", {
       maxHealth: 5720,
@@ -210,6 +246,10 @@ describe("Unwound Belfry Opponents", () => {
       spell: 34,
       armor: 40,
       elementalResistance: 38,
+      firePower: 0,
+      frostPower: 0,
+      lightningPower: 0,
+      lightPower: 0,
     });
     expectStats("the-unwound", {
       maxHealth: 8450,
@@ -217,6 +257,10 @@ describe("Unwound Belfry Opponents", () => {
       spell: 44,
       armor: 50,
       elementalResistance: 46,
+      firePower: 0,
+      frostPower: 0,
+      lightningPower: 0,
+      lightPower: 0,
     });
     expectStats("aphelion", {
       maxHealth: 11700,
@@ -224,6 +268,10 @@ describe("Unwound Belfry Opponents", () => {
       spell: 70,
       armor: 58,
       elementalResistance: 58,
+      firePower: 0,
+      frostPower: 0,
+      lightningPower: 0,
+      lightPower: 0,
     });
   });
 

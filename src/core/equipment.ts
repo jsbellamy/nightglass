@@ -36,14 +36,44 @@ const ALL_AFFIXES: AffixId[] = [
   "percent-physical-power",
   "flat-spell",
   "percent-spell-power",
+  "flat-fire",
+  "percent-fire-power",
+  "flat-frost",
+  "percent-frost-power",
+  "flat-lightning",
+  "percent-lightning-power",
+  "flat-light",
+  "percent-light-power",
   ...DEFENSIVE_AFFIXES,
 ];
 
-const OFFENSIVE_AFFIXES_BY_CLASS: Record<ClassId, [AffixId, AffixId]> = {
+const OFFENSIVE_AFFIXES_BY_CLASS: Record<ClassId, AffixId[]> = {
   knight: ["flat-physical", "percent-physical-power"],
   hunter: ["flat-physical", "percent-physical-power"],
-  wizard: ["flat-spell", "percent-spell-power"],
-  priest: ["flat-spell", "percent-spell-power"],
+  wizard: [
+    "flat-spell",
+    "percent-spell-power",
+    "flat-fire",
+    "percent-fire-power",
+    "flat-frost",
+    "percent-frost-power",
+    "flat-lightning",
+    "percent-lightning-power",
+    "flat-light",
+    "percent-light-power",
+  ],
+  priest: [
+    "flat-spell",
+    "percent-spell-power",
+    "flat-fire",
+    "percent-fire-power",
+    "flat-frost",
+    "percent-frost-power",
+    "flat-lightning",
+    "percent-lightning-power",
+    "flat-light",
+    "percent-light-power",
+  ],
 };
 
 export interface LootRng {
@@ -294,6 +324,22 @@ function affixToModifier(affix: { id: AffixId; value: number }): StatModifiers {
       return { flat: { spell: affix.value } };
     case "percent-spell-power":
       return { percent: { spellPower: affix.value } };
+    case "flat-fire":
+      return { flat: { firePower: affix.value } };
+    case "percent-fire-power":
+      return { percent: { firePower: affix.value } };
+    case "flat-frost":
+      return { flat: { frostPower: affix.value } };
+    case "percent-frost-power":
+      return { percent: { frostPower: affix.value } };
+    case "flat-lightning":
+      return { flat: { lightningPower: affix.value } };
+    case "percent-lightning-power":
+      return { percent: { lightningPower: affix.value } };
+    case "flat-light":
+      return { flat: { lightPower: affix.value } };
+    case "percent-light-power":
+      return { percent: { lightPower: affix.value } };
     case "flat-max-health":
       return { flat: { maxHealth: affix.value } };
     case "percent-max-health":

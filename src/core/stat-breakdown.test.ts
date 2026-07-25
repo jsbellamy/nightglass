@@ -59,7 +59,7 @@ function baseSnapshot(overrides: Partial<Snapshot> = {}): Snapshot {
 }
 
 describe("characterStatBreakdown", () => {
-  it("lists all five stats in contract order with labels", () => {
+  it("lists all nine stats in contract order with labels", () => {
     const snapshot = baseSnapshot();
     const lines = characterStatBreakdown(snapshot, fixtureContent, "knight");
 
@@ -69,6 +69,10 @@ describe("characterStatBreakdown", () => {
       "spell",
       "armor",
       "elementalResistance",
+      "firePower",
+      "frostPower",
+      "lightningPower",
+      "lightPower",
     ]);
     expect(lines.map((line) => line.label)).toEqual([
       "Max Health",
@@ -76,6 +80,10 @@ describe("characterStatBreakdown", () => {
       "Spell Power",
       "Armor",
       "Elemental Resistance",
+      "Fire Power",
+      "Frost Power",
+      "Lightning Power",
+      "Light Power",
     ]);
   });
 
@@ -165,7 +173,36 @@ describe("characterStatBreakdown", () => {
       expected.spell,
       expected.armor,
       expected.elementalResistance,
+      expected.firePower,
+      expected.frostPower,
+      expected.lightningPower,
+      expected.lightPower,
     ]);
+  });
+
+  it("reports Element Power lines with base, equipment, and talent splits", () => {
+    const fireCharm = drop({
+      dropId: 9,
+      baseId: "fixture-charm",
+      affixes: [
+        { id: "flat-fire", value: 4 },
+        { id: "percent-fire-power", value: 0.08 },
+      ],
+      assignedTo: { classId: "knight", slot: "charm" },
+    });
+    const progression = createDefaultProgression(fixtureContent);
+    progression.armory = [fireCharm];
+    const snapshot = baseSnapshot({ progression });
+    const fire = characterStatBreakdown(snapshot, fixtureContent, "knight").find(
+      (line) => line.key === "firePower",
+    )!;
+
+    expect(fire).toMatchObject({
+      base: 0,
+      equipment: { flat: 4, percent: 0.08 },
+      talents: { flat: 0, percent: 0 },
+      total: Math.floor(4 * 1.08),
+    });
   });
 });
 
