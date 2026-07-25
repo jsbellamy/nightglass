@@ -28,7 +28,7 @@ describe("Unwound Belfry Stages 7–10", () => {
     ]);
   });
 
-  it("Stage 7 is mixed Tollbat and Tickmoth waves then solo The Vigil", async () => {
+  it("Stage 7 is pool-mixed ordinary waves then solo The Vigil", async () => {
     const { unwoundBelfryStages } = await import("./unwound-belfry-stages");
     const stage = unwoundBelfryStages.find((entry) => entry.id === 7);
     if (!stage) {
@@ -37,20 +37,20 @@ describe("Unwound Belfry Stages 7–10", () => {
 
     expect(stage.waves[0]!.opponents).toEqual([
       "tollbat-s7-44a",
-      "tollbat-s7-44b",
       "tickmoth-s7-36a",
-      "tickmoth-s7-36b",
+      "pendulum-rat-s7-44",
+      "sundial-gargoyle-s7-36",
     ]);
     expect(stage.waves[1]!.opponents).toEqual([
       "tickmoth-s7-40",
       "tickmoth-s7-40",
-      "tickmoth-s7-40",
-      "tickmoth-s7-40",
+      "pendulum-rat-s7-40",
+      "sundial-gargoyle-s7-40",
     ]);
     expect(stage.boss.opponents).toEqual(["the-vigil"]);
   });
 
-  it("Stage 8 is Astrolabe Spider and Tollbat waves then solo The Tocsin", async () => {
+  it("Stage 8 is pool-mixed ordinary waves then solo The Tocsin", async () => {
     const { unwoundBelfryStages } = await import("./unwound-belfry-stages");
     const stage = unwoundBelfryStages.find((entry) => entry.id === 8);
     if (!stage) {
@@ -59,21 +59,21 @@ describe("Unwound Belfry Stages 7–10", () => {
 
     expect(stage.waves[0]!.opponents).toEqual([
       "astrolabe-spider-s8-48a",
-      "astrolabe-spider-s8-48b",
       "tollbat-s8-47a",
-      "tollbat-s8-47b",
+      "pendulum-rat-s8-48",
+      "sundial-gargoyle-s8-47",
     ]);
     expect(stage.waves[1]!.opponents).toEqual([
       "tickmoth-s8-38",
       "tickmoth-s8-38",
-      "tickmoth-s8-38",
-      "tickmoth-s8-38",
-      "tickmoth-s8-38",
+      "astrolabe-spider-s8-38",
+      "pendulum-rat-s8-38",
+      "sundial-gargoyle-s8-38",
     ]);
     expect(stage.boss.opponents).toEqual(["the-tocsin"]);
   });
 
-  it("Stage 9 is mixed Belfry waves then solo The Unwound", async () => {
+  it("Stage 9 is pool-mixed ordinary waves then solo The Unwound", async () => {
     const { unwoundBelfryStages } = await import("./unwound-belfry-stages");
     const stage = unwoundBelfryStages.find((entry) => entry.id === 9);
     if (!stage) {
@@ -82,18 +82,44 @@ describe("Unwound Belfry Stages 7–10", () => {
 
     expect(stage.waves[0]!.opponents).toEqual([
       "astrolabe-spider-s9-70a",
-      "astrolabe-spider-s9-70b",
       "tollbat-s9-60",
-      "tickmoth-s9-60",
+      "pendulum-rat-s9-70",
+      "sundial-gargoyle-s9-60",
     ]);
     expect(stage.waves[1]!.opponents).toEqual([
       "tickmoth-s9-52",
       "tickmoth-s9-52",
-      "tickmoth-s9-52",
-      "tickmoth-s9-52",
-      "tickmoth-s9-52",
+      "sundial-gargoyle-s9-52",
+      "pendulum-rat-s9-52",
+      "astrolabe-spider-s9-52",
     ]);
     expect(stage.boss.opponents).toEqual(["the-unwound"]);
+  });
+
+  it("keeps Stages 7–9 ordinary Waves at least three families with no majority slot share", () => {
+    const content = buildContent();
+    const opponentFamilyById = new Map(
+      content.opponents.map((opponent) => [opponent.id, opponent.family]),
+    );
+
+    for (const stage of unwoundBelfryStages.filter((entry) => entry.id >= 7 && entry.id <= 9)) {
+      for (const wave of stage.waves) {
+        const familyCounts = new Map<string, number>();
+        for (const opponentId of wave.opponents) {
+          const family = opponentFamilyById.get(opponentId);
+          if (!family) {
+            throw new Error(`missing opponent family for ${opponentId}`);
+          }
+          familyCounts.set(family, (familyCounts.get(family) ?? 0) + 1);
+        }
+
+        expect(familyCounts.size).toBeGreaterThanOrEqual(3);
+
+        const slotCount = wave.opponents.length;
+        const maxFamilySlots = Math.max(...familyCounts.values());
+        expect(maxFamilySlots).toBeLessThanOrEqual(slotCount / 2);
+      }
+    }
   });
 
   it("Stage 10 is boss-only with solo Aphelion and no ordinary waves", async () => {
