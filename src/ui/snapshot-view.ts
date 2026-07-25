@@ -5,6 +5,7 @@ import { levelFromXp } from "../core/xp";
 export { createEngine, type Engine } from "../core/engine";
 
 export {
+  adaptiveElementForBasic,
   opponentCombatants,
   partyCombatants,
   previewEffectRaw,

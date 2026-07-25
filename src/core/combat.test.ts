@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  adaptiveElementForBasic,
   applyStatModifiers,
   chooseFirstValidAbility,
   effectiveStats,
@@ -205,6 +206,78 @@ describe("Power math", () => {
       statusesById,
     );
     expect(stats.armor).toBe(80);
+  });
+});
+
+const arcSparkEffect = {
+  kind: "damage",
+  channel: "elemental",
+  element: "lightning",
+  coefficient: 1,
+} as const;
+
+const zeroElementPowerStats: BaseStats = {
+  maxHealth: 130,
+  physical: 4,
+  spell: 16,
+  armor: 10,
+  elementalResistance: 24,
+  firePower: 0,
+  frostPower: 0,
+  lightningPower: 0,
+  lightPower: 0,
+};
+
+describe("adaptiveElementForBasic", () => {
+  it("returns the authored Element when every Element Power is zero", () => {
+    expect(adaptiveElementForBasic(arcSparkEffect, zeroElementPowerStats)).toBe("lightning");
+  });
+
+  it("returns the strictly greatest Element Power's Element", () => {
+    expect(
+      adaptiveElementForBasic({ ...arcSparkEffect }, { ...zeroElementPowerStats, firePower: 5 }),
+    ).toBe("fire");
+    expect(
+      adaptiveElementForBasic(
+        { ...arcSparkEffect },
+        { ...zeroElementPowerStats, firePower: 5, frostPower: 6 },
+      ),
+    ).toBe("frost");
+  });
+
+  it("returns the authored Element on a tie for the greatest Element Power", () => {
+    expect(
+      adaptiveElementForBasic(
+        { ...arcSparkEffect },
+        { ...zeroElementPowerStats, firePower: 5, frostPower: 5 },
+      ),
+    ).toBe("lightning");
+  });
+
+  it("resolves arc-spark as Fire with pooled Fire Power for a Fire-invested Wizard", () => {
+    const stats = applyStatModifiers(zeroElementPowerStats, [{ flat: { firePower: 5 } }]);
+    const element = adaptiveElementForBasic(arcSparkEffect, stats);
+    expect(element).toBe("fire");
+    const outcome = resolveEffect(
+      { ...arcSparkEffect, element: element! },
+      stats,
+      emptyTarget,
+      statusesById,
+    );
+    expect(outcome.damageDetail).toMatchObject({
+      amount: 21,
+      channel: "elemental",
+      element: "fire",
+    });
+  });
+
+  it("leaves Core Ability elemental damage on its authored Element", () => {
+    const stats = { ...zeroElementPowerStats, frostPower: 12 };
+    const cinderBloom = abilitiesById.get("w-cinder")!;
+    expect(cinderBloom.slot).toBe("core");
+    const outcome = resolveEffect(cinderBloom.effects[0]!, stats, emptyTarget, statusesById);
+    expect(outcome.damageDetail?.element).toBe("fire");
+    expect(outcome.damageDetail?.amount).toBe(Math.floor(16 * 0.8));
   });
 });
 

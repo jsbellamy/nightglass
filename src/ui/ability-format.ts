@@ -9,7 +9,12 @@ import type {
   StatModifiers,
   StatusEffectDef,
 } from "../core/types";
-import { previewEffectRaw, statLines, statusIdForValidity } from "./snapshot-view";
+import {
+  adaptiveElementForBasic,
+  previewEffectRaw,
+  statLines,
+  statusIdForValidity,
+} from "./snapshot-view";
 
 export function formatAbilityTimings(ability: AbilityDef): string {
   const cooldown =
@@ -164,11 +169,33 @@ function validWhilePrefix(
   return `While you lack ${name}, `;
 }
 
-function rawDamageValue(effect: AbilityEffect, stats: BaseStats): number | null {
+function resolvedBasicElement(
+  effect: AbilityEffect,
+  ability: AbilityDef,
+  stats: BaseStats,
+): Element | undefined {
+  if (
+    ability.slot === "basic" &&
+    effect.kind === "damage" &&
+    (effect.channel ?? "physical") === "elemental"
+  ) {
+    return adaptiveElementForBasic(effect, stats) ?? effect.element;
+  }
+  return effect.element;
+}
+
+function rawDamageValue(
+  effect: AbilityEffect,
+  ability: AbilityDef,
+  stats: BaseStats,
+): number | null {
   if (effect.kind !== "damage") {
     return null;
   }
-  return previewEffectRaw(effect, stats);
+  const element = resolvedBasicElement(effect, ability, stats);
+  const previewEffect =
+    element !== undefined && element !== effect.element ? { ...effect, element } : effect;
+  return previewEffectRaw(previewEffect, stats);
 }
 
 function formatDamageClause(
@@ -311,7 +338,7 @@ function formatAbilityMechanics(
     const effect = ability.effects[index]!;
     if (effect.kind === "damage") {
       const channel = effect.channel ?? "physical";
-      const element = effect.element;
+      const element = resolvedBasicElement(effect, ability, stats);
       const values: number[] = [];
       while (index < ability.effects.length) {
         const current = ability.effects[index]!;
@@ -319,10 +346,11 @@ function formatAbilityMechanics(
           break;
         }
         const currentChannel = current.channel ?? "physical";
-        if (currentChannel !== channel || current.element !== element) {
+        const currentElement = resolvedBasicElement(current, ability, stats);
+        if (currentChannel !== channel || currentElement !== element) {
           break;
         }
-        const raw = rawDamageValue(current, stats);
+        const raw = rawDamageValue(current, ability, stats);
         if (raw !== null) {
           values.push(raw);
         }

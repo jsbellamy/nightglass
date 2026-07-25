@@ -3700,3 +3700,92 @@ describe("Presentation Event vocabulary", () => {
     }
   });
 });
+
+describe("adaptive Basic Attack Element", () => {
+  const fireWizardContent: Content = {
+    ...fixtureContent,
+    classes: fixtureContent.classes.map((classKit) =>
+      classKit.id === "wizard"
+        ? { ...classKit, base: { ...classKit.base, firePower: 5 } }
+        : classKit,
+    ),
+  };
+
+  it("reports the resolved Element on impact for a Fire-adapted Basic Attack", () => {
+    const saved = scenario(fireWizardContent)
+      .withParty(["wizard", "knight", "priest"], "knight")
+      .build();
+    saved.lootRngState = LOOT_SEED;
+    saved.simNowMs = 450;
+    saved.attempt!.combatants = [
+      {
+        entityId: partyEntityId("wizard", 1),
+        side: "party",
+        defId: "wizard",
+        health: 130,
+        maxHealth: 130,
+        knockedOut: false,
+        initiativeReadyAtMs: 0,
+        action: {
+          abilityId: "wizard-basic",
+          startedAtMs: 0,
+          impactAtMs: 450,
+          endsAtMs: 1200,
+          targetIds: ["opp:1:0"],
+          impactResolved: false,
+        },
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: partyEntityId("knight", 0),
+        side: "party",
+        defId: "knight",
+        health: 180,
+        maxHealth: 180,
+        knockedOut: false,
+        initiativeReadyAtMs: 10_000,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: partyEntityId("priest", 2),
+        side: "party",
+        defId: "priest",
+        health: 110,
+        maxHealth: 110,
+        knockedOut: false,
+        initiativeReadyAtMs: 10_000,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+      {
+        entityId: "opp:1:0",
+        side: "opponent",
+        defId: "fixture-grunt",
+        health: 40,
+        maxHealth: 40,
+        knockedOut: false,
+        initiativeReadyAtMs: 10_000,
+        action: null,
+        cooldownReadyAtMs: {},
+        statuses: [],
+      },
+    ];
+
+    const engine = createEngine(fireWizardContent, saved, LOOT_SEED);
+    const events = engine.advanceBy(0);
+    const impact = events.find(
+      (event): event is Extract<EngineEvent, { type: "impact" }> =>
+        event.type === "impact" && event.abilityId === "wizard-basic",
+    );
+    expect(impact?.results[0]).toMatchObject({
+      kind: "damage",
+      channel: "elemental",
+      element: "fire",
+      amount: 20,
+    });
+  });
+});

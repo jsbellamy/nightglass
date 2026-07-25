@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { previewEffectRaw } from "../core/combat";
+import { characterStats } from "../core/stats";
+import { emptyTalentState } from "../core/talents";
 import { buildContent } from "../data/index";
 import { fixtureContent } from "../core/testing/fixture-content";
 import type { StatModifiers } from "../core/types";
@@ -157,6 +159,22 @@ describe("formatAbilityDescription", () => {
     );
     expect(description.toLowerCase()).not.toMatch(/\bpower\b/);
     expect(description).not.toMatch(/coefficient|×|0\.\d/);
+  });
+
+  it("describes arc-spark as Fire Elemental Damage when the Wizard has Fire Power", () => {
+    const arcSpark = abilityById(production, "arc-spark");
+    const wizardKit = production.classes.find((entry) => entry.id === "wizard")!;
+    const fireWizard = characterStats(wizardKit, emptyTalentState(wizardKit), [
+      { flat: { firePower: 5 } },
+    ]);
+    const expectedRaw = previewEffectRaw(
+      { kind: "damage", channel: "elemental", element: "fire", coefficient: 1 },
+      fireWizard,
+    );
+    expect(expectedRaw).toBe(21);
+    expect(
+      formatAbilityDescription(arcSpark, fireWizard, production.statuses),
+    ).toBe(`Arc Spark: Deal ${expectedRaw} Fire Elemental Damage to the closest Opponent`);
   });
 });
 
