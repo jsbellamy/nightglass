@@ -19,7 +19,7 @@
     "test:evidence:changed": "playwright install chromium && playwright test --only-changed",
     "assets:build": "python3 pipeline/acquire.py && python3 pipeline/icons/build.py && python3 pipeline/backdrops.py build",
     "assets:effects": "python3 pipeline/effects/author.py && python3 pipeline/effects/derive.py",
-    "assets:verify": "python3 pipeline/test_contract.py && python3 pipeline/effects/verify.py && python3 pipeline/icons/verify.py && python3 pipeline/backdrops.py verify",
+    "assets:verify": "python3 pipeline/verify_all.py",
     "tauri": "tauri"
   },
   "dependencies": {

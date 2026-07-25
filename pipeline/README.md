@@ -69,7 +69,8 @@ Known tags derive Nightglass asset class, role, facing, and runtime destination;
 `boss-1` retains the historical archived raw tag `boss`.
 
 `assets:verify` runs with no provider, model, GPU, or network. CI runs this
-authoritative full-catalog job offline after `pip install pillow`. Do not run it
+authoritative full-catalog job offline after `pip install pillow numpy`
+(numpy carries the vectorized chroma-key and pitch scans). Do not run it
 inside a candidate generation or retry loop. Ordinary asset tasks use `measure`
 and `promote` locally, push the completed asset batch, and read the CI `assets`
 job. Run the full command locally only when changing pipeline code, acquisition

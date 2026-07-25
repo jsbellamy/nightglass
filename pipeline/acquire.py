@@ -514,15 +514,22 @@ def _within_key(pixel: tuple[int, int, int, int]) -> bool:
 
 
 def _rgba_array(src: Image.Image) -> np.ndarray:
-    """(h, w, 4) int16 view of an RGBA image, wide enough for signed deltas."""
-    return np.asarray(src.convert("RGBA"), dtype=np.int16)
+    """(h, w, 4) uint8 array of an RGBA image; converts only when needed.
+
+    `convert` always copies, so re-converting an image that is already RGBA
+    costs a full frame per call on raws this size. Callers widen the channels
+    they actually subtract.
+    """
+    if src.mode != "RGBA":
+        src = src.convert("RGBA")
+    return np.asarray(src)
 
 
 def _magenta_mask(rgba: np.ndarray) -> np.ndarray:
     """Vectorized `_within_magenta` over a whole (h, w, 4) array."""
-    return ((np.abs(rgba[:, :, 0] - MAGENTA[0]) <= KEY_TOLERANCE)
-            & (np.abs(rgba[:, :, 1] - MAGENTA[1]) <= KEY_TOLERANCE)
-            & (np.abs(rgba[:, :, 2] - MAGENTA[2]) <= KEY_TOLERANCE))
+    return ((np.abs(rgba[:, :, 0].astype(np.int16) - MAGENTA[0]) <= KEY_TOLERANCE)
+            & (np.abs(rgba[:, :, 1].astype(np.int16) - MAGENTA[1]) <= KEY_TOLERANCE)
+            & (np.abs(rgba[:, :, 2].astype(np.int16) - MAGENTA[2]) <= KEY_TOLERANCE))
 
 
 def _foreground_mask(
@@ -610,14 +617,14 @@ def _axis_extent(fg: np.ndarray, w: int, h: int, axis: str) -> tuple[int, int]:
 
 def _edge_profile(src: Image.Image, fg: np.ndarray, axis: str) -> list[float]:
     """Per-column (or per-row) sum of |RGB| deltas across foreground-only pairs."""
-    rgb = _rgba_array(src)[:, :, :3].astype(np.int32)
+    rgb = _rgba_array(src)[:, :, :3].astype(np.int16)
     length = src.size[0] if axis == "x" else src.size[1]
     if axis == "x":
-        delta = np.abs(rgb[:, 1:, :] - rgb[:, :-1, :]).sum(axis=2)
+        delta = np.abs(rgb[:, 1:, :] - rgb[:, :-1, :]).sum(axis=2, dtype=np.int32)
         paired = fg[:, 1:] & fg[:, :-1]
         energy = np.where(paired, delta, 0).sum(axis=0)
     else:
-        delta = np.abs(rgb[1:, :, :] - rgb[:-1, :, :]).sum(axis=2)
+        delta = np.abs(rgb[1:, :, :] - rgb[:-1, :, :]).sum(axis=2, dtype=np.int32)
         paired = fg[1:, :] & fg[:-1, :]
         energy = np.where(paired, delta, 0).sum(axis=1)
     profile = [0.0] * length
@@ -921,7 +928,7 @@ def _crop_foreground_rgba(
     window = (slice(y0, y1 + 1), slice(x0, x1 + 1))
     keep = fg[window]
     out = np.zeros((y1 - y0 + 1, x1 - x0 + 1, 4), dtype=np.uint8)
-    out[keep] = _rgba_array(src)[window][keep].astype(np.uint8)
+    out[keep] = _rgba_array(src)[window][keep]
     return Image.fromarray(out, "RGBA")
 
 
