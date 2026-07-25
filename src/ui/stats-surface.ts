@@ -38,10 +38,53 @@ function formatSignedPercent(decimal: number): string {
   return percent > 0 ? `+${percent}%` : `${percent}%`;
 }
 
+function formatStatTotal(key: CharacterStatKey, value: number): string {
+  if (key === "critChance") {
+    return `${Math.round(value * 100)}%`;
+  }
+  if (key === "critDamage") {
+    return `${value.toFixed(1)}×`;
+  }
+  return String(value);
+}
+
 function formatSourceContribution(
   label: "Base" | "Equip" | "Talent",
   contribution: ModifierContribution | number,
+  key: CharacterStatKey,
 ): string | null {
+  if (key === "critChance") {
+    if (typeof contribution === "number") {
+      return `${label} ${formatStatTotal(key, contribution)}`;
+    }
+    const parts: string[] = [];
+    if (contribution.flat !== 0) {
+      parts.push(formatSignedPercent(contribution.flat));
+    }
+    if (contribution.percent !== 0) {
+      parts.push(formatSignedPercent(contribution.percent));
+    }
+    if (parts.length === 0) {
+      return null;
+    }
+    return `${label} ${parts.join(" ")}`;
+  }
+  if (key === "critDamage") {
+    if (typeof contribution === "number") {
+      return `${label} ${formatStatTotal(key, contribution)}`;
+    }
+    const parts: string[] = [];
+    if (contribution.flat !== 0) {
+      parts.push(formatSignedPercent(contribution.flat));
+    }
+    if (contribution.percent !== 0) {
+      parts.push(formatSignedPercent(contribution.percent));
+    }
+    if (parts.length === 0) {
+      return null;
+    }
+    return `${label} ${parts.join(" ")}`;
+  }
   if (typeof contribution === "number") {
     return `${label} ${contribution}`;
   }
@@ -60,9 +103,9 @@ function formatSourceContribution(
 
 export function formatStatSourceLine(line: CharacterStatBreakdownLine): string {
   const segments = [
-    formatSourceContribution("Base", line.base),
-    formatSourceContribution("Equip", line.equipment),
-    formatSourceContribution("Talent", line.talents),
+    formatSourceContribution("Base", line.base, line.key),
+    formatSourceContribution("Equip", line.equipment, line.key),
+    formatSourceContribution("Talent", line.talents, line.key),
   ].filter((segment): segment is string => segment !== null);
   return segments.join(" · ");
 }
@@ -77,7 +120,11 @@ function renderStatRow(line: CharacterStatBreakdownLine): HTMLElement {
     [
       el("div", { class: "stats-row-heading" }, [
         el("span", { class: "stats-label", text: line.label }),
-        el("span", { class: "stats-total", data: { statTotal: "true" }, text: String(line.total) }),
+        el("span", {
+          class: "stats-total",
+          data: { statTotal: "true" },
+          text: formatStatTotal(line.key, line.total),
+        }),
       ]),
       el("p", {
         class: "stats-sources",
@@ -89,12 +136,17 @@ function renderStatRow(line: CharacterStatBreakdownLine): HTMLElement {
 }
 
 const STAT_GROUPS: ReadonlyArray<{
-  id: "vitals" | "offense" | "defense";
+  id: "vitals" | "offense" | "elements" | "defense";
   heading: string;
   keys: readonly CharacterStatKey[];
 }> = [
   { id: "vitals", heading: "Vitals", keys: ["maxHealth"] },
-  { id: "offense", heading: "Offense", keys: ["physical", "spell"] },
+  {
+    id: "offense",
+    heading: "Offense",
+    keys: ["physical", "spell", "critChance", "critDamage"],
+  },
+  { id: "elements", heading: "Element Power", keys: ["firePower", "frostPower", "lightningPower", "lightPower"] },
   { id: "defense", heading: "Defense", keys: ["armor", "elementalResistance"] },
 ];
 
