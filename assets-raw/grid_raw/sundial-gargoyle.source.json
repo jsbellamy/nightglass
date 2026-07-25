@@ -1,0 +1,42 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "84fc42f15b8277d5abcd1740fc069b832f8b70f42223202860328276893dd0ed",
+  "acquisition": "flexible",
+  "identity_profile": {
+    "asset_class": "opponent",
+    "role": "ordinary-opponent",
+    "facing": "left"
+  },
+  "cursor_stamp_removed": false,
+  "identity": "sundial-gargoyle",
+  "asset_class": "opponent",
+  "runtime_destination": "src/assets/sprites/sundial-gargoyle.png",
+  "candidate": "sundial-gargoyle.png",
+  "facing": "left",
+  "role": "ordinary-opponent",
+  "palette": "unwound-belfry-24@1",
+  "style_references": [
+    {
+      "path": "src/assets/sprites/tickmoth.png",
+      "sha256": "0e8019a793ec7c18ec10711b9490f32193f01a60179e67e6a61c7948805e5840",
+      "role": "style"
+    },
+    {
+      "path": "src/assets/sprites/tollbat.png",
+      "sha256": "332cd1848440fa70e6e317ef4dbccb02077afcce2ecbf194e4ee0e18335a9577",
+      "role": "style"
+    },
+    {
+      "path": "src/assets/sprites/astrolabe-spider.png",
+      "sha256": "64fc78fd3a9453b5b0c2d8aaf180b18ea9cd7cbb18c6b74806b5722a73a8c80b",
+      "role": "style"
+    },
+    {
+      "path": "src/assets/sprites/pendulum-rat.png",
+      "sha256": "4522f578c71878a0fa6edb2938abb23ef05482eddce639a7e06d70f337c60a45",
+      "role": "style"
+    }
+  ],
+  "prompt": "Single full-body Sundial Gargoyle ordinary opponent game sprite, strict side profile facing LEFT. A squat crouched belfry gargoyle anatomically fused with a broken sundial. Its hunched body is weathered verdigris-streaked stone with blocky angular planes; a heavy triangular bronze gnomon rises from the spine like a fin, snapped short at the tip, and a cracked candle-ivory dial face is set flat into the shoulder plate with worn tick marks around its edge. Folded stubby stone wings clamp against the flanks. The mutation is one living creature, not a gargoyle statue beside or holding a sundial.\n\nPreserve its uncanny absurd identity: a blunt snarling stone muzzle with a heavy brow, one cold-glass eye with a single alarm-red glint, two short curled horns, the snapped triangular bronze gnomon fin along the spine, the cracked ivory dial set into the shoulder, folded stubby wings clamped to the flanks, and four thick clawed stone feet in a low crouch. Squat, heavy, angular silhouette with a wide flat base. The muzzle, horns, gnomon fin, dial face, folded wings, and all four feet must remain distinct at native game scale.\n\nChunky simplified flat-colour Unwound Belfry pixel art matching the accepted Tickmoth, Tollbat, and Astrolabe-Spider in block size, selective moonless-indigo contour, saturation discipline, and 55% absurd / 45% uncanny tone. Use only named unwound-belfry-24 colors: moonless indigos, tarnished brass, verdigris patina, candle ivory, cold glass, and restrained alarm red. Stone and patina read through flat planes and chipped edges, not gradients. No gore, wounds, exposed organs, realism, gradients, anti-aliasing, blur, or dithering.\n\nShow exactly one complete subject with generous empty clearance on every edge of an opaque flat solid magenta #ff00ff background. No shadow, floor, glow, cast sundial shadow, dust, rubble, sparkles, particles, Ability effect, text, watermark, scenery, UI, transparency, other statue, or other subject.\n"
+}

@@ -894,5 +894,37 @@
       "provider": "Cursor GenerateImage",
       "raw_sha256": "0dd1a6f86968ff6a2d8478651bf35d6fc4a0303ce1da031e9e0ca21ad42256a1"
     }
+  },
+  "sundial-gargoyle": {
+    "action": "still",
+    "frame_size": [
+      30,
+      25
+    ],
+    "visual_bounds": [
+      0,
+      0,
+      30,
+      25
+    ],
+    "foot_anchor": [
+      15,
+      25
+    ],
+    "palette": "unwound-belfry-24",
+    "baseline_row": 24,
+    "total_ms": 1,
+    "frames": [
+      {
+        "name": "sundial-gargoyle",
+        "duration_ms": 1,
+        "sha256": "367c57ce2b9cc941173295ba5f57147114d3701682ad7adf594930df59cdb093"
+      }
+    ],
+    "cues_ms": {},
+    "source": {
+      "provider": "Cursor GenerateImage",
+      "raw_sha256": "84fc42f15b8277d5abcd1740fc069b832f8b70f42223202860328276893dd0ed"
+    }
   }
 }
