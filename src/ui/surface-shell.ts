@@ -445,6 +445,23 @@ export function pendingMarker(): HTMLElement {
 }
 
 /**
+ * Zero-height host for a pending marker. The marker only exists while an edit is
+ * pending, so putting it in normal flow reflows everything below it the moment a
+ * player allocates a rank mid-Wave — the stepper they just clicked slides out
+ * from under the cursor. The slot takes no layout space and the marker is lifted
+ * out of flow onto the heading line above it, so appearing and disappearing move
+ * nothing. Always render the slot, with or without a marker.
+ */
+export function pendingSlot(marker: HTMLElement | null): HTMLElement {
+  const slot = document.createElement("div");
+  slot.className = "pending-slot";
+  if (marker) {
+    slot.append(marker);
+  }
+  return slot;
+}
+
+/**
  * Marks a scroll region with `data-overflow="true|false"` via ResizeObserver +
  * MutationObserver. CSS can show a fade only when overflowing. No scroll
  * listeners and no per-frame style writes — observers schedule at most one

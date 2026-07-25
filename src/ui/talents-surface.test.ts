@@ -164,7 +164,11 @@ describe("Talents surface", () => {
       ".equipment-icon-img--content",
     );
     expect(abilityIcon?.dataset["iconKey"]).toBe("k-hold-line");
-    expect(abilityCell?.querySelector(".talent-ability-mark--chosen")).not.toBeNull();
+    expect(
+      talentGroup(root, "k-hold-line").querySelector(
+        '.talent-ability-mark--chosen[data-talent-action="deallocate"]',
+      ),
+    ).not.toBeNull();
 
     surface.destroy();
   });
@@ -410,7 +414,7 @@ describe("Talents surface", () => {
     expect(
       talentGroup(root, "k-hold-line").querySelector('[data-talent-action="deallocate"]')
         ?.textContent,
-    ).toBe("−");
+    ).toBe("✓");
     expect(
       talentGroup(root, "k-hold-line").querySelector('[data-talent-action="allocate"]'),
     ).toBeNull();

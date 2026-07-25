@@ -766,7 +766,8 @@ html.dock-window body {
 .dock-panel::-webkit-scrollbar,
 .character-picker::-webkit-scrollbar,
 .armory-grid::-webkit-scrollbar,
-.armory-detail::-webkit-scrollbar {
+.armory-detail::-webkit-scrollbar,
+.talent-tree-scroll::-webkit-scrollbar {
   width: 8px;
 }
 
@@ -774,7 +775,8 @@ html.dock-window body {
 .dock-panel::-webkit-scrollbar-thumb,
 .character-picker::-webkit-scrollbar-thumb,
 .armory-grid::-webkit-scrollbar-thumb,
-.armory-detail::-webkit-scrollbar-thumb {
+.armory-detail::-webkit-scrollbar-thumb,
+.talent-tree-scroll::-webkit-scrollbar-thumb {
   background: rgba(255, 249, 233, 0.28);
   border-radius: 4px;
 }
@@ -839,6 +841,10 @@ html.dock-window body {
   display: flex;
   flex-direction: column;
   min-height: 0;
+  padding: 8px;
+  border: 1px solid rgba(255, 249, 233, 0.12);
+  border-radius: 6px;
+  background: rgba(28, 33, 48, 0.92);
 }
 
 .character-build-board [data-character-section="loadout"] .loadout-surface,
@@ -853,7 +859,9 @@ html.dock-window body {
   flex-direction: column;
   flex: 1;
   min-height: 0;
-  overflow: hidden;
+  /* No `overflow: hidden` here: `.talent-tree-scroll` owns the inner scroll and
+     `min-height: 0` already keeps this column from growing the board, while a
+     clip would swallow the pending marker riding on the heading line above. */
 }
 
 .character-build-board [data-character-section="talents"] .surface-section-title,
@@ -994,6 +1002,7 @@ html.dock-window body {
 .character-build-board [data-character-section="talents"] .talent-tile {
   display: flex;
   flex-direction: column;
+  flex-wrap: nowrap;
   width: 100%;
   max-width: 100%;
   gap: 2px;
@@ -1091,6 +1100,36 @@ html.dock-window body {
   cursor: not-allowed;
 }
 
+.character-build-board [data-character-section="talents"] .talent-tile--ability {
+  padding: 3px 4px;
+  border: 1px solid rgba(255, 249, 233, 0.14);
+  border-radius: 5px;
+  background: rgba(20, 24, 36, 0.7);
+}
+
+.character-build-board [data-character-section="talents"] .talent-tile--ability-chosen {
+  border-color: rgba(155, 231, 196, 0.55);
+  background: rgba(41, 60, 56, 0.55);
+}
+
+.character-build-board [data-character-section="talents"] .talent-ability-compact-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.character-build-board [data-character-section="talents"] .talent-ability-state {
+  font-size: 9px;
+  line-height: 1.2;
+  color: var(--dock-text-muted, #d8d0bf);
+}
+
+.character-build-board [data-character-section="talents"] .talent-tile--ability-chosen .talent-ability-state {
+  color: #9be7c4;
+}
+
 .character-build-board [data-character-section="talents"] .talent-ability-compact-action {
   flex-shrink: 0;
   min-width: 28px;
@@ -1121,6 +1160,8 @@ html.dock-window body {
 }
 
 .character-build-board [data-character-section="talents"] .talent-tile-warning {
+  flex: 0 0 auto;
+  width: 100%;
   font-size: 9px;
   line-height: 1.25;
 }
@@ -1554,6 +1595,56 @@ html.dock-window body {
   color: #ffe8c2;
 }
 
+/*
+ * The pending marker only exists while an edit is pending, so leaving it in flow
+ * reflowed the whole surface the instant a player allocated a rank mid-Wave —
+ * the stepper under the cursor jumped 35px down. The slot is always present but
+ * takes no space, and the marker rides out of flow on the heading line above it,
+ * so it can appear and vanish without moving anything.
+ */
+.pending-slot {
+  height: 0;
+}
+
+/*
+ * Anchored to the section rather than to the slot: both columns' inner bodies
+ * clip (overflow: hidden), and the chip has to escape that clip to sit on the
+ * heading line. Anchoring above those bodies does exactly that, at the cost of
+ * expressing the heading row as an offset from the section's padding box.
+ */
+.character-section {
+  position: relative;
+}
+
+.character-section .pending-slot .pending-marker {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 3;
+  margin: 0;
+  padding: 1px 5px;
+  font-size: 10px;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+/*
+ * Loadout is the exception: its body is both the popover host (position:
+ * relative) and clipped, so a chip anchored there cannot reach the heading line
+ * and lands on the Basic Attack row instead. This column has vertical room to
+ * spare, so it reserves the chip's line up front — constant height whether or
+ * not an edit is pending, which is the property that matters.
+ */
+.character-section[data-character-section="loadout"] .pending-slot {
+  height: 17px;
+}
+
+.character-section[data-character-section="loadout"] .pending-slot .pending-marker {
+  position: static;
+  width: fit-content;
+  margin-left: auto;
+}
+
 .stage-list,
 .failure-policy {
   display: flex;
@@ -1708,10 +1799,16 @@ html.dock-window body {
   gap: 6px;
 }
 
+/* Overlay scrollbars reserve no layout width, so the thumb would draw straight
+   over the rank steppers and Ability actions pinned to the right edge. Pad a
+   gutter wide enough for the thumb regardless of the platform scrollbar mode. */
 .talent-tree-scroll {
   flex: 1;
   min-height: 0;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  padding-right: 10px;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -1871,19 +1968,9 @@ html.dock-window body {
 }
 
 .talent-ability-mark {
-  position: absolute;
-  right: 2px;
-  top: 2px;
-  z-index: 1;
-  box-sizing: border-box;
-  width: 18px;
-  height: 18px;
-  border: 1.5px solid rgba(255, 249, 233, 0.45);
-  border-radius: 3px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
   line-height: 1;
   color: #9be7c4;
 }

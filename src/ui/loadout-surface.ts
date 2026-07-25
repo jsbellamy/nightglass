@@ -17,7 +17,7 @@ import {
   unlockableAbilityIds,
 } from "./snapshot-view";
 import { mountMechanicalPopoverController } from "./mechanical-popover";
-import { el, mountSurfaceShell, pendingMarker } from "./surface-shell";
+import { el, mountSurfaceShell, pendingMarker, pendingSlot } from "./surface-shell";
 
 export type LoadoutSlotIndex = 0 | 1 | 2;
 
@@ -534,11 +534,12 @@ export function mountLoadoutSurface(
 
     const sectionChildren: (HTMLElement | false)[] = [];
 
+    let loadoutMarker: HTMLElement | null = null;
     if (hasPending) {
-      const marker = pendingMarker();
-      marker.dataset["pendingKind"] = "loadout";
-      sectionChildren.push(marker);
+      loadoutMarker = pendingMarker();
+      loadoutMarker.dataset["pendingKind"] = "loadout";
     }
+    sectionChildren.push(pendingSlot(loadoutMarker));
 
     const basicAbility = abilityById(content, classKit.basicAbilityId);
     if (basicAbility) {
@@ -674,7 +675,7 @@ export function mountLoadoutSurface(
         return;
       }
       const anchor = root.querySelector<HTMLElement>(
-        `[data-ability-id="${openPopoverAbilityId}"]`,
+        `[data-loadout-assign-tile][data-ability-id="${openPopoverAbilityId}"], [data-loadout-basic][data-ability-id="${openPopoverAbilityId}"]`,
       );
       const ability = abilityById(content, openPopoverAbilityId);
       if (!anchor || !ability) {
