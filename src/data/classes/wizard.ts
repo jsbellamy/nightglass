@@ -129,7 +129,7 @@ export const wizardTier2: TalentTierDef = {
     {
       id: "leyline-attunement",
       name: "Leyline Attunement",
-      perRank: { flat: { elemental: 2 } },
+      perRank: { flat: { spell: 2 } },
       maxRanks: 5,
       iconKey: "leyline-attunement",
     },
@@ -182,7 +182,7 @@ export const wizardTier3: TalentTierDef = {
     {
       id: "arcane-overflow",
       name: "Arcane Overflow",
-      perRank: { percent: { elementalPower: 0.06 } },
+      perRank: { percent: { spellPower: 0.06 } },
       maxRanks: 5,
       iconKey: "arcane-overflow",
     },
@@ -203,7 +203,7 @@ export const wizardClass: ClassKitDef = {
   base: {
     maxHealth: 130,
     physical: 4,
-    elemental: 16,
+    spell: 16,
     armor: 10,
     elementalResistance: 24,
   },
@@ -215,7 +215,7 @@ export const wizardClass: ClassKitDef = {
       {
         id: "elemental-practice",
         name: "Elemental Practice",
-        perRank: { percent: { elementalPower: 0.05 } },
+        perRank: { percent: { spellPower: 0.05 } },
         maxRanks: 5,
         iconKey: "elemental-practice",
       },

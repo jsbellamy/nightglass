@@ -14,7 +14,7 @@ const EXPECTED_AFFIX_BANDS: AffixBandDef[] = [
     tier5: [15, 20],
   },
   {
-    id: "flat-elemental",
+    id: "flat-spell",
     tier1: [1, 2],
     tier2: [3, 5],
     tier3: [6, 9],
@@ -30,7 +30,7 @@ const EXPECTED_AFFIX_BANDS: AffixBandDef[] = [
     tier5: [28, 38],
   },
   {
-    id: "percent-elemental-power",
+    id: "percent-spell-power",
     tier1: [4, 8],
     tier2: [8, 14],
     tier3: [14, 20],
@@ -87,7 +87,7 @@ const EXPECTED_BASES: EquipmentBaseDef[] = [
     slot: "weapon",
     tier: 1,
     weaponClass: "wizard",
-    guaranteed: { flat: { elemental: 2 } },
+    guaranteed: { flat: { spell: 2 } },
     iconKey: "dewlight-focus",
   },
   {
@@ -96,7 +96,7 @@ const EXPECTED_BASES: EquipmentBaseDef[] = [
     slot: "weapon",
     tier: 1,
     weaponClass: "priest",
-    guaranteed: { flat: { elemental: 2 } },
+    guaranteed: { flat: { spell: 2 } },
     iconKey: "moonpetal-relic",
   },
   {
@@ -139,7 +139,7 @@ const EXPECTED_BASES: EquipmentBaseDef[] = [
     slot: "weapon",
     tier: 2,
     weaponClass: "wizard",
-    guaranteed: { flat: { elemental: 5 } },
+    guaranteed: { flat: { spell: 5 } },
     iconKey: "starfruit-prism",
   },
   {
@@ -148,7 +148,7 @@ const EXPECTED_BASES: EquipmentBaseDef[] = [
     slot: "weapon",
     tier: 2,
     weaponClass: "priest",
-    guaranteed: { flat: { elemental: 5 } },
+    guaranteed: { flat: { spell: 5 } },
     iconKey: "halcyon-lantern",
   },
   {
@@ -191,7 +191,7 @@ const EXPECTED_BASES: EquipmentBaseDef[] = [
     slot: "weapon",
     tier: 3,
     weaponClass: "wizard",
-    guaranteed: { flat: { elemental: 8 } },
+    guaranteed: { flat: { spell: 8 } },
     iconKey: "neonstorm-coil",
   },
   {
@@ -200,7 +200,7 @@ const EXPECTED_BASES: EquipmentBaseDef[] = [
     slot: "weapon",
     tier: 3,
     weaponClass: "priest",
-    guaranteed: { flat: { elemental: 8 } },
+    guaranteed: { flat: { spell: 8 } },
     iconKey: "roadside-reliquary",
   },
   {
@@ -243,7 +243,7 @@ const EXPECTED_BASES: EquipmentBaseDef[] = [
     slot: "weapon",
     tier: 4,
     weaponClass: "wizard",
-    guaranteed: { flat: { elemental: 12 } },
+    guaranteed: { flat: { spell: 12 } },
     iconKey: "mustard-sky-dynamo",
   },
   {
@@ -252,7 +252,7 @@ const EXPECTED_BASES: EquipmentBaseDef[] = [
     slot: "weapon",
     tier: 4,
     weaponClass: "priest",
-    guaranteed: { flat: { elemental: 12 } },
+    guaranteed: { flat: { spell: 12 } },
     iconKey: "harvest-warning-lantern",
   },
   {
@@ -295,7 +295,7 @@ const EXPECTED_BASES: EquipmentBaseDef[] = [
     slot: "weapon",
     tier: 5,
     weaponClass: "wizard",
-    guaranteed: { flat: { elemental: 16 } },
+    guaranteed: { flat: { spell: 16 } },
     iconKey: "aphelion-conduit",
   },
   {
@@ -304,7 +304,7 @@ const EXPECTED_BASES: EquipmentBaseDef[] = [
     slot: "weapon",
     tier: 5,
     weaponClass: "priest",
-    guaranteed: { flat: { elemental: 16 } },
+    guaranteed: { flat: { spell: 16 } },
     iconKey: "tolling-reliquary",
   },
   {
@@ -384,8 +384,8 @@ describe("Equipment Bases from issue #8", () => {
 
   it("pins Tier I guaranteed statistics", () => {
     expect(baseById("thornquill-blade").guaranteed).toEqual({ flat: { physical: 2 } });
-    expect(baseById("dewlight-focus").guaranteed).toEqual({ flat: { elemental: 2 } });
-    expect(baseById("moonpetal-relic").guaranteed).toEqual({ flat: { elemental: 2 } });
+    expect(baseById("dewlight-focus").guaranteed).toEqual({ flat: { spell: 2 } });
+    expect(baseById("moonpetal-relic").guaranteed).toEqual({ flat: { spell: 2 } });
     expect(baseById("bramblesong-bow").guaranteed).toEqual({ flat: { physical: 2 } });
     expect(baseById("leafmail-vest").guaranteed).toEqual({ flat: { armor: 4 } });
     expect(baseById("berrybright-charm").guaranteed).toEqual({ flat: { maxHealth: 8 } });
@@ -393,8 +393,8 @@ describe("Equipment Bases from issue #8", () => {
 
   it("pins Tier II guaranteed statistics", () => {
     expect(baseById("duskthorn-edge").guaranteed).toEqual({ flat: { physical: 5 } });
-    expect(baseById("starfruit-prism").guaranteed).toEqual({ flat: { elemental: 5 } });
-    expect(baseById("halcyon-lantern").guaranteed).toEqual({ flat: { elemental: 5 } });
+    expect(baseById("starfruit-prism").guaranteed).toEqual({ flat: { spell: 5 } });
+    expect(baseById("halcyon-lantern").guaranteed).toEqual({ flat: { spell: 5 } });
     expect(baseById("nightvine-longbow").guaranteed).toEqual({ flat: { physical: 5 } });
     expect(baseById("plumweave-aegis").guaranteed).toEqual({ flat: { armor: 9 } });
     expect(baseById("gloamberry-locket").guaranteed).toEqual({ flat: { maxHealth: 18 } });
@@ -402,8 +402,8 @@ describe("Equipment Bases from issue #8", () => {
 
   it("pins Tier III guaranteed statistics", () => {
     expect(baseById("fryerplate-cleaver").guaranteed).toEqual({ flat: { physical: 8 } });
-    expect(baseById("neonstorm-coil").guaranteed).toEqual({ flat: { elemental: 8 } });
-    expect(baseById("roadside-reliquary").guaranteed).toEqual({ flat: { elemental: 8 } });
+    expect(baseById("neonstorm-coil").guaranteed).toEqual({ flat: { spell: 8 } });
+    expect(baseById("roadside-reliquary").guaranteed).toEqual({ flat: { spell: 8 } });
     expect(baseById("huskstring-recurve").guaranteed).toEqual({ flat: { physical: 8 } });
     expect(baseById("feed-sack-brigandine").guaranteed).toEqual({ flat: { armor: 15 } });
     expect(baseById("red-beacon-token").guaranteed).toEqual({ flat: { maxHealth: 30 } });
@@ -411,8 +411,8 @@ describe("Equipment Bases from issue #8", () => {
 
   it("pins Tier IV guaranteed statistics", () => {
     expect(baseById("threshertooth-blade").guaranteed).toEqual({ flat: { physical: 12 } });
-    expect(baseById("mustard-sky-dynamo").guaranteed).toEqual({ flat: { elemental: 12 } });
-    expect(baseById("harvest-warning-lantern").guaranteed).toEqual({ flat: { elemental: 12 } });
+    expect(baseById("mustard-sky-dynamo").guaranteed).toEqual({ flat: { spell: 12 } });
+    expect(baseById("harvest-warning-lantern").guaranteed).toEqual({ flat: { spell: 12 } });
     expect(baseById("augerwire-longbow").guaranteed).toEqual({ flat: { physical: 12 } });
     expect(baseById("combineplate-harness").guaranteed).toEqual({ flat: { armor: 22 } });
     expect(baseById("black-oil-locket").guaranteed).toEqual({ flat: { maxHealth: 44 } });
@@ -420,8 +420,8 @@ describe("Equipment Bases from issue #8", () => {
 
   it("pins Tier V guaranteed statistics", () => {
     expect(baseById("escapement-greatsword").guaranteed).toEqual({ flat: { physical: 16 } });
-    expect(baseById("aphelion-conduit").guaranteed).toEqual({ flat: { elemental: 16 } });
-    expect(baseById("tolling-reliquary").guaranteed).toEqual({ flat: { elemental: 16 } });
+    expect(baseById("aphelion-conduit").guaranteed).toEqual({ flat: { spell: 16 } });
+    expect(baseById("tolling-reliquary").guaranteed).toEqual({ flat: { spell: 16 } });
     expect(baseById("mainspring-repeater").guaranteed).toEqual({ flat: { physical: 16 } });
     expect(baseById("verdigris-carapace").guaranteed).toEqual({ flat: { armor: 30 } });
     expect(baseById("stopped-hour-pendulum").guaranteed).toEqual({ flat: { maxHealth: 60 } });

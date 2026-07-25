@@ -191,12 +191,12 @@ describe("statLines", () => {
     percent: {
       maxHealth: 0.06,
       physicalPower: 0.05,
-      elementalPower: 0.04,
+      spellPower: 0.04,
     },
     flat: {
       maxHealth: 10,
       physical: 3,
-      elemental: 2,
+      spell: 2,
       armor: 7,
       elementalResistance: 4,
     },

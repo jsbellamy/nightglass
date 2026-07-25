@@ -208,7 +208,7 @@ export const knightClass: ClassKitDef = {
   base: {
     maxHealth: 234,
     physical: 14,
-    elemental: 4,
+    spell: 4,
     armor: 30,
     elementalResistance: 12,
   },

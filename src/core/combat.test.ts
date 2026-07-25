@@ -68,7 +68,7 @@ const emptyTarget = {
   stats: {
     maxHealth: 100,
     physical: 0,
-    elemental: 0,
+    spell: 0,
     armor: 0,
     elementalResistance: 0,
   },
@@ -80,7 +80,7 @@ const emptyTarget = {
 
 describe("damage mitigation at impact", () => {
   it("uses max(1, floor(raw × 100 / (100 + mitigation))) with mitigation clamped ≥ 0", () => {
-    const actor = { ...emptyTarget.stats, physical: 100, elemental: 0 };
+    const actor = { ...emptyTarget.stats, physical: 100, spell: 0 };
     const mitigated = (raw: number, mitigation: number) =>
       resolveEffect(
         { kind: "damage", channel: "physical", coefficient: raw / 100 },
@@ -95,18 +95,18 @@ describe("damage mitigation at impact", () => {
     expect(mitigated(50, 200)).toBe(16);
   });
 
-  it("pairs Elemental Power with Elemental Resistance, not Armor", () => {
+  it("pairs Spell Power with Elemental Resistance, not Armor", () => {
     const actorStats: BaseStats = {
       maxHealth: 100,
       physical: 10,
-      elemental: 100,
+      spell: 100,
       armor: 0,
       elementalResistance: 0,
     };
     const targetStats: BaseStats = {
       maxHealth: 200,
       physical: 0,
-      elemental: 0,
+      spell: 0,
       armor: 200,
       elementalResistance: 5,
     };
@@ -129,7 +129,7 @@ describe("Power math", () => {
   const base: BaseStats = {
     maxHealth: 180,
     physical: 14,
-    elemental: 16,
+    spell: 16,
     armor: 30,
     elementalResistance: 12,
   };
@@ -402,7 +402,7 @@ describe("healing", () => {
   it("ignores mitigation and cannot overheal", () => {
     const outcome = resolveEffect(
       { kind: "heal", coefficient: 0.8 },
-      { maxHealth: 100, physical: 0, elemental: 14, armor: 0, elementalResistance: 0 },
+      { maxHealth: 100, physical: 0, spell: 14, armor: 0, elementalResistance: 0 },
       { ...emptyTarget, health: 95, maxHealth: 100 },
       statusesById,
     );
@@ -411,7 +411,7 @@ describe("healing", () => {
       previewEffectRaw({ kind: "heal", coefficient: 0.8 }, {
         maxHealth: 100,
         physical: 0,
-        elemental: 14,
+        spell: 14,
         armor: 0,
         elementalResistance: 0,
       }),
@@ -450,7 +450,7 @@ describe("Wildfire expansion status modifiers", () => {
       wildfireStatusDefs,
     );
     expect(shaken.physical).toBe(11);
-    expect(shaken.elemental).toBe(3);
+    expect(shaken.spell).toBe(3);
 
     const overdrive = effectiveStats(
       knightBase,

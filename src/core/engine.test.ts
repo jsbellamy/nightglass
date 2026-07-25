@@ -295,7 +295,7 @@ const progressionContent: Content = {
       base: {
         maxHealth: 95,
         physical: 13,
-        elemental: 5,
+        spell: 5,
         armor: 14,
         elementalResistance: 10,
       },
@@ -3287,7 +3287,7 @@ function snapshotWithScorchedOpponent(simNowMs: number) {
       expiresAtMs: simNowMs + 5_000,
       nextTickAtMs: simNowMs + 1_000,
       sourceEntityId: wizardId,
-      sourcePower: { physical: 4, elemental: 16 },
+      sourcePower: { physical: 4, spell: 16 },
     },
   ];
   return snap;
@@ -3313,7 +3313,7 @@ describe("ticking Status Effects", () => {
       .toBe(true);
   });
 
-  it("uses snapshotted Elemental Power, Fire channel metadata, and current target mitigation", () => {
+  it("uses snapshotted Spell Power, Fire channel metadata, and current target mitigation", () => {
     const startMs = 2_000;
     const snap = snapshotWithScorchedOpponent(startMs);
     const engine = createEngine(scorchedTickContent, snap, LOOT_SEED, fixtureNow);
@@ -3341,7 +3341,7 @@ describe("ticking Status Effects", () => {
     if (!scorched) {
       throw new Error("missing scorched");
     }
-    scorched.sourcePower = { physical: 4, elemental: 32 };
+    scorched.sourcePower = { physical: 4, spell: 32 };
 
     const lowEngine = createEngine(scorchedTickContent, lowSnap, LOOT_SEED, fixtureNow);
     const highEngine = createEngine(scorchedTickContent, highSnap, LOOT_SEED, fixtureNow);
@@ -3366,7 +3366,7 @@ describe("ticking Status Effects", () => {
     if (!scorched) {
       throw new Error("missing scorched");
     }
-    scorched.sourcePower = { physical: 0, elemental: 0 };
+    scorched.sourcePower = { physical: 0, spell: 0 };
 
     const engine = createEngine(scorchedTickContent, snap, LOOT_SEED, fixtureNow);
     const tick = driveBy(engine, 1_000).find(
@@ -3417,7 +3417,7 @@ describe("ticking Status Effects", () => {
         expiresAtMs: startMs + 5_000,
         nextTickAtMs: startMs + 1_000,
         sourceEntityId: knightFront,
-        sourcePower: { physical: 10, elemental: 10 },
+        sourcePower: { physical: 10, spell: 10 },
       },
     ];
 
@@ -3464,7 +3464,7 @@ describe("ticking Status Effects", () => {
       expiresAtMs: 5_000,
       nextTickAtMs: 1_000,
       sourceEntityId: wizardMiddle,
-      sourcePower: { physical: 4, elemental: 16 },
+      sourcePower: { physical: 4, spell: 16 },
     });
 
     const afterRefresh = driveBy(engine, 999);
@@ -3590,7 +3590,7 @@ describe("ticking Status Effects", () => {
         expiresAtMs: startMs + 5_000,
         nextTickAtMs: startMs + 1_000,
         sourceEntityId: partyEntityId("wizard", 1),
-        sourcePower: { physical: 4, elemental: 16 },
+        sourcePower: { physical: 4, spell: 16 },
       },
     ];
 

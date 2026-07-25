@@ -51,10 +51,10 @@ export function statLines(modifier: StatModifiers, ranks = 1): StatLine[] {
       value: formatSignedStatAmount(modifier.percent.physicalPower * ranks * 100, true),
     });
   }
-  if (modifier.percent?.elementalPower) {
+  if (modifier.percent?.spellPower) {
     lines.push({
       label: "Elemental",
-      value: formatSignedStatAmount(modifier.percent.elementalPower * ranks * 100, true),
+      value: formatSignedStatAmount(modifier.percent.spellPower * ranks * 100, true),
     });
   }
   if (modifier.flat?.maxHealth) {
@@ -69,10 +69,10 @@ export function statLines(modifier: StatModifiers, ranks = 1): StatLine[] {
       value: formatSignedStatAmount(modifier.flat.physical * ranks, false),
     });
   }
-  if (modifier.flat?.elemental) {
+  if (modifier.flat?.spell) {
     lines.push({
       label: "Elemental",
-      value: formatSignedStatAmount(modifier.flat.elemental * ranks, false),
+      value: formatSignedStatAmount(modifier.flat.spell * ranks, false),
     });
   }
   if (modifier.flat?.armor) {

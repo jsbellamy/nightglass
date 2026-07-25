@@ -26,7 +26,7 @@ describe("Wizard Talent Tier 3 exports", () => {
     expect(arcaneOverflow).toMatchObject({
       id: "arcane-overflow",
       name: "Arcane Overflow",
-      perRank: { percent: { elementalPower: 0.06 } },
+      perRank: { percent: { spellPower: 0.06 } },
       maxRanks: 5,
       iconKey: "arcane-overflow",
     });

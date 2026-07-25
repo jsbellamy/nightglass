@@ -8,7 +8,7 @@ import type { BaseStats, ClassId, Content, StatModifiers } from "./types";
 export type CharacterStatKey =
   | "maxHealth"
   | "physical"
-  | "elemental"
+  | "spell"
   | "armor"
   | "elementalResistance";
 
@@ -19,7 +19,7 @@ export interface ModifierContribution {
 
 export interface CharacterStatBreakdownLine {
   key: CharacterStatKey;
-  label: "Max Health" | "Physical Power" | "Elemental Power" | "Armor" | "Elemental Resistance";
+  label: "Max Health" | "Physical Power" | "Spell Power" | "Armor" | "Elemental Resistance";
   base: number;
   equipment: ModifierContribution;
   talents: ModifierContribution;
@@ -53,12 +53,12 @@ const STAT_LINE_DEFS: StatLineDef[] = [
     totalKey: "physical",
   },
   {
-    key: "elemental",
-    label: "Elemental Power",
-    baseKey: "elemental",
-    flatKey: "elemental",
-    percentKey: "elementalPower",
-    totalKey: "elemental",
+    key: "spell",
+    label: "Spell Power",
+    baseKey: "spell",
+    flatKey: "spell",
+    percentKey: "spellPower",
+    totalKey: "spell",
   },
   {
     key: "armor",
@@ -143,7 +143,7 @@ export function statsDifferFromCommittedCombat(
   return (
     effective.maxHealth !== committed.maxHealth ||
     effective.physical !== committed.physical ||
-    effective.elemental !== committed.elemental ||
+    effective.spell !== committed.spell ||
     effective.armor !== committed.armor ||
     effective.elementalResistance !== committed.elementalResistance
   );

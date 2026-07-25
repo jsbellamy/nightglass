@@ -47,7 +47,7 @@ const EXPECTED_WIZARD_TIER2: TalentTierDef = {
     {
       id: "leyline-attunement",
       name: "Leyline Attunement",
-      perRank: { flat: { elemental: 2 } },
+      perRank: { flat: { spell: 2 } },
       maxRanks: 5,
       iconKey: "leyline-attunement",
     },
@@ -74,7 +74,7 @@ describe("Wizard Talent Tier 2 exports", () => {
     const [leyline, glassweave] = wizardTier2.statRow;
     expect(leyline).toMatchObject({
       id: "leyline-attunement",
-      perRank: { flat: { elemental: 2 } },
+      perRank: { flat: { spell: 2 } },
       maxRanks: 5,
       iconKey: "leyline-attunement",
     });

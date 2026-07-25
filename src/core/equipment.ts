@@ -34,16 +34,16 @@ const DEFENSIVE_AFFIXES: AffixId[] = [
 const ALL_AFFIXES: AffixId[] = [
   "flat-physical",
   "percent-physical-power",
-  "flat-elemental",
-  "percent-elemental-power",
+  "flat-spell",
+  "percent-spell-power",
   ...DEFENSIVE_AFFIXES,
 ];
 
 const OFFENSIVE_AFFIXES_BY_CLASS: Record<ClassId, [AffixId, AffixId]> = {
   knight: ["flat-physical", "percent-physical-power"],
   hunter: ["flat-physical", "percent-physical-power"],
-  wizard: ["flat-elemental", "percent-elemental-power"],
-  priest: ["flat-elemental", "percent-elemental-power"],
+  wizard: ["flat-spell", "percent-spell-power"],
+  priest: ["flat-spell", "percent-spell-power"],
 };
 
 export interface LootRng {
@@ -290,10 +290,10 @@ function affixToModifier(affix: { id: AffixId; value: number }): StatModifiers {
       return { flat: { physical: affix.value } };
     case "percent-physical-power":
       return { percent: { physicalPower: affix.value } };
-    case "flat-elemental":
-      return { flat: { elemental: affix.value } };
-    case "percent-elemental-power":
-      return { percent: { elementalPower: affix.value } };
+    case "flat-spell":
+      return { flat: { spell: affix.value } };
+    case "percent-spell-power":
+      return { percent: { spellPower: affix.value } };
     case "flat-max-health":
       return { flat: { maxHealth: affix.value } };
     case "percent-max-health":

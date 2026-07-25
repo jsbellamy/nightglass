@@ -149,7 +149,7 @@ interface PendingImpactChange {
 interface StatusSourceSnapshot {
   entityId: string;
   physical: number;
-  elemental: number;
+  spell: number;
 }
 
 function indexContent(content: Content): ContentIndex {
@@ -620,14 +620,14 @@ function writeTickSchedule(
   }
   status.nextTickAtMs = appliedAtMs + statusDef.tickEveryMs;
   status.sourceEntityId = source.entityId;
-  status.sourcePower = { physical: source.physical, elemental: source.elemental };
+  status.sourcePower = { physical: source.physical, spell: source.spell };
 }
 
 function sourceSnapshotFromStats(
   entityId: string,
   stats: BaseStats,
 ): StatusSourceSnapshot {
-  return { entityId, physical: stats.physical, elemental: stats.elemental };
+  return { entityId, physical: stats.physical, spell: stats.spell };
 }
 
 type ImpactResults = Extract<EngineEvent, { type: "impact" }>["results"];
@@ -706,7 +706,7 @@ function queueStatusFromOutcome(
     expiresAtMs,
     sourceEntityId: source.entityId,
     sourcePhysical: source.physical,
-    sourceElemental: source.elemental,
+    sourceElemental: source.spell,
   };
   if (outcome.statusToRefresh) {
     pending.statusesToRefresh.push(queued);
@@ -868,7 +868,7 @@ function resolveImpacts(
         {
           entityId: status.sourceEntityId,
           physical: status.sourcePhysical,
-          elemental: status.sourceElemental,
+          spell: status.sourceElemental,
         },
       );
       emit(state, events, {
@@ -888,7 +888,7 @@ function resolveImpacts(
         {
           entityId: status.sourceEntityId,
           physical: status.sourcePhysical,
-          elemental: status.sourceElemental,
+          spell: status.sourceElemental,
         },
       );
       emit(state, events, {
@@ -934,7 +934,7 @@ function resolveStatusTicks(
       const actorStats: BaseStats = {
         maxHealth: 0,
         physical: status.sourcePower.physical,
-        elemental: status.sourcePower.elemental,
+        spell: status.sourcePower.spell,
         armor: 0,
         elementalResistance: 0,
       };

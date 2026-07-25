@@ -11,7 +11,7 @@ export const AFFIX_BANDS: AffixBandDef[] = [
     tier5: [15, 20],
   },
   {
-    id: "flat-elemental",
+    id: "flat-spell",
     tier1: [1, 2],
     tier2: [3, 5],
     tier3: [6, 9],
@@ -27,7 +27,7 @@ export const AFFIX_BANDS: AffixBandDef[] = [
     tier5: [28, 38],
   },
   {
-    id: "percent-elemental-power",
+    id: "percent-spell-power",
     tier1: [4, 8],
     tier2: [8, 14],
     tier3: [14, 20],
@@ -85,7 +85,7 @@ export const EQUIPMENT_BASES: EquipmentBaseDef[] = [
     slot: "weapon",
     tier: 1,
     weaponClass: "wizard",
-    guaranteed: { flat: { elemental: 2 } },
+    guaranteed: { flat: { spell: 2 } },
     iconKey: "dewlight-focus",
   },
   {
@@ -94,7 +94,7 @@ export const EQUIPMENT_BASES: EquipmentBaseDef[] = [
     slot: "weapon",
     tier: 1,
     weaponClass: "priest",
-    guaranteed: { flat: { elemental: 2 } },
+    guaranteed: { flat: { spell: 2 } },
     iconKey: "moonpetal-relic",
   },
   {
@@ -137,7 +137,7 @@ export const EQUIPMENT_BASES: EquipmentBaseDef[] = [
     slot: "weapon",
     tier: 2,
     weaponClass: "wizard",
-    guaranteed: { flat: { elemental: 5 } },
+    guaranteed: { flat: { spell: 5 } },
     iconKey: "starfruit-prism",
   },
   {
@@ -146,7 +146,7 @@ export const EQUIPMENT_BASES: EquipmentBaseDef[] = [
     slot: "weapon",
     tier: 2,
     weaponClass: "priest",
-    guaranteed: { flat: { elemental: 5 } },
+    guaranteed: { flat: { spell: 5 } },
     iconKey: "halcyon-lantern",
   },
   {
@@ -189,7 +189,7 @@ export const EQUIPMENT_BASES: EquipmentBaseDef[] = [
     slot: "weapon",
     tier: 3,
     weaponClass: "wizard",
-    guaranteed: { flat: { elemental: 8 } },
+    guaranteed: { flat: { spell: 8 } },
     iconKey: "neonstorm-coil",
   },
   {
@@ -198,7 +198,7 @@ export const EQUIPMENT_BASES: EquipmentBaseDef[] = [
     slot: "weapon",
     tier: 3,
     weaponClass: "priest",
-    guaranteed: { flat: { elemental: 8 } },
+    guaranteed: { flat: { spell: 8 } },
     iconKey: "roadside-reliquary",
   },
   {
@@ -241,7 +241,7 @@ export const EQUIPMENT_BASES: EquipmentBaseDef[] = [
     slot: "weapon",
     tier: 4,
     weaponClass: "wizard",
-    guaranteed: { flat: { elemental: 12 } },
+    guaranteed: { flat: { spell: 12 } },
     iconKey: "mustard-sky-dynamo",
   },
   {
@@ -250,7 +250,7 @@ export const EQUIPMENT_BASES: EquipmentBaseDef[] = [
     slot: "weapon",
     tier: 4,
     weaponClass: "priest",
-    guaranteed: { flat: { elemental: 12 } },
+    guaranteed: { flat: { spell: 12 } },
     iconKey: "harvest-warning-lantern",
   },
   {
@@ -293,7 +293,7 @@ export const EQUIPMENT_BASES: EquipmentBaseDef[] = [
     slot: "weapon",
     tier: 5,
     weaponClass: "wizard",
-    guaranteed: { flat: { elemental: 16 } },
+    guaranteed: { flat: { spell: 16 } },
     iconKey: "aphelion-conduit",
   },
   {
@@ -302,7 +302,7 @@ export const EQUIPMENT_BASES: EquipmentBaseDef[] = [
     slot: "weapon",
     tier: 5,
     weaponClass: "priest",
-    guaranteed: { flat: { elemental: 16 } },
+    guaranteed: { flat: { spell: 16 } },
     iconKey: "tolling-reliquary",
   },
   {

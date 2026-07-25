@@ -70,8 +70,8 @@ export function formatAffix(affix: { id: string; value: number }): string {
   switch (affix.id) {
     case "flat-physical":
       return formatStatModifierPerRank({ flat: { physical: affix.value } });
-    case "flat-elemental":
-      return formatStatModifierPerRank({ flat: { elemental: affix.value } });
+    case "flat-spell":
+      return formatStatModifierPerRank({ flat: { spell: affix.value } });
     case "flat-max-health":
       return formatStatModifierPerRank({ flat: { maxHealth: affix.value } });
     case "flat-armor":
@@ -80,8 +80,8 @@ export function formatAffix(affix: { id: string; value: number }): string {
       return formatStatModifierPerRank({ flat: { elementalResistance: affix.value } });
     case "percent-physical-power":
       return formatStatModifierPerRank({ percent: { physicalPower: affix.value } });
-    case "percent-elemental-power":
-      return formatStatModifierPerRank({ percent: { elementalPower: affix.value } });
+    case "percent-spell-power":
+      return formatStatModifierPerRank({ percent: { spellPower: affix.value } });
     case "percent-max-health":
       return formatStatModifierPerRank({ percent: { maxHealth: affix.value } });
     default:

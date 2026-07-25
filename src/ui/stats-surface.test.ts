@@ -87,7 +87,7 @@ describe("Stats surface", () => {
     expect(keys).toEqual([
       "maxHealth",
       "physical",
-      "elemental",
+      "spell",
       "armor",
       "elementalResistance",
     ]);

@@ -28,7 +28,7 @@ export const statuses: StatusEffectDef[] = [
     name: "Inspired",
     kind: "buff",
     durationMs: 8000,
-    modifiers: { percent: { physicalPower: 0.2, elementalPower: 0.2 } },
+    modifiers: { percent: { physicalPower: 0.2, spellPower: 0.2 } },
   },
   {
     id: "sheltered",
@@ -83,7 +83,7 @@ export const statuses: StatusEffectDef[] = [
     name: "Shaken",
     kind: "debuff",
     durationMs: 6_000,
-    modifiers: { percent: { physicalPower: -0.15, elementalPower: -0.15 } },
+    modifiers: { percent: { physicalPower: -0.15, spellPower: -0.15 } },
   },
   {
     id: "overdrive",
@@ -118,6 +118,6 @@ export const statuses: StatusEffectDef[] = [
     name: "Timeslip",
     kind: "debuff",
     durationMs: 6000,
-    modifiers: { percent: { physicalPower: -0.2, elementalPower: -0.2 } },
+    modifiers: { percent: { physicalPower: -0.2, spellPower: -0.2 } },
   },
 ];
