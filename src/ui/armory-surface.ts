@@ -139,6 +139,8 @@ export function mountArmorySurface(
   let optimisticallySeenDropIds = new Set<number>();
   let lastLegality: EngineLegalityView = EMPTY_ENGINE_LEGALITY;
   let unbindGridOverflow: (() => void) | null = null;
+  let pinnedCollectionOrderKey: string | null = null;
+  let pinnedCollectionDropIds: number[] = [];
 
   const comparePopover = el("div", {
     class: "armory-compare-popover",
@@ -1497,7 +1499,35 @@ export function mountArmorySurface(
         isCompatibleWithSlot(drop, classId, slot, lastLegality.canEquip),
       );
     }
-    return sortArmoryDrops(drops, sort, content);
+    return drops;
+  }
+
+  function collectionOrderKey(dropIds: readonly number[]): string {
+    return JSON.stringify({
+      sort,
+      filters,
+      browseCompatibility,
+      dropIds: [...dropIds].sort((a, b) => a - b),
+    });
+  }
+
+  /**
+   * Collection grid order is pinned across seen-only transitions so hover does not
+   * shuffle tiles when markSeen updates the snapshot. Re-sort when filters, sort
+   * mode, or grid membership change.
+   */
+  function orderedCollectionDrops(snapshot: ReadonlySnapshot): DropInstance[] {
+    const filtered = filteredDrops(snapshot);
+    const membershipIds = filtered.map((drop) => drop.dropId);
+    const key = collectionOrderKey(membershipIds);
+    if (key !== pinnedCollectionOrderKey) {
+      pinnedCollectionOrderKey = key;
+      pinnedCollectionDropIds = sortArmoryDrops(filtered, sort, content).map((drop) => drop.dropId);
+    }
+    const byId = new Map(filtered.map((drop) => [drop.dropId, drop]));
+    return pinnedCollectionDropIds
+      .filter((dropId) => byId.has(dropId))
+      .map((dropId) => byId.get(dropId)!);
   }
 
   function renderToolbar(snapshot: ReadonlySnapshot): HTMLElement {
@@ -1725,7 +1755,7 @@ export function mountArmorySurface(
    * identical tile set — mutates nothing.
    */
   function reconcileGrid(snapshot: ReadonlySnapshot, host: HTMLElement): void {
-    const drops = filteredDrops(snapshot);
+    const drops = orderedCollectionDrops(snapshot);
 
     const existing = new Map<number, HTMLElement>();
     for (const child of [...gridEl.children]) {
