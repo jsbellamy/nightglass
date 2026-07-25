@@ -62,6 +62,29 @@ check("Pipcap profile is ordinary Opponent 30x68 facing left",
       and pipcap_profile.max_opaque_w == 30
       and pipcap_profile.max_opaque_h == 68
       and pipcap_profile.facing == "left")
+_WAVE_FIVE_ORDINARY_OPPONENTS = [
+    ("brambling", "moonberry-16"),
+    ("lanternmoth", "moonberry-16"),
+    ("huskbeetle", "moonberry-16"),
+    ("dewsnail", "moonberry-16"),
+    ("milkshake-mallard", "fowl-harvest-24"),
+    ("balewaddle", "fowl-harvest-24"),
+    ("pie-widgeon", "fowl-harvest-24"),
+    ("pendulum-rat", "unwound-belfry-24"),
+    ("sundial-gargoyle", "unwound-belfry-24"),
+]
+for _tag, _palette in _WAVE_FIVE_ORDINARY_OPPONENTS:
+    _profile = A.body_profile_for_tag(_tag)
+    check(f"{_tag} profile is ordinary Opponent 30x68 facing left",
+          _profile.role == "ordinary-opponent"
+          and _profile.max_opaque_w == 30
+          and _profile.max_opaque_h == 68
+          and _profile.facing == "left")
+_wave_five_tags = frozenset(tag for tag, _ in _WAVE_FIVE_ORDINARY_OPPONENTS)
+check("wave-five ordinary opponents are not legacy moonberry identities",
+      _wave_five_tags.isdisjoint(A.LEGACY_MOONBERRY_IDENTITIES))
+check("wave-five ordinary opponents have no OUTPUT_NAMES alias",
+      _wave_five_tags.isdisjoint(A.OUTPUT_NAMES))
 boss_profile = A.body_profile_for_tag("boss-3")
 check("Boss profile is Boss 160x72 facing left",
       boss_profile.role == "boss"
@@ -148,17 +171,26 @@ for out_name, expected_id in [
     ("priest", "moonberry-16"),
     ("hunter", "moonberry-16"),
     ("pipcap", "moonberry-16"),
+    ("brambling", "moonberry-16"),
+    ("lanternmoth", "moonberry-16"),
+    ("huskbeetle", "moonberry-16"),
+    ("dewsnail", "moonberry-16"),
     ("boss-1", "moonberry-16"),
     ("boss-2", "moonberry-16"),
     ("boss-3", "moonberry-16"),
     ("burger-drake", "fowl-harvest-24"),
     ("cornquacker", "fowl-harvest-24"),
+    ("milkshake-mallard", "fowl-harvest-24"),
+    ("balewaddle", "fowl-harvest-24"),
+    ("pie-widgeon", "fowl-harvest-24"),
     ("the-combine", "fowl-harvest-24"),
     ("the-fryer", "fowl-harvest-24"),
     ("scarequack", "fowl-harvest-24"),
     ("tickmoth", "unwound-belfry-24"),
     ("tollbat", "unwound-belfry-24"),
     ("astrolabe-spider", "unwound-belfry-24"),
+    ("pendulum-rat", "unwound-belfry-24"),
+    ("sundial-gargoyle", "unwound-belfry-24"),
     ("the-vigil", "unwound-belfry-24"),
     ("the-tocsin", "unwound-belfry-24"),
     ("the-unwound", "unwound-belfry-24"),
