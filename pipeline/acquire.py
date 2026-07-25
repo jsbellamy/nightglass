@@ -133,6 +133,22 @@ ASSET_IDENTITIES = {
         "asset_class": "opponent", "role": "ordinary-opponent", "facing": "left",
         "palette": "moonberry-16",
     },
+    "brambling": {
+        "asset_class": "opponent", "role": "ordinary-opponent", "facing": "left",
+        "palette": "moonberry-16",
+    },
+    "lanternmoth": {
+        "asset_class": "opponent", "role": "ordinary-opponent", "facing": "left",
+        "palette": "moonberry-16",
+    },
+    "huskbeetle": {
+        "asset_class": "opponent", "role": "ordinary-opponent", "facing": "left",
+        "palette": "moonberry-16",
+    },
+    "dewsnail": {
+        "asset_class": "opponent", "role": "ordinary-opponent", "facing": "left",
+        "palette": "moonberry-16",
+    },
     "boss-1": {
         "asset_class": "opponent", "role": "boss", "facing": "left",
         "palette": "moonberry-16",
@@ -150,6 +166,18 @@ ASSET_IDENTITIES = {
         "palette": "fowl-harvest-24",
     },
     "cornquacker": {
+        "asset_class": "opponent", "role": "ordinary-opponent", "facing": "left",
+        "palette": "fowl-harvest-24",
+    },
+    "milkshake-mallard": {
+        "asset_class": "opponent", "role": "ordinary-opponent", "facing": "left",
+        "palette": "fowl-harvest-24",
+    },
+    "balewaddle": {
+        "asset_class": "opponent", "role": "ordinary-opponent", "facing": "left",
+        "palette": "fowl-harvest-24",
+    },
+    "pie-widgeon": {
         "asset_class": "opponent", "role": "ordinary-opponent", "facing": "left",
         "palette": "fowl-harvest-24",
     },
@@ -174,6 +202,14 @@ ASSET_IDENTITIES = {
         "palette": "unwound-belfry-24",
     },
     "astrolabe-spider": {
+        "asset_class": "opponent", "role": "ordinary-opponent", "facing": "left",
+        "palette": "unwound-belfry-24",
+    },
+    "pendulum-rat": {
+        "asset_class": "opponent", "role": "ordinary-opponent", "facing": "left",
+        "palette": "unwound-belfry-24",
+    },
+    "sundial-gargoyle": {
         "asset_class": "opponent", "role": "ordinary-opponent", "facing": "left",
         "palette": "unwound-belfry-24",
     },
