@@ -10,7 +10,7 @@
 | Runtime shape | 30×25 RGBA, binary alpha, `unwound-belfry-24@1`, native 1× |
 | Visual vocabulary | `docs/unwound-belfry-theme.md`; `unwound-belfry-24@1` |
 | Geometry | facing LEFT; opaque ceiling 30×68; bottom-centre foot anchor `[15, 25]` |
-| Review context | `COHORT_1x.png`; `NATIVE_single_1x.png`; `REVIEW_sheet_1x.png` (+ `@4x` sheets) |
+| Review context | `COHORT_1x.png`; `NATIVE_single_1x.png`; `REVIEW_sheet_1x.png` (+ `*_4x.png` sheets) |
 | Validator | `pipeline/acquire.py measure --tag sundial-gargoyle`; promote; CI `assets` job |
 
 See also `contract.md` and the exact prompt in `prompt.txt`.
@@ -76,9 +76,9 @@ Manifest records `foot_anchor: [15, 25]` (bottom-centre of the 30×25 frame). Pr
 
 | File | Judge |
 | --- | --- |
-| `COHORT_1x.png` (+ `@4x`) | Tickmoth / Tollbat / Astrolabe-Spider / Pendulum Rat / Sundial Gargoyle at 1× |
-| `NATIVE_single_1x.png` (+ `@4x`) | single runtime body |
-| `REVIEW_sheet_1x.png` (+ `@4x`) | stacked contact sheet used for step-6 subagent review |
+| `COHORT_1x.png` (+ `COHORT_4x.png`) | Tickmoth / Tollbat / Astrolabe-Spider / Pendulum Rat / Sundial Gargoyle at 1× |
+| `NATIVE_single_1x.png` (+ `NATIVE_single_4x.png`) | single runtime body |
+| `REVIEW_sheet_1x.png` (+ `REVIEW_sheet_4x.png`) | stacked contact sheet used for step-6 subagent review |
 
 ## Out-of-manifest companions (justified)
 
