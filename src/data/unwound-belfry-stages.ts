@@ -7,14 +7,19 @@ export const unwoundBelfryStages: StageDef[] = [
     name: "Stopped-Clock Court",
     waves: [
       {
-        opponents: ["tollbat-s7-44a", "tollbat-s7-44b", "tickmoth-s7-36a", "tickmoth-s7-36b"],
+        opponents: [
+          "tollbat-s7-44a",
+          "tickmoth-s7-36a",
+          "pendulum-rat-s7-44",
+          "sundial-gargoyle-s7-36",
+        ],
       },
       {
         opponents: [
           "tickmoth-s7-40",
           "tickmoth-s7-40",
-          "tickmoth-s7-40",
-          "tickmoth-s7-40",
+          "pendulum-rat-s7-40",
+          "sundial-gargoyle-s7-40",
         ],
       },
     ],
@@ -29,18 +34,18 @@ export const unwoundBelfryStages: StageDef[] = [
       {
         opponents: [
           "astrolabe-spider-s8-48a",
-          "astrolabe-spider-s8-48b",
           "tollbat-s8-47a",
-          "tollbat-s8-47b",
+          "pendulum-rat-s8-48",
+          "sundial-gargoyle-s8-47",
         ],
       },
       {
         opponents: [
           "tickmoth-s8-38",
           "tickmoth-s8-38",
-          "tickmoth-s8-38",
-          "tickmoth-s8-38",
-          "tickmoth-s8-38",
+          "astrolabe-spider-s8-38",
+          "pendulum-rat-s8-38",
+          "sundial-gargoyle-s8-38",
         ],
       },
     ],
@@ -55,18 +60,18 @@ export const unwoundBelfryStages: StageDef[] = [
       {
         opponents: [
           "astrolabe-spider-s9-70a",
-          "astrolabe-spider-s9-70b",
           "tollbat-s9-60",
-          "tickmoth-s9-60",
+          "pendulum-rat-s9-70",
+          "sundial-gargoyle-s9-60",
         ],
       },
       {
         opponents: [
           "tickmoth-s9-52",
           "tickmoth-s9-52",
-          "tickmoth-s9-52",
-          "tickmoth-s9-52",
-          "tickmoth-s9-52",
+          "sundial-gargoyle-s9-52",
+          "pendulum-rat-s9-52",
+          "astrolabe-spider-s9-52",
         ],
       },
     ],
