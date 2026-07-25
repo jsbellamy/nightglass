@@ -413,34 +413,28 @@ describe("chunk-equivalence advancement", () => {
 });
 
 describe("Initiative Roll at encounter start", () => {
-  it("survives snapshot round-trip on combatRngState", () => {
+  it("preserves combatRngState across snapshot round-trip before combat advances", () => {
     const engine = createEngine(engineContent, undefined, LOOT_SEED, fixtureNow);
     engine.advanceBy(1);
     const saved = engine.snapshot();
     const combatRngBefore = saved.combatRngState;
+    expect(combatRngBefore).toBe(4_105_590_301);
     expect(combatRngBefore).not.toBe(saved.lootRngState);
 
     const reloaded = createEngine(engineContent, saved, LOOT_SEED, fixtureNow);
     expect(reloaded.snapshot().combatRngState).toBe(combatRngBefore);
   });
 
-  it("assigns initiativeReadyAtMs in [simNowMs, simNowMs + 600] and not all equal for shared-period combatants", () => {
+  it("staggers Wave-start Action Cycle deadlines for every combatant on a pinned seed", () => {
     const engine = createEngine(engineContent, undefined, LOOT_SEED, fixtureNow);
-    const snap = engine.snapshot();
-    const attempt = snap.attempt;
-    expect(attempt).not.toBeNull();
-    const simNowMs = snap.simNowMs;
-    const initiativeValues = attempt!.combatants.map(
-      (combatant) => combatant.initiativeReadyAtMs,
-    );
-    for (const readyAtMs of initiativeValues) {
-      expect(readyAtMs).toBeGreaterThanOrEqual(simNowMs);
-      expect(readyAtMs).toBeLessThanOrEqual(simNowMs + 600);
-    }
-    expect(new Set(initiativeValues).size).toBeGreaterThan(1);
+    const combatants = engine.snapshot().attempt!.combatants;
+    expect(combatants.map((combatant) => combatant.initiativeReadyAtMs)).toEqual([
+      348, 185, 568, 574,
+    ]);
+    expect(new Set(combatants.map((combatant) => combatant.initiativeReadyAtMs)).size).toBe(4);
   });
 
-  it("emits no action-started before a combatant's initiativeReadyAtMs", () => {
+  it("starts no Action Cycle before each combatant's Initiative deadline", () => {
     const engine = createEngine(engineContent, undefined, LOOT_SEED, fixtureNow);
     const readyByEntity = new Map(
       engine
@@ -451,10 +445,9 @@ describe("Initiative Roll at encounter start", () => {
         ]),
     );
     const events = driveBy(engine, 5_000, 1);
-    for (const event of events) {
-      if (event.type !== "action-started") {
-        continue;
-      }
+    const firstStarts = events.filter((event) => event.type === "action-started");
+    expect(firstStarts.slice(0, 4).map((event) => event.atMs)).toEqual([185, 348, 568, 574]);
+    for (const event of firstStarts) {
       const readyAtMs = readyByEntity.get(event.entityId);
       if (readyAtMs === undefined) {
         continue;
@@ -463,13 +456,15 @@ describe("Initiative Roll at encounter start", () => {
     }
   });
 
-  it("desynchronizes Stage 1 Wave 1 Pipcaps so three do not share one action-started timestamp", () => {
+  it("desynchronizes Stage 1 Wave 1 Pipcaps on a pinned seed", () => {
     const engine = createEngine(productionContent, undefined, LOOT_SEED, fixtureNow);
-    const pipcapIds = new Set(["pipcap-1-7a", "pipcap-1-7b", "pipcap-1-6"]);
+    const pipcapIds = ["pipcap-1-7a", "pipcap-1-7b", "pipcap-1-6"] as const;
     const entityByDefId = new Map(
       engine
         .snapshot()
-        .attempt!.combatants.filter((combatant) => pipcapIds.has(combatant.defId))
+        .attempt!.combatants.filter((combatant) =>
+          (pipcapIds as readonly string[]).includes(combatant.defId),
+        )
         .map((combatant) => [combatant.defId, combatant.entityId]),
     );
     const events = driveBy(engine, 20_000, 1);
@@ -478,15 +473,15 @@ describe("Initiative Roll at encounter start", () => {
       if (event.type !== "action-started") {
         continue;
       }
-      for (const [defId, entityId] of entityByDefId) {
-        if (event.entityId === entityId && !startedAtByDefId.has(defId)) {
+      for (const defId of pipcapIds) {
+        if (event.entityId === entityByDefId.get(defId) && !startedAtByDefId.has(defId)) {
           startedAtByDefId.set(defId, event.atMs);
         }
       }
     }
-    const timestamps = [...startedAtByDefId.values()];
-    expect(timestamps).toHaveLength(3);
-    expect(new Set(timestamps).size).toBeGreaterThan(1);
+    expect(startedAtByDefId.get("pipcap-1-7a")).toBe(574);
+    expect(startedAtByDefId.get("pipcap-1-7b")).toBe(3);
+    expect(startedAtByDefId.get("pipcap-1-6")).toBe(20);
   });
 });
 

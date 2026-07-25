@@ -2,7 +2,7 @@ import { createEngine, SCHEMA_VERSION, type Engine } from "../engine";
 import type { EngineEvent } from "../events";
 import { opponentEntityId } from "../entity-id";
 import { createDefaultProgression } from "../load-state";
-import { initialCombatRngState, initialLootRngState } from "../rng";
+import { initialCombatRngState, initialLootRngState, mulberry32Step } from "../rng";
 import type {
   AttemptState,
   CombatantState,
@@ -58,6 +58,16 @@ function opponentIdsForEncounter(
     return stageDef.boss.opponents;
   }
   return stageDef.waves[encounter - 1]?.opponents ?? [];
+}
+
+function rollInitiativeForEncounter(snapshot: Snapshot, attempt: AttemptState): void {
+  let combatRngState = snapshot.combatRngState;
+  for (const combatant of attempt.combatants) {
+    const [uniform, nextState] = mulberry32Step(combatRngState);
+    combatRngState = nextState;
+    combatant.initiativeReadyAtMs = snapshot.simNowMs + Math.floor(uniform * 601);
+  }
+  snapshot.combatRngState = combatRngState;
 }
 
 function makeOpponentCombatants(
@@ -234,6 +244,7 @@ class Builder implements ScenarioBuilder {
         ...party,
         ...makeOpponentCombatants(this.content, this.state.stage, this.state.encounter),
       ];
+      rollInitiativeForEncounter(snapshot, attempt);
     }
 
     if (this.state.opponentsAtOneHealth) {
