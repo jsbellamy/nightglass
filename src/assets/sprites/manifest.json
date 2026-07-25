@@ -862,5 +862,37 @@
       "provider": "Cursor GenerateImage",
       "raw_sha256": "ea1a45b99f1245db520d9f1f890122e2b7ccd473ed1321c89444529ade93e824"
     }
+  },
+  "pendulum-rat": {
+    "action": "still",
+    "frame_size": [
+      30,
+      23
+    ],
+    "visual_bounds": [
+      0,
+      0,
+      30,
+      23
+    ],
+    "foot_anchor": [
+      15,
+      23
+    ],
+    "palette": "unwound-belfry-24",
+    "baseline_row": 22,
+    "total_ms": 1,
+    "frames": [
+      {
+        "name": "pendulum-rat",
+        "duration_ms": 1,
+        "sha256": "5de21d952359d59da6b0c85f8904b93c523c7ecfb132b118d557693a1bb020f0"
+      }
+    ],
+    "cues_ms": {},
+    "source": {
+      "provider": "Cursor GenerateImage",
+      "raw_sha256": "0dd1a6f86968ff6a2d8478651bf35d6fc4a0303ce1da031e9e0ca21ad42256a1"
+    }
   }
 }
