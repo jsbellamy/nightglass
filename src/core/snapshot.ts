@@ -28,7 +28,7 @@ export interface ActiveStatus {
   expiresAtMs: number;
   nextTickAtMs?: number;
   sourceEntityId?: string;
-  sourcePower?: Pick<BaseStats, "physical" | "elemental">;
+  sourcePower?: Pick<BaseStats, "physical" | "spell">;
 }
 
 export interface CombatActionState {

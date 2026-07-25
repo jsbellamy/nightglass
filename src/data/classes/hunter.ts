@@ -206,7 +206,7 @@ export const hunterClass: ClassKitDef = {
   base: {
     maxHealth: 156,
     physical: 15,
-    elemental: 6,
+    spell: 6,
     armor: 16,
     elementalResistance: 14,
   },

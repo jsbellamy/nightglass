@@ -422,7 +422,7 @@ test.describe("Character Loadout evidence scenarios", () => {
     expect(statsFit!.keys).toEqual([
       "maxHealth",
       "physical",
-      "elemental",
+      "spell",
       "armor",
       "elementalResistance",
     ]);

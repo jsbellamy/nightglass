@@ -66,14 +66,14 @@ describe("characterStatBreakdown", () => {
     expect(lines.map((line) => line.key)).toEqual([
       "maxHealth",
       "physical",
-      "elemental",
+      "spell",
       "armor",
       "elementalResistance",
     ]);
     expect(lines.map((line) => line.label)).toEqual([
       "Max Health",
       "Physical Power",
-      "Elemental Power",
+      "Spell Power",
       "Armor",
       "Elemental Resistance",
     ]);
@@ -162,7 +162,7 @@ describe("characterStatBreakdown", () => {
     expect(lines.map((line) => line.total)).toEqual([
       expected.maxHealth,
       expected.physical,
-      expected.elemental,
+      expected.spell,
       expected.armor,
       expected.elementalResistance,
     ]);

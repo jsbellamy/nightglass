@@ -5,7 +5,7 @@ import type { AbilityDef, BaseStats, OpponentDef } from "../core/types";
 const BURGER_S4_STATS: BaseStats = {
   maxHealth: 247,
   physical: 22,
-  elemental: 20,
+  spell: 20,
   armor: 12,
   elementalResistance: 14,
 };
@@ -13,7 +13,7 @@ const BURGER_S4_STATS: BaseStats = {
 const CORN_S5_STATS: BaseStats = {
   maxHealth: 312,
   physical: 28,
-  elemental: 8,
+  spell: 8,
   armor: 17,
   elementalResistance: 16,
 };
@@ -21,7 +21,7 @@ const CORN_S5_STATS: BaseStats = {
 const BURGER_S6_STATS: BaseStats = {
   maxHealth: 390,
   physical: 26,
-  elemental: 30,
+  spell: 30,
   armor: 22,
   elementalResistance: 22,
 };
@@ -29,7 +29,7 @@ const BURGER_S6_STATS: BaseStats = {
 const CORN_S6_STATS: BaseStats = {
   maxHealth: 416,
   physical: 34,
-  elemental: 10,
+  spell: 10,
   armor: 24,
   elementalResistance: 20,
 };
@@ -37,7 +37,7 @@ const CORN_S6_STATS: BaseStats = {
 const THE_FRYER_STATS: BaseStats = {
   maxHealth: 1950,
   physical: 34,
-  elemental: 32,
+  spell: 32,
   armor: 25,
   elementalResistance: 28,
 };
@@ -45,7 +45,7 @@ const THE_FRYER_STATS: BaseStats = {
 const SCAREQUACK_STATS: BaseStats = {
   maxHealth: 2730,
   physical: 42,
-  elemental: 18,
+  spell: 18,
   armor: 32,
   elementalResistance: 30,
 };
@@ -53,7 +53,7 @@ const SCAREQUACK_STATS: BaseStats = {
 const THE_COMBINE_STATS: BaseStats = {
   maxHealth: 3900,
   physical: 52,
-  elemental: 24,
+  spell: 24,
   armor: 38,
   elementalResistance: 36,
 };

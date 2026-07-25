@@ -17,7 +17,7 @@ export function applyStatModifiers(
   modifiers: StatModifiers[],
 ): BaseStats {
   const flat: Partial<BaseStats> = {};
-  const percent = { maxHealth: 0, physicalPower: 0, elementalPower: 0 };
+  const percent = { maxHealth: 0, physicalPower: 0, spellPower: 0 };
 
   for (const modifier of modifiers) {
     if (modifier.flat) {
@@ -32,12 +32,12 @@ export function applyStatModifiers(
     if (modifier.percent) {
       percent.maxHealth += modifier.percent.maxHealth ?? 0;
       percent.physicalPower += modifier.percent.physicalPower ?? 0;
-      percent.elementalPower += modifier.percent.elementalPower ?? 0;
+      percent.spellPower += modifier.percent.spellPower ?? 0;
     }
   }
 
   const physical = base.physical + (flat.physical ?? 0);
-  const elemental = base.elemental + (flat.elemental ?? 0);
+  const spell = base.spell + (flat.spell ?? 0);
   const maxHealth = base.maxHealth + (flat.maxHealth ?? 0);
   const armor = base.armor + (flat.armor ?? 0);
   const elementalResistance = base.elementalResistance + (flat.elementalResistance ?? 0);
@@ -45,7 +45,7 @@ export function applyStatModifiers(
   return {
     maxHealth: Math.floor(maxHealth * (1 + percent.maxHealth)),
     physical: Math.floor(physical * (1 + percent.physicalPower)),
-    elemental: Math.floor(elemental * (1 + percent.elementalPower)),
+    spell: Math.floor(spell * (1 + percent.spellPower)),
     armor: Math.max(0, armor),
     elementalResistance: Math.max(0, elementalResistance),
   };
@@ -183,7 +183,7 @@ export function previewEffectRaw(effect: AbilityEffect, actorStats: BaseStats): 
 }
 
 function powerForStats(stats: BaseStats, channel: DamageChannel): number {
-  return channel === "physical" ? stats.physical : stats.elemental;
+  return channel === "physical" ? stats.physical : stats.spell;
 }
 
 function mitigateDamage(raw: number, mitigation: number): number {

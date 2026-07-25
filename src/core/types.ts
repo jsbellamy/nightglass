@@ -13,7 +13,7 @@ export interface Rng {
 export interface BaseStats {
   maxHealth: number;
   physical: number;
-  elemental: number;
+  spell: number;
   armor: number;
   elementalResistance: number;
 }
@@ -28,7 +28,7 @@ export type AbilityTargeting =
 
 export interface StatModifiers {
   flat?: Partial<BaseStats>;
-  percent?: Partial<Record<"maxHealth" | "physicalPower" | "elementalPower", number>>;
+  percent?: Partial<Record<"maxHealth" | "physicalPower" | "spellPower", number>>;
 }
 
 export interface StatusEffectDef {
@@ -118,8 +118,8 @@ export type Rarity = "common" | "uncommon" | "rare" | "epic";
 export type AffixId =
   | "flat-physical"
   | "percent-physical-power"
-  | "flat-elemental"
-  | "percent-elemental-power"
+  | "flat-spell"
+  | "percent-spell-power"
   | "flat-max-health"
   | "percent-max-health"
   | "flat-armor"

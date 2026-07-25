@@ -86,7 +86,7 @@ describe("Character BaseStats with Equipment modifiers", () => {
     talentState.tierStates[0]!.statRanks = { "w-elemental-practice": 3, "w-warding-lore": 2 };
     const stats = characterStats(wizardKit, talentState);
     // floor(16 × (1 + 3 × 0.05)) elemental; 24 + 2 × 4 ER flat — wizard base from contract
-    expect(stats.elemental).toBe(18);
+    expect(stats.spell).toBe(18);
     expect(stats.elementalResistance).toBe(32);
     expect(stats.maxHealth).toBe(wizardContract.base.maxHealth);
   });

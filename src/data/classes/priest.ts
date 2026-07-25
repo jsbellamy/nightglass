@@ -192,7 +192,7 @@ export const priestTier3: TalentTierDef = {
     {
       id: "solar-study",
       name: "Solar Study",
-      perRank: { percent: { elementalPower: 0.06 } },
+      perRank: { percent: { spellPower: 0.06 } },
       maxRanks: 5,
       iconKey: "solar-study",
     },
@@ -206,7 +206,7 @@ export const priestClass: ClassKitDef = {
   base: {
     maxHealth: 163,
     physical: 5,
-    elemental: 13,
+    spell: 13,
     armor: 15,
     elementalResistance: 20,
   },
@@ -225,7 +225,7 @@ export const priestClass: ClassKitDef = {
       {
         id: "radiant-study",
         name: "Radiant Study",
-        perRank: { percent: { elementalPower: 0.05 } },
+        perRank: { percent: { spellPower: 0.05 } },
         maxRanks: 5,
         iconKey: "radiant-study",
       },

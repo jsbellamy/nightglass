@@ -37,8 +37,8 @@ function encounterBudgetFor(stageId: number): (typeof ENCOUNTER_BUDGETS)[Budgete
 const ALL_AFFIX_IDS: AffixId[] = [
   "flat-physical",
   "percent-physical-power",
-  "flat-elemental",
-  "percent-elemental-power",
+  "flat-spell",
+  "percent-spell-power",
   "flat-max-health",
   "percent-max-health",
   "flat-armor",

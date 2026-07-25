@@ -5,7 +5,7 @@ import type { AbilityDef, BaseStats, OpponentDef } from "../core/types";
 const TICKMOTH_S7_STATS: BaseStats = {
   maxHealth: 442,
   physical: 30,
-  elemental: 34,
+  spell: 34,
   armor: 20,
   elementalResistance: 26,
 };
@@ -13,7 +13,7 @@ const TICKMOTH_S7_STATS: BaseStats = {
 const TICKMOTH_S8_STATS: BaseStats = {
   maxHealth: 520,
   physical: 34,
-  elemental: 40,
+  spell: 40,
   armor: 24,
   elementalResistance: 30,
 };
@@ -21,7 +21,7 @@ const TICKMOTH_S8_STATS: BaseStats = {
 const TICKMOTH_S9_STATS: BaseStats = {
   maxHealth: 728,
   physical: 44,
-  elemental: 52,
+  spell: 52,
   armor: 30,
   elementalResistance: 38,
 };
@@ -29,7 +29,7 @@ const TICKMOTH_S9_STATS: BaseStats = {
 const TOLLBAT_S7_STATS: BaseStats = {
   maxHealth: 559,
   physical: 42,
-  elemental: 16,
+  spell: 16,
   armor: 30,
   elementalResistance: 22,
 };
@@ -37,7 +37,7 @@ const TOLLBAT_S7_STATS: BaseStats = {
 const TOLLBAT_S8_STATS: BaseStats = {
   maxHealth: 650,
   physical: 48,
-  elemental: 18,
+  spell: 18,
   armor: 34,
   elementalResistance: 26,
 };
@@ -45,7 +45,7 @@ const TOLLBAT_S8_STATS: BaseStats = {
 const TOLLBAT_S9_STATS: BaseStats = {
   maxHealth: 884,
   physical: 60,
-  elemental: 24,
+  spell: 24,
   armor: 42,
   elementalResistance: 34,
 };
@@ -53,7 +53,7 @@ const TOLLBAT_S9_STATS: BaseStats = {
 const SPIDER_S8_STATS: BaseStats = {
   maxHealth: 676,
   physical: 36,
-  elemental: 30,
+  spell: 30,
   armor: 36,
   elementalResistance: 32,
 };
@@ -61,7 +61,7 @@ const SPIDER_S8_STATS: BaseStats = {
 const SPIDER_S9_STATS: BaseStats = {
   maxHealth: 936,
   physical: 46,
-  elemental: 40,
+  spell: 40,
   armor: 46,
   elementalResistance: 42,
 };
@@ -69,7 +69,7 @@ const SPIDER_S9_STATS: BaseStats = {
 const VIGIL_STATS: BaseStats = {
   maxHealth: 4680,
   physical: 46,
-  elemental: 40,
+  spell: 40,
   armor: 34,
   elementalResistance: 34,
 };
@@ -77,7 +77,7 @@ const VIGIL_STATS: BaseStats = {
 const TOCSIN_STATS: BaseStats = {
   maxHealth: 5720,
   physical: 54,
-  elemental: 34,
+  spell: 34,
   armor: 40,
   elementalResistance: 38,
 };
@@ -85,7 +85,7 @@ const TOCSIN_STATS: BaseStats = {
 const UNWOUND_STATS: BaseStats = {
   maxHealth: 8450,
   physical: 66,
-  elemental: 44,
+  spell: 44,
   armor: 50,
   elementalResistance: 46,
 };
@@ -93,7 +93,7 @@ const UNWOUND_STATS: BaseStats = {
 const APHELION_STATS: BaseStats = {
   maxHealth: 11700,
   physical: 78,
-  elemental: 70,
+  spell: 70,
   armor: 58,
   elementalResistance: 58,
 };

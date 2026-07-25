@@ -38,7 +38,7 @@ export const REVIEWED_CLASS_BASES: ClassKitBasesContract[] = [
     base: {
       maxHealth: 234,
       physical: 14,
-      elemental: 4,
+      spell: 4,
       armor: 30,
       elementalResistance: 12,
     },
@@ -49,7 +49,7 @@ export const REVIEWED_CLASS_BASES: ClassKitBasesContract[] = [
     base: {
       maxHealth: 130,
       physical: 4,
-      elemental: 16,
+      spell: 16,
       armor: 10,
       elementalResistance: 24,
     },
@@ -60,7 +60,7 @@ export const REVIEWED_CLASS_BASES: ClassKitBasesContract[] = [
     base: {
       maxHealth: 163,
       physical: 5,
-      elemental: 13,
+      spell: 13,
       armor: 15,
       elementalResistance: 20,
     },
@@ -71,7 +71,7 @@ export const REVIEWED_CLASS_BASES: ClassKitBasesContract[] = [
     base: {
       maxHealth: 156,
       physical: 15,
-      elemental: 6,
+      spell: 6,
       armor: 16,
       elementalResistance: 14,
     },
@@ -111,7 +111,7 @@ export const REVIEWED_STATUSES: StatusEffectDef[] = [
     name: "Inspired",
     kind: "buff",
     durationMs: 8000,
-    modifiers: { percent: { physicalPower: 0.2, elementalPower: 0.2 } },
+    modifiers: { percent: { physicalPower: 0.2, spellPower: 0.2 } },
   },
   {
     id: "sheltered",
@@ -166,7 +166,7 @@ export const REVIEWED_STATUSES: StatusEffectDef[] = [
     name: "Shaken",
     kind: "debuff",
     durationMs: 6_000,
-    modifiers: { percent: { physicalPower: -0.15, elementalPower: -0.15 } },
+    modifiers: { percent: { physicalPower: -0.15, spellPower: -0.15 } },
   },
   {
     id: "overdrive",

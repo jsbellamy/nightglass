@@ -17,6 +17,16 @@ const STAGE_IDS = new Set<StageId>([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
 const RARITIES = new Set(["common", "uncommon", "rare", "epic"]);
 const EQUIPMENT_SLOTS = new Set<EquipmentSlotId>(["weapon", "armor", "charm"]);
 
+/** Legacy persisted AffixId strings remapped on load before union validation. */
+const LEGACY_AFFIX_IDS: Readonly<Record<string, DropInstance["affixes"][number]["id"]>> = {
+  "flat-elemental": "flat-spell",
+  "percent-elemental-power": "percent-spell-power",
+};
+
+function migrateAffixId(rawId: string): DropInstance["affixes"][number]["id"] {
+  return LEGACY_AFFIX_IDS[rawId] ?? (rawId as DropInstance["affixes"][number]["id"]);
+}
+
 export type ParsedSave =
   | { kind: "exact"; snapshot: Snapshot }
   | { kind: "tolerant"; snapshot: Snapshot }
@@ -237,7 +247,7 @@ function loadDropInstance(raw: unknown): DropInstance | null {
     if (typeof affixId !== "string" || !isFiniteNumber(affixValue)) {
       return null;
     }
-    affixes.push({ id: affixId as DropInstance["affixes"][number]["id"], value: affixValue });
+    affixes.push({ id: migrateAffixId(affixId), value: affixValue });
   }
   let assignedTo: DropInstance["assignedTo"] = null;
   const assignedRaw = field(raw, "assignedTo");

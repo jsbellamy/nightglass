@@ -94,7 +94,7 @@ const STAT_GROUPS: ReadonlyArray<{
   keys: readonly CharacterStatKey[];
 }> = [
   { id: "vitals", heading: "Vitals", keys: ["maxHealth"] },
-  { id: "offense", heading: "Offense", keys: ["physical", "elemental"] },
+  { id: "offense", heading: "Offense", keys: ["physical", "spell"] },
   { id: "defense", heading: "Defense", keys: ["armor", "elementalResistance"] },
 ];
 

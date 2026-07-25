@@ -33,7 +33,7 @@ describe("Priest Talent Tier 3 exports", () => {
     expect(solarStudy).toMatchObject({
       id: "solar-study",
       name: "Solar Study",
-      perRank: { percent: { elementalPower: 0.06 } },
+      perRank: { percent: { spellPower: 0.06 } },
       maxRanks: 5,
       iconKey: "solar-study",
     });

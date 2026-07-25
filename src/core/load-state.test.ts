@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { dropStatModifiers } from "./equipment";
 import { createEngine, SCHEMA_VERSION } from "./engine";
 import {
   createDefaultProgression,
@@ -11,6 +12,54 @@ import type { Snapshot } from "./snapshot";
 import type { Content, ClassKitDef } from "./types";
 
 const LOOT_SEED = 42;
+
+describe("legacy affix id migration", () => {
+  it("migrates flat-elemental to flat-spell and preserves Drop stat contribution", () => {
+    const progression = createDefaultProgression(testContent);
+    const affixValue = 7;
+    const legacyDrop = {
+      dropId: 1,
+      baseId: "dewlight-focus",
+      itemLevel: 1 as const,
+      rarity: "uncommon" as const,
+      affixes: [{ id: "flat-elemental", value: affixValue }],
+      awardedAtMs: 100,
+      seen: true,
+      locked: false,
+      assignedTo: null,
+    };
+    const raw = {
+      schemaVersion: SAVE_SCHEMA_VERSION,
+      savedAtMs: 0,
+      simNowMs: 0,
+      lootRngState: 0,
+      combatRngState: 0,
+      nextEventSeq: 1,
+      nextAttemptId: 1,
+      nextDropId: 2,
+      progression: {
+        ...progression,
+        armory: [legacyDrop],
+      },
+      attempt: null,
+      pendingEdits: [],
+    };
+
+    const parsed = parseStoredSave(JSON.stringify(raw), testContent);
+    expect(parsed.kind).toBe("exact");
+    if (parsed.kind !== "exact") {
+      return;
+    }
+
+    const loadedDrop = parsed.snapshot.progression.armory[0]!;
+    expect(loadedDrop.affixes).toEqual([{ id: "flat-spell", value: affixValue }]);
+
+    const migratedModifiers = dropStatModifiers(loadedDrop, testContent);
+    const nativeDrop = { ...legacyDrop, affixes: [{ id: "flat-spell" as const, value: affixValue }] };
+    const nativeModifiers = dropStatModifiers(nativeDrop, testContent);
+    expect(migratedModifiers).toEqual(nativeModifiers);
+  });
+});
 
 describe("tolerant talent save migration", () => {
   it("preserves legacy Tier 1 ranks and Ability Talent on tolerant load", () => {
