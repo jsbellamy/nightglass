@@ -1,0 +1,27 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "f90b6152fe0862683b7027348219b57ebe08b071655b6d4daf5316adc4552937",
+  "acquisition": "flexible",
+  "identity_profile": {
+    "asset_class": "opponent",
+    "role": "ordinary-opponent",
+    "facing": "left"
+  },
+  "cursor_stamp_removed": false,
+  "identity": "brambling",
+  "asset_class": "opponent",
+  "runtime_destination": "src/assets/sprites/brambling.png",
+  "candidate": "brambling-c1.png",
+  "facing": "left",
+  "role": "ordinary-opponent",
+  "palette": "moonberry-16@1",
+  "style_references": [
+    {
+      "path": "src/assets/sprites/pipcap.png",
+      "sha256": "9fc03d2c05604818e2b45fb30d50186a9c53062777c9008fa677a65ce4da54d2",
+      "role": "style"
+    }
+  ],
+  "prompt": "Single full-body Brambling ordinary opponent game sprite, strict side profile facing LEFT. A hunched orchard imp whose entire body is woven from living thorn-briar. Ropes of berry-dark bramble cane coil into a narrow twisting torso and long spindly limbs, a snarl of cane forms a low hooded head with two cream pinprick eyes, and dense clusters of ripe moonberries hang as heavy knuckled fists at the ends of its arms. The mutation is one living creature, not an imp holding, wearing, or standing inside a bramble bush.\n\nPreserve its enchanted wrong identity: the hooded briar head with two cream eye-points, a narrow twisting cane torso, two long thorn-studded arms ending in heavy berry-cluster fists, and thin splayed root-feet. Tall, narrow, spiky silhouette with a forward lean. The hood snarl, individual arm thorns, berry fists, and root feet must remain distinct at native game scale.\n\nChunky simplified flat-colour Moonberry storybook night-garden pixel art with large readable shapes, selective contour-plum outline, and only named moonberry-16 colors: contour plums, berry reds, twilight slate, mint and sage greens, cream-gold and cream. Tone is 60% enchanted and 40% wrong. No gore, wounds, exposed organs, realism, gradients, anti-aliasing, blur, or dithering.\n\nShow exactly one complete subject with generous empty clearance on every edge of an opaque flat solid magenta #ff00ff background. No shadow, floor, glow, falling leaves, sparkles, particles, Ability effect, text, watermark, scenery, UI, transparency, other plant, or other subject.\n"
+}

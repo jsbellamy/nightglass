@@ -638,5 +638,37 @@
       "provider": "Cursor GenerateImage",
       "raw_sha256": "a0b199e55947cfa52669450e32891cfcf2bfaeffd3f721ea1bcc5e2f7b60a94e"
     }
+  },
+  "brambling": {
+    "action": "still",
+    "frame_size": [
+      30,
+      61
+    ],
+    "visual_bounds": [
+      0,
+      0,
+      30,
+      61
+    ],
+    "foot_anchor": [
+      15,
+      61
+    ],
+    "palette": "moonberry-16",
+    "baseline_row": 60,
+    "total_ms": 1,
+    "frames": [
+      {
+        "name": "brambling",
+        "duration_ms": 1,
+        "sha256": "c657daa723552a12de88bfc3e466eb7e958a01bff629c5d5ab84ef0e697bba6c"
+      }
+    ],
+    "cues_ms": {},
+    "source": {
+      "provider": "Cursor GenerateImage",
+      "raw_sha256": "f90b6152fe0862683b7027348219b57ebe08b071655b6d4daf5316adc4552937"
+    }
   }
 }
