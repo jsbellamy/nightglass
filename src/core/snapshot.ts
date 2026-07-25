@@ -105,3 +105,25 @@ export type ReadonlySnapshot = Readonly<Snapshot>;
 export function cloneSnapshot(snapshot: Snapshot): Snapshot {
   return structuredClone(snapshot);
 }
+
+function freezeDropInstance(drop: DropInstance): DropInstance {
+  if (Object.isFrozen(drop)) {
+    return drop;
+  }
+  return Object.freeze({
+    ...drop,
+    affixes: Object.freeze(drop.affixes.map((affix) => Object.freeze({ ...affix }))),
+    assignedTo: drop.assignedTo ? Object.freeze({ ...drop.assignedTo }) : null,
+  }) as DropInstance;
+}
+
+/** Freezes Drops in place and returns a frozen Armory array sharing those references. */
+export function freezeArmoryForSnapshot(armory: DropInstance[]): readonly DropInstance[] {
+  const frozenDrops: DropInstance[] = [];
+  for (let index = 0; index < armory.length; index += 1) {
+    const frozen = freezeDropInstance(armory[index]!);
+    armory[index] = frozen;
+    frozenDrops.push(frozen);
+  }
+  return Object.freeze(frozenDrops);
+}

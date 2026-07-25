@@ -3,6 +3,7 @@ import { createEngine, SCHEMA_VERSION } from "./engine";
 import type { EngineEvent } from "./events";
 import { partyEntityId } from "./entity-id";
 import type { DropInstance, Snapshot } from "./snapshot";
+import { cloneSnapshot } from "./snapshot";
 import { content as productionContent } from "../data";
 import { statuses as shippedStatuses } from "../data/statuses";
 import { wizardTier2Abilities } from "../data/classes/wizard";
@@ -3283,20 +3284,22 @@ describe("salvage command", () => {
   const salvageBatchIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const;
 
   function armoryWithTenCommons() {
-    return scenario(fixtureContent)
-      .withArmory([
-        { rarity: "common", itemLevel: 3 },
-        { rarity: "common", itemLevel: 3 },
-        { rarity: "common", itemLevel: 2 },
-        { rarity: "common", itemLevel: 2 },
-        { rarity: "common", itemLevel: 2 },
-        { rarity: "common", itemLevel: 2 },
-        { rarity: "common", itemLevel: 2 },
-        { rarity: "common", itemLevel: 2 },
-        { rarity: "common", itemLevel: 2 },
-        { rarity: "common", itemLevel: 1 },
-      ])
-      .build();
+    return cloneSnapshot(
+      scenario(fixtureContent)
+        .withArmory([
+          { rarity: "common", itemLevel: 3 },
+          { rarity: "common", itemLevel: 3 },
+          { rarity: "common", itemLevel: 2 },
+          { rarity: "common", itemLevel: 2 },
+          { rarity: "common", itemLevel: 2 },
+          { rarity: "common", itemLevel: 2 },
+          { rarity: "common", itemLevel: 2 },
+          { rarity: "common", itemLevel: 2 },
+          { rarity: "common", itemLevel: 2 },
+          { rarity: "common", itemLevel: 1 },
+        ])
+        .build(),
+    );
   }
 
   it.each([
@@ -4476,5 +4479,176 @@ describe("Stat Ledger invalidation", () => {
       }
     }
     throw new Error("config-applied never emitted for formation boundary");
+  });
+});
+
+describe("copy-on-write Armory", () => {
+  function armorySnapshot(count: number) {
+    return scenario(fixtureContent)
+      .withArmory(Array.from({ length: count }, () => ({ baseId: "fixture-blade" })))
+      .build();
+  }
+
+  function assertCopyOnWriteMutation(
+    run: (engine: ReturnType<typeof createEngine>) => void,
+    touchedDropId: number,
+    arrange: () => Snapshot = () => armorySnapshot(3),
+  ): void {
+    const engine = createEngine(fixtureContent, arrange(), LOOT_SEED);
+    const before = engine.snapshot();
+    const touchedBefore = before.progression.armory.find((drop) => drop.dropId === touchedDropId);
+    const otherRefsBefore = new Map(
+      before.progression.armory
+        .filter((drop) => drop.dropId !== touchedDropId)
+        .map((drop) => [drop.dropId, drop] as const),
+    );
+
+    run(engine);
+
+    const after = engine.snapshot();
+    const touchedAfter = after.progression.armory.find((drop) => drop.dropId === touchedDropId);
+    if (touchedBefore && touchedAfter) {
+      expect(touchedAfter).not.toBe(touchedBefore);
+    }
+    for (const [dropId, ref] of otherRefsBefore) {
+      const afterDrop = after.progression.armory.find((drop) => drop.dropId === dropId);
+      if (afterDrop) {
+        expect(afterDrop).toBe(ref);
+      }
+    }
+    expect(stable(before)).toBe(stable(before));
+    for (const drop of before.progression.armory) {
+      expect(Object.isFrozen(drop)).toBe(true);
+    }
+  }
+
+  it("freezes published Drops, round-trips through JSON, and keeps SCHEMA_VERSION", () => {
+    const engine = createEngine(fixtureContent, armorySnapshot(2), LOOT_SEED);
+    const snapshot = engine.snapshot();
+
+    expect(snapshot.schemaVersion).toBe(SCHEMA_VERSION);
+    expect(Object.isFrozen(snapshot.progression.armory)).toBe(true);
+    for (const drop of snapshot.progression.armory) {
+      expect(Object.isFrozen(drop)).toBe(true);
+      expect(Object.isFrozen(drop.affixes)).toBe(true);
+    }
+
+    const roundTrip = JSON.parse(JSON.stringify(snapshot)) as Snapshot;
+    expect(roundTrip.schemaVersion).toBe(SCHEMA_VERSION);
+    expect(roundTrip.progression.armory).toEqual(snapshot.progression.armory);
+  });
+
+  it("shares unchanged Drop references across successive Snapshots", () => {
+    const engine = createEngine(fixtureContent, armorySnapshot(2), LOOT_SEED);
+    const first = engine.snapshot();
+    const second = engine.snapshot();
+    expect(second.progression.armory[0]).toBe(first.progression.armory[0]);
+    expect(second.progression.armory[1]).toBe(first.progression.armory[1]);
+  });
+
+  it("copy-on-writes awardEncounterDrops without mutating a prior Snapshot", () => {
+    const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
+    const before = engine.snapshot();
+    const dropIds = dropIdsWhileClearingEncounter(engine, 2);
+    const after = engine.snapshot();
+    const awardedId = dropIds[0]!;
+    const awarded = after.progression.armory.find((drop) => drop.dropId === awardedId);
+    expect(awarded).toBeDefined();
+    expect(before.progression.armory).not.toContain(awarded);
+    expect(stable(before)).toBe(stable(before));
+  });
+
+  it("copy-on-writes equip without mutating a prior Snapshot", () => {
+    assertCopyOnWriteMutation(
+      (engine) => engine.equip(2, "knight", "weapon"),
+      2,
+      () =>
+        scenario(fixtureContent)
+          .withArmory([
+            { baseId: "fixture-blade" },
+            { baseId: "fixture-blade" },
+            { baseId: "fixture-armor" },
+          ])
+          .build(),
+    );
+  });
+
+  it("copy-on-writes unequip without mutating a prior Snapshot", () => {
+    const saved = cloneSnapshot(
+      scenario(fixtureContent)
+        .withArmory([
+          { baseId: "fixture-blade" },
+          { baseId: "fixture-armor" },
+          { baseId: "fixture-charm" },
+        ])
+        .build(),
+    );
+    saved.progression.armory[0] = {
+      ...saved.progression.armory[0]!,
+      assignedTo: { classId: "knight", slot: "weapon" },
+    };
+    assertCopyOnWriteMutation((engine) => engine.unequip("knight", "weapon"), 1, () => saved);
+  });
+
+  it("copy-on-writes setLocked without mutating a prior Snapshot", () => {
+    assertCopyOnWriteMutation((engine) => engine.setLocked(2, true), 2);
+  });
+
+  it("copy-on-writes markSeen without mutating a prior Snapshot", () => {
+    assertCopyOnWriteMutation((engine) => engine.markSeen([2]), 2);
+  });
+
+  it("copy-on-writes discard without mutating a prior Snapshot", () => {
+    assertCopyOnWriteMutation((engine) => engine.discard([2]), 2);
+  });
+
+  it("copy-on-writes salvage without mutating a prior Snapshot", () => {
+    const saved = scenario(fixtureContent)
+      .withArmory(Array.from({ length: 12 }, () => ({ rarity: "common" as const })))
+      .build();
+    saved.lootRngState = LOOT_SEED;
+    saved.nextDropId = 13;
+    const engine = createEngine(fixtureContent, saved, LOOT_SEED);
+    const before = engine.snapshot();
+    const otherRefsBefore = new Map(
+      before.progression.armory
+        .filter((drop) => drop.dropId > 10)
+        .map((drop) => [drop.dropId, drop] as const),
+    );
+
+    engine.salvage([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+
+    const after = engine.snapshot();
+    for (const [dropId, ref] of otherRefsBefore) {
+      const afterDrop = after.progression.armory.find((drop) => drop.dropId === dropId);
+      if (afterDrop) {
+        expect(afterDrop).toBe(ref);
+      }
+    }
+    expect(stable(before)).toBe(stable(before));
+  });
+
+  it("reloads from a frozen Snapshot and can equip, discard, and Salvage", () => {
+    const saved = scenario(fixtureContent)
+      .withArmory([
+        { baseId: "fixture-blade" },
+        { baseId: "fixture-blade" },
+        { baseId: "fixture-armor" },
+        ...Array.from({ length: 10 }, () => ({ rarity: "common" as const })),
+      ])
+      .build();
+    saved.lootRngState = LOOT_SEED;
+    saved.nextDropId = 14;
+    const engine = createEngine(fixtureContent, saved, LOOT_SEED);
+    const frozen = engine.snapshot();
+    for (const drop of frozen.progression.armory) {
+      expect(Object.isFrozen(drop)).toBe(true);
+    }
+
+    const reloaded = createEngine(fixtureContent, frozen, LOOT_SEED);
+    reloaded.equip(1, "knight", "weapon");
+    reloaded.discard([2]);
+    reloaded.salvage([4, 5, 6, 7, 8, 9, 10, 11, 12, 13]);
+    expect(reloaded.snapshot().progression.armory.length).toBeGreaterThan(0);
   });
 });

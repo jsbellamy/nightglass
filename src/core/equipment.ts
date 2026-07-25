@@ -549,7 +549,14 @@ export function snapshotEquipmentLoadouts(
   return loadouts;
 }
 
-export function findDrop(armory: DropInstance[], dropId: number): DropInstance | undefined {
+export function findDrop(
+  armory: readonly DropInstance[],
+  dropId: number,
+  index?: ReadonlyMap<number, DropInstance>,
+): DropInstance | undefined {
+  if (index) {
+    return index.get(dropId);
+  }
   return armory.find((entry) => entry.dropId === dropId);
 }
 
@@ -594,41 +601,62 @@ export function validateEquip(
 }
 
 export function assignDrop(
-  armory: DropInstance[],
+  armory: readonly DropInstance[],
   dropId: number,
   classId: ClassId,
   slot: EquipmentSlotId,
-): void {
-  const drop = findDrop(armory, dropId);
+  index?: ReadonlyMap<number, DropInstance>,
+): DropInstance[] {
+  const drop = findDrop(armory, dropId, index);
   if (!drop) {
     throw new Error(`Unknown Drop ${dropId}`);
   }
 
-  if (drop.assignedTo) {
-    drop.assignedTo = null;
-  }
-
+  const copyIds = new Set<number>([dropId]);
   for (const other of armory) {
     if (other.assignedTo?.classId === classId && other.assignedTo.slot === slot) {
-      other.assignedTo = null;
+      copyIds.add(other.dropId);
     }
   }
 
-  drop.assignedTo = { classId, slot };
+  return armory.map((entry) => {
+    if (!copyIds.has(entry.dropId)) {
+      return entry as DropInstance;
+    }
+    if (entry.dropId === dropId) {
+      return { ...entry, assignedTo: { classId, slot } };
+    }
+    return { ...entry, assignedTo: null };
+  });
 }
 
-export function unequipSlot(armory: DropInstance[], classId: ClassId, slot: EquipmentSlotId): void {
+export function unequipSlot(
+  armory: readonly DropInstance[],
+  classId: ClassId,
+  slot: EquipmentSlotId,
+): DropInstance[] {
+  const copyIds = new Set<number>();
   for (const drop of armory) {
     if (drop.assignedTo?.classId === classId && drop.assignedTo.slot === slot) {
-      drop.assignedTo = null;
+      copyIds.add(drop.dropId);
     }
   }
+  if (copyIds.size === 0) {
+    return armory as DropInstance[];
+  }
+  return armory.map((entry) =>
+    copyIds.has(entry.dropId) ? { ...entry, assignedTo: null } : (entry as DropInstance),
+  );
 }
 
-export function discardDrops(armory: DropInstance[], dropIds: number[]): DropInstance[] {
+export function discardDrops(
+  armory: readonly DropInstance[],
+  dropIds: number[],
+  index?: ReadonlyMap<number, DropInstance>,
+): DropInstance[] {
   const toDiscard = new Set(dropIds);
   for (const dropId of dropIds) {
-    const drop = findDrop(armory, dropId);
+    const drop = findDrop(armory, dropId, index);
     if (!drop) {
       throw new Error(`Unknown Drop ${dropId}`);
     }
@@ -639,5 +667,5 @@ export function discardDrops(armory: DropInstance[], dropIds: number[]): DropIns
       throw new Error(`Cannot discard Locked Drop ${dropId}`);
     }
   }
-  return armory.filter((drop) => !toDiscard.has(drop.dropId));
+  return armory.filter((drop) => !toDiscard.has(drop.dropId)) as DropInstance[];
 }
