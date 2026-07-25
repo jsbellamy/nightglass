@@ -15,7 +15,7 @@ import { effectImageUrl, statusEffectGlyphUrl } from "./effect-images";
 import { equipmentBaseForDrop } from "./equipment-format";
 import { createEquipmentIconElement } from "./icons";
 
-/** Contract constants — source: prototype/presentation-contract/present.py */
+/** Contract constants — source: docs/animation-contract.md (#4) */
 export const LUNGE = {
   rampMs: 54,
   holdMs: 66,

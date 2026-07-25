@@ -125,7 +125,7 @@ proven here** — that is the main product risk.
 
 | Claim | Label |
 | --- | --- |
-| `alwaysOnTop: true` on parent and child sets floating level at creation | **observed** — Tao spike reported `tile_aot=true dock_aot=true` (`prototype/dock-child-window-spike`) |
+| `alwaysOnTop: true` on parent and child sets floating level at creation | **observed** — Tao spike reported `tile_aot=true dock_aot=true` (throwaway harness, removed in #714) |
 | Child ordering is managed relative to parent on macOS | **documentation-only** — Apple `addChildWindow` docs; Tauri `parent` platform note in `window.d.ts` |
 | Tile remains above arbitrary third-party apps with child dock open | **documentation-only, unverified** — requires native observation with another app in the foreground stack |
 
@@ -166,7 +166,8 @@ geometry; do not assume screen-absolute coordinates still apply.
 
 **Evidence:** **observed** (Tao child window, same macOS primitive Tauri uses):
 
-From `prototype/dock-child-window-spike` (delayed reads after parent move):
+From the Tao dock-child-window spike (delayed reads after parent move; harness
+removed in #714):
 
 ```text
 init tile=(1230, 560) dock=(0, -688) …
@@ -283,4 +284,4 @@ Persist the flag for the lifetime of the dock webview instance (reset on
 - `DockWindowPort` — `src/ui/dock-window.ts`
 - `dockRect` — `src/ui/dock-geometry.ts`
 - Two-window model — `docs/adr/0002-battle-tile-and-management-dock.md`
-- Throwaway harness — `prototype/dock-child-window-spike/`
+- Throwaway harness — removed in #714; observations preserved in this document

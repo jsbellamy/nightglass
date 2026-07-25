@@ -429,12 +429,11 @@ capabilities only on demonstrated need.
 
 ### Proven equivalence
 
-The [simulation-boundary prototype](../prototype/simulation-boundary/README.md)
-produced byte-equivalent Snapshots and 198 identical Presentation Events across
-fine live stepping, one accelerated call, and advancement split around JSON
-save/reload, plus a working Offline Progress commit-then-fresh-Attempt path.
-Production ports the boundary and invariants to TypeScript; the prototype shell
-is throwaway.
+The #10 simulation-boundary spike produced byte-equivalent Snapshots and 198
+identical Presentation Events across fine live stepping, one accelerated call,
+and advancement split around JSON save/reload, plus a working Offline Progress
+commit-then-fresh-Attempt path. Production ports the boundary and invariants to
+TypeScript; the throwaway shell was removed in #714.
 
 ---
 
@@ -522,14 +521,14 @@ an implementer or orchestrator ticks to publish a PR.
 
 | Area | Design-time evidence |
 | --- | --- |
-| Battle Tile readability at 480×112, five-opponent stress | [live-battlefield prototype](../prototype/live-battlefield/README.md) ([#1](https://github.com/jsbellamy/nightglass/issues/1)) |
-| Art direction at native scale | [art-direction prototype](../prototype/art-direction/NOTES.md) ([#3](https://github.com/jsbellamy/nightglass/issues/3)) |
-| Management Dock never disturbs the tile | [management-fanout prototype](../prototype/management-fanout/README.md) ([#12](https://github.com/jsbellamy/nightglass/issues/12)) |
-| Simulation equivalence: live = accelerated = save/reload; Offline Progress path | [simulation-boundary prototype](../prototype/simulation-boundary/NOTES.md) — byte-equivalent Snapshots, 198 identical events ([#10](https://github.com/jsbellamy/nightglass/issues/10)) |
+| Battle Tile readability at 480×112, five-opponent stress | [rendered-output evidence](research/evidence/91-prototype/05-tile-five-opponents.png) ([#1](https://github.com/jsbellamy/nightglass/issues/1)) |
+| Art direction at native scale | [rendered-output evidence](research/evidence/91-prototype/02-tile-combat.png) ([#3](https://github.com/jsbellamy/nightglass/issues/3)) |
+| Management Dock never disturbs the tile | [rendered-output evidence](research/evidence/91-prototype/06-dock480-1-party.png) ([#12](https://github.com/jsbellamy/nightglass/issues/12)) |
+| Simulation equivalence: live = accelerated = save/reload; Offline Progress path | #10 — byte-equivalent Snapshots, 198 identical events ([#10](https://github.com/jsbellamy/nightglass/issues/10)) |
 | Acquisition: byte-identical offline rebuild, provider-neutral, validator gates | `pipeline/test_contract.py` / `npm run assets:verify` all-green with no provider/network; accepted Class still hashes ([#29](https://github.com/jsbellamy/nightglass/issues/29), [#21](https://github.com/jsbellamy/nightglass/issues/21)) |
 | Effects read at 1× under stress; separation enforced; deterministic | `pipeline/effects/verify.py` 6/6 gates ([#20](https://github.com/jsbellamy/nightglass/issues/20)) |
-| Animation contract: attribution, cue alignment, 30fps legibility, anchors | [presentation-contract prototype](../prototype/presentation-contract/NOTES.md) `verify.py` 7/7 gates ([#4](https://github.com/jsbellamy/nightglass/issues/4)) |
-| Opponent art: flexible body contract; representative proof ink Pipcap ~29×40 and Boss ~32×41; shared `moonberry-16`; byte-identical offline rebuild | [opponent-art prototype](../prototype/comfyui-fit/opponents/NOTES.md) ([#30](https://github.com/jsbellamy/nightglass/issues/30)), [`body-sprite-contract.md`](body-sprite-contract.md) ([#250](https://github.com/jsbellamy/nightglass/issues/250)) |
+| Animation contract: attribution, cue alignment, 30fps legibility, anchors | [presentation-contract evidence](research/evidence/04-presentation-contract/README.md) `verify.py` 7/7 gates ([#4](https://github.com/jsbellamy/nightglass/issues/4)) |
+| Opponent art: flexible body contract; representative proof ink Pipcap ~29×40 and Boss ~32×41; shared `moonberry-16`; byte-identical offline rebuild | [opponent-art evidence](research/evidence/30-opponent-art/README.md) ([#30](https://github.com/jsbellamy/nightglass/issues/30)), [`body-sprite-contract.md`](body-sprite-contract.md) ([#250](https://github.com/jsbellamy/nightglass/issues/250)) |
 | Body-motion rejections (closed evidence, not dependencies) | [#13](https://github.com/jsbellamy/nightglass/issues/13), [#19](https://github.com/jsbellamy/nightglass/issues/19), [#26](https://github.com/jsbellamy/nightglass/issues/26), [#24](https://github.com/jsbellamy/nightglass/issues/24) |
 | SideScape reuse/reject inventory | [foundation research](research/archive/sidescape-foundation.md) ([#9](https://github.com/jsbellamy/nightglass/issues/9)) |
 

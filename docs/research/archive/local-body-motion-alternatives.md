@@ -218,7 +218,8 @@ the rank-2/3 budget, not a separate trial.
 ## Trial protocol for the rank-1 candidate
 
 Bounded to one day of GPU time, reusing the #19 harness
-(`prototype/comfyui-fit/motion/`, `metrics.py`, `normalize_seq.py`):
+Historical motion experiments (formerly `prototype/comfyui-fit/motion/`,
+`metrics.py`, `normalize_seq.py`; removed in #714):
 
 1. Load the core-ComfyUI Qwen-Image-Edit workflow with
    `qwen_image_edit_fp8_e4m3fn` + fp8 text encoder (2511 weights if the fp8
