@@ -766,7 +766,8 @@ html.dock-window body {
 .dock-panel::-webkit-scrollbar,
 .character-picker::-webkit-scrollbar,
 .armory-grid::-webkit-scrollbar,
-.armory-detail::-webkit-scrollbar {
+.armory-detail::-webkit-scrollbar,
+.talent-tree-scroll::-webkit-scrollbar {
   width: 8px;
 }
 
@@ -774,7 +775,8 @@ html.dock-window body {
 .dock-panel::-webkit-scrollbar-thumb,
 .character-picker::-webkit-scrollbar-thumb,
 .armory-grid::-webkit-scrollbar-thumb,
-.armory-detail::-webkit-scrollbar-thumb {
+.armory-detail::-webkit-scrollbar-thumb,
+.talent-tree-scroll::-webkit-scrollbar-thumb {
   background: rgba(255, 249, 233, 0.28);
   border-radius: 4px;
 }
@@ -998,6 +1000,7 @@ html.dock-window body {
 .character-build-board [data-character-section="talents"] .talent-tile {
   display: flex;
   flex-direction: column;
+  flex-wrap: nowrap;
   width: 100%;
   max-width: 100%;
   gap: 2px;
@@ -1095,6 +1098,36 @@ html.dock-window body {
   cursor: not-allowed;
 }
 
+.character-build-board [data-character-section="talents"] .talent-tile--ability {
+  padding: 3px 4px;
+  border: 1px solid rgba(255, 249, 233, 0.14);
+  border-radius: 5px;
+  background: rgba(20, 24, 36, 0.7);
+}
+
+.character-build-board [data-character-section="talents"] .talent-tile--ability-chosen {
+  border-color: rgba(155, 231, 196, 0.55);
+  background: rgba(41, 60, 56, 0.55);
+}
+
+.character-build-board [data-character-section="talents"] .talent-ability-compact-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.character-build-board [data-character-section="talents"] .talent-ability-state {
+  font-size: 9px;
+  line-height: 1.2;
+  color: var(--dock-text-muted, #d8d0bf);
+}
+
+.character-build-board [data-character-section="talents"] .talent-tile--ability-chosen .talent-ability-state {
+  color: #9be7c4;
+}
+
 .character-build-board [data-character-section="talents"] .talent-ability-compact-action {
   flex-shrink: 0;
   min-width: 28px;
@@ -1125,6 +1158,8 @@ html.dock-window body {
 }
 
 .character-build-board [data-character-section="talents"] .talent-tile-warning {
+  flex: 0 0 auto;
+  width: 100%;
   font-size: 9px;
   line-height: 1.25;
 }
@@ -1712,10 +1747,16 @@ html.dock-window body {
   gap: 6px;
 }
 
+/* Overlay scrollbars reserve no layout width, so the thumb would draw straight
+   over the rank steppers and Ability actions pinned to the right edge. Pad a
+   gutter wide enough for the thumb regardless of the platform scrollbar mode. */
 .talent-tree-scroll {
   flex: 1;
   min-height: 0;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  padding-right: 10px;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -1875,19 +1916,9 @@ html.dock-window body {
 }
 
 .talent-ability-mark {
-  position: absolute;
-  right: 2px;
-  top: 2px;
-  z-index: 1;
-  box-sizing: border-box;
-  width: 18px;
-  height: 18px;
-  border: 1.5px solid rgba(255, 249, 233, 0.45);
-  border-radius: 3px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
   line-height: 1;
   color: #9be7c4;
 }

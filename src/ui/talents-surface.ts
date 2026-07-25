@@ -406,13 +406,7 @@ export function mountTalentsSurface(
       data: { talentId: abilityId },
       props: { type: "button", disabled: tierLocked, tabIndex: tierLocked ? -1 : 0 },
       aria: { label: abilityName },
-    }, [
-      el("span", {
-        class: chosen ? "talent-ability-mark talent-ability-mark--chosen" : "talent-ability-mark",
-        text: chosen ? "✓" : "",
-        aria: { hidden: "true" },
-      }),
-    ]);
+    });
     appendTalentCellIcon(info, iconKey, abilityName);
 
     const warnings: string[] = [];
@@ -443,14 +437,28 @@ export function mountTalentsSurface(
           tierLocked || allocateBlocked,
         );
     action.classList.add("talent-ability-compact-action");
+    if (chosen) {
+      action.classList.add("talent-ability-mark", "talent-ability-mark--chosen");
+      action.textContent = "✓";
+    }
 
+    const groupClasses = ["talent-tile", "talent-tile--ability", "talent-ability-compact"];
+    if (chosen) {
+      groupClasses.push("talent-tile--ability-chosen");
+    }
     const group = el("div", {
-      class: "talent-tile talent-tile--ability talent-ability-compact",
+      class: groupClasses.join(" "),
       data: { talentGroup: "true", talentId: abilityId },
     }, [
       el("div", { class: "talent-ability-compact-row" }, [
         info,
-        el("span", { class: "talent-name", text: abilityName }),
+        el("span", { class: "talent-ability-compact-text" }, [
+          el("span", { class: "talent-name", text: abilityName }),
+          el("span", {
+            class: "talent-ability-state",
+            text: chosen ? "Selected" : "Choose",
+          }),
+        ]),
         action,
       ]),
     ]);
