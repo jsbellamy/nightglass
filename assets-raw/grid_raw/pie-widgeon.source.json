@@ -1,0 +1,42 @@
+{
+  "provider": "Cursor GenerateImage",
+  "acquisition_tool": "GenerateImage",
+  "raw_sha256": "ea1a45b99f1245db520d9f1f890122e2b7ccd473ed1321c89444529ade93e824",
+  "acquisition": "flexible",
+  "identity_profile": {
+    "asset_class": "opponent",
+    "role": "ordinary-opponent",
+    "facing": "left"
+  },
+  "cursor_stamp_removed": false,
+  "identity": "pie-widgeon",
+  "asset_class": "opponent",
+  "runtime_destination": "src/assets/sprites/pie-widgeon.png",
+  "candidate": "pie-widgeon-c1.png",
+  "facing": "left",
+  "role": "ordinary-opponent",
+  "palette": "fowl-harvest-24@1",
+  "style_references": [
+    {
+      "path": "src/assets/sprites/burger-drake.png",
+      "sha256": "c8a0e66c892465c9fa9355df19275a1c7385f10246286c4f11c2869272f9563f",
+      "role": "style"
+    },
+    {
+      "path": "src/assets/sprites/cornquacker.png",
+      "sha256": "326ec503bc95de96ab98ce82e54e91ca32577ee5d92eebdcb608bcb50a59a8ca",
+      "role": "style"
+    },
+    {
+      "path": "src/assets/sprites/milkshake-mallard.png",
+      "sha256": "0d45299f4e0c4db672d6d25c3d0618c67701e7ef6c8cf84321c772fc1cad9447",
+      "role": "style"
+    },
+    {
+      "path": "src/assets/sprites/balewaddle.png",
+      "sha256": "ed25be369866b937c0b7f59ad9738b373fedcbaa5cd2d0ecbae5718e4cb03a88",
+      "role": "style"
+    }
+  ],
+  "prompt": "Single full-body Pie Widgeon ordinary opponent game sprite, strict side profile facing LEFT. A low wide mutant golden-yellow duck anatomically fused with a cooling lattice-crust pie still in its tin. Its whole body is the pie: a shallow crimped toast-brown crust disc sits in a dull storm-slate tin, a woven lattice of crust strips crosses the back with dark condiment-red filling showing between the gaps, and the crimped rim runs the full width of the creature. A small duck head and neck rise from the front edge of the crust. The mutation is one living creature, not a duck standing behind or eating a pie.\n\nPreserve its absurd unsettling identity: an oversized orange duck bill projecting clearly to the left, one narrowed visible condiment-red eye, the crimped crust rim, the woven lattice strips with red filling between them, the dull slate tin edge beneath, one small yellow wing tucked against the crust, and two complete orange webbed feet reaching down past the tin. Low, wide, disc-flat silhouette with a long horizontal base. The bill, eye, crimped rim, individual lattice strips, tin edge, wing, and both feet must remain distinct at native game scale.\n\nChunky simplified flat-colour Fowl Harvest rural-mutation pixel art matching the accepted Burger Drake and Cornquacker in block size, selective oil-black / bruise-plum contour, saturation discipline, and 70% absurd / 30% unsettling tone. Use only named fowl-harvest-24 colors: duck and yolk golds, beak orange, toast and patty browns, diner cream, storm slate, condiment red, and oily near-black. No gore, wounds, exposed organs, realism, gradients, anti-aliasing, blur, or dithering.\n\nShow exactly one complete subject with generous empty clearance on every edge of an opaque flat solid magenta #ff00ff background. No shadow, floor, glow, steam, crumbs, sparkles, particles, Ability effect, text, watermark, scenery, UI, transparency, other food, or other subject.\n"
+}
