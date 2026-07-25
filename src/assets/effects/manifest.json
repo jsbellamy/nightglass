@@ -480,6 +480,194 @@
       "generator": null
     }
   },
+  "basic-cut": {
+    "frame_size": [
+      22,
+      14
+    ],
+    "palette": "moonberry-glow@1",
+    "anchor": "strike_target",
+    "anchor_dx": -15,
+    "strike_dy": -26,
+    "align_to": "impact_expected",
+    "cues_ms": {
+      "impact_expected": 120
+    },
+    "total_ms": 380,
+    "frames": [
+      {
+        "file": "basic-cut/basic-cut_0.png",
+        "duration_ms": 60,
+        "sha256": "6a6e13a57734c3f5773df7b786252d358d2f8fd99d62dbb3eac381d8b9dd1fbf",
+        "opaque_px": 31
+      },
+      {
+        "file": "basic-cut/basic-cut_1.png",
+        "duration_ms": 60,
+        "sha256": "42c68fb0631f3033969cc851b0e627b72662b6b163b0c99a8f81ad0127ec6c2e",
+        "opaque_px": 26
+      },
+      {
+        "file": "basic-cut/basic-cut_2.png",
+        "duration_ms": 130,
+        "sha256": "77348b878cd088fe9dc80457b9b3874534f141571e21819bc2cae27caf9e098c",
+        "opaque_px": 8
+      },
+      {
+        "file": "basic-cut/basic-cut_3.png",
+        "duration_ms": 130,
+        "sha256": "16a356938cdea5ee67f2ecd3277023a524a7846c21dc3dca0fd845063e6263f7",
+        "opaque_px": 16
+      }
+    ],
+    "source": {
+      "still": "basic-cut.png",
+      "sha256": "c97a127058367bec183b355982b0af5b8bd5427eb181b358b1fa5af7ec91f8a6",
+      "authored_by": "pipeline/effects/author.py",
+      "generator": null
+    }
+  },
+  "basic-arrow": {
+    "frame_size": [
+      28,
+      7
+    ],
+    "palette": "moonberry-glow@1",
+    "anchor": "lane_travel",
+    "anchor_dx": 0,
+    "strike_dy": -26,
+    "align_to": "release_projectile",
+    "cues_ms": {
+      "release_projectile": 0
+    },
+    "total_ms": 400,
+    "frames": [
+      {
+        "file": "basic-arrow/basic-arrow_0.png",
+        "duration_ms": 100,
+        "sha256": "2526771fc9022d0a2ce256fd93e5f981e443a6e9c78ff36052828b3c2a6fe971",
+        "opaque_px": 50
+      },
+      {
+        "file": "basic-arrow/basic-arrow_1.png",
+        "duration_ms": 100,
+        "sha256": "dde420ddd9a37699bedb166c4b353c2b6555089c220ceb468e01d3ba09004d59",
+        "opaque_px": 21
+      },
+      {
+        "file": "basic-arrow/basic-arrow_2.png",
+        "duration_ms": 100,
+        "sha256": "87002716656b7985fc5e20e75eec7441d9578c8590adeccc90648e6927d51245",
+        "opaque_px": 13
+      },
+      {
+        "file": "basic-arrow/basic-arrow_3.png",
+        "duration_ms": 100,
+        "sha256": "04e89a604fb2c41d59d2c2d592083e96dd3179103675edd1e95364b2bf3ef3c0",
+        "opaque_px": 49
+      }
+    ],
+    "source": {
+      "still": "basic-arrow.png",
+      "sha256": "0c92edf9a1ead3bd6341eaa6a537b7d17a54b82a1607a48f488941a6a6b44546",
+      "authored_by": "pipeline/effects/author.py",
+      "generator": null
+    }
+  },
+  "basic-spark": {
+    "frame_size": [
+      13,
+      13
+    ],
+    "palette": "moonberry-glow@1",
+    "anchor": "lane_travel",
+    "anchor_dx": 0,
+    "strike_dy": -26,
+    "align_to": "release_projectile",
+    "cues_ms": {
+      "release_projectile": 0
+    },
+    "total_ms": 420,
+    "frames": [
+      {
+        "file": "basic-spark/basic-spark_0.png",
+        "duration_ms": 105,
+        "sha256": "37a440c7a669ef68b69487659f3ac746856e29f0afe4a202692676239ef0bfcd",
+        "opaque_px": 30
+      },
+      {
+        "file": "basic-spark/basic-spark_1.png",
+        "duration_ms": 105,
+        "sha256": "d97e27f2c86e66b41b9ba4e3f5358cf4bb845e2f1e9a44232c69f4a1f7c3f30b",
+        "opaque_px": 55
+      },
+      {
+        "file": "basic-spark/basic-spark_2.png",
+        "duration_ms": 105,
+        "sha256": "101c472b1a9df24fc304ebfa69692b123896a4c7a31b0a29f7ca5da577ba6348",
+        "opaque_px": 53
+      },
+      {
+        "file": "basic-spark/basic-spark_3.png",
+        "duration_ms": 105,
+        "sha256": "2d035f4a777fc4f00fe488af70c6e051cad47bcdaec2b48ec62613e04576f5bb",
+        "opaque_px": 37
+      }
+    ],
+    "source": {
+      "still": "basic-spark.png",
+      "sha256": "fbfc27602acc0dc09485c1cb376b6c4b6af7adf643062e3d7a6aa28354925459",
+      "authored_by": "pipeline/effects/author.py",
+      "generator": null
+    }
+  },
+  "basic-mote": {
+    "frame_size": [
+      15,
+      15
+    ],
+    "palette": "moonberry-glow@1",
+    "anchor": "lane_travel",
+    "anchor_dx": 0,
+    "strike_dy": -26,
+    "align_to": "release_projectile",
+    "cues_ms": {
+      "release_projectile": 0
+    },
+    "total_ms": 460,
+    "frames": [
+      {
+        "file": "basic-mote/basic-mote_0.png",
+        "duration_ms": 115,
+        "sha256": "0b40a12f5028c8bca6debe3afde38f467c5d7f32653744846d501062e64a9526",
+        "opaque_px": 32
+      },
+      {
+        "file": "basic-mote/basic-mote_1.png",
+        "duration_ms": 115,
+        "sha256": "784d9fc1f19faf52af24e59d0e70a72966fd7f565a6c1db202af7f20050ca518",
+        "opaque_px": 78
+      },
+      {
+        "file": "basic-mote/basic-mote_2.png",
+        "duration_ms": 115,
+        "sha256": "ed07a823c6afda5f11d8c8086a7958a462f5cb3b0bad5f5c2d8993864acde21a",
+        "opaque_px": 113
+      },
+      {
+        "file": "basic-mote/basic-mote_3.png",
+        "duration_ms": 115,
+        "sha256": "41f12cf0de89652f8d1c9ddd83caa679b9e14f19be7a48de98aac5dac2fef513",
+        "opaque_px": 121
+      }
+    ],
+    "source": {
+      "still": "basic-mote.png",
+      "sha256": "84bcac07391be55c4d52698907e04286b84dce55b7343f1f9fa257051332da9e",
+      "authored_by": "pipeline/effects/author.py",
+      "generator": null
+    }
+  },
   "spell-bolt-fire": {
     "frame_size": [
       11,
@@ -607,6 +795,102 @@
     "source": {
       "still": "spell-bloom.png",
       "sha256": "cb53759c523f3e05d6f9de3ea084e09135358f5c169b8ad291fb9acc3ee4aab3",
+      "authored_by": "pipeline/effects/author.py",
+      "generator": null
+    },
+    "element": "fire"
+  },
+  "basic-spark-fire": {
+    "frame_size": [
+      13,
+      13
+    ],
+    "palette": "moonberry-glow@1",
+    "anchor": "lane_travel",
+    "anchor_dx": 0,
+    "strike_dy": -26,
+    "align_to": "release_projectile",
+    "cues_ms": {
+      "release_projectile": 0
+    },
+    "total_ms": 420,
+    "frames": [
+      {
+        "file": "basic-spark-fire/basic-spark-fire_0.png",
+        "duration_ms": 105,
+        "sha256": "dc6eaa5aaa47078bcb23f6a446cf23a72b1e2ed38d445a60e29a70bed57f6855",
+        "opaque_px": 30
+      },
+      {
+        "file": "basic-spark-fire/basic-spark-fire_1.png",
+        "duration_ms": 105,
+        "sha256": "88ca3d6639e02a115ac230805f7c750fbfb8aa334299dcf78a10c9904c3bbe28",
+        "opaque_px": 55
+      },
+      {
+        "file": "basic-spark-fire/basic-spark-fire_2.png",
+        "duration_ms": 105,
+        "sha256": "fd41dce6defc13bab2050e30f716eaf9152a329df012f0ec6e9f5badbfda8ed0",
+        "opaque_px": 53
+      },
+      {
+        "file": "basic-spark-fire/basic-spark-fire_3.png",
+        "duration_ms": 105,
+        "sha256": "3fefa6f403c008c4df9dd05d6b0c9ac47c74b5637ed1704e6bdee9fdc0d3550e",
+        "opaque_px": 37
+      }
+    ],
+    "source": {
+      "still": "basic-spark.png",
+      "sha256": "fbfc27602acc0dc09485c1cb376b6c4b6af7adf643062e3d7a6aa28354925459",
+      "authored_by": "pipeline/effects/author.py",
+      "generator": null
+    },
+    "element": "fire"
+  },
+  "basic-mote-fire": {
+    "frame_size": [
+      15,
+      15
+    ],
+    "palette": "moonberry-glow@1",
+    "anchor": "lane_travel",
+    "anchor_dx": 0,
+    "strike_dy": -26,
+    "align_to": "release_projectile",
+    "cues_ms": {
+      "release_projectile": 0
+    },
+    "total_ms": 460,
+    "frames": [
+      {
+        "file": "basic-mote-fire/basic-mote-fire_0.png",
+        "duration_ms": 115,
+        "sha256": "6ab9239d4e66d1e66e44f7c764002f798e840d71bb1d56610fdf3224d7644722",
+        "opaque_px": 32
+      },
+      {
+        "file": "basic-mote-fire/basic-mote-fire_1.png",
+        "duration_ms": 115,
+        "sha256": "0b93ef5fb757a880ce563a5e0b2aa6dc40931a519e860defc9215f211e46a2fb",
+        "opaque_px": 78
+      },
+      {
+        "file": "basic-mote-fire/basic-mote-fire_2.png",
+        "duration_ms": 115,
+        "sha256": "64033814d06fc3b3c4a26f4a93ba220bd69090abbecd11a9dfce351e494b1e88",
+        "opaque_px": 113
+      },
+      {
+        "file": "basic-mote-fire/basic-mote-fire_3.png",
+        "duration_ms": 115,
+        "sha256": "e13a5b82f6b05791f6c81d898a718bdc589e8cb453c0ec55ba2ef5d4bf814107",
+        "opaque_px": 121
+      }
+    ],
+    "source": {
+      "still": "basic-mote.png",
+      "sha256": "84bcac07391be55c4d52698907e04286b84dce55b7343f1f9fa257051332da9e",
       "authored_by": "pipeline/effects/author.py",
       "generator": null
     },
@@ -744,6 +1028,102 @@
     },
     "element": "frost"
   },
+  "basic-spark-frost": {
+    "frame_size": [
+      13,
+      13
+    ],
+    "palette": "moonberry-glow@1",
+    "anchor": "lane_travel",
+    "anchor_dx": 0,
+    "strike_dy": -26,
+    "align_to": "release_projectile",
+    "cues_ms": {
+      "release_projectile": 0
+    },
+    "total_ms": 420,
+    "frames": [
+      {
+        "file": "basic-spark-frost/basic-spark-frost_0.png",
+        "duration_ms": 105,
+        "sha256": "f6308de94f70aa6ede29df503f86b6a98f04cf59b0bd61b52fb1414f593adf3c",
+        "opaque_px": 30
+      },
+      {
+        "file": "basic-spark-frost/basic-spark-frost_1.png",
+        "duration_ms": 105,
+        "sha256": "9cfc2b338cc57374ba3e1c3e3edbc516e06bfa722988d6bd4ee1b06b8e816a9e",
+        "opaque_px": 55
+      },
+      {
+        "file": "basic-spark-frost/basic-spark-frost_2.png",
+        "duration_ms": 105,
+        "sha256": "81eba3c6eb7c939209a921187469fbb612fa8f2fb87b3d31c462933cbe1e8437",
+        "opaque_px": 53
+      },
+      {
+        "file": "basic-spark-frost/basic-spark-frost_3.png",
+        "duration_ms": 105,
+        "sha256": "ef54095d2348323c8292a904203fad2ec9d5581c6069e239d6ab90bc20dd120d",
+        "opaque_px": 37
+      }
+    ],
+    "source": {
+      "still": "basic-spark.png",
+      "sha256": "fbfc27602acc0dc09485c1cb376b6c4b6af7adf643062e3d7a6aa28354925459",
+      "authored_by": "pipeline/effects/author.py",
+      "generator": null
+    },
+    "element": "frost"
+  },
+  "basic-mote-frost": {
+    "frame_size": [
+      15,
+      15
+    ],
+    "palette": "moonberry-glow@1",
+    "anchor": "lane_travel",
+    "anchor_dx": 0,
+    "strike_dy": -26,
+    "align_to": "release_projectile",
+    "cues_ms": {
+      "release_projectile": 0
+    },
+    "total_ms": 460,
+    "frames": [
+      {
+        "file": "basic-mote-frost/basic-mote-frost_0.png",
+        "duration_ms": 115,
+        "sha256": "fc2462dff406b45c80349415814421ff3c39bffd1829243f2e42e6b6e20f9dab",
+        "opaque_px": 32
+      },
+      {
+        "file": "basic-mote-frost/basic-mote-frost_1.png",
+        "duration_ms": 115,
+        "sha256": "6c373bbd1bc972136b1ed0d6664ff76c117579337c9981ef76066fabe283f19b",
+        "opaque_px": 78
+      },
+      {
+        "file": "basic-mote-frost/basic-mote-frost_2.png",
+        "duration_ms": 115,
+        "sha256": "2f9ab54fd1a9e9d8e1144a31ad69949252ad7c539fb54bba3f2c83509e9be20a",
+        "opaque_px": 113
+      },
+      {
+        "file": "basic-mote-frost/basic-mote-frost_3.png",
+        "duration_ms": 115,
+        "sha256": "78a13432e8634d10235d0e968ea41cc19a4aa34ddccc61adea2b2f245a117551",
+        "opaque_px": 121
+      }
+    ],
+    "source": {
+      "still": "basic-mote.png",
+      "sha256": "84bcac07391be55c4d52698907e04286b84dce55b7343f1f9fa257051332da9e",
+      "authored_by": "pipeline/effects/author.py",
+      "generator": null
+    },
+    "element": "frost"
+  },
   "spell-bolt-lightning": {
     "frame_size": [
       11,
@@ -876,6 +1256,102 @@
     },
     "element": "lightning"
   },
+  "basic-spark-lightning": {
+    "frame_size": [
+      13,
+      13
+    ],
+    "palette": "moonberry-glow@1",
+    "anchor": "lane_travel",
+    "anchor_dx": 0,
+    "strike_dy": -26,
+    "align_to": "release_projectile",
+    "cues_ms": {
+      "release_projectile": 0
+    },
+    "total_ms": 420,
+    "frames": [
+      {
+        "file": "basic-spark-lightning/basic-spark-lightning_0.png",
+        "duration_ms": 105,
+        "sha256": "18c18eacf74b1d3eca1bcb5a6f36e775c5fbfb445529a4b89f0322d48ce8bf28",
+        "opaque_px": 30
+      },
+      {
+        "file": "basic-spark-lightning/basic-spark-lightning_1.png",
+        "duration_ms": 105,
+        "sha256": "f1c79aa583277de1b5b4865221c5741539b95afab4f1c5a9e4b744a35a9bad32",
+        "opaque_px": 55
+      },
+      {
+        "file": "basic-spark-lightning/basic-spark-lightning_2.png",
+        "duration_ms": 105,
+        "sha256": "3b859ea1be89e200447d9f5e9ea095330027acb8e4ef539e5839492af376592b",
+        "opaque_px": 53
+      },
+      {
+        "file": "basic-spark-lightning/basic-spark-lightning_3.png",
+        "duration_ms": 105,
+        "sha256": "2d035f4a777fc4f00fe488af70c6e051cad47bcdaec2b48ec62613e04576f5bb",
+        "opaque_px": 37
+      }
+    ],
+    "source": {
+      "still": "basic-spark.png",
+      "sha256": "fbfc27602acc0dc09485c1cb376b6c4b6af7adf643062e3d7a6aa28354925459",
+      "authored_by": "pipeline/effects/author.py",
+      "generator": null
+    },
+    "element": "lightning"
+  },
+  "basic-mote-lightning": {
+    "frame_size": [
+      15,
+      15
+    ],
+    "palette": "moonberry-glow@1",
+    "anchor": "lane_travel",
+    "anchor_dx": 0,
+    "strike_dy": -26,
+    "align_to": "release_projectile",
+    "cues_ms": {
+      "release_projectile": 0
+    },
+    "total_ms": 460,
+    "frames": [
+      {
+        "file": "basic-mote-lightning/basic-mote-lightning_0.png",
+        "duration_ms": 115,
+        "sha256": "a3aa3ad4a06aa649e1cef46c8c88ebbcfed39b482a2be5195364ef9db618b4d4",
+        "opaque_px": 32
+      },
+      {
+        "file": "basic-mote-lightning/basic-mote-lightning_1.png",
+        "duration_ms": 115,
+        "sha256": "c6e15229720d662212d2d1d9d68765916714fb78b5649874376ac70778c6771b",
+        "opaque_px": 78
+      },
+      {
+        "file": "basic-mote-lightning/basic-mote-lightning_2.png",
+        "duration_ms": 115,
+        "sha256": "5a732f0071eef9069c401351587cfa04103c8ba4572abafd0a67f8d54a0069ba",
+        "opaque_px": 113
+      },
+      {
+        "file": "basic-mote-lightning/basic-mote-lightning_3.png",
+        "duration_ms": 115,
+        "sha256": "b2a6889a5fdff9ac8427b071b7fff0d591f0657b0feb46031579d7ca3674bb51",
+        "opaque_px": 121
+      }
+    ],
+    "source": {
+      "still": "basic-mote.png",
+      "sha256": "84bcac07391be55c4d52698907e04286b84dce55b7343f1f9fa257051332da9e",
+      "authored_by": "pipeline/effects/author.py",
+      "generator": null
+    },
+    "element": "lightning"
+  },
   "spell-bolt-light": {
     "frame_size": [
       11,
@@ -1003,6 +1479,102 @@
     "source": {
       "still": "spell-bloom.png",
       "sha256": "cb53759c523f3e05d6f9de3ea084e09135358f5c169b8ad291fb9acc3ee4aab3",
+      "authored_by": "pipeline/effects/author.py",
+      "generator": null
+    },
+    "element": "light"
+  },
+  "basic-spark-light": {
+    "frame_size": [
+      13,
+      13
+    ],
+    "palette": "moonberry-glow@1",
+    "anchor": "lane_travel",
+    "anchor_dx": 0,
+    "strike_dy": -26,
+    "align_to": "release_projectile",
+    "cues_ms": {
+      "release_projectile": 0
+    },
+    "total_ms": 420,
+    "frames": [
+      {
+        "file": "basic-spark-light/basic-spark-light_0.png",
+        "duration_ms": 105,
+        "sha256": "d6dbb5c0e118e82214d7dd09fe12f2a1e492567d3c46a1ad76c2be1e9f4f8c03",
+        "opaque_px": 30
+      },
+      {
+        "file": "basic-spark-light/basic-spark-light_1.png",
+        "duration_ms": 105,
+        "sha256": "63ecbbd3be45ccb4580d446fddf958b34b28f15f33e4187faa6d81ce6aadec79",
+        "opaque_px": 55
+      },
+      {
+        "file": "basic-spark-light/basic-spark-light_2.png",
+        "duration_ms": 105,
+        "sha256": "d48721c3c82ee115c85db179b29809507af76f911192f715fff57a2568511d91",
+        "opaque_px": 53
+      },
+      {
+        "file": "basic-spark-light/basic-spark-light_3.png",
+        "duration_ms": 105,
+        "sha256": "c2d8f0377a089e271afdbc7b890277d81975d898aa14c8739b5e9a9856437f96",
+        "opaque_px": 37
+      }
+    ],
+    "source": {
+      "still": "basic-spark.png",
+      "sha256": "fbfc27602acc0dc09485c1cb376b6c4b6af7adf643062e3d7a6aa28354925459",
+      "authored_by": "pipeline/effects/author.py",
+      "generator": null
+    },
+    "element": "light"
+  },
+  "basic-mote-light": {
+    "frame_size": [
+      15,
+      15
+    ],
+    "palette": "moonberry-glow@1",
+    "anchor": "lane_travel",
+    "anchor_dx": 0,
+    "strike_dy": -26,
+    "align_to": "release_projectile",
+    "cues_ms": {
+      "release_projectile": 0
+    },
+    "total_ms": 460,
+    "frames": [
+      {
+        "file": "basic-mote-light/basic-mote-light_0.png",
+        "duration_ms": 115,
+        "sha256": "c752ff22419a3f5931d95a8e90f5b820c577d371e137fd858417e13bbd9e6b7b",
+        "opaque_px": 32
+      },
+      {
+        "file": "basic-mote-light/basic-mote-light_1.png",
+        "duration_ms": 115,
+        "sha256": "d9d1c59882a7109cc24a67ed28b035d8120798bef9b294fb4af45a1adba13c01",
+        "opaque_px": 78
+      },
+      {
+        "file": "basic-mote-light/basic-mote-light_2.png",
+        "duration_ms": 115,
+        "sha256": "ce53f6ab71d5625e996b87f711e2b27b3a0aeccfc0711a14aa33cdf064898686",
+        "opaque_px": 113
+      },
+      {
+        "file": "basic-mote-light/basic-mote-light_3.png",
+        "duration_ms": 115,
+        "sha256": "4d7ef25f32141e075af85722f643efb38408726e4deb09a2a7cc39bb32f80348",
+        "opaque_px": 121
+      }
+    ],
+    "source": {
+      "still": "basic-mote.png",
+      "sha256": "84bcac07391be55c4d52698907e04286b84dce55b7343f1f9fa257051332da9e",
       "authored_by": "pipeline/effects/author.py",
       "generator": null
     },

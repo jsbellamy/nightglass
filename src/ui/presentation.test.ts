@@ -691,7 +691,7 @@ describe("batched anchor geometry reads", () => {
     const host = effectLane.querySelector<HTMLElement>(".effect-host");
     expect(host?.style.left).toBe(`${footX - 16}px`);
     const effect = host?.querySelector<HTMLImageElement>(".effect-frame.strike-target");
-    expect(effect?.width).toBe(30);
+    expect(effect?.width).toBe(22);
     presentation.destroy();
   });
 
@@ -1107,7 +1107,7 @@ describe("element-keyed effect frames", () => {
     );
     presentation.render(50, snapshot);
     const img = effectLane.querySelector<HTMLImageElement>(".effect-frame.lane-travel");
-    expect(img?.src).toContain("spell-bolt-fire");
+    expect(img?.src).toContain("basic-spark-fire");
     presentation.destroy();
   });
 
@@ -1133,7 +1133,7 @@ describe("element-keyed effect frames", () => {
     );
     presentation.render(50, snapshot);
     const img = effectLane.querySelector<HTMLImageElement>(".effect-frame.lane-travel");
-    expect(img?.src).toContain("spell-bolt-lightning");
+    expect(img?.src).toContain("basic-spark-lightning");
     presentation.destroy();
   });
 });

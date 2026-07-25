@@ -72,6 +72,17 @@ describe("effect recipes", () => {
     }
   });
 
+  it("keeps Class Basic Attack effect durations in the 350–500 ms band", () => {
+    const basicAttacks = ["steel-cut", "quickshot", "arc-spark", "sun-mote"] as const;
+    for (const id of basicAttacks) {
+      const recipe = effectRecipes[id]!;
+      expect(recipe.durationMs).toBeGreaterThanOrEqual(350);
+      expect(recipe.durationMs).toBeLessThanOrEqual(500);
+      const entry = manifest[recipe.frames] as { total_ms: number };
+      expect(entry.total_ms).toBe(recipe.durationMs);
+    }
+  });
+
   it("maps Talent Tier 2 abilities to the exact effect derivation families", () => {
     const tier2Frames: Record<string, string> = {
       vanguard: "buff-halo",
@@ -123,6 +134,10 @@ describe("effect recipes", () => {
       new Set([
         "arc-slash",
         "arrow-bolt",
+        "basic-arrow",
+        "basic-cut",
+        "basic-mote",
+        "basic-spark",
         "buff-halo",
         "heal-rise",
         "revive-burst",

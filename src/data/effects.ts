@@ -26,11 +26,11 @@ export interface EffectRecipe {
 export const effectRecipes: Record<string, EffectRecipe> = {
   // Knight
   "steel-cut": {
-    stillKey: "arc-slash",
-    frames: "arc-slash",
+    stillKey: "basic-cut",
+    frames: "basic-cut",
     anchor: "strike_target",
     anchorDx: -15,
-    durationMs: 250,
+    durationMs: 380,
     cuesMs: { impact_expected: 350 },
   },
   "sweeping-arc": {
@@ -111,10 +111,10 @@ export const effectRecipes: Record<string, EffectRecipe> = {
 
   // Hunter
   "quickshot": {
-    stillKey: "arrow-bolt",
-    frames: "arrow-bolt",
+    stillKey: "basic-arrow",
+    frames: "basic-arrow",
     anchor: "lane_travel",
-    durationMs: 100,
+    durationMs: 400,
     cuesMs: { release_projectile: 300 },
   },
   "pinpoint-shot": {
@@ -190,16 +190,16 @@ export const effectRecipes: Record<string, EffectRecipe> = {
 
   // Wizard
   "arc-spark": {
-    stillKey: "spell-bolt",
-    frames: "spell-bolt-lightning",
+    stillKey: "basic-spark",
+    frames: "basic-spark-lightning",
     framesByElement: {
-      fire: "spell-bolt-fire",
-      frost: "spell-bolt-frost",
-      lightning: "spell-bolt-lightning",
-      light: "spell-bolt-light",
+      fire: "basic-spark-fire",
+      frost: "basic-spark-frost",
+      lightning: "basic-spark-lightning",
+      light: "basic-spark-light",
     },
     anchor: "lane_travel",
-    durationMs: 100,
+    durationMs: 420,
     cuesMs: { release_projectile: 450 },
   },
   "cinder-bloom": {
@@ -275,16 +275,16 @@ export const effectRecipes: Record<string, EffectRecipe> = {
 
   // Priest
   "sun-mote": {
-    stillKey: "spell-bolt",
-    frames: "spell-bolt-light",
+    stillKey: "basic-mote",
+    frames: "basic-mote-light",
     framesByElement: {
-      fire: "spell-bolt-fire",
-      frost: "spell-bolt-frost",
-      lightning: "spell-bolt-lightning",
-      light: "spell-bolt-light",
+      fire: "basic-mote-fire",
+      frost: "basic-mote-frost",
+      lightning: "basic-mote-lightning",
+      light: "basic-mote-light",
     },
     anchor: "lane_travel",
-    durationMs: 100,
+    durationMs: 460,
     cuesMs: { release_projectile: 500 },
   },
   "mending-light": {
