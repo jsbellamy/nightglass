@@ -1,10 +1,10 @@
 {
   "status": "promoted",
   "candidate": "docs/research/evidence/moonberry/lanternmoth/scratch/lanternmoth-c1.png",
-  "raw": "/Users/jakebellamy/VSProjects/games/game_idea/nightglass-wt-675/assets-raw/grid_raw/lanternmoth.png",
-  "sidecar": "/Users/jakebellamy/VSProjects/games/game_idea/nightglass-wt-675/assets-raw/grid_raw/lanternmoth.source.json",
-  "runtime": "/Users/jakebellamy/VSProjects/games/game_idea/nightglass-wt-675/src/assets/sprites/lanternmoth.png",
-  "manifest": "/Users/jakebellamy/VSProjects/games/game_idea/nightglass-wt-675/src/assets/sprites/manifest.json",
+  "raw": "assets-raw/grid_raw/lanternmoth.png",
+  "sidecar": "assets-raw/grid_raw/lanternmoth.source.json",
+  "runtime": "src/assets/sprites/lanternmoth.png",
+  "manifest": "src/assets/sprites/manifest.json",
   "measurement": {
     "candidate": "docs/research/evidence/moonberry/lanternmoth/scratch/lanternmoth-c1.png",
     "tag": "lanternmoth",

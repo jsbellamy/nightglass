@@ -12,7 +12,7 @@
   "identity": "lanternmoth",
   "asset_class": "opponent",
   "runtime_destination": "src/assets/sprites/lanternmoth.png",
-  "candidate": "lanternmoth.png",
+  "candidate": "lanternmoth-c1.png",
   "facing": "left",
   "role": "ordinary-opponent",
   "palette": "moonberry-16@1",
