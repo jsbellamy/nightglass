@@ -3823,7 +3823,7 @@ describe("adaptive Basic Attack Element", () => {
     ...fixtureContent,
     classes: fixtureContent.classes.map((classKit) =>
       classKit.id === "wizard"
-        ? { ...classKit, base: { ...classKit.base, firePower: 5 } }
+        ? { ...classKit, base: { ...classKit.base, firePower: 5, critChance: 0 } }
         : classKit,
     ),
   };

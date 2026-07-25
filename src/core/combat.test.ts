@@ -316,6 +316,8 @@ const zeroElementPowerStats: BaseStats = {
   frostPower: 0,
   lightningPower: 0,
   lightPower: 0,
+  critChance: 0.10,
+  critDamage: 1.7,
 };
 
 describe("adaptiveElementForBasic", () => {
