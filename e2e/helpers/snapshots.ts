@@ -1,8 +1,53 @@
-import { createEngine } from "../../src/core/engine";
+import { createEngine, type Engine } from "../../src/core/engine";
 import { cloneSnapshot, type DropInstance, type Snapshot } from "../../src/core/snapshot";
 import type { ClassId, EquipmentSlotId } from "../../src/core/types";
 import { buildContent } from "../../src/data";
 import { serializeEngineLegality, type SerializedEngineLegality } from "../../src/ui/engine-legality";
+
+const DEFAULT_LOOT_SEED = 42;
+
+function reachStageTwoFiveOpponentEngine(): Engine {
+  const engine = createEngine(buildContent(), undefined, DEFAULT_LOOT_SEED);
+  for (let i = 0; i < 500; i += 1) {
+    engine.advanceBy(5_000);
+    if (engine.snapshot().attempt?.stage === 2) {
+      break;
+    }
+  }
+  engine.selectStage(2);
+  while (
+    (engine.snapshot().attempt?.combatants.filter((combatant) => combatant.side === "opponent")
+      .length ?? 0) < 5
+  ) {
+    engine.advanceBy(2_000);
+  }
+  return engine;
+}
+
+/** Stage 2 encounter 2 stress layout (five Opponents) for tile-geometry evidence. */
+export function stageTwoFiveOpponentStressSnapshot(): Snapshot {
+  const snapshot = cloneSnapshot(reachStageTwoFiveOpponentEngine().snapshot());
+  snapshot.savedAtMs = Date.now();
+  return snapshot;
+}
+
+/** Same layout with Opponents knocked out so one advance awards the Wave 2 Drop. */
+export function stageTwoFiveOpponentDropSnapshot(): Snapshot {
+  const snapshot = cloneSnapshot(reachStageTwoFiveOpponentEngine().snapshot());
+  snapshot.savedAtMs = Date.now();
+  const attempt = snapshot.attempt;
+  if (!attempt) {
+    throw new Error("stageTwoFiveOpponentDropSnapshot: missing Attempt");
+  }
+  for (const combatant of attempt.combatants) {
+    if (combatant.side === "opponent") {
+      combatant.health = 0;
+      combatant.knockedOut = true;
+      combatant.action = null;
+    }
+  }
+  return snapshot;
+}
 
 export function talentsReadySnapshot(): Snapshot {
   const boot = createEngine(buildContent(), undefined, 42);
