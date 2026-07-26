@@ -55,7 +55,7 @@ describe("Hunter Talent Tier 3 exports", () => {
       ],
       windUpMs: 700,
       recoveryMs: 700,
-      cooldownMs: 15_000,
+      cooldownMs: 19_500,
     });
 
     expect(abilityById("killshot")).toEqual({
@@ -68,7 +68,7 @@ describe("Hunter Talent Tier 3 exports", () => {
       effects: [{ kind: "damage", channel: "physical", coefficient: 3.4 }],
       windUpMs: 900,
       recoveryMs: 650,
-      cooldownMs: 14_000,
+      cooldownMs: 18_200,
     });
   });
 

@@ -10,7 +10,7 @@ export const knightAbilities: AbilityDef[] = [
     targeting: { kind: "closest-opponent" },
     effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
     windUpMs: 350,
-    recoveryMs: 650,
+    recoveryMs: 1650,
     cooldownMs: 0,
   },
   {
@@ -23,7 +23,7 @@ export const knightAbilities: AbilityDef[] = [
     effects: [{ kind: "damage", channel: "physical", coefficient: 0.7 }],
     windUpMs: 500,
     recoveryMs: 700,
-    cooldownMs: 6000,
+    cooldownMs: 7800,
   },
   {
     id: "shield-brace",
@@ -35,7 +35,7 @@ export const knightAbilities: AbilityDef[] = [
     effects: [{ kind: "apply-status", statusId: "braced" }],
     windUpMs: 100,
     recoveryMs: 400,
-    cooldownMs: 9000,
+    cooldownMs: 11700,
     validWhile: "status-absent",
   },
   {
@@ -48,7 +48,7 @@ export const knightAbilities: AbilityDef[] = [
     effects: [{ kind: "apply-status", statusId: "guarded" }],
     windUpMs: 300,
     recoveryMs: 500,
-    cooldownMs: 12000,
+    cooldownMs: 15600,
     validWhile: "status-absent",
   },
   {
@@ -64,7 +64,7 @@ export const knightAbilities: AbilityDef[] = [
     ],
     windUpMs: 250,
     recoveryMs: 650,
-    cooldownMs: 9000,
+    cooldownMs: 11700,
   },
   {
     id: "hold-the-line",
@@ -76,7 +76,7 @@ export const knightAbilities: AbilityDef[] = [
     effects: [{ kind: "apply-status", statusId: "hold-the-line" }],
     windUpMs: 200,
     recoveryMs: 500,
-    cooldownMs: 15000,
+    cooldownMs: 19500,
     validWhile: "below-half-health",
   },
   {
@@ -92,7 +92,7 @@ export const knightAbilities: AbilityDef[] = [
     ],
     windUpMs: 700,
     recoveryMs: 800,
-    cooldownMs: 12000,
+    cooldownMs: 15600,
   },
 ];
 
@@ -110,7 +110,7 @@ export const knightTier2Abilities: AbilityDef[] = [
     ],
     windUpMs: 400,
     recoveryMs: 600,
-    cooldownMs: 16_000,
+    cooldownMs: 20_800,
   },
   {
     id: "sundering-charge",
@@ -125,7 +125,7 @@ export const knightTier2Abilities: AbilityDef[] = [
     ],
     windUpMs: 700,
     recoveryMs: 700,
-    cooldownMs: 13_000,
+    cooldownMs: 16_900,
   },
 ];
 
@@ -163,7 +163,7 @@ export const knightTier3Abilities: AbilityDef[] = [
     ],
     windUpMs: 400,
     recoveryMs: 600,
-    cooldownMs: 18_000,
+    cooldownMs: 23_400,
   },
   {
     id: "titans-cleave",
@@ -178,7 +178,7 @@ export const knightTier3Abilities: AbilityDef[] = [
     ],
     windUpMs: 800,
     recoveryMs: 800,
-    cooldownMs: 15_000,
+    cooldownMs: 19_500,
   },
 ];
 

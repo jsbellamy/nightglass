@@ -219,7 +219,7 @@ export const REVIEWED_CLASS_KIT_ABILITIES: AbilityDef[] = [
     targeting: { kind: "closest-opponent" },
     effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
     windUpMs: 350,
-    recoveryMs: 650,
+    recoveryMs: 1650,
     cooldownMs: 0,
   },
   {
@@ -232,7 +232,7 @@ export const REVIEWED_CLASS_KIT_ABILITIES: AbilityDef[] = [
     effects: [{ kind: "damage", channel: "physical", coefficient: 0.7 }],
     windUpMs: 500,
     recoveryMs: 700,
-    cooldownMs: 6000,
+    cooldownMs: 7800,
   },
   {
     id: "shield-brace",
@@ -244,7 +244,7 @@ export const REVIEWED_CLASS_KIT_ABILITIES: AbilityDef[] = [
     effects: [{ kind: "apply-status", statusId: "braced" }],
     windUpMs: 100,
     recoveryMs: 400,
-    cooldownMs: 9000,
+    cooldownMs: 11700,
     validWhile: "status-absent",
   },
   {
@@ -257,7 +257,7 @@ export const REVIEWED_CLASS_KIT_ABILITIES: AbilityDef[] = [
     effects: [{ kind: "apply-status", statusId: "guarded" }],
     windUpMs: 300,
     recoveryMs: 500,
-    cooldownMs: 12000,
+    cooldownMs: 15600,
     validWhile: "status-absent",
   },
   {
@@ -273,7 +273,7 @@ export const REVIEWED_CLASS_KIT_ABILITIES: AbilityDef[] = [
     ],
     windUpMs: 250,
     recoveryMs: 650,
-    cooldownMs: 9000,
+    cooldownMs: 11700,
   },
   {
     id: "hold-the-line",
@@ -285,7 +285,7 @@ export const REVIEWED_CLASS_KIT_ABILITIES: AbilityDef[] = [
     effects: [{ kind: "apply-status", statusId: "hold-the-line" }],
     windUpMs: 200,
     recoveryMs: 500,
-    cooldownMs: 15000,
+    cooldownMs: 19500,
     validWhile: "below-half-health",
   },
   {
@@ -301,7 +301,7 @@ export const REVIEWED_CLASS_KIT_ABILITIES: AbilityDef[] = [
     ],
     windUpMs: 700,
     recoveryMs: 800,
-    cooldownMs: 12000,
+    cooldownMs: 15600,
   },
 
   // Wizard
@@ -495,7 +495,7 @@ export const REVIEWED_CLASS_KIT_ABILITIES: AbilityDef[] = [
     targeting: { kind: "closest-opponent" },
     effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
     windUpMs: 300,
-    recoveryMs: 550,
+    recoveryMs: 1400,
     cooldownMs: 0,
   },
   {
@@ -508,7 +508,7 @@ export const REVIEWED_CLASS_KIT_ABILITIES: AbilityDef[] = [
     effects: [{ kind: "damage", channel: "physical", coefficient: 1.9 }],
     windUpMs: 650,
     recoveryMs: 550,
-    cooldownMs: 7000,
+    cooldownMs: 9100,
   },
   {
     id: "barbed-arrow",
@@ -523,7 +523,7 @@ export const REVIEWED_CLASS_KIT_ABILITIES: AbilityDef[] = [
     ],
     windUpMs: 400,
     recoveryMs: 550,
-    cooldownMs: 10000,
+    cooldownMs: 13000,
     validWhile: "status-absent",
   },
   {
@@ -536,7 +536,7 @@ export const REVIEWED_CLASS_KIT_ABILITIES: AbilityDef[] = [
     effects: [{ kind: "damage", channel: "physical", coefficient: 0.75 }],
     windUpMs: 550,
     recoveryMs: 650,
-    cooldownMs: 7000,
+    cooldownMs: 9100,
   },
   {
     id: "snareburst",
@@ -547,11 +547,11 @@ export const REVIEWED_CLASS_KIT_ABILITIES: AbilityDef[] = [
     targeting: { kind: "all-opponents" },
     effects: [
       { kind: "damage", channel: "physical", coefficient: 0.55 },
-      { kind: "apply-status", statusId: "stun", stunMs: 1200 },
+      { kind: "apply-status", statusId: "stun", stunMs: 1560 },
     ],
     windUpMs: 450,
     recoveryMs: 700,
-    cooldownMs: 12000,
+    cooldownMs: 15600,
   },
   {
     id: "heartseeker",
@@ -563,7 +563,7 @@ export const REVIEWED_CLASS_KIT_ABILITIES: AbilityDef[] = [
     effects: [{ kind: "damage", channel: "physical", coefficient: 2.8 }],
     windUpMs: 850,
     recoveryMs: 650,
-    cooldownMs: 13000,
+    cooldownMs: 16900,
   },
   {
     id: "moonwire-trap",
@@ -574,10 +574,10 @@ export const REVIEWED_CLASS_KIT_ABILITIES: AbilityDef[] = [
     targeting: { kind: "all-opponents" },
     effects: [
       { kind: "damage", channel: "physical", coefficient: 0.8 },
-      { kind: "apply-status", statusId: "stun", stunMs: 2000 },
+      { kind: "apply-status", statusId: "stun", stunMs: 2600 },
     ],
     windUpMs: 650,
     recoveryMs: 750,
-    cooldownMs: 15000,
+    cooldownMs: 19500,
   },
 ];
