@@ -263,6 +263,13 @@ Decision: [Automatic Combat rules](https://github.com/jsbellamy/nightglass/issue
 - **Opponent AI** uses the same Action-Cycle and first-valid model with
   authored Ability lists. Ordinary opponents never bypass the closest living
   Party Member; Boss exceptions must be visibly telegraphed.
+- **Combat pacing (×1.3 retune).** Shipped Ability cooldowns and Status
+  Effect durations are ×1.3 relative to the vertical-slice Class Kit baseline
+  (e.g. Pinpoint Shot `9100` ms cooldown, Braced `6500` ms, base Stun
+  `1300` ms). Basic-slot auto-attack cycles are doubled by increasing
+  Recovery only — Quickshot keeps `300` ms Wind-up and uses `1400` ms
+  Recovery. Ability Wind-up is unchanged so effect-recipe `impact_expected`
+  cues remain valid (e.g. Pinpoint Shot `650` ms Wind-up).
 
 ---
 
@@ -300,15 +307,21 @@ compared to that fixture field-by-field.
 
 Decision: [vertical-slice progression](https://github.com/jsbellamy/nightglass/issues/5).
 
-- **Three Stages**, each two ordinary Waves then a Boss. Clearing Stage 1 or 2
-  unlocks and auto-begins the next; clearing Stage 3 auto-begins another
-  Stage 3 Attempt (the farming frontier). Manual selection of any unlocked
-  Stage abandons the current Attempt without revoking earned XP.
+- **Ten Stages.** Stages 1–9 each run four ordinary Waves then a Boss.
+  Clearing Stage 1–9 unlocks and auto-begins the next; clearing Stage 9
+  unlocks Stage 10. Stage 10 is Boss-only and, on clear, auto-begins a
+  fresh Stage 10 Attempt (the farming frontier). Manual selection of any
+  unlocked Stage abandons the current Attempt without revoking earned XP.
 - **Levels 1–6**, one Talent Point per Level including Level 1. Cumulative XP
-  thresholds: 0 / 100 / 250 / 450 / 650 / 850. Encounter budgets: Stage 1
-  `20/20/60`, Stage 2 `30/30/90`, Stage 3 `40/40/120` — allocated among
-  opponents in content data, awarded as they are defeated, no completion or
-  first-clear bonuses. Party Members receive full awards; the Reserve 50%.
+  thresholds: 0 / 100 / 250 / 450 / 650 / 850. Encounter budgets (ordinary
+  Waves then Boss): Stage 1 `10/10/10/10/60`, Stage 2 `15/15/15/15/90`,
+  Stage 3 `20/20/20/20/120`, Stage 4 `40/40/40/40/240`, Stage 5
+  `50/50/50/50/300`, Stage 6 `65/65/65/65/390`, Stage 7 `80/80/80/80/480`,
+  Stage 8 `95/95/95/95/570`, Stage 9 `130/130/130/130/900`, Stage 10 `1500`
+  (Boss-only). Each Stage's ordinary-Wave XP total is unchanged from the
+  two-Wave era — the same budget split evenly across four Waves — allocated
+  among opponents in content data, awarded as they are defeated, no completion
+  or first-clear bonuses. Party Members receive full awards; the Reserve 50%.
   Failed-Attempt XP is retained.
 - Clean-path pacing: Level 2 after Stage 1, 3 after Stage 2, 4 after Stage 3,
   then Levels 5 and 6 from two further Stage 3 clears; tune the full arc to
@@ -338,9 +351,10 @@ bands, rarity odds; content data transcribes it directly).
   original-IP names): Tier I for Item Levels 1–2, Tier II from the Stage 3
   frontier. Tiers change guaranteed-stat scale and Affix bands; Rarity is
   independent, so a great Tier I piece can beat a weak Tier II piece.
-- **Drop cadence:** one per Wave clear, two per Boss (second has an Uncommon
-  floor); rewards commit at encounter completion and survive later defeat or
-  abandonment. Type selection: uniform slot category, then uniform Class for
+- **Drop cadence:** one Drop on ordinary Wave clears 2 and 4 and on the Boss;
+  never on encounter 1. The Boss Drop carries an Uncommon floor. Stage 10's
+  Boss is encounter 1, so it awards no Drop. Rewards commit at encounter
+  completion and survive later defeat or abandonment. Type selection: uniform slot category, then uniform Class for
   weapons. Rarity odds shift per Stage (S1 `55/35/9/1`, S2 `40/40/17/3`,
   S3 `25/45/24/6`).
 - **Loot RNG is a persisted stream separate from the combat stream.** Pieces
