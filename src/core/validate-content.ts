@@ -13,9 +13,9 @@ import type {
 
 /** Per-Stage Character XP encounter budgets from issue #5 / vertical-slice-spec §7. */
 export const ENCOUNTER_BUDGETS = {
-  1: { waves: [20, 20], boss: 60 },
-  2: { waves: [30, 30], boss: 90 },
-  3: { waves: [40, 40], boss: 120 },
+  1: { waves: [10, 10, 10, 10], boss: 60 },
+  2: { waves: [15, 15, 15, 15], boss: 90 },
+  3: { waves: [20, 20, 20, 20], boss: 120 },
   4: { waves: [80, 80], boss: 240 },
   5: { waves: [100, 100], boss: 300 },
   6: { waves: [130, 130], boss: 390 },

@@ -324,8 +324,10 @@ test.describe("accessibility contrast floor", () => {
     const live = await openEvidenceSession(browser, "live-tile-and-dock");
     const tile = live.tile!;
 
-    await advanceUntilVisible(tile, tile.locator(".combatant.knocked-out"));
-    await expect(tile.locator(".combatant.knocked-out")).toBeVisible();
+    await advanceUntilVisible(tile, tile.locator(".combatant.knocked-out").first(), {
+      maxSimMs: 20 * 60 * 1000,
+    });
+    await expect(tile.locator(".combatant.knocked-out").first()).toBeVisible();
     const knockout = await tile.evaluate(() => {
       const combatant = document.querySelector(".combatant.knocked-out");
       const sprite = combatant?.querySelector(".combatant-sprite");

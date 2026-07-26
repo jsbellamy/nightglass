@@ -374,7 +374,9 @@ describe("Management Dock shell", () => {
     const cases = [
       { encounter: 1, label: "Wave 1" },
       { encounter: 2, label: "Wave 2" },
-      { encounter: 3, label: "Boss" },
+      { encounter: 3, label: "Wave 3" },
+      { encounter: 4, label: "Wave 4" },
+      { encounter: 5, label: "Boss" },
     ] as const;
 
     for (const { encounter, label } of cases) {
@@ -383,7 +385,7 @@ describe("Management Dock shell", () => {
       const dockLabel = root.dataset["stageLabel"] ?? "";
       expect(dockLabel).toContain(label);
       if (label === "Boss") {
-        expect(dockLabel).not.toContain("Wave 3");
+        expect(dockLabel).not.toContain("Wave 4");
       }
     }
 
@@ -413,7 +415,7 @@ describe("Management Dock shell", () => {
     dock.destroy();
   });
 
-  it("labels encounter 3 as Boss consistently with the Battle Tile and Stage surface", () => {
+  it("labels the Boss encounter consistently with the Battle Tile and Stage surface", () => {
     const dockRoot = document.createElement("main");
     const battleRoot = document.createElement("main");
     const dock = mountDock(dockRoot);
@@ -423,7 +425,7 @@ describe("Management Dock shell", () => {
     if (!snapshot.attempt) {
       throw new Error("missing Attempt");
     }
-    snapshot.attempt.encounter = 3;
+    snapshot.attempt.encounter = 5;
     snapshot.progression.unlockedStage = 3;
 
     dock.render(snapshot);
@@ -436,11 +438,11 @@ describe("Management Dock shell", () => {
       dockRoot.querySelector(".stage-surface .attempt-position")?.textContent ?? "";
 
     expect(dockLabel).toContain("Boss");
-    expect(dockLabel).not.toContain("Wave 3");
+    expect(dockLabel).not.toContain("Wave 4");
     expect(battleLabel).toContain("Boss");
-    expect(battleLabel).not.toContain("Wave 3");
+    expect(battleLabel).not.toContain("Wave 4");
     expect(stagePosition).toContain("Boss");
-    expect(stagePosition).not.toContain("Wave 3");
+    expect(stagePosition).not.toContain("Wave 4");
 
     dock.destroy();
     battleTile.destroy();

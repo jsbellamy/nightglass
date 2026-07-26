@@ -458,6 +458,16 @@ export const fixtureContent: Content = {
       spriteKey: "fixture-small-grunt",
     },
     {
+      id: "fixture-ten-grunt",
+      name: "Fixture Ten Grunt",
+      family: "test",
+      boss: false,
+      base: { maxHealth: 40, physical: 8, spell: 0, armor: 5, elementalResistance: 5, firePower: 0, frostPower: 0, lightningPower: 0, lightPower: 0, critChance: 0.05, critDamage: 1.5 },
+      abilityIds: ["grunt-attack"],
+      xpAward: 10,
+      spriteKey: "fixture-grunt",
+    },
+    {
       id: "fixture-boss",
       name: "Fixture Boss",
       family: "test",
@@ -482,7 +492,12 @@ export const fixtureContent: Content = {
     {
       id: 1,
       name: "Fixture Stage",
-      waves: [{ opponents: ["fixture-grunt"] }, { opponents: ["fixture-grunt"] }],
+      waves: [
+        { opponents: ["fixture-ten-grunt"] },
+        { opponents: ["fixture-ten-grunt"] },
+        { opponents: ["fixture-ten-grunt"] },
+        { opponents: ["fixture-ten-grunt"] },
+      ],
       boss: { opponents: ["fixture-boss"] },
       rarityOdds: [55, 35, 9, 1],
       backdropKey: "fixture-meadow",

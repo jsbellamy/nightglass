@@ -152,6 +152,23 @@ export const moonberryOpponentAbilities: AbilityDef[] = [
   },
 ];
 
+function scaleStatsFromXp(base: BaseStats, nearestXp: number, xpAward: number): BaseStats {
+  const ratio = xpAward / nearestXp;
+  return {
+    maxHealth: Math.max(1, Math.floor(base.maxHealth * ratio)),
+    physical: Math.max(1, Math.floor(base.physical * ratio)),
+    spell: Math.max(0, Math.floor(base.spell * ratio)),
+    armor: Math.max(0, Math.floor(base.armor * ratio)),
+    elementalResistance: Math.max(0, Math.floor(base.elementalResistance * ratio)),
+    firePower: Math.max(0, Math.floor(base.firePower * ratio)),
+    frostPower: Math.max(0, Math.floor(base.frostPower * ratio)),
+    lightningPower: Math.max(0, Math.floor(base.lightningPower * ratio)),
+    lightPower: Math.max(0, Math.floor(base.lightPower * ratio)),
+    critChance: base.critChance,
+    critDamage: base.critDamage,
+  };
+}
+
 function brambling(id: string, stats: BaseStats, xpAward: number): OpponentDef {
   return {
     id,
@@ -206,18 +223,163 @@ function dewsnail(id: string, stats: BaseStats, xpAward: number): OpponentDef {
 
 export const moonberryOpponents: OpponentDef[] = [
   brambling("brambling-1-7", PIPCAP_1_STATS, 7),
+  brambling(
+    "brambling-1-3",
+    scaleStatsFromXp(PIPCAP_1_STATS, 7, 3),
+    3,
+  ),
+  brambling(
+    "brambling-1-2",
+    scaleStatsFromXp(scaleStatsFromXp(PIPCAP_1_STATS, 7, 3), 3, 2),
+    2,
+  ),
   lanternmoth("lanternmoth-1-6", PIPCAP_1_STATS, 6),
+  lanternmoth(
+    "lanternmoth-1-3",
+    scaleStatsFromXp(PIPCAP_1_STATS, 6, 3),
+    3,
+  ),
+  lanternmoth(
+    "lanternmoth-1-2",
+    scaleStatsFromXp(scaleStatsFromXp(PIPCAP_1_STATS, 6, 3), 3, 2),
+    2,
+  ),
   huskbeetle("huskbeetle-1-5", PIPCAP_1_STATS, 5),
+  huskbeetle(
+    "huskbeetle-1-3",
+    scaleStatsFromXp(PIPCAP_1_STATS, 5, 3),
+    3,
+  ),
+  huskbeetle(
+    "huskbeetle-1-2",
+    scaleStatsFromXp(scaleStatsFromXp(PIPCAP_1_STATS, 5, 3), 3, 2),
+    2,
+  ),
   dewsnail("dewsnail-1-5", PIPCAP_1_STATS, 5),
+  dewsnail(
+    "dewsnail-1-3",
+    scaleStatsFromXp(PIPCAP_1_STATS, 5, 3),
+    3,
+  ),
+  dewsnail(
+    "dewsnail-1-2",
+    scaleStatsFromXp(scaleStatsFromXp(PIPCAP_1_STATS, 5, 3), 3, 2),
+    2,
+  ),
 
   brambling("brambling-2-7", PIPCAP_2_STATS, 7),
   brambling("brambling-2-6", PIPCAP_2_STATS, 6),
+  brambling(
+    "brambling-2-5",
+    scaleStatsFromXp(PIPCAP_2_STATS, 6, 5),
+    5,
+  ),
+  brambling(
+    "brambling-2-4",
+    scaleStatsFromXp(scaleStatsFromXp(PIPCAP_2_STATS, 6, 5), 5, 4),
+    4,
+  ),
+  brambling(
+    "brambling-2-3",
+    scaleStatsFromXp(scaleStatsFromXp(PIPCAP_2_STATS, 6, 5), 5, 3),
+    3,
+  ),
   lanternmoth("lanternmoth-2-7", PIPCAP_2_STATS, 7),
+  lanternmoth(
+    "lanternmoth-2-5",
+    scaleStatsFromXp(PIPCAP_2_STATS, 7, 5),
+    5,
+  ),
+  lanternmoth(
+    "lanternmoth-2-4",
+    scaleStatsFromXp(scaleStatsFromXp(PIPCAP_2_STATS, 7, 5), 5, 4),
+    4,
+  ),
+  lanternmoth(
+    "lanternmoth-2-3",
+    scaleStatsFromXp(scaleStatsFromXp(PIPCAP_2_STATS, 7, 5), 5, 3),
+    3,
+  ),
   huskbeetle("huskbeetle-2-6", PIPCAP_2_STATS, 6),
+  huskbeetle(
+    "huskbeetle-2-3",
+    scaleStatsFromXp(PIPCAP_2_STATS, 6, 3),
+    3,
+  ),
   dewsnail("dewsnail-2-6", PIPCAP_2_STATS, 6),
+  dewsnail(
+    "dewsnail-2-3",
+    scaleStatsFromXp(PIPCAP_2_STATS, 6, 3),
+    3,
+  ),
 
   brambling("brambling-3-8", PIPCAP_3_STATS, 8),
+  brambling(
+    "brambling-3-6",
+    scaleStatsFromXp(PIPCAP_3_STATS, 8, 6),
+    6,
+  ),
+  brambling(
+    "brambling-3-5",
+    scaleStatsFromXp(scaleStatsFromXp(PIPCAP_3_STATS, 8, 6), 6, 5),
+    5,
+  ),
+  brambling(
+    "brambling-3-4",
+    scaleStatsFromXp(scaleStatsFromXp(PIPCAP_3_STATS, 8, 6), 6, 4),
+    4,
+  ),
+  brambling(
+    "brambling-3-2",
+    scaleStatsFromXp(scaleStatsFromXp(PIPCAP_3_STATS, 8, 6), 6, 2),
+    2,
+  ),
   lanternmoth("lanternmoth-3-8", PIPCAP_3_STATS, 8),
+  lanternmoth(
+    "lanternmoth-3-5",
+    scaleStatsFromXp(PIPCAP_3_STATS, 8, 5),
+    5,
+  ),
+  lanternmoth(
+    "lanternmoth-3-4",
+    scaleStatsFromXp(scaleStatsFromXp(PIPCAP_3_STATS, 8, 5), 5, 4),
+    4,
+  ),
+  lanternmoth(
+    "lanternmoth-3-3",
+    scaleStatsFromXp(scaleStatsFromXp(PIPCAP_3_STATS, 8, 5), 5, 3),
+    3,
+  ),
+  lanternmoth(
+    "lanternmoth-3-2",
+    scaleStatsFromXp(scaleStatsFromXp(PIPCAP_3_STATS, 8, 5), 5, 2),
+    2,
+  ),
   huskbeetle("huskbeetle-3-8", PIPCAP_3_STATS, 8),
+  huskbeetle(
+    "huskbeetle-3-5",
+    scaleStatsFromXp(PIPCAP_3_STATS, 8, 5),
+    5,
+  ),
+  huskbeetle(
+    "huskbeetle-3-4",
+    scaleStatsFromXp(scaleStatsFromXp(PIPCAP_3_STATS, 8, 5), 5, 4),
+    4,
+  ),
   dewsnail("dewsnail-3-8", PIPCAP_3_STATS, 8),
+  dewsnail(
+    "dewsnail-3-4",
+    scaleStatsFromXp(PIPCAP_3_STATS, 8, 4),
+    4,
+  ),
+  dewsnail(
+    "dewsnail-3-3",
+    scaleStatsFromXp(scaleStatsFromXp(PIPCAP_3_STATS, 8, 4), 4, 3),
+    3,
+  ),
+  dewsnail(
+    "dewsnail-3-2",
+    scaleStatsFromXp(scaleStatsFromXp(PIPCAP_3_STATS, 8, 4), 4, 2),
+    2,
+  ),
 ];
