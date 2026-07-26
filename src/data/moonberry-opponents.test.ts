@@ -155,7 +155,7 @@ describe("Moonberry Opponents", () => {
       targeting: { kind: "all-opponents" },
       windUpMs: 550,
       recoveryMs: 700,
-      cooldownMs: 9_000,
+      cooldownMs: 11700,
       effects: [
         { kind: "damage", channel: "physical", coefficient: 0.6 },
         { kind: "apply-status", statusId: "riven" },
@@ -167,7 +167,7 @@ describe("Moonberry Opponents", () => {
       classId: "knight",
       targeting: { kind: "closest-opponent" },
       windUpMs: 420,
-      recoveryMs: 650,
+      recoveryMs: 1720,
       cooldownMs: 0,
       effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
     });
@@ -179,7 +179,7 @@ describe("Moonberry Opponents", () => {
       targeting: { kind: "closest-opponent" },
       windUpMs: 480,
       recoveryMs: 680,
-      cooldownMs: 8_000,
+      cooldownMs: 10400,
       effects: [
         { kind: "damage", channel: "elemental", element: "light", coefficient: 0.9 },
         { kind: "apply-status", statusId: "shaken" },
@@ -191,7 +191,7 @@ describe("Moonberry Opponents", () => {
       classId: "knight",
       targeting: { kind: "closest-opponent" },
       windUpMs: 400,
-      recoveryMs: 650,
+      recoveryMs: 1700,
       cooldownMs: 0,
       effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
     });
@@ -203,7 +203,7 @@ describe("Moonberry Opponents", () => {
       targeting: { kind: "closest-opponent" },
       windUpMs: 600,
       recoveryMs: 750,
-      cooldownMs: 9_000,
+      cooldownMs: 11700,
       effects: [
         { kind: "damage", channel: "physical", coefficient: 1.3 },
         { kind: "apply-status", statusId: "exposed" },
@@ -215,7 +215,7 @@ describe("Moonberry Opponents", () => {
       classId: "knight",
       targeting: { kind: "closest-opponent" },
       windUpMs: 430,
-      recoveryMs: 660,
+      recoveryMs: 1750,
       cooldownMs: 0,
       effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
     });
@@ -227,7 +227,7 @@ describe("Moonberry Opponents", () => {
       targeting: { kind: "all-opponents" },
       windUpMs: 560,
       recoveryMs: 720,
-      cooldownMs: 9_500,
+      cooldownMs: 12400,
       effects: [
         { kind: "damage", channel: "elemental", element: "frost", coefficient: 0.7 },
         { kind: "apply-status", statusId: "scalded" },
@@ -239,7 +239,7 @@ describe("Moonberry Opponents", () => {
       classId: "knight",
       targeting: { kind: "closest-opponent" },
       windUpMs: 450,
-      recoveryMs: 700,
+      recoveryMs: 1850,
       cooldownMs: 0,
       effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
     });
@@ -290,6 +290,51 @@ describe("Moonberry Opponents", () => {
       );
       expect(candidates.filter((ability) => ability.slot === "basic")).toHaveLength(1);
       expect(candidates[candidates.length - 1]?.slot).toBe("basic");
+    }
+  });
+
+  it("doubles basic-slot action cycles via recovery only", () => {
+    const prePacingCycleByBasicId: Record<string, number> = {
+      "pipcap-1-basic": 1500,
+      "pipcap-2-basic": 1450,
+      "pipcap-3-basic": 1400,
+      "boss-1-basic": 1500,
+      "boss-2-basic": 1500,
+      "boss-3-basic": 1450,
+      "brambling-briar-jab": 1070,
+      "lanternmoth-wing-cuff": 1050,
+      "huskbeetle-mandible-nip": 1090,
+      "dewsnail-rasp": 1150,
+      "burger-drake-bun-bash": 1100,
+      "cornquacker-cob-peck": 1100,
+      "the-fryer-grease-peck": 1100,
+      "scarequack-crooked-peck": 1100,
+      "the-combine-thresher-bite": 1150,
+      "milkshake-mallard-straw-jab": 1080,
+      "balewaddle-bale-bump": 1130,
+      "pie-widgeon-crust-peck": 1090,
+      "tickmoth-tick-peck": 1000,
+      "tollbat-wing-buffet": 1100,
+      "astrolabe-spider-caliper-bite": 1100,
+      "the-vigil-talon-rake": 1100,
+      "the-tocsin-iron-peck": 1100,
+      "the-unwound-gear-grind": 1150,
+      "aphelion-orrery-strike": 1150,
+      "pendulum-rat-gnaw": 1040,
+      "sundial-gargoyle-stone-swipe": 1170,
+    };
+
+    const basics = opponentAbilities.filter((ability) => ability.slot === "basic");
+    expect(basics.map((ability) => ability.id).sort()).toEqual(
+      Object.keys(prePacingCycleByBasicId).sort(),
+    );
+
+    for (const ability of basics) {
+      const preCycle = prePacingCycleByBasicId[ability.id];
+      expect(preCycle).toBeDefined();
+      expect(ability.cooldownMs).toBe(0);
+      expect(ability.windUpMs + ability.recoveryMs).toBe(2 * preCycle!);
+      expect(ability.recoveryMs).toBe(ability.windUpMs + 2 * (preCycle! - ability.windUpMs));
     }
   });
 

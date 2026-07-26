@@ -137,7 +137,7 @@ export const fowlHarvestOpponentAbilities: AbilityDef[] = [
     ],
     windUpMs: 450,
     recoveryMs: 700,
-    cooldownMs: 8_000,
+    cooldownMs: 10_400,
   },
   {
     id: "burger-drake-bun-bash",
@@ -147,7 +147,7 @@ export const fowlHarvestOpponentAbilities: AbilityDef[] = [
     targeting: { kind: "closest-opponent" },
     effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
     windUpMs: 400,
-    recoveryMs: 700,
+    recoveryMs: 1800,
     cooldownMs: 0,
   },
   {
@@ -162,7 +162,7 @@ export const fowlHarvestOpponentAbilities: AbilityDef[] = [
     ],
     windUpMs: 600,
     recoveryMs: 700,
-    cooldownMs: 9_000,
+    cooldownMs: 11_700,
   },
   {
     id: "cornquacker-cob-peck",
@@ -172,7 +172,7 @@ export const fowlHarvestOpponentAbilities: AbilityDef[] = [
     targeting: { kind: "closest-opponent" },
     effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
     windUpMs: 450,
-    recoveryMs: 650,
+    recoveryMs: 1750,
     cooldownMs: 0,
   },
   {
@@ -187,7 +187,7 @@ export const fowlHarvestOpponentAbilities: AbilityDef[] = [
     ],
     windUpMs: 800,
     recoveryMs: 800,
-    cooldownMs: 11_000,
+    cooldownMs: 14_300,
   },
   {
     id: "the-fryer-pressure-burst",
@@ -197,11 +197,11 @@ export const fowlHarvestOpponentAbilities: AbilityDef[] = [
     targeting: { kind: "all-opponents" },
     effects: [
       { kind: "damage", channel: "elemental", element: "fire", coefficient: 0.65 },
-      { kind: "apply-status", statusId: "stun", stunMs: 1_000 },
+      { kind: "apply-status", statusId: "stun", stunMs: 1_300 },
     ],
     windUpMs: 650,
     recoveryMs: 800,
-    cooldownMs: 14_000,
+    cooldownMs: 18_200,
   },
   {
     id: "the-fryer-grease-peck",
@@ -211,7 +211,7 @@ export const fowlHarvestOpponentAbilities: AbilityDef[] = [
     targeting: { kind: "closest-opponent" },
     effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
     windUpMs: 450,
-    recoveryMs: 650,
+    recoveryMs: 1750,
     cooldownMs: 0,
   },
   {
@@ -223,7 +223,7 @@ export const fowlHarvestOpponentAbilities: AbilityDef[] = [
     effects: [{ kind: "apply-status", statusId: "shaken" }],
     windUpMs: 500,
     recoveryMs: 700,
-    cooldownMs: 12_000,
+    cooldownMs: 15_600,
   },
   {
     id: "scarequack-stakefall",
@@ -233,11 +233,11 @@ export const fowlHarvestOpponentAbilities: AbilityDef[] = [
     targeting: { kind: "all-opponents" },
     effects: [
       { kind: "damage", channel: "physical", coefficient: 0.85 },
-      { kind: "apply-status", statusId: "stun", stunMs: 1_000 },
+      { kind: "apply-status", statusId: "stun", stunMs: 1_300 },
     ],
     windUpMs: 800,
     recoveryMs: 800,
-    cooldownMs: 14_000,
+    cooldownMs: 18_200,
   },
   {
     id: "scarequack-crooked-peck",
@@ -247,7 +247,7 @@ export const fowlHarvestOpponentAbilities: AbilityDef[] = [
     targeting: { kind: "closest-opponent" },
     effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
     windUpMs: 450,
-    recoveryMs: 650,
+    recoveryMs: 1750,
     cooldownMs: 0,
   },
   {
@@ -259,7 +259,7 @@ export const fowlHarvestOpponentAbilities: AbilityDef[] = [
     effects: [{ kind: "apply-status", statusId: "overdrive" }],
     windUpMs: 400,
     recoveryMs: 600,
-    cooldownMs: 14_000,
+    cooldownMs: 18_200,
     validWhile: "status-absent",
   },
   {
@@ -274,7 +274,7 @@ export const fowlHarvestOpponentAbilities: AbilityDef[] = [
     ],
     windUpMs: 900,
     recoveryMs: 800,
-    cooldownMs: 12_000,
+    cooldownMs: 15_600,
   },
   {
     id: "the-combine-thresher-bite",
@@ -284,7 +284,7 @@ export const fowlHarvestOpponentAbilities: AbilityDef[] = [
     targeting: { kind: "closest-opponent" },
     effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
     windUpMs: 500,
-    recoveryMs: 650,
+    recoveryMs: 1800,
     cooldownMs: 0,
   },
   {
@@ -299,7 +299,7 @@ export const fowlHarvestOpponentAbilities: AbilityDef[] = [
     ],
     windUpMs: 470,
     recoveryMs: 690,
-    cooldownMs: 8_500,
+    cooldownMs: 11_100,
   },
   {
     id: "milkshake-mallard-straw-jab",
@@ -309,7 +309,7 @@ export const fowlHarvestOpponentAbilities: AbilityDef[] = [
     targeting: { kind: "closest-opponent" },
     effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
     windUpMs: 410,
-    recoveryMs: 670,
+    recoveryMs: 1750,
     cooldownMs: 0,
   },
   {
@@ -324,7 +324,7 @@ export const fowlHarvestOpponentAbilities: AbilityDef[] = [
     ],
     windUpMs: 590,
     recoveryMs: 710,
-    cooldownMs: 9_000,
+    cooldownMs: 11_700,
   },
   {
     id: "balewaddle-bale-bump",
@@ -334,7 +334,7 @@ export const fowlHarvestOpponentAbilities: AbilityDef[] = [
     targeting: { kind: "closest-opponent" },
     effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
     windUpMs: 440,
-    recoveryMs: 690,
+    recoveryMs: 1820,
     cooldownMs: 0,
   },
   {
@@ -349,7 +349,7 @@ export const fowlHarvestOpponentAbilities: AbilityDef[] = [
     ],
     windUpMs: 460,
     recoveryMs: 680,
-    cooldownMs: 8_000,
+    cooldownMs: 10_400,
   },
   {
     id: "pie-widgeon-crust-peck",
@@ -359,7 +359,7 @@ export const fowlHarvestOpponentAbilities: AbilityDef[] = [
     targeting: { kind: "closest-opponent" },
     effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
     windUpMs: 430,
-    recoveryMs: 660,
+    recoveryMs: 1750,
     cooldownMs: 0,
   },
 ];
