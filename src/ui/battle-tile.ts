@@ -23,6 +23,7 @@ import {
   partyCombatants,
 } from "./snapshot-view";
 import { resolveSprite } from "./sprites";
+import { encounterLabel } from "./stage-surface";
 
 export {
   BATTLEFIELD_HEIGHT,
@@ -162,7 +163,7 @@ function stageWaveLabel(snapshot: ReadonlySnapshot, content: Content): string {
   }
   const stage = stageDefFor(content, attempt.stage);
   const stageName = stage?.name ?? `Stage ${attempt.stage}`;
-  const waveLabel = attempt.encounter === 3 ? "Boss" : `Wave ${attempt.encounter}`;
+  const waveLabel = encounterLabel(attempt.encounter, stage?.waves.length ?? 0);
   return `${stageName} · ${waveLabel}`;
 }
 

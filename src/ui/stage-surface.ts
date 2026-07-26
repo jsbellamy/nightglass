@@ -15,7 +15,7 @@ export interface StageSurfaceOptions {
   onCommand?: (command: TileCommand) => void;
 }
 
-function encounterLabel(encounter: number, waveCount: number): string {
+export function encounterLabel(encounter: number, waveCount: number): string {
   if (encounter === waveCount + 1) {
     return "Boss";
   }

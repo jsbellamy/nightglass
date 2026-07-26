@@ -11,7 +11,7 @@ import type { StageId } from "../core/types";
 import { buildContent } from "../data";
 import { createBusEndpoint } from "./bus";
 import { serializeEngineLegality } from "./engine-legality";
-import { mountStageSurface } from "./stage-surface";
+import { mountStageSurface, encounterLabel } from "./stage-surface";
 
 const LOOT_SEED = 42;
 const content = buildContent();
@@ -55,6 +55,20 @@ const customStageNamesContent: typeof fixtureContent = {
     { ...fixtureStageTemplate, id: 3 as const, name: "Renamed Stage Gamma" },
   ],
 };
+
+describe("encounterLabel", () => {
+  it("returns Boss when encounter is one past the authored Wave count", () => {
+    expect(encounterLabel(1, 0)).toBe("Boss");
+    expect(encounterLabel(3, 2)).toBe("Boss");
+    expect(encounterLabel(5, 4)).toBe("Boss");
+  });
+
+  it("returns Wave <n> for ordinary encounters within the authored Wave count", () => {
+    expect(encounterLabel(1, 2)).toBe("Wave 1");
+    expect(encounterLabel(2, 2)).toBe("Wave 2");
+    expect(encounterLabel(4, 4)).toBe("Wave 4");
+  });
+});
 
 describe("Stage surface", () => {
   it("renders Stage names from Content, not hardcoded labels", () => {

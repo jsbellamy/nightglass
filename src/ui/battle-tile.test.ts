@@ -423,6 +423,50 @@ describe("Battle Tile renderer", () => {
     );
   });
 
+  it("labels encounters from the Stage authored Wave count", () => {
+    const root = document.createElement("main");
+    const tile = mountBattleTile(root, fixtureContent);
+    const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
+    const snapshot = structuredClone(engine.snapshot());
+    const attempt = snapshot.attempt;
+    if (!attempt) {
+      throw new Error("missing attempt");
+    }
+
+    const cases = [
+      { encounter: 1, label: "Wave 1" },
+      { encounter: 2, label: "Wave 2" },
+      { encounter: 3, label: "Boss" },
+    ] as const;
+
+    for (const { encounter, label } of cases) {
+      attempt.encounter = encounter;
+      tile.render(snapshot);
+      expect(root.querySelector(".stage-wave-text")?.textContent ?? "").toContain(label);
+    }
+  });
+
+  it("labels Stage 10 encounter 1 as Boss when the Stage has no ordinary Waves", () => {
+    const content = buildContent();
+    const root = document.createElement("main");
+    const tile = mountBattleTile(root, content);
+    const engine = createEngine(content, undefined, LOOT_SEED);
+    const snapshot = structuredClone(engine.snapshot());
+    const attempt = snapshot.attempt;
+    if (!attempt) {
+      throw new Error("missing attempt");
+    }
+    attempt.stage = 10;
+    attempt.encounter = 1;
+    snapshot.progression.unlockedStage = 10;
+    tile.render(snapshot);
+
+    const text = root.querySelector(".stage-wave-text")?.textContent ?? "";
+    expect(text).toContain("The Oculus");
+    expect(text).toContain("Boss");
+    expect(text).not.toContain("Wave 1");
+  });
+
   it("shows the current Stage and Wave on the status line", () => {
     const root = document.createElement("main");
     const tile = mountBattleTile(root, buildContent());
