@@ -53,12 +53,12 @@ describe("validateContent", () => {
     const content: Content = {
       ...fixtureContent,
       opponents: fixtureContent.opponents.map((opponent) =>
-        opponent.id === "fixture-grunt" ? { ...opponent, xpAward: 15 } : opponent,
+        opponent.id === "fixture-small-grunt" ? { ...opponent, xpAward: 15 } : opponent,
       ),
     };
 
     expect(validateContent(content, { fixture: true })).toContain(
-      "stage 1 wave 1 xpAward sum is 15, expected 20",
+      "stage 1 wave 1 xpAward sum is 15, expected 10",
     );
   });
 
@@ -303,7 +303,7 @@ describe("validateContent", () => {
     };
 
     expect(validateContent(content, { fixture: true })).toContain(
-      "stage 1 has 0 waves, expected 2",
+      "stage 1 has 0 waves, expected 4",
     );
   });
 

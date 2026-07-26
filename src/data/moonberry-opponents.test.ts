@@ -7,18 +7,47 @@ import { opponentAbilities, opponents as shippedOpponents } from "./opponents";
 
 const EXPECTED_OPPONENT_IDS = [
   "brambling-1-7",
+  "brambling-1-3",
+  "brambling-1-2",
   "lanternmoth-1-6",
+  "lanternmoth-1-3",
+  "lanternmoth-1-2",
   "huskbeetle-1-5",
+  "huskbeetle-1-3",
+  "huskbeetle-1-2",
   "dewsnail-1-5",
+  "dewsnail-1-3",
+  "dewsnail-1-2",
   "brambling-2-7",
   "brambling-2-6",
+  "brambling-2-5",
+  "brambling-2-4",
+  "brambling-2-3",
   "lanternmoth-2-7",
+  "lanternmoth-2-5",
+  "lanternmoth-2-4",
+  "lanternmoth-2-3",
   "huskbeetle-2-6",
+  "huskbeetle-2-3",
   "dewsnail-2-6",
+  "dewsnail-2-3",
   "brambling-3-8",
+  "brambling-3-6",
+  "brambling-3-5",
+  "brambling-3-4",
+  "brambling-3-2",
   "lanternmoth-3-8",
+  "lanternmoth-3-5",
+  "lanternmoth-3-4",
+  "lanternmoth-3-3",
+  "lanternmoth-3-2",
   "huskbeetle-3-8",
+  "huskbeetle-3-5",
+  "huskbeetle-3-4",
   "dewsnail-3-8",
+  "dewsnail-3-4",
+  "dewsnail-3-3",
+  "dewsnail-3-2",
 ] as const;
 
 const MOONBERRY_FAMILIES = ["brambling", "lanternmoth", "huskbeetle", "dewsnail"] as const;
@@ -85,7 +114,12 @@ describe("Moonberry Opponents", () => {
     };
 
     const stage1 = pipcapStatsForStage(1);
-    for (const id of ["brambling-1-7", "lanternmoth-1-6", "huskbeetle-1-5", "dewsnail-1-5"]) {
+    for (const id of [
+      "brambling-1-7",
+      "lanternmoth-1-6",
+      "huskbeetle-1-5",
+      "dewsnail-1-5",
+    ]) {
       expectStats(id, stage1);
     }
 
@@ -101,7 +135,12 @@ describe("Moonberry Opponents", () => {
     }
 
     const stage3 = pipcapStatsForStage(3);
-    for (const id of ["brambling-3-8", "lanternmoth-3-8", "huskbeetle-3-8", "dewsnail-3-8"]) {
+    for (const id of [
+      "brambling-3-8",
+      "lanternmoth-3-8",
+      "huskbeetle-3-8",
+      "dewsnail-3-8",
+    ]) {
       expectStats(id, stage3);
     }
   });

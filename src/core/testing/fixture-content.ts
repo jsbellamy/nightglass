@@ -482,7 +482,12 @@ export const fixtureContent: Content = {
     {
       id: 1,
       name: "Fixture Stage",
-      waves: [{ opponents: ["fixture-grunt"] }, { opponents: ["fixture-grunt"] }],
+      waves: [
+        { opponents: ["fixture-small-grunt"] },
+        { opponents: ["fixture-small-grunt"] },
+        { opponents: ["fixture-small-grunt"] },
+        { opponents: ["fixture-small-grunt"] },
+      ],
       boss: { opponents: ["fixture-boss"] },
       rarityOdds: [55, 35, 9, 1],
       backdropKey: "fixture-meadow",

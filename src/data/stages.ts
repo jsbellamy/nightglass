@@ -9,8 +9,18 @@ export const stages: StageDef[] = [
     id: 1,
     name: "Orchard Understory",
     waves: [
-      { opponents: ["pipcap-1-7a", "brambling-1-7", "lanternmoth-1-6"] },
-      { opponents: ["pipcap-1-5", "pipcap-1-5", "huskbeetle-1-5", "dewsnail-1-5"] },
+      { opponents: ["pipcap-1-4", "brambling-1-3", "lanternmoth-1-3"] },
+      { opponents: ["pipcap-1-2", "pipcap-1-2", "huskbeetle-1-3", "dewsnail-1-3"] },
+      {
+        opponents: [
+          "brambling-1-2",
+          "lanternmoth-1-2",
+          "huskbeetle-1-2",
+          "dewsnail-1-2",
+          "pipcap-1-2",
+        ],
+      },
+      { opponents: ["pipcap-1-5", "brambling-1-3", "lanternmoth-1-2"] },
     ],
     boss: { opponents: ["boss-1"] },
     rarityOdds: [55, 35, 9, 1],
@@ -20,12 +30,18 @@ export const stages: StageDef[] = [
     id: 2,
     name: "Moonlit Bramble",
     waves: [
+      { opponents: ["pipcap-2-5", "brambling-2-5", "lanternmoth-2-5"] },
       {
-        opponents: ["pipcap-2-8a", "pipcap-2-8b", "brambling-2-7", "lanternmoth-2-7"],
+        opponents: [
+          "pipcap-2-3",
+          "pipcap-2-3",
+          "brambling-2-3",
+          "huskbeetle-2-3",
+          "dewsnail-2-3",
+        ],
       },
-      {
-        opponents: ["pipcap-2-6", "pipcap-2-6", "huskbeetle-2-6", "dewsnail-2-6", "brambling-2-6"],
-      },
+      { opponents: ["pipcap-2-4", "brambling-2-4", "lanternmoth-2-4", "dewsnail-2-3"] },
+      { opponents: ["pipcap-2-6", "brambling-2-3", "lanternmoth-2-3", "dewsnail-2-3"] },
     ],
     boss: { opponents: ["boss-2"] },
     rarityOdds: [40, 40, 17, 3],
@@ -36,10 +52,24 @@ export const stages: StageDef[] = [
     name: "Nightbloom Terrace",
     waves: [
       {
-        opponents: ["pipcap-3-8", "pipcap-3-8", "brambling-3-8", "lanternmoth-3-8", "huskbeetle-3-8"],
+        opponents: [
+          "pipcap-3-4",
+          "brambling-3-4",
+          "lanternmoth-3-4",
+          "huskbeetle-3-4",
+          "dewsnail-3-4",
+        ],
       },
+      { opponents: ["pipcap-3-5", "brambling-3-5", "lanternmoth-3-5", "huskbeetle-3-5"] },
+      { opponents: ["pipcap-3-8", "brambling-3-6", "lanternmoth-3-3", "dewsnail-3-3"] },
       {
-        opponents: ["dewsnail-3-8", "dewsnail-3-8", "brambling-3-8", "lanternmoth-3-8", "pipcap-3-8"],
+        opponents: [
+          "pipcap-3-8",
+          "pipcap-3-4",
+          "brambling-3-4",
+          "lanternmoth-3-2",
+          "dewsnail-3-2",
+        ],
       },
     ],
     boss: { opponents: ["boss-3"] },

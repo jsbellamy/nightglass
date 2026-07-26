@@ -283,11 +283,11 @@ describe("Battle Tile renderer", () => {
     if (!attempt) {
       throw new Error("missing attempt");
     }
-    attempt.encounter = 3;
+    attempt.encounter = 5;
     attempt.combatants = [
       ...attempt.combatants.filter((entry) => entry.side === "party"),
       {
-        entityId: "opp:3:0",
+        entityId: "opp:5:0",
         side: "opponent",
         defId: "fixture-boss",
         health: 180,
@@ -397,11 +397,11 @@ describe("Battle Tile renderer", () => {
     if (!attempt) {
       throw new Error("missing attempt");
     }
-    attempt.encounter = 3;
+    attempt.encounter = 5;
     attempt.combatants = [
       ...attempt.combatants.filter((entry) => entry.side === "party"),
       {
-        entityId: "opp:3:0",
+        entityId: "opp:5:0",
         side: "opponent",
         defId: "fixture-boss",
         health: 180,
@@ -436,7 +436,9 @@ describe("Battle Tile renderer", () => {
     const cases = [
       { encounter: 1, label: "Wave 1" },
       { encounter: 2, label: "Wave 2" },
-      { encounter: 3, label: "Boss" },
+      { encounter: 3, label: "Wave 3" },
+      { encounter: 4, label: "Wave 4" },
+      { encounter: 5, label: "Boss" },
     ] as const;
 
     for (const { encounter, label } of cases) {

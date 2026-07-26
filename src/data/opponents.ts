@@ -206,6 +206,23 @@ export const opponentAbilities: AbilityDef[] = [
   ...unwoundBelfryOpponentAbilities,
 ];
 
+function scaleStatsFromXp(base: BaseStats, nearestXp: number, xpAward: number): BaseStats {
+  const ratio = xpAward / nearestXp;
+  return {
+    maxHealth: Math.max(1, Math.floor(base.maxHealth * ratio)),
+    physical: Math.max(1, Math.floor(base.physical * ratio)),
+    spell: Math.max(0, Math.floor(base.spell * ratio)),
+    armor: Math.max(0, Math.floor(base.armor * ratio)),
+    elementalResistance: Math.max(0, Math.floor(base.elementalResistance * ratio)),
+    firePower: Math.max(0, Math.floor(base.firePower * ratio)),
+    frostPower: Math.max(0, Math.floor(base.frostPower * ratio)),
+    lightningPower: Math.max(0, Math.floor(base.lightningPower * ratio)),
+    lightPower: Math.max(0, Math.floor(base.lightPower * ratio)),
+    critChance: base.critChance,
+    critDamage: base.critDamage,
+  };
+}
+
 function pipcap(
   id: string,
   stats: BaseStats,
@@ -251,14 +268,21 @@ export const opponents: OpponentDef[] = [
   pipcap("pipcap-1-7b", PIPCAP_1_STATS, "pipcap-1-basic", 7),
   pipcap("pipcap-1-6", PIPCAP_1_STATS, "pipcap-1-basic", 6),
   pipcap("pipcap-1-5", PIPCAP_1_STATS, "pipcap-1-basic", 5),
+  pipcap("pipcap-1-4", scaleStatsFromXp(PIPCAP_1_STATS, 5, 4), "pipcap-1-basic", 4),
+  pipcap("pipcap-1-2", scaleStatsFromXp(PIPCAP_1_STATS, 5, 2), "pipcap-1-basic", 2),
 
   pipcap("pipcap-2-8a", PIPCAP_2_STATS, "pipcap-2-basic", 8),
   pipcap("pipcap-2-8b", PIPCAP_2_STATS, "pipcap-2-basic", 8),
   pipcap("pipcap-2-7a", PIPCAP_2_STATS, "pipcap-2-basic", 7),
   pipcap("pipcap-2-7b", PIPCAP_2_STATS, "pipcap-2-basic", 7),
   pipcap("pipcap-2-6", PIPCAP_2_STATS, "pipcap-2-basic", 6),
+  pipcap("pipcap-2-5", scaleStatsFromXp(PIPCAP_2_STATS, 6, 5), "pipcap-2-basic", 5),
+  pipcap("pipcap-2-4", scaleStatsFromXp(scaleStatsFromXp(PIPCAP_2_STATS, 6, 5), 5, 4), "pipcap-2-basic", 4),
+  pipcap("pipcap-2-3", scaleStatsFromXp(scaleStatsFromXp(PIPCAP_2_STATS, 6, 5), 5, 3), "pipcap-2-basic", 3),
 
   pipcap("pipcap-3-8", PIPCAP_3_STATS, "pipcap-3-basic", 8),
+  pipcap("pipcap-3-5", scaleStatsFromXp(PIPCAP_3_STATS, 8, 5), "pipcap-3-basic", 5),
+  pipcap("pipcap-3-4", scaleStatsFromXp(scaleStatsFromXp(PIPCAP_3_STATS, 8, 5), 5, 4), "pipcap-3-basic", 4),
 
   boss(
     "boss-1",

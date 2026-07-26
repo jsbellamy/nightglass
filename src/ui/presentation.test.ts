@@ -290,7 +290,7 @@ describe("presentation mapping", () => {
     tile.render(snapshot);
 
     tile.applyEvents(
-      [{ seq: 3, atMs: 3_000, type: "wave-started", stage: 1, encounter: 3, boss: true }],
+      [{ seq: 3, atMs: 3_000, type: "wave-started", stage: 1, encounter: 5, boss: true }],
       snapshot,
     );
     const banner = root.querySelector<HTMLElement>(".lane-banner");

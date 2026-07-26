@@ -176,9 +176,14 @@ function contentWithAuthoredStages(maxStage: StageId): Content {
 }
 
 function savedAtStageBossEncounter(content: Content, stage: StageId) {
+  const stageDef = content.stages.find((entry) => entry.id === stage);
+  if (!stageDef) {
+    throw new Error(`missing Stage ${stage}`);
+  }
+  const encounter = stage === 10 ? 1 : stageDef.waves.length + 1;
   const saved = scenario(content)
     .atStage(stage)
-    .atEncounter(3)
+    .atEncounter(encounter)
     .withOpponentsAtOneHealth()
     .withParty(["knight", "wizard", "knight"], "wizard")
     .build();
@@ -476,12 +481,12 @@ describe("critical hit rolls", () => {
 
   it("never crits or consumes combat RNG on Priest heals (Healing)", () => {
     const zeroCritContent = contentWithCritChance(0);
-    const afterInitiative = combatRngAfterInitiative(zeroCritContent);
     const engine = createEngine(zeroCritContent, undefined, LOOT_SEED, fixtureNow);
     engine.advanceBy(1);
     let elapsed = 1;
     while (elapsed < 60_000) {
       elapsed += 1;
+      const rngBeforeTick = engine.snapshot().combatRngState;
       const events = driveBy(engine, 1);
       for (const event of events) {
         if (event.type !== "impact" || event.abilityId !== "p-moonwell") {
@@ -491,7 +496,7 @@ describe("critical hit rolls", () => {
           expect(result.kind).toBe("heal");
           expect(result).not.toHaveProperty("crit");
         }
-        expect(engine.snapshot().combatRngState).toBe(afterInitiative);
+        expect(engine.snapshot().combatRngState).toBe(rngBeforeTick);
         return;
       }
     }
@@ -573,7 +578,7 @@ describe("Initiative Roll at encounter start", () => {
 
   it("desynchronizes Stage 1 Wave 1 mixed roster on a pinned seed", () => {
     const engine = createEngine(productionContent, undefined, LOOT_SEED, fixtureNow);
-    const waveOpponentIds = ["pipcap-1-7a", "brambling-1-7", "lanternmoth-1-6"] as const;
+    const waveOpponentIds = ["pipcap-1-4", "brambling-1-3", "lanternmoth-1-3"] as const;
     const entityByDefId = new Map(
       engine
         .snapshot()
@@ -597,9 +602,9 @@ describe("Initiative Roll at encounter start", () => {
     const firstActionTimes = waveOpponentIds.map((defId) => startedAtByDefId.get(defId));
     expect(firstActionTimes).toEqual([expect.any(Number), expect.any(Number), expect.any(Number)]);
     expect(new Set(firstActionTimes).size).toBe(3);
-    expect(startedAtByDefId.get("pipcap-1-7a")).toBe(574);
-    expect(startedAtByDefId.get("brambling-1-7")).toBe(3);
-    expect(startedAtByDefId.get("lanternmoth-1-6")).toBe(20);
+    expect(startedAtByDefId.get("pipcap-1-4")).toBe(574);
+    expect(startedAtByDefId.get("brambling-1-3")).toBe(3);
+    expect(startedAtByDefId.get("lanternmoth-1-3")).toBe(20);
   });
 });
 
@@ -1070,7 +1075,7 @@ describe("content-driven stage progression", () => {
     const content = contentWithAuthoredStages(6);
     const engine = createEngine(content, savedAtStageBossEncounter(content, 6), LOOT_SEED);
     const events = driveUntilStageCleared(engine, 6);
-    expect(events.some((event) => event.type === "wave-cleared" && event.encounter === 3)).toBe(
+    expect(events.some((event) => event.type === "wave-cleared" && event.encounter === 5)).toBe(
       true,
     );
     expect(events.some((event) => event.type === "stage-cleared" && event.stage === 6)).toBe(
@@ -1210,7 +1215,7 @@ describe("Stage 3 clear auto-retry", () => {
     const authored = fixtureContentWithAuthoredStages(3);
     const saved = scenario(authored)
       .atStage(3)
-      .atEncounter(3)
+      .atEncounter(5)
       .withParty(["knight", "wizard", "knight"], "wizard")
       .build();
     saved.lootRngState = LOOT_SEED;
@@ -1485,7 +1490,7 @@ describe("full combat rules", () => {
 
   it("ignores Stun on Boss opponents", () => {
     const saved = scenario()
-      .atEncounter(3)
+      .atEncounter(5)
       .withParty(["knight", "wizard", "priest"], "hunter")
       .build();
     saved.lootRngState = LOOT_SEED;
@@ -2984,7 +2989,7 @@ describe("Equipment and Drops", () => {
   };
   const fourWaveContent: Content = { ...fixtureContent, stages: [fourWaveStage] };
 
-  it("awards zero Drops on encounter 1, one on encounters 2 and 3 per stage cycle", () => {
+  it("awards zero Drops on encounter 1, one on even encounters and the Boss per stage cycle", () => {
     const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
     engine.advanceBy(1);
 
@@ -2994,17 +2999,22 @@ describe("Equipment and Drops", () => {
     ).toEqual([]);
     expect(engine.snapshot().nextDropId).toBe(1);
 
-    const encounterTwoDrops = dropIdsWhileClearingEncounter(engine, 2);
-    expect(encounterTwoDrops).toEqual([1]);
+    expect(dropIdsWhileClearingEncounter(engine, 2)).toEqual([1]);
     expect(engine.snapshot().nextDropId).toBe(2);
 
-    const encounterThreeDrops = dropIdsWhileClearingEncounter(engine, 3);
-    expect(encounterThreeDrops).toEqual([2]);
-    expect(engine.snapshot().nextDropId).toBe(3);
-    expect(engine.snapshot().progression.armory).toHaveLength(2);
+    expect(
+      eventsWhileClearingEncounter(engine, 3).filter(
+        (event) => event.type === "drop-awarded",
+      ),
+    ).toEqual([]);
+
+    expect(dropIdsWhileClearingEncounter(engine, 4)).toEqual([2]);
+    expect(dropIdsWhileClearingEncounter(engine, 5)).toEqual([3]);
+    expect(engine.snapshot().nextDropId).toBe(4);
+    expect(engine.snapshot().progression.armory).toHaveLength(3);
     expect(
       engine.snapshot().progression.armory.map((drop) => drop.dropId),
-    ).toEqual([1, 2]);
+    ).toEqual([1, 2, 3]);
   });
 
   it("awards Drops only on encounters 2, 4, and the Boss for a four-wave Stage", () => {
@@ -3033,7 +3043,7 @@ describe("Equipment and Drops", () => {
     ]);
   });
 
-  it("rolls encounter 2 without uncommonFloor while encounter 3 enforces it", { timeout: 30_000 }, () => {
+  it("rolls encounter 2 without uncommonFloor while the Boss enforces it", { timeout: 30_000 }, () => {
     let sawCommonOnEncounter2 = false;
     for (let seed = 0; seed < 500; seed += 1) {
       const engine = createEngine(fixtureContent, undefined, seed);
@@ -3045,11 +3055,13 @@ describe("Equipment and Drops", () => {
         sawCommonOnEncounter2 = true;
       }
       dropIdsWhileClearingEncounter(engine, 3);
-      const encounterThreeDrop =
+      dropIdsWhileClearingEncounter(engine, 4);
+      dropIdsWhileClearingEncounter(engine, 5);
+      const bossDrop =
         engine.snapshot().progression.armory[
           engine.snapshot().progression.armory.length - 1
         ];
-      expect(encounterThreeDrop?.rarity).not.toBe("common");
+      expect(bossDrop?.rarity).not.toBe("common");
     }
     expect(sawCommonOnEncounter2).toBe(true);
   });
@@ -3061,6 +3073,8 @@ describe("Equipment and Drops", () => {
       dropIdsWhileClearingEncounter(engine, 1);
       dropIdsWhileClearingEncounter(engine, 2);
       dropIdsWhileClearingEncounter(engine, 3);
+      dropIdsWhileClearingEncounter(engine, 4);
+      dropIdsWhileClearingEncounter(engine, 5);
       return structuredClone(engine.snapshot().progression.armory);
     };
 
@@ -3073,6 +3087,8 @@ describe("Equipment and Drops", () => {
     dropIdsWhileClearingEncounter(engine, 1);
     dropIdsWhileClearingEncounter(engine, 2);
     dropIdsWhileClearingEncounter(engine, 3);
+    dropIdsWhileClearingEncounter(engine, 4);
+    dropIdsWhileClearingEncounter(engine, 5);
 
     expect(engine.snapshot().progression.armory).toEqual([
       {
@@ -3090,8 +3106,19 @@ describe("Equipment and Drops", () => {
         dropId: 2,
         baseId: "fixture-charm",
         itemLevel: 1,
+        rarity: "common",
+        affixes: [],
+        awardedAtMs: expect.any(Number),
+        seen: false,
+        locked: false,
+        assignedTo: null,
+      },
+      {
+        dropId: 3,
+        baseId: "fixture-relic",
+        itemLevel: 1,
         rarity: "uncommon",
-        affixes: [{ id: "flat-physical", value: 3 }],
+        affixes: [{ id: "percent-frost-power", value: 0.03 }],
         awardedAtMs: expect.any(Number),
         seen: false,
         locked: false,
@@ -4778,7 +4805,7 @@ describe("boundary scan optimizations (#718)", () => {
           channel: "elemental",
           element: "fire",
           amount: 20,
-          healthAfter: 20,
+          healthAfter: 5,
         },
       ]);
     });
@@ -5180,6 +5207,8 @@ describe("due-queue scheduler (#722)", () => {
     saved.lootRngState = LOOT_SEED;
     saved.simNowMs = 0;
     const opponent = saved.attempt!.combatants.find((combatant) => combatant.side === "opponent")!;
+    opponent.defId = "fixture-stunner";
+    opponent.entityId = "opp:fixture-stunner:0";
     opponent.initiativeReadyAtMs = 2_000;
     opponent.action = {
       abilityId: "grunt-attack",

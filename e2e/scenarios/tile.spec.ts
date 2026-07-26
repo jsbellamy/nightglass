@@ -403,8 +403,10 @@ test.describe("Battle Tile evidence scenarios", () => {
     });
     expect(reducedMotionPips, "cooldown pips retained under reduced motion").toBe(9);
 
-    await advanceUntilVisible(tile, tile.locator(".combatant.knocked-out"));
-    await expect(tile.locator(".combatant.knocked-out")).toBeVisible();
+    await advanceUntilVisible(tile, tile.locator(".combatant.knocked-out").first(), {
+      maxSimMs: 20 * 60 * 1000,
+    });
+    await expect(tile.locator(".combatant.knocked-out").first()).toBeVisible();
     await tile.screenshot({ path: `${SCREENSHOTS}/02-tile-combat.png` });
     await captureReviewScene(tile, "tile-baseline-combat", "tile-combat");
 
