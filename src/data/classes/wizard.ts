@@ -10,7 +10,7 @@ export const wizardAbilities: AbilityDef[] = [
     targeting: { kind: "closest-opponent" },
     effects: [{ kind: "damage", channel: "elemental", element: "lightning", coefficient: 1 }],
     windUpMs: 450,
-    recoveryMs: 750,
+    recoveryMs: 1950,
     cooldownMs: 0,
   },
   {
@@ -23,7 +23,7 @@ export const wizardAbilities: AbilityDef[] = [
     effects: [{ kind: "damage", channel: "elemental", element: "fire", coefficient: 0.8 }],
     windUpMs: 600,
     recoveryMs: 700,
-    cooldownMs: 7000,
+    cooldownMs: 9100,
   },
   {
     id: "frost-lance",
@@ -35,7 +35,7 @@ export const wizardAbilities: AbilityDef[] = [
     effects: [{ kind: "damage", channel: "elemental", element: "frost", coefficient: 1.8 }],
     windUpMs: 800,
     recoveryMs: 600,
-    cooldownMs: 8000,
+    cooldownMs: 10400,
   },
   {
     id: "prism-ward",
@@ -47,7 +47,7 @@ export const wizardAbilities: AbilityDef[] = [
     effects: [{ kind: "apply-status", statusId: "warded" }],
     windUpMs: 300,
     recoveryMs: 500,
-    cooldownMs: 12000,
+    cooldownMs: 15600,
     validWhile: "status-absent",
   },
   {
@@ -59,11 +59,11 @@ export const wizardAbilities: AbilityDef[] = [
     targeting: { kind: "all-opponents" },
     effects: [
       { kind: "damage", channel: "elemental", element: "lightning", coefficient: 0.6 },
-      { kind: "apply-status", statusId: "stun", stunMs: 1000 },
+      { kind: "apply-status", statusId: "stun", stunMs: 1300 },
     ],
     windUpMs: 500,
     recoveryMs: 800,
-    cooldownMs: 11000,
+    cooldownMs: 14300,
   },
   {
     id: "starfall",
@@ -75,7 +75,7 @@ export const wizardAbilities: AbilityDef[] = [
     effects: [{ kind: "damage", channel: "elemental", element: "fire", coefficient: 1.6 }],
     windUpMs: 900,
     recoveryMs: 800,
-    cooldownMs: 14000,
+    cooldownMs: 18200,
   },
   {
     id: "prismatic-shelter",
@@ -87,7 +87,7 @@ export const wizardAbilities: AbilityDef[] = [
     effects: [{ kind: "apply-status", statusId: "sheltered" }],
     windUpMs: 400,
     recoveryMs: 600,
-    cooldownMs: 15000,
+    cooldownMs: 19500,
   },
 ];
 
@@ -105,7 +105,7 @@ export const wizardTier2Abilities: AbilityDef[] = [
     ],
     windUpMs: 700,
     recoveryMs: 700,
-    cooldownMs: 14_000,
+    cooldownMs: 18_200,
   },
   {
     id: "absolute-zero",
@@ -116,11 +116,11 @@ export const wizardTier2Abilities: AbilityDef[] = [
     targeting: { kind: "all-opponents" },
     effects: [
       { kind: "damage", channel: "elemental", element: "frost", coefficient: 0.65 },
-      { kind: "apply-status", statusId: "stun", stunMs: 1_000 },
+      { kind: "apply-status", statusId: "stun", stunMs: 1_300 },
     ],
     windUpMs: 650,
     recoveryMs: 750,
-    cooldownMs: 15_000,
+    cooldownMs: 19_500,
   },
 ];
 
@@ -158,7 +158,7 @@ export const wizardTier3Abilities: AbilityDef[] = [
     ],
     windUpMs: 900,
     recoveryMs: 800,
-    cooldownMs: 16_000,
+    cooldownMs: 20_800,
   },
   {
     id: "glacial-prison",
@@ -169,11 +169,11 @@ export const wizardTier3Abilities: AbilityDef[] = [
     targeting: { kind: "all-opponents" },
     effects: [
       { kind: "damage", channel: "elemental", element: "frost", coefficient: 0.7 },
-      { kind: "apply-status", statusId: "stun", stunMs: 1_500 },
+      { kind: "apply-status", statusId: "stun", stunMs: 1_950 },
     ],
     windUpMs: 700,
     recoveryMs: 800,
-    cooldownMs: 17_000,
+    cooldownMs: 22_100,
   },
 ];
 

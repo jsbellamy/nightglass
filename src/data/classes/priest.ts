@@ -10,7 +10,7 @@ export const priestAbilities: AbilityDef[] = [
     targeting: { kind: "closest-opponent" },
     effects: [{ kind: "damage", channel: "elemental", element: "light", coefficient: 1 }],
     windUpMs: 500,
-    recoveryMs: 800,
+    recoveryMs: 2100,
     cooldownMs: 0,
   },
   {
@@ -23,7 +23,7 @@ export const priestAbilities: AbilityDef[] = [
     effects: [{ kind: "heal", coefficient: 1.4 }],
     windUpMs: 450,
     recoveryMs: 550,
-    cooldownMs: 5000,
+    cooldownMs: 6500,
   },
   {
     id: "dawn-recall",
@@ -35,7 +35,7 @@ export const priestAbilities: AbilityDef[] = [
     effects: [{ kind: "revive", coefficient: 2 }],
     windUpMs: 1200,
     recoveryMs: 800,
-    cooldownMs: 20000,
+    cooldownMs: 26000,
   },
   {
     id: "war-hymn",
@@ -47,7 +47,7 @@ export const priestAbilities: AbilityDef[] = [
     effects: [{ kind: "apply-status", statusId: "inspired" }],
     windUpMs: 400,
     recoveryMs: 600,
-    cooldownMs: 14000,
+    cooldownMs: 18200,
     validWhile: "status-absent",
   },
   {
@@ -60,7 +60,7 @@ export const priestAbilities: AbilityDef[] = [
     effects: [{ kind: "damage", channel: "elemental", element: "light", coefficient: 1.7 }],
     windUpMs: 700,
     recoveryMs: 600,
-    cooldownMs: 7000,
+    cooldownMs: 9100,
   },
   {
     id: "moonwell",
@@ -72,7 +72,7 @@ export const priestAbilities: AbilityDef[] = [
     effects: [{ kind: "heal", coefficient: 1 }],
     windUpMs: 800,
     recoveryMs: 700,
-    cooldownMs: 12000,
+    cooldownMs: 15600,
     validWhile: "any-ally-missing-health",
   },
   {
@@ -88,7 +88,7 @@ export const priestAbilities: AbilityDef[] = [
     ],
     windUpMs: 800,
     recoveryMs: 700,
-    cooldownMs: 12000,
+    cooldownMs: 15600,
   },
 ];
 
@@ -106,7 +106,7 @@ export const priestTier2Abilities: AbilityDef[] = [
     ],
     windUpMs: 700,
     recoveryMs: 700,
-    cooldownMs: 15_000,
+    cooldownMs: 19_500,
     validWhile: "any-ally-missing-health",
   },
   {
@@ -122,7 +122,7 @@ export const priestTier2Abilities: AbilityDef[] = [
     ],
     windUpMs: 1_200,
     recoveryMs: 800,
-    cooldownMs: 22_000,
+    cooldownMs: 28_600,
   },
 ];
 
@@ -160,7 +160,7 @@ export const priestTier3Abilities: AbilityDef[] = [
     ],
     windUpMs: 700,
     recoveryMs: 700,
-    cooldownMs: 16_000,
+    cooldownMs: 20_800,
     validWhile: "any-ally-missing-health",
   },
   {
@@ -176,7 +176,7 @@ export const priestTier3Abilities: AbilityDef[] = [
     ],
     windUpMs: 850,
     recoveryMs: 700,
-    cooldownMs: 14_000,
+    cooldownMs: 18_200,
   },
 ];
 

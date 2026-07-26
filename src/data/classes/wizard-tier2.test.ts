@@ -23,7 +23,7 @@ const EXPECTED_WIZARD_TIER2_ABILITIES: AbilityDef[] = [
     ],
     windUpMs: 700,
     recoveryMs: 700,
-    cooldownMs: 14_000,
+    cooldownMs: 18_200,
   },
   {
     id: "absolute-zero",
@@ -34,11 +34,11 @@ const EXPECTED_WIZARD_TIER2_ABILITIES: AbilityDef[] = [
     targeting: { kind: "all-opponents" },
     effects: [
       { kind: "damage", channel: "elemental", element: "frost", coefficient: 0.65 },
-      { kind: "apply-status", statusId: "stun", stunMs: 1_000 },
+      { kind: "apply-status", statusId: "stun", stunMs: 1_300 },
     ],
     windUpMs: 650,
     recoveryMs: 750,
-    cooldownMs: 15_000,
+    cooldownMs: 19_500,
   },
 ];
 
@@ -106,7 +106,7 @@ describe("Wizard Talent Tier 2 exports", () => {
     });
     expect(absoluteZero?.effects).toEqual([
       { kind: "damage", channel: "elemental", element: "frost", coefficient: 0.65 },
-      { kind: "apply-status", statusId: "stun", stunMs: 1_000 },
+      { kind: "apply-status", statusId: "stun", stunMs: 1_300 },
     ]);
   });
 

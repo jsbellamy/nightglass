@@ -112,7 +112,7 @@ describe("assembled Class Kit content", () => {
     }
   });
 
-  it("doubles Hunter and Knight basic-slot action cycles via recovery only", () => {
+  it("doubles basic-slot action cycles via recovery only", () => {
     const quickshot = abilityById("quickshot");
     expect(quickshot.windUpMs).toBe(300);
     expect(quickshot.recoveryMs).toBe(1400);
@@ -122,6 +122,16 @@ describe("assembled Class Kit content", () => {
     expect(steelCut.windUpMs).toBe(350);
     expect(steelCut.recoveryMs).toBe(1650);
     expect(steelCut.windUpMs + steelCut.recoveryMs).toBe(2000);
+
+    const arcSpark = abilityById("arc-spark");
+    expect(arcSpark.windUpMs).toBe(450);
+    expect(arcSpark.recoveryMs).toBe(1950);
+    expect(arcSpark.windUpMs + arcSpark.recoveryMs).toBe(2400);
+
+    const sunMote = abilityById("sun-mote");
+    expect(sunMote.windUpMs).toBe(500);
+    expect(sunMote.recoveryMs).toBe(2100);
+    expect(sunMote.windUpMs + sunMote.recoveryMs).toBe(2600);
   });
 
   it("defines five buff statuses, two debuffs, and stun handling", () => {

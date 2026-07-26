@@ -55,7 +55,7 @@ describe("Wizard Talent Tier 3 exports", () => {
       ],
       windUpMs: 900,
       recoveryMs: 800,
-      cooldownMs: 16_000,
+      cooldownMs: 20_800,
     });
 
     expect(abilityById("glacial-prison")).toEqual({
@@ -67,11 +67,11 @@ describe("Wizard Talent Tier 3 exports", () => {
       targeting: { kind: "all-opponents" },
       effects: [
         { kind: "damage", channel: "elemental", element: "frost", coefficient: 0.7 },
-        { kind: "apply-status", statusId: "stun", stunMs: 1_500 },
+        { kind: "apply-status", statusId: "stun", stunMs: 1_950 },
       ],
       windUpMs: 700,
       recoveryMs: 800,
-      cooldownMs: 17_000,
+      cooldownMs: 22_100,
     });
   });
 
