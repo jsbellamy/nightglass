@@ -289,14 +289,19 @@ describe("assembled Stage content", () => {
     expect(sumEncounterXp(stageById(5))).toBe(500);
     expect(sumEncounterXp(stageById(6))).toBe(650);
 
-    const stage4 = stageById(4);
-    expect(
-      stage4.waves[0]!.opponents.reduce((sum, id) => sum + opponentById(id).xpAward, 0),
-    ).toBe(80);
-    expect(
-      stage4.waves[1]!.opponents.reduce((sum, id) => sum + opponentById(id).xpAward, 0),
-    ).toBe(80);
-    expect(stage4.boss.opponents.reduce((sum, id) => sum + opponentById(id).xpAward, 0)).toBe(240);
+    for (const stageId of [4, 5, 6] as const) {
+      const stage = stageById(stageId);
+      const budget = ENCOUNTER_BUDGETS[stageId];
+      expect(stage.waves).toHaveLength(4);
+      for (const [waveIndex, wave] of stage.waves.entries()) {
+        expect(
+          wave.opponents.reduce((sum, id) => sum + opponentById(id).xpAward, 0),
+        ).toBe(budget.waves[waveIndex]);
+      }
+    }
+    expect(stageById(4).boss.opponents.reduce((sum, id) => sum + opponentById(id).xpAward, 0)).toBe(
+      240,
+    );
   });
 
   it("gives every Moonberry Boss a telegraphed sweep with Wind-up at least 1200ms", () => {

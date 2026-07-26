@@ -10,29 +10,79 @@ const EXPECTED_OPPONENT_IDS = [
   "burger-drake-s4-27b",
   "burger-drake-s4-26",
   "burger-drake-s4-20",
+  "burger-drake-s4-14",
+  "burger-drake-s4-13a",
+  "burger-drake-s4-13b",
+  "burger-drake-s4-10",
   "cornquacker-s5-34",
   "cornquacker-s5-33a",
   "cornquacker-s5-33b",
   "cornquacker-s5-20",
+  "cornquacker-s5-17",
+  "cornquacker-s5-16",
+  "cornquacker-s5-14a",
+  "cornquacker-s5-14b",
+  "cornquacker-s5-13",
+  "cornquacker-s5-11",
+  "cornquacker-s5-10",
   "burger-drake-s6-33",
   "burger-drake-s6-32",
   "burger-drake-s6-26",
+  "burger-drake-s6-22",
+  "burger-drake-s6-16",
+  "burger-drake-s6-13",
+  "burger-drake-s6-10",
   "cornquacker-s6-33",
   "cornquacker-s6-32",
   "cornquacker-s6-26",
+  "cornquacker-s6-22",
+  "cornquacker-s6-21",
+  "cornquacker-s6-16",
+  "cornquacker-s6-13",
+  "cornquacker-s6-10",
   "milkshake-mallard-s4-27",
   "milkshake-mallard-s4-20",
+  "milkshake-mallard-s4-13",
+  "milkshake-mallard-s4-10",
   "balewaddle-s4-26",
+  "balewaddle-s4-14",
+  "balewaddle-s4-13",
+  "balewaddle-s4-10",
   "pie-widgeon-s4-20",
+  "pie-widgeon-s4-14",
+  "pie-widgeon-s4-10",
   "milkshake-mallard-s5-20",
+  "milkshake-mallard-s5-13",
+  "milkshake-mallard-s5-11",
+  "milkshake-mallard-s5-10",
   "balewaddle-s5-33",
   "balewaddle-s5-20",
+  "balewaddle-s5-17",
+  "balewaddle-s5-13",
+  "balewaddle-s5-11",
+  "balewaddle-s5-10",
   "pie-widgeon-s5-33",
   "pie-widgeon-s5-20",
+  "pie-widgeon-s5-16",
+  "pie-widgeon-s5-13",
+  "pie-widgeon-s5-11",
+  "pie-widgeon-s5-10a",
+  "pie-widgeon-s5-10b",
   "milkshake-mallard-s6-32",
+  "milkshake-mallard-s6-22",
+  "milkshake-mallard-s6-21",
+  "milkshake-mallard-s6-16",
+  "milkshake-mallard-s6-13",
   "balewaddle-s6-32",
   "balewaddle-s6-26",
+  "balewaddle-s6-22",
+  "balewaddle-s6-16",
+  "balewaddle-s6-13",
   "pie-widgeon-s6-26",
+  "pie-widgeon-s6-22",
+  "pie-widgeon-s6-21",
+  "pie-widgeon-s6-16",
+  "pie-widgeon-s6-13",
   "the-fryer",
   "scarequack",
   "the-combine",
@@ -43,17 +93,47 @@ const NEW_FOWL_FAMILIES = ["milkshake-mallard", "balewaddle", "pie-widgeon"] as 
 const NEW_OPPONENT_IDS = [
   "milkshake-mallard-s4-27",
   "milkshake-mallard-s4-20",
+  "milkshake-mallard-s4-13",
+  "milkshake-mallard-s4-10",
   "balewaddle-s4-26",
+  "balewaddle-s4-14",
+  "balewaddle-s4-13",
+  "balewaddle-s4-10",
   "pie-widgeon-s4-20",
+  "pie-widgeon-s4-14",
+  "pie-widgeon-s4-10",
   "milkshake-mallard-s5-20",
+  "milkshake-mallard-s5-13",
+  "milkshake-mallard-s5-11",
+  "milkshake-mallard-s5-10",
   "balewaddle-s5-33",
   "balewaddle-s5-20",
+  "balewaddle-s5-17",
+  "balewaddle-s5-13",
+  "balewaddle-s5-11",
+  "balewaddle-s5-10",
   "pie-widgeon-s5-33",
   "pie-widgeon-s5-20",
+  "pie-widgeon-s5-16",
+  "pie-widgeon-s5-13",
+  "pie-widgeon-s5-11",
+  "pie-widgeon-s5-10a",
+  "pie-widgeon-s5-10b",
   "milkshake-mallard-s6-32",
+  "milkshake-mallard-s6-22",
+  "milkshake-mallard-s6-21",
+  "milkshake-mallard-s6-16",
+  "milkshake-mallard-s6-13",
   "balewaddle-s6-32",
   "balewaddle-s6-26",
+  "balewaddle-s6-22",
+  "balewaddle-s6-16",
+  "balewaddle-s6-13",
   "pie-widgeon-s6-26",
+  "pie-widgeon-s6-22",
+  "pie-widgeon-s6-21",
+  "pie-widgeon-s6-16",
+  "pie-widgeon-s6-13",
 ] as const;
 
 function abilityById(abilities: AbilityDef[], id: string): AbilityDef {
@@ -150,7 +230,16 @@ describe("Fowl Harvest Opponents", () => {
       critChance: 0.05,
       critDamage: 1.5,
     };
-    for (const id of ["burger-drake-s4-27a", "burger-drake-s4-27b", "burger-drake-s4-26", "burger-drake-s4-20"]) {
+    for (const id of [
+      "burger-drake-s4-27a",
+      "burger-drake-s4-27b",
+      "burger-drake-s4-26",
+      "burger-drake-s4-20",
+      "burger-drake-s4-14",
+      "burger-drake-s4-13a",
+      "burger-drake-s4-13b",
+      "burger-drake-s4-10",
+    ]) {
       expectStats(id, burgerS4);
     }
 
@@ -167,7 +256,19 @@ describe("Fowl Harvest Opponents", () => {
       critChance: 0.05,
       critDamage: 1.5,
     };
-    for (const id of ["cornquacker-s5-34", "cornquacker-s5-33a", "cornquacker-s5-33b", "cornquacker-s5-20"]) {
+    for (const id of [
+      "cornquacker-s5-34",
+      "cornquacker-s5-33a",
+      "cornquacker-s5-33b",
+      "cornquacker-s5-20",
+      "cornquacker-s5-17",
+      "cornquacker-s5-16",
+      "cornquacker-s5-14a",
+      "cornquacker-s5-14b",
+      "cornquacker-s5-13",
+      "cornquacker-s5-11",
+      "cornquacker-s5-10",
+    ]) {
       expectStats(id, cornS5);
     }
 
@@ -184,7 +285,15 @@ describe("Fowl Harvest Opponents", () => {
       critChance: 0.05,
       critDamage: 1.5,
     };
-    for (const id of ["burger-drake-s6-33", "burger-drake-s6-32", "burger-drake-s6-26"]) {
+    for (const id of [
+      "burger-drake-s6-33",
+      "burger-drake-s6-32",
+      "burger-drake-s6-26",
+      "burger-drake-s6-22",
+      "burger-drake-s6-16",
+      "burger-drake-s6-13",
+      "burger-drake-s6-10",
+    ]) {
       expectStats(id, burgerS6);
     }
 
@@ -201,7 +310,16 @@ describe("Fowl Harvest Opponents", () => {
       critChance: 0.05,
       critDamage: 1.5,
     };
-    for (const id of ["cornquacker-s6-33", "cornquacker-s6-32", "cornquacker-s6-26"]) {
+    for (const id of [
+      "cornquacker-s6-33",
+      "cornquacker-s6-32",
+      "cornquacker-s6-26",
+      "cornquacker-s6-22",
+      "cornquacker-s6-21",
+      "cornquacker-s6-16",
+      "cornquacker-s6-13",
+      "cornquacker-s6-10",
+    ]) {
       expectStats(id, cornS6);
     }
 
@@ -448,26 +566,63 @@ describe("Fowl Harvest Opponents", () => {
     for (const id of [
       "milkshake-mallard-s4-27",
       "milkshake-mallard-s4-20",
+      "milkshake-mallard-s4-13",
+      "milkshake-mallard-s4-10",
       "balewaddle-s4-26",
+      "balewaddle-s4-14",
+      "balewaddle-s4-13",
+      "balewaddle-s4-10",
       "pie-widgeon-s4-20",
+      "pie-widgeon-s4-14",
+      "pie-widgeon-s4-10",
     ]) {
       expect(opponentById(fowlHarvestOpponents, id).base).toBe(burgerS4);
     }
 
     for (const id of [
       "milkshake-mallard-s5-20",
+      "milkshake-mallard-s5-13",
+      "milkshake-mallard-s5-11",
+      "milkshake-mallard-s5-10",
       "balewaddle-s5-33",
       "balewaddle-s5-20",
+      "balewaddle-s5-17",
+      "balewaddle-s5-13",
+      "balewaddle-s5-11",
+      "balewaddle-s5-10",
       "pie-widgeon-s5-33",
       "pie-widgeon-s5-20",
+      "pie-widgeon-s5-16",
+      "pie-widgeon-s5-13",
+      "pie-widgeon-s5-11",
+      "pie-widgeon-s5-10a",
+      "pie-widgeon-s5-10b",
     ]) {
       expect(opponentById(fowlHarvestOpponents, id).base).toBe(cornS5);
     }
 
     expect(opponentById(fowlHarvestOpponents, "milkshake-mallard-s6-32").base).toBe(burgerS6);
     expect(opponentById(fowlHarvestOpponents, "pie-widgeon-s6-26").base).toBe(burgerS6);
+    for (const id of [
+      "milkshake-mallard-s6-22",
+      "milkshake-mallard-s6-21",
+      "milkshake-mallard-s6-16",
+      "milkshake-mallard-s6-13",
+      "pie-widgeon-s6-22",
+      "pie-widgeon-s6-21",
+      "pie-widgeon-s6-16",
+      "pie-widgeon-s6-13",
+    ]) {
+      expect(opponentById(fowlHarvestOpponents, id).base).toBe(burgerS6);
+    }
 
-    for (const id of ["balewaddle-s6-32", "balewaddle-s6-26"]) {
+    for (const id of [
+      "balewaddle-s6-32",
+      "balewaddle-s6-26",
+      "balewaddle-s6-22",
+      "balewaddle-s6-16",
+      "balewaddle-s6-13",
+    ]) {
       expect(opponentById(fowlHarvestOpponents, id).base).toBe(cornS6);
     }
   });

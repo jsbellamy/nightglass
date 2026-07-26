@@ -7,14 +7,20 @@ export const fowlHarvestStages: StageDef[] = [
     name: "Last Stop Diner",
     waves: [
       {
-        opponents: ["burger-drake-s4-27a", "milkshake-mallard-s4-27", "balewaddle-s4-26"],
+        opponents: ["burger-drake-s4-14", "milkshake-mallard-s4-13", "balewaddle-s4-13"],
+      },
+      {
+        opponents: ["burger-drake-s4-20", "pie-widgeon-s4-10", "milkshake-mallard-s4-10"],
+      },
+      {
+        opponents: ["burger-drake-s4-13a", "milkshake-mallard-s4-13", "balewaddle-s4-14"],
       },
       {
         opponents: [
-          "burger-drake-s4-20",
-          "burger-drake-s4-20",
-          "pie-widgeon-s4-20",
-          "milkshake-mallard-s4-20",
+          "burger-drake-s4-10",
+          "milkshake-mallard-s4-10",
+          "balewaddle-s4-10",
+          "pie-widgeon-s4-10",
         ],
       },
     ],
@@ -27,15 +33,31 @@ export const fowlHarvestStages: StageDef[] = [
     name: "Crooked Cornfield",
     waves: [
       {
-        opponents: ["cornquacker-s5-34", "balewaddle-s5-33", "pie-widgeon-s5-33"],
+        opponents: ["cornquacker-s5-17", "balewaddle-s5-17", "pie-widgeon-s5-16"],
       },
       {
         opponents: [
-          "cornquacker-s5-20",
-          "cornquacker-s5-20",
-          "milkshake-mallard-s5-20",
-          "balewaddle-s5-20",
-          "pie-widgeon-s5-20",
+          "cornquacker-s5-13",
+          "milkshake-mallard-s5-13",
+          "balewaddle-s5-13",
+          "pie-widgeon-s5-11",
+        ],
+      },
+      {
+        opponents: [
+          "cornquacker-s5-14a",
+          "cornquacker-s5-14b",
+          "balewaddle-s5-11",
+          "milkshake-mallard-s5-11",
+        ],
+      },
+      {
+        opponents: [
+          "cornquacker-s5-10",
+          "milkshake-mallard-s5-10",
+          "balewaddle-s5-10",
+          "pie-widgeon-s5-10a",
+          "pie-widgeon-s5-10b",
         ],
       },
     ],
@@ -48,21 +70,22 @@ export const fowlHarvestStages: StageDef[] = [
     name: "Harvest Yard",
     waves: [
       {
-        opponents: [
-          "burger-drake-s6-33",
-          "cornquacker-s6-33",
-          "milkshake-mallard-s6-32",
-          "balewaddle-s6-32",
-        ],
+        opponents: ["burger-drake-s6-22", "cornquacker-s6-22", "milkshake-mallard-s6-21"],
+      },
+      {
+        opponents: ["balewaddle-s6-22", "pie-widgeon-s6-22", "cornquacker-s6-21"],
       },
       {
         opponents: [
-          "pie-widgeon-s6-26",
-          "pie-widgeon-s6-26",
-          "cornquacker-s6-26",
-          "burger-drake-s6-26",
-          "balewaddle-s6-26",
+          "burger-drake-s6-13",
+          "cornquacker-s6-13",
+          "milkshake-mallard-s6-13",
+          "balewaddle-s6-13",
+          "pie-widgeon-s6-13",
         ],
+      },
+      {
+        opponents: ["burger-drake-s6-26", "pie-widgeon-s6-26", "balewaddle-s6-13"],
       },
     ],
     boss: { opponents: ["the-combine"] },
