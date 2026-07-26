@@ -316,7 +316,7 @@ describe("validateContent", () => {
       ),
     };
     expect(validateContent(broken)).toContain(
-      "stage 4 wave 2 xpAward sum is 78, expected 80",
+      "stage 4 wave 2 xpAward sum is 39, expected 40",
     );
   });
 
