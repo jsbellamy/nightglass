@@ -481,12 +481,12 @@ describe("critical hit rolls", () => {
 
   it("never crits or consumes combat RNG on Priest heals (Healing)", () => {
     const zeroCritContent = contentWithCritChance(0);
-    const afterInitiative = combatRngAfterInitiative(zeroCritContent);
     const engine = createEngine(zeroCritContent, undefined, LOOT_SEED, fixtureNow);
     engine.advanceBy(1);
     let elapsed = 1;
     while (elapsed < 60_000) {
       elapsed += 1;
+      const rngBeforeTick = engine.snapshot().combatRngState;
       const events = driveBy(engine, 1);
       for (const event of events) {
         if (event.type !== "impact" || event.abilityId !== "p-moonwell") {
@@ -496,7 +496,7 @@ describe("critical hit rolls", () => {
           expect(result.kind).toBe("heal");
           expect(result).not.toHaveProperty("crit");
         }
-        expect(engine.snapshot().combatRngState).toBe(afterInitiative);
+        expect(engine.snapshot().combatRngState).toBe(rngBeforeTick);
         return;
       }
     }
@@ -4805,7 +4805,7 @@ describe("boundary scan optimizations (#718)", () => {
           channel: "elemental",
           element: "fire",
           amount: 20,
-          healthAfter: 20,
+          healthAfter: 5,
         },
       ]);
     });

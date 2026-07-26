@@ -53,7 +53,7 @@ describe("validateContent", () => {
     const content: Content = {
       ...fixtureContent,
       opponents: fixtureContent.opponents.map((opponent) =>
-        opponent.id === "fixture-ten-grunt" ? { ...opponent, xpAward: 15 } : opponent,
+        opponent.id === "fixture-small-grunt" ? { ...opponent, xpAward: 15 } : opponent,
       ),
     };
 
