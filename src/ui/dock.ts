@@ -3,7 +3,7 @@ import type { ClassId, Content } from "../core/types";
 import { mountArmorySurface } from "./armory-surface";
 import { mountCharacterPicker } from "./character-picker";
 import { mountCharacterSurface } from "./character-surface";
-import { mountStageSurface } from "./stage-surface";
+import { mountStageSurface, encounterLabel } from "./stage-surface";
 import type { TileCommand } from "./bus";
 import { EMPTY_ENGINE_LEGALITY, type EngineLegalityView } from "./engine-legality";
 import { rosterClassIds } from "./snapshot-view";
@@ -97,6 +97,7 @@ export function mountManagementDock(
   if (!options.content) {
     throw new Error("Management Dock requires content for Loadout and Talents surfaces");
   }
+  const content = options.content;
 
   function selectClassId(classId: ClassId): void {
     if (selectedClassId === classId) {
@@ -107,13 +108,13 @@ export function mountManagementDock(
   }
 
   const mountOptions: DockSurfaceMountOptions = {
-    content: options.content,
+    content: content,
     onCommand: (command) => options.onCommand?.(command),
     getSelectedClassId: () => selectedClassId ?? null,
   };
 
   const characterPicker = mountCharacterPicker(body, {
-    content: options.content,
+    content: content,
     onSelect(classId) {
       selectClassId(classId);
     },
@@ -141,12 +142,14 @@ export function mountManagementDock(
   }
 
   function syncStageLabel(): void {
-    const stageLabel = heldSnapshot?.attempt
-      ? `Stage ${heldSnapshot.attempt.stage} · ${
-          heldSnapshot.attempt.encounter === 3 ? "Boss" : `Wave ${heldSnapshot.attempt.encounter}`
-        }`
-      : "No Attempt";
-    root.dataset["stageLabel"] = stageLabel;
+    const attempt = heldSnapshot?.attempt;
+    if (!attempt) {
+      root.dataset["stageLabel"] = "No Attempt";
+      return;
+    }
+    const stageDef = content.stages.find((stage) => stage.id === attempt.stage);
+    const waveLabel = encounterLabel(attempt.encounter, stageDef?.waves.length ?? 0);
+    root.dataset["stageLabel"] = `Stage ${attempt.stage} · ${waveLabel}`;
   }
 
   function syncSelectedClassId(snapshot: ReadonlySnapshot | null): ClassId | undefined {

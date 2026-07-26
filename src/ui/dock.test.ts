@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it, vi } from "vitest";
 import { createEngine } from "../core/engine";
 import { fixtureContent } from "../core/testing/fixture-content";
+import { buildContent } from "../data";
 import { mountBattleTile } from "./battle-tile";
 import { DOCK_SURFACES, DOCK_TABS, mountManagementDock } from "./dock";
 import {
@@ -357,6 +358,57 @@ describe("Management Dock shell", () => {
       const panel = root.querySelector<HTMLElement>(`[data-dock-panel="${tab.id}"]`);
       expect(panel?.querySelector(".dock-placeholder-copy")).toBeNull();
     }
+
+    dock.destroy();
+  });
+
+  it("labels encounters from the Stage authored Wave count", () => {
+    const root = document.createElement("main");
+    const dock = mountDock(root);
+    const engine = createEngine(fixtureContent, undefined, 3);
+    const snapshot = structuredClone(engine.snapshot());
+    if (!snapshot.attempt) {
+      throw new Error("missing Attempt");
+    }
+
+    const cases = [
+      { encounter: 1, label: "Wave 1" },
+      { encounter: 2, label: "Wave 2" },
+      { encounter: 3, label: "Boss" },
+    ] as const;
+
+    for (const { encounter, label } of cases) {
+      snapshot.attempt.encounter = encounter;
+      dock.render(snapshot);
+      const dockLabel = root.dataset["stageLabel"] ?? "";
+      expect(dockLabel).toContain(label);
+      if (label === "Boss") {
+        expect(dockLabel).not.toContain("Wave 3");
+      }
+    }
+
+    dock.destroy();
+  });
+
+  it("labels Stage 10 encounter 1 as Boss when the Stage has no ordinary Waves", () => {
+    const content = buildContent();
+    const root = document.createElement("main");
+    const dock = mountManagementDock(root, { content });
+    const engine = createEngine(content, undefined, 3);
+    const snapshot = structuredClone(engine.snapshot());
+    if (!snapshot.attempt) {
+      throw new Error("missing Attempt");
+    }
+    snapshot.attempt.stage = 10;
+    snapshot.attempt.encounter = 1;
+    snapshot.progression.unlockedStage = 10;
+
+    dock.render(snapshot);
+
+    const dockLabel = root.dataset["stageLabel"] ?? "";
+    expect(dockLabel).toContain("Stage 10");
+    expect(dockLabel).toContain("Boss");
+    expect(dockLabel).not.toContain("Wave 1");
 
     dock.destroy();
   });
