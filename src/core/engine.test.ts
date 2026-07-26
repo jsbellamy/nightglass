@@ -1188,6 +1188,21 @@ describe("variable wave count and boss-only Stages", () => {
         .filter((event) => event.type === "wave-started"),
     ).toHaveLength(0);
   });
+
+  it("awards no Drop when a boss-only Stage clears its encounter-1 Boss", () => {
+    const saved = scenario(bossOnlyContent).build();
+    saved.attempt = null;
+    saved.progression.unlockedStage = 10;
+    const engine = createEngine(bossOnlyContent, saved, LOOT_SEED, fixtureNow);
+    engine.advanceBy(1);
+
+    const clearing = engineWithOpponentsAtOneHealth(bossOnlyContent, engine.snapshot());
+    const clearEvents = driveBy(clearing, 50_000);
+
+    expect(clearEvents.filter((event) => event.type === "drop-awarded")).toEqual([]);
+    expect(clearing.snapshot().progression.armory).toHaveLength(0);
+    expect(clearing.snapshot().nextDropId).toBe(1);
+  });
 });
 
 describe("Stage 3 clear auto-retry", () => {
@@ -2956,6 +2971,19 @@ describe("progression", () => {
 });
 
 describe("Equipment and Drops", () => {
+  const fourWaveStage: StageDef = {
+    ...fixtureStageTemplate,
+    id: 1,
+    waves: [
+      { opponents: ["fixture-grunt"] },
+      { opponents: ["fixture-grunt"] },
+      { opponents: ["fixture-grunt"] },
+      { opponents: ["fixture-grunt"] },
+    ],
+    boss: { opponents: ["fixture-boss"] },
+  };
+  const fourWaveContent: Content = { ...fixtureContent, stages: [fourWaveStage] };
+
   it("awards zero Drops on encounter 1, one on encounters 2 and 3 per stage cycle", () => {
     const engine = createEngine(fixtureContent, undefined, LOOT_SEED);
     engine.advanceBy(1);
@@ -2977,6 +3005,32 @@ describe("Equipment and Drops", () => {
     expect(
       engine.snapshot().progression.armory.map((drop) => drop.dropId),
     ).toEqual([1, 2]);
+  });
+
+  it("awards Drops only on encounters 2, 4, and the Boss for a four-wave Stage", () => {
+    const engine = createEngine(fourWaveContent, undefined, LOOT_SEED);
+    engine.advanceBy(1);
+
+    expect(
+      eventsWhileClearingEncounter(engine, 1).filter(
+        (event) => event.type === "drop-awarded",
+      ),
+    ).toEqual([]);
+
+    expect(dropIdsWhileClearingEncounter(engine, 2)).toEqual([1]);
+
+    expect(
+      eventsWhileClearingEncounter(engine, 3).filter(
+        (event) => event.type === "drop-awarded",
+      ),
+    ).toEqual([]);
+
+    expect(dropIdsWhileClearingEncounter(engine, 4)).toEqual([2]);
+    expect(dropIdsWhileClearingEncounter(engine, 5)).toEqual([3]);
+    expect(engine.snapshot().progression.armory).toHaveLength(3);
+    expect(engine.snapshot().progression.armory.map((drop) => drop.dropId)).toEqual([
+      1, 2, 3,
+    ]);
   });
 
   it("rolls encounter 2 without uncommonFloor while encounter 3 enforces it", { timeout: 30_000 }, () => {

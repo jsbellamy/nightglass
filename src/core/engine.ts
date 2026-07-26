@@ -1416,7 +1416,11 @@ function awardEncounterDrops(
   encounter: number,
 ): void {
   const stageDef = stageDefFor(index, stage);
-  if (encounter === 1) {
+  const isBossEncounter = encounter === bossEncounter(stageDef);
+  if (
+    encounter === 1 ||
+    (!isBossEncounter && encounter !== 2 && encounter !== 4)
+  ) {
     return;
   }
 
@@ -1427,7 +1431,7 @@ function awardEncounterDrops(
     lootRng: { state: state.lootRngState },
     dropId: state.nextDropId,
     awardedAtMs: state.simNowMs,
-    uncommonFloor: encounter === bossEncounter(stageDef),
+    uncommonFloor: isBossEncounter,
   });
   state.lootRngState = rolled.lootRng.state;
   state.nextDropId += 1;
