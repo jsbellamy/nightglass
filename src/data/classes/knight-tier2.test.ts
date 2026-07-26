@@ -55,7 +55,7 @@ describe("Knight Talent Tier 2 exports", () => {
       ],
       windUpMs: 400,
       recoveryMs: 600,
-      cooldownMs: 16_000,
+      cooldownMs: 20_800,
     });
 
     expect(abilityById("sundering-charge")).toEqual({
@@ -71,7 +71,7 @@ describe("Knight Talent Tier 2 exports", () => {
       ],
       windUpMs: 700,
       recoveryMs: 700,
-      cooldownMs: 13_000,
+      cooldownMs: 16_900,
     });
   });
 

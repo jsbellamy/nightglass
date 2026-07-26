@@ -112,6 +112,18 @@ describe("assembled Class Kit content", () => {
     }
   });
 
+  it("doubles Hunter and Knight basic-slot action cycles via recovery only", () => {
+    const quickshot = abilityById("quickshot");
+    expect(quickshot.windUpMs).toBe(300);
+    expect(quickshot.recoveryMs).toBe(1400);
+    expect(quickshot.windUpMs + quickshot.recoveryMs).toBe(1700);
+
+    const steelCut = abilityById("steel-cut");
+    expect(steelCut.windUpMs).toBe(350);
+    expect(steelCut.recoveryMs).toBe(1650);
+    expect(steelCut.windUpMs + steelCut.recoveryMs).toBe(2000);
+  });
+
   it("defines five buff statuses, two debuffs, and stun handling", () => {
     const buffs = content.statuses.filter((status) => status.kind === "buff");
     const debuffs = content.statuses.filter((status) => status.kind === "debuff");

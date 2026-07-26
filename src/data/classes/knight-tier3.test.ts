@@ -55,7 +55,7 @@ describe("Knight Talent Tier 3 exports", () => {
       ],
       windUpMs: 400,
       recoveryMs: 600,
-      cooldownMs: 18_000,
+      cooldownMs: 23_400,
     });
 
     expect(abilityById("titans-cleave")).toEqual({
@@ -71,7 +71,7 @@ describe("Knight Talent Tier 3 exports", () => {
       ],
       windUpMs: 800,
       recoveryMs: 800,
-      cooldownMs: 15_000,
+      cooldownMs: 19_500,
     });
   });
 

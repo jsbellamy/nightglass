@@ -45,7 +45,7 @@ describe("Hunter Talent Tier 2 exports", () => {
       ],
       windUpMs: 650,
       recoveryMs: 650,
-      cooldownMs: 13_000,
+      cooldownMs: 16_900,
     });
     expect(byId["twin-fang"]).toEqual({
       id: "twin-fang",
@@ -60,7 +60,7 @@ describe("Hunter Talent Tier 2 exports", () => {
       ],
       windUpMs: 800,
       recoveryMs: 650,
-      cooldownMs: 13_000,
+      cooldownMs: 16_900,
     });
   });
 
