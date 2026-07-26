@@ -62,7 +62,7 @@ export const moonberryOpponentAbilities: AbilityDef[] = [
     ],
     windUpMs: 550,
     recoveryMs: 700,
-    cooldownMs: 9_000,
+    cooldownMs: 11_700,
   },
   {
     id: "brambling-briar-jab",
@@ -72,7 +72,7 @@ export const moonberryOpponentAbilities: AbilityDef[] = [
     targeting: { kind: "closest-opponent" },
     effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
     windUpMs: 420,
-    recoveryMs: 650,
+    recoveryMs: 1720,
     cooldownMs: 0,
   },
   {
@@ -87,7 +87,7 @@ export const moonberryOpponentAbilities: AbilityDef[] = [
     ],
     windUpMs: 480,
     recoveryMs: 680,
-    cooldownMs: 8_000,
+    cooldownMs: 10_400,
   },
   {
     id: "lanternmoth-wing-cuff",
@@ -97,7 +97,7 @@ export const moonberryOpponentAbilities: AbilityDef[] = [
     targeting: { kind: "closest-opponent" },
     effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
     windUpMs: 400,
-    recoveryMs: 650,
+    recoveryMs: 1700,
     cooldownMs: 0,
   },
   {
@@ -112,7 +112,7 @@ export const moonberryOpponentAbilities: AbilityDef[] = [
     ],
     windUpMs: 600,
     recoveryMs: 750,
-    cooldownMs: 9_000,
+    cooldownMs: 11_700,
   },
   {
     id: "huskbeetle-mandible-nip",
@@ -122,7 +122,7 @@ export const moonberryOpponentAbilities: AbilityDef[] = [
     targeting: { kind: "closest-opponent" },
     effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
     windUpMs: 430,
-    recoveryMs: 660,
+    recoveryMs: 1750,
     cooldownMs: 0,
   },
   {
@@ -137,7 +137,7 @@ export const moonberryOpponentAbilities: AbilityDef[] = [
     ],
     windUpMs: 560,
     recoveryMs: 720,
-    cooldownMs: 9_500,
+    cooldownMs: 12_400,
   },
   {
     id: "dewsnail-rasp",
@@ -147,7 +147,7 @@ export const moonberryOpponentAbilities: AbilityDef[] = [
     targeting: { kind: "closest-opponent" },
     effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
     windUpMs: 450,
-    recoveryMs: 700,
+    recoveryMs: 1850,
     cooldownMs: 0,
   },
 ];

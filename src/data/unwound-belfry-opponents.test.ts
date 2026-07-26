@@ -347,7 +347,7 @@ describe("Unwound Belfry Opponents", () => {
       targeting: { kind: "closest-opponent" },
       windUpMs: 450,
       recoveryMs: 650,
-      cooldownMs: 8_000,
+      cooldownMs: 10400,
       effects: [
         { kind: "damage", channel: "elemental", element: "frost", coefficient: 0.9 },
         { kind: "apply-status", statusId: "timeslip" },
@@ -358,7 +358,7 @@ describe("Unwound Belfry Opponents", () => {
       slot: "basic",
       targeting: { kind: "closest-opponent" },
       windUpMs: 380,
-      recoveryMs: 620,
+      recoveryMs: 1620,
       cooldownMs: 0,
       effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
     });
@@ -369,7 +369,7 @@ describe("Unwound Belfry Opponents", () => {
       targeting: { kind: "all-opponents" },
       windUpMs: 600,
       recoveryMs: 750,
-      cooldownMs: 9_000,
+      cooldownMs: 11700,
       effects: [
         { kind: "damage", channel: "physical", coefficient: 0.6 },
         { kind: "apply-status", statusId: "tolling" },
@@ -380,7 +380,7 @@ describe("Unwound Belfry Opponents", () => {
       slot: "basic",
       targeting: { kind: "closest-opponent" },
       windUpMs: 400,
-      recoveryMs: 700,
+      recoveryMs: 1800,
       cooldownMs: 0,
       effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
     });
@@ -393,7 +393,7 @@ describe("Unwound Belfry Opponents", () => {
       targeting: { kind: "all-opponents" },
       windUpMs: 550,
       recoveryMs: 700,
-      cooldownMs: 9_000,
+      cooldownMs: 11700,
       effects: [
         { kind: "damage", channel: "elemental", element: "frost", coefficient: 0.5 },
         { kind: "apply-status", statusId: "corroded" },
@@ -405,7 +405,7 @@ describe("Unwound Belfry Opponents", () => {
         slot: "basic",
         targeting: { kind: "closest-opponent" },
         windUpMs: 420,
-        recoveryMs: 680,
+        recoveryMs: 1780,
         cooldownMs: 0,
         effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
       },
@@ -436,10 +436,10 @@ describe("Unwound Belfry Opponents", () => {
       targeting: { kind: "all-opponents" },
       windUpMs: 700,
       recoveryMs: 800,
-      cooldownMs: 13_000,
+      cooldownMs: 16900,
       effects: [
         { kind: "damage", channel: "elemental", element: "frost", coefficient: 0.6 },
-        { kind: "apply-status", statusId: "stun", stunMs: 1_000 },
+        { kind: "apply-status", statusId: "stun", stunMs: 1_300 },
       ],
     });
     expect(abilityById(unwoundBelfryOpponentAbilities, "the-vigil-hollow-gaze")).toMatchObject({
@@ -448,7 +448,7 @@ describe("Unwound Belfry Opponents", () => {
       targeting: { kind: "all-opponents" },
       windUpMs: 500,
       recoveryMs: 700,
-      cooldownMs: 12_000,
+      cooldownMs: 15600,
       effects: [{ kind: "apply-status", statusId: "timeslip" }],
     });
     expect(abilityById(unwoundBelfryOpponentAbilities, "the-vigil-talon-rake")).toMatchObject({
@@ -456,7 +456,7 @@ describe("Unwound Belfry Opponents", () => {
       slot: "basic",
       targeting: { kind: "closest-opponent" },
       windUpMs: 450,
-      recoveryMs: 650,
+      recoveryMs: 1750,
       cooldownMs: 0,
       effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
     });
@@ -467,7 +467,7 @@ describe("Unwound Belfry Opponents", () => {
       targeting: { kind: "all-opponents" },
       windUpMs: 800,
       recoveryMs: 800,
-      cooldownMs: 12_000,
+      cooldownMs: 15600,
       effects: [
         { kind: "damage", channel: "physical", coefficient: 0.8 },
         { kind: "apply-status", statusId: "tolling" },
@@ -479,10 +479,10 @@ describe("Unwound Belfry Opponents", () => {
       targeting: { kind: "all-opponents" },
       windUpMs: 700,
       recoveryMs: 800,
-      cooldownMs: 15_000,
+      cooldownMs: 19500,
       effects: [
         { kind: "damage", channel: "physical", coefficient: 0.7 },
-        { kind: "apply-status", statusId: "stun", stunMs: 1_000 },
+        { kind: "apply-status", statusId: "stun", stunMs: 1_300 },
       ],
     });
     expect(abilityById(unwoundBelfryOpponentAbilities, "the-tocsin-iron-peck")).toMatchObject({
@@ -490,7 +490,7 @@ describe("Unwound Belfry Opponents", () => {
       slot: "basic",
       targeting: { kind: "closest-opponent" },
       windUpMs: 450,
-      recoveryMs: 650,
+      recoveryMs: 1750,
       cooldownMs: 0,
       effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
     });
@@ -503,7 +503,7 @@ describe("Unwound Belfry Opponents", () => {
       targeting: { kind: "self" },
       windUpMs: 400,
       recoveryMs: 600,
-      cooldownMs: 14_000,
+      cooldownMs: 18200,
       validWhile: "status-absent",
       effects: [{ kind: "apply-status", statusId: "overdrive" }],
     });
@@ -515,7 +515,7 @@ describe("Unwound Belfry Opponents", () => {
       targeting: { kind: "all-opponents" },
       windUpMs: 900,
       recoveryMs: 800,
-      cooldownMs: 12_000,
+      cooldownMs: 15600,
       effects: [
         { kind: "damage", channel: "physical", coefficient: 1 },
         { kind: "apply-status", statusId: "corroded" },
@@ -527,10 +527,10 @@ describe("Unwound Belfry Opponents", () => {
       targeting: { kind: "all-opponents" },
       windUpMs: 800,
       recoveryMs: 850,
-      cooldownMs: 16_000,
+      cooldownMs: 20800,
       effects: [
         { kind: "damage", channel: "physical", coefficient: 0.7 },
-        { kind: "apply-status", statusId: "stun", stunMs: 1_200 },
+        { kind: "apply-status", statusId: "stun", stunMs: 1_560 },
       ],
     });
     expect(abilityById(unwoundBelfryOpponentAbilities, "the-unwound-gear-grind")).toMatchObject({
@@ -538,7 +538,7 @@ describe("Unwound Belfry Opponents", () => {
       slot: "basic",
       targeting: { kind: "closest-opponent" },
       windUpMs: 500,
-      recoveryMs: 650,
+      recoveryMs: 1800,
       cooldownMs: 0,
       effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
     });
@@ -549,7 +549,7 @@ describe("Unwound Belfry Opponents", () => {
       targeting: { kind: "all-opponents" },
       windUpMs: 700,
       recoveryMs: 800,
-      cooldownMs: 12_000,
+      cooldownMs: 15600,
       effects: [
         { kind: "damage", channel: "elemental", element: "frost", coefficient: 0.9 },
         { kind: "apply-status", statusId: "timeslip" },
@@ -561,7 +561,7 @@ describe("Unwound Belfry Opponents", () => {
       targeting: { kind: "all-opponents" },
       windUpMs: 800,
       recoveryMs: 800,
-      cooldownMs: 13_000,
+      cooldownMs: 16900,
       effects: [
         { kind: "damage", channel: "physical", coefficient: 0.9 },
         { kind: "apply-status", statusId: "tolling" },
@@ -573,10 +573,10 @@ describe("Unwound Belfry Opponents", () => {
       targeting: { kind: "all-opponents" },
       windUpMs: 900,
       recoveryMs: 900,
-      cooldownMs: 16_000,
+      cooldownMs: 20800,
       effects: [
         { kind: "damage", channel: "elemental", element: "frost", coefficient: 1.1 },
-        { kind: "apply-status", statusId: "stun", stunMs: 1_200 },
+        { kind: "apply-status", statusId: "stun", stunMs: 1_560 },
       ],
     });
     expect(abilityById(unwoundBelfryOpponentAbilities, "aphelion-cold-zenith")).toMatchObject({
@@ -585,7 +585,7 @@ describe("Unwound Belfry Opponents", () => {
       targeting: { kind: "all-opponents" },
       windUpMs: 650,
       recoveryMs: 800,
-      cooldownMs: 14_000,
+      cooldownMs: 18200,
       effects: [
         { kind: "damage", channel: "elemental", element: "frost", coefficient: 0.7 },
         { kind: "apply-status", statusId: "corroded" },
@@ -596,7 +596,7 @@ describe("Unwound Belfry Opponents", () => {
       slot: "basic",
       targeting: { kind: "closest-opponent" },
       windUpMs: 500,
-      recoveryMs: 650,
+      recoveryMs: 1800,
       cooldownMs: 0,
       effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
     });
@@ -638,7 +638,7 @@ describe("Unwound Belfry Opponents", () => {
       targeting: { kind: "all-opponents" },
       windUpMs: 580,
       recoveryMs: 720,
-      cooldownMs: 9_000,
+      cooldownMs: 11700,
       effects: [
         { kind: "damage", channel: "physical", coefficient: 0.65 },
         { kind: "apply-status", statusId: "tolling" },
@@ -650,7 +650,7 @@ describe("Unwound Belfry Opponents", () => {
       slot: "basic",
       targeting: { kind: "closest-opponent" },
       windUpMs: 400,
-      recoveryMs: 640,
+      recoveryMs: 1680,
       cooldownMs: 0,
       effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
     });
@@ -664,7 +664,7 @@ describe("Unwound Belfry Opponents", () => {
       targeting: { kind: "all-opponents" },
       windUpMs: 620,
       recoveryMs: 760,
-      cooldownMs: 9_500,
+      cooldownMs: 12400,
       effects: [
         { kind: "damage", channel: "elemental", element: "frost", coefficient: 0.6 },
         { kind: "apply-status", statusId: "timeslip" },
@@ -678,7 +678,7 @@ describe("Unwound Belfry Opponents", () => {
       slot: "basic",
       targeting: { kind: "closest-opponent" },
       windUpMs: 470,
-      recoveryMs: 700,
+      recoveryMs: 1870,
       cooldownMs: 0,
       effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
     });

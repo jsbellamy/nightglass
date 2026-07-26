@@ -110,7 +110,7 @@ export const opponentAbilities: AbilityDef[] = [
     targeting: { kind: "closest-opponent" },
     effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
     windUpMs: 500,
-    recoveryMs: 1000,
+    recoveryMs: 2500,
     cooldownMs: 0,
   },
   {
@@ -121,7 +121,7 @@ export const opponentAbilities: AbilityDef[] = [
     targeting: { kind: "closest-opponent" },
     effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
     windUpMs: 500,
-    recoveryMs: 950,
+    recoveryMs: 2400,
     cooldownMs: 0,
   },
   {
@@ -132,7 +132,7 @@ export const opponentAbilities: AbilityDef[] = [
     targeting: { kind: "closest-opponent" },
     effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
     windUpMs: 500,
-    recoveryMs: 900,
+    recoveryMs: 2300,
     cooldownMs: 0,
   },
   {
@@ -143,7 +143,7 @@ export const opponentAbilities: AbilityDef[] = [
     targeting: { kind: "closest-opponent" },
     effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
     windUpMs: 600,
-    recoveryMs: 900,
+    recoveryMs: 2400,
     cooldownMs: 0,
   },
   {
@@ -155,7 +155,7 @@ export const opponentAbilities: AbilityDef[] = [
     effects: [{ kind: "damage", channel: "physical", coefficient: 1.8 }],
     windUpMs: 1200,
     recoveryMs: 900,
-    cooldownMs: 10_000,
+    cooldownMs: 13_000,
   },
   {
     id: "boss-2-basic",
@@ -165,7 +165,7 @@ export const opponentAbilities: AbilityDef[] = [
     targeting: { kind: "closest-opponent" },
     effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
     windUpMs: 600,
-    recoveryMs: 900,
+    recoveryMs: 2400,
     cooldownMs: 0,
   },
   {
@@ -177,7 +177,7 @@ export const opponentAbilities: AbilityDef[] = [
     effects: [{ kind: "damage", channel: "physical", coefficient: 1.8 }],
     windUpMs: 1200,
     recoveryMs: 900,
-    cooldownMs: 10_000,
+    cooldownMs: 13_000,
   },
   {
     id: "boss-3-basic",
@@ -187,7 +187,7 @@ export const opponentAbilities: AbilityDef[] = [
     targeting: { kind: "closest-opponent" },
     effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
     windUpMs: 600,
-    recoveryMs: 850,
+    recoveryMs: 2300,
     cooldownMs: 0,
   },
   {
@@ -199,7 +199,7 @@ export const opponentAbilities: AbilityDef[] = [
     effects: [{ kind: "damage", channel: "physical", coefficient: 1.8 }],
     windUpMs: 1200,
     recoveryMs: 850,
-    cooldownMs: 10_000,
+    cooldownMs: 13_000,
   },
   ...moonberryOpponentAbilities,
   ...fowlHarvestOpponentAbilities,

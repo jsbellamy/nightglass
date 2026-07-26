@@ -376,7 +376,7 @@ describe("Fowl Harvest Opponents", () => {
       targeting: { kind: "closest-opponent" },
       windUpMs: 450,
       recoveryMs: 700,
-      cooldownMs: 8_000,
+      cooldownMs: 10400,
       effects: [
         { kind: "damage", channel: "elemental", element: "fire", coefficient: 0.9 },
         { kind: "apply-status", statusId: "scalded" },
@@ -389,7 +389,7 @@ describe("Fowl Harvest Opponents", () => {
       slot: "basic",
       targeting: { kind: "closest-opponent" },
       windUpMs: 400,
-      recoveryMs: 700,
+      recoveryMs: 1800,
       cooldownMs: 0,
       effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
     });
@@ -401,7 +401,7 @@ describe("Fowl Harvest Opponents", () => {
       targeting: { kind: "all-opponents" },
       windUpMs: 600,
       recoveryMs: 700,
-      cooldownMs: 9_000,
+      cooldownMs: 11700,
       effects: [
         { kind: "damage", channel: "physical", coefficient: 0.55 },
         { kind: "apply-status", statusId: "riven" },
@@ -414,7 +414,7 @@ describe("Fowl Harvest Opponents", () => {
       slot: "basic",
       targeting: { kind: "closest-opponent" },
       windUpMs: 450,
-      recoveryMs: 650,
+      recoveryMs: 1750,
       cooldownMs: 0,
       effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
     });
@@ -436,7 +436,7 @@ describe("Fowl Harvest Opponents", () => {
       targeting: { kind: "all-opponents" },
       windUpMs: 800,
       recoveryMs: 800,
-      cooldownMs: 11_000,
+      cooldownMs: 14300,
       effects: [
         { kind: "damage", channel: "elemental", element: "fire", coefficient: 1 },
         { kind: "apply-status", statusId: "scalded" },
@@ -448,10 +448,10 @@ describe("Fowl Harvest Opponents", () => {
       targeting: { kind: "all-opponents" },
       windUpMs: 650,
       recoveryMs: 800,
-      cooldownMs: 14_000,
+      cooldownMs: 18200,
       effects: [
         { kind: "damage", channel: "elemental", element: "fire", coefficient: 0.65 },
-        { kind: "apply-status", statusId: "stun", stunMs: 1_000 },
+        { kind: "apply-status", statusId: "stun", stunMs: 1_300 },
       ],
     });
     expect(abilityById(fowlHarvestOpponentAbilities, "the-fryer-grease-peck")).toMatchObject({
@@ -459,7 +459,7 @@ describe("Fowl Harvest Opponents", () => {
       slot: "basic",
       targeting: { kind: "closest-opponent" },
       windUpMs: 450,
-      recoveryMs: 650,
+      recoveryMs: 1750,
       cooldownMs: 0,
       effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
     });
@@ -470,7 +470,7 @@ describe("Fowl Harvest Opponents", () => {
       targeting: { kind: "party" },
       windUpMs: 500,
       recoveryMs: 700,
-      cooldownMs: 12_000,
+      cooldownMs: 15600,
       effects: [{ kind: "apply-status", statusId: "shaken" }],
     });
     expect(abilityById(fowlHarvestOpponentAbilities, "scarequack-stakefall")).toMatchObject({
@@ -479,10 +479,10 @@ describe("Fowl Harvest Opponents", () => {
       targeting: { kind: "all-opponents" },
       windUpMs: 800,
       recoveryMs: 800,
-      cooldownMs: 14_000,
+      cooldownMs: 18200,
       effects: [
         { kind: "damage", channel: "physical", coefficient: 0.85 },
-        { kind: "apply-status", statusId: "stun", stunMs: 1_000 },
+        { kind: "apply-status", statusId: "stun", stunMs: 1_300 },
       ],
     });
     expect(abilityById(fowlHarvestOpponentAbilities, "scarequack-crooked-peck")).toMatchObject({
@@ -490,7 +490,7 @@ describe("Fowl Harvest Opponents", () => {
       slot: "basic",
       targeting: { kind: "closest-opponent" },
       windUpMs: 450,
-      recoveryMs: 650,
+      recoveryMs: 1750,
       cooldownMs: 0,
       effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
     });
@@ -501,7 +501,7 @@ describe("Fowl Harvest Opponents", () => {
       targeting: { kind: "self" },
       windUpMs: 400,
       recoveryMs: 600,
-      cooldownMs: 14_000,
+      cooldownMs: 18200,
       validWhile: "status-absent",
       effects: [{ kind: "apply-status", statusId: "overdrive" }],
     });
@@ -511,7 +511,7 @@ describe("Fowl Harvest Opponents", () => {
       targeting: { kind: "all-opponents" },
       windUpMs: 900,
       recoveryMs: 800,
-      cooldownMs: 12_000,
+      cooldownMs: 15600,
       effects: [
         { kind: "damage", channel: "physical", coefficient: 1 },
         { kind: "apply-status", statusId: "riven" },
@@ -522,7 +522,7 @@ describe("Fowl Harvest Opponents", () => {
       slot: "basic",
       targeting: { kind: "closest-opponent" },
       windUpMs: 500,
-      recoveryMs: 650,
+      recoveryMs: 1800,
       cooldownMs: 0,
       effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
     });
@@ -639,7 +639,7 @@ describe("Fowl Harvest Opponents", () => {
       targeting: { kind: "closest-opponent" },
       windUpMs: 470,
       recoveryMs: 690,
-      cooldownMs: 8_500,
+      cooldownMs: 11100,
       effects: [
         { kind: "damage", channel: "elemental", element: "frost", coefficient: 0.9 },
         { kind: "apply-status", statusId: "timeslip" },
@@ -651,7 +651,7 @@ describe("Fowl Harvest Opponents", () => {
       classId: "knight",
       targeting: { kind: "closest-opponent" },
       windUpMs: 410,
-      recoveryMs: 670,
+      recoveryMs: 1750,
       cooldownMs: 0,
       effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
     });
@@ -663,7 +663,7 @@ describe("Fowl Harvest Opponents", () => {
       targeting: { kind: "all-opponents" },
       windUpMs: 590,
       recoveryMs: 710,
-      cooldownMs: 9_000,
+      cooldownMs: 11700,
       effects: [
         { kind: "damage", channel: "physical", coefficient: 0.55 },
         { kind: "apply-status", statusId: "shaken" },
@@ -675,7 +675,7 @@ describe("Fowl Harvest Opponents", () => {
       classId: "knight",
       targeting: { kind: "closest-opponent" },
       windUpMs: 440,
-      recoveryMs: 690,
+      recoveryMs: 1820,
       cooldownMs: 0,
       effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
     });
@@ -687,7 +687,7 @@ describe("Fowl Harvest Opponents", () => {
       targeting: { kind: "closest-opponent" },
       windUpMs: 460,
       recoveryMs: 680,
-      cooldownMs: 8_000,
+      cooldownMs: 10400,
       effects: [
         { kind: "damage", channel: "elemental", element: "fire", coefficient: 0.85 },
         { kind: "apply-status", statusId: "scalded" },
@@ -699,7 +699,7 @@ describe("Fowl Harvest Opponents", () => {
       classId: "knight",
       targeting: { kind: "closest-opponent" },
       windUpMs: 430,
-      recoveryMs: 660,
+      recoveryMs: 1750,
       cooldownMs: 0,
       effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
     });

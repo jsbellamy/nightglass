@@ -218,7 +218,7 @@ export const unwoundBelfryOpponentAbilities: AbilityDef[] = [
     ],
     windUpMs: 450,
     recoveryMs: 650,
-    cooldownMs: 8_000,
+    cooldownMs: 10_400,
   },
   {
     id: "tickmoth-tick-peck",
@@ -228,7 +228,7 @@ export const unwoundBelfryOpponentAbilities: AbilityDef[] = [
     targeting: { kind: "closest-opponent" },
     effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
     windUpMs: 380,
-    recoveryMs: 620,
+    recoveryMs: 1620,
     cooldownMs: 0,
   },
   {
@@ -243,7 +243,7 @@ export const unwoundBelfryOpponentAbilities: AbilityDef[] = [
     ],
     windUpMs: 600,
     recoveryMs: 750,
-    cooldownMs: 9_000,
+    cooldownMs: 11_700,
   },
   {
     id: "tollbat-wing-buffet",
@@ -253,7 +253,7 @@ export const unwoundBelfryOpponentAbilities: AbilityDef[] = [
     targeting: { kind: "closest-opponent" },
     effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
     windUpMs: 400,
-    recoveryMs: 700,
+    recoveryMs: 1800,
     cooldownMs: 0,
   },
   {
@@ -268,7 +268,7 @@ export const unwoundBelfryOpponentAbilities: AbilityDef[] = [
     ],
     windUpMs: 550,
     recoveryMs: 700,
-    cooldownMs: 9_000,
+    cooldownMs: 11_700,
   },
   {
     id: "astrolabe-spider-caliper-bite",
@@ -278,7 +278,7 @@ export const unwoundBelfryOpponentAbilities: AbilityDef[] = [
     targeting: { kind: "closest-opponent" },
     effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
     windUpMs: 420,
-    recoveryMs: 680,
+    recoveryMs: 1780,
     cooldownMs: 0,
   },
   {
@@ -289,11 +289,11 @@ export const unwoundBelfryOpponentAbilities: AbilityDef[] = [
     targeting: { kind: "all-opponents" },
     effects: [
       { kind: "damage", channel: "elemental", element: "frost", coefficient: 0.6 },
-      { kind: "apply-status", statusId: "stun", stunMs: 1_000 },
+      { kind: "apply-status", statusId: "stun", stunMs: 1_300 },
     ],
     windUpMs: 700,
     recoveryMs: 800,
-    cooldownMs: 13_000,
+    cooldownMs: 16_900,
   },
   {
     id: "the-vigil-hollow-gaze",
@@ -304,7 +304,7 @@ export const unwoundBelfryOpponentAbilities: AbilityDef[] = [
     effects: [{ kind: "apply-status", statusId: "timeslip" }],
     windUpMs: 500,
     recoveryMs: 700,
-    cooldownMs: 12_000,
+    cooldownMs: 15_600,
   },
   {
     id: "the-vigil-talon-rake",
@@ -314,7 +314,7 @@ export const unwoundBelfryOpponentAbilities: AbilityDef[] = [
     targeting: { kind: "closest-opponent" },
     effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
     windUpMs: 450,
-    recoveryMs: 650,
+    recoveryMs: 1750,
     cooldownMs: 0,
   },
   {
@@ -329,7 +329,7 @@ export const unwoundBelfryOpponentAbilities: AbilityDef[] = [
     ],
     windUpMs: 800,
     recoveryMs: 800,
-    cooldownMs: 12_000,
+    cooldownMs: 15_600,
   },
   {
     id: "the-tocsin-death-knell",
@@ -339,11 +339,11 @@ export const unwoundBelfryOpponentAbilities: AbilityDef[] = [
     targeting: { kind: "all-opponents" },
     effects: [
       { kind: "damage", channel: "physical", coefficient: 0.7 },
-      { kind: "apply-status", statusId: "stun", stunMs: 1_000 },
+      { kind: "apply-status", statusId: "stun", stunMs: 1_300 },
     ],
     windUpMs: 700,
     recoveryMs: 800,
-    cooldownMs: 15_000,
+    cooldownMs: 19_500,
   },
   {
     id: "the-tocsin-iron-peck",
@@ -353,7 +353,7 @@ export const unwoundBelfryOpponentAbilities: AbilityDef[] = [
     targeting: { kind: "closest-opponent" },
     effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
     windUpMs: 450,
-    recoveryMs: 650,
+    recoveryMs: 1750,
     cooldownMs: 0,
   },
   {
@@ -365,7 +365,7 @@ export const unwoundBelfryOpponentAbilities: AbilityDef[] = [
     effects: [{ kind: "apply-status", statusId: "overdrive" }],
     windUpMs: 400,
     recoveryMs: 600,
-    cooldownMs: 14_000,
+    cooldownMs: 18_200,
     validWhile: "status-absent",
   },
   {
@@ -380,7 +380,7 @@ export const unwoundBelfryOpponentAbilities: AbilityDef[] = [
     ],
     windUpMs: 900,
     recoveryMs: 800,
-    cooldownMs: 12_000,
+    cooldownMs: 15_600,
   },
   {
     id: "the-unwound-grinding-halt",
@@ -390,11 +390,11 @@ export const unwoundBelfryOpponentAbilities: AbilityDef[] = [
     targeting: { kind: "all-opponents" },
     effects: [
       { kind: "damage", channel: "physical", coefficient: 0.7 },
-      { kind: "apply-status", statusId: "stun", stunMs: 1_200 },
+      { kind: "apply-status", statusId: "stun", stunMs: 1_560 },
     ],
     windUpMs: 800,
     recoveryMs: 850,
-    cooldownMs: 16_000,
+    cooldownMs: 20_800,
   },
   {
     id: "the-unwound-gear-grind",
@@ -404,7 +404,7 @@ export const unwoundBelfryOpponentAbilities: AbilityDef[] = [
     targeting: { kind: "closest-opponent" },
     effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
     windUpMs: 500,
-    recoveryMs: 650,
+    recoveryMs: 1800,
     cooldownMs: 0,
   },
   {
@@ -419,7 +419,7 @@ export const unwoundBelfryOpponentAbilities: AbilityDef[] = [
     ],
     windUpMs: 700,
     recoveryMs: 800,
-    cooldownMs: 12_000,
+    cooldownMs: 15_600,
   },
   {
     id: "aphelion-eclipse-toll",
@@ -433,7 +433,7 @@ export const unwoundBelfryOpponentAbilities: AbilityDef[] = [
     ],
     windUpMs: 800,
     recoveryMs: 800,
-    cooldownMs: 13_000,
+    cooldownMs: 16_900,
   },
   {
     id: "aphelion-aphelions-reach",
@@ -443,11 +443,11 @@ export const unwoundBelfryOpponentAbilities: AbilityDef[] = [
     targeting: { kind: "all-opponents" },
     effects: [
       { kind: "damage", channel: "elemental", element: "frost", coefficient: 1.1 },
-      { kind: "apply-status", statusId: "stun", stunMs: 1_200 },
+      { kind: "apply-status", statusId: "stun", stunMs: 1_560 },
     ],
     windUpMs: 900,
     recoveryMs: 900,
-    cooldownMs: 16_000,
+    cooldownMs: 20_800,
   },
   {
     id: "aphelion-cold-zenith",
@@ -461,7 +461,7 @@ export const unwoundBelfryOpponentAbilities: AbilityDef[] = [
     ],
     windUpMs: 650,
     recoveryMs: 800,
-    cooldownMs: 14_000,
+    cooldownMs: 18_200,
   },
   {
     id: "aphelion-orrery-strike",
@@ -471,7 +471,7 @@ export const unwoundBelfryOpponentAbilities: AbilityDef[] = [
     targeting: { kind: "closest-opponent" },
     effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
     windUpMs: 500,
-    recoveryMs: 650,
+    recoveryMs: 1800,
     cooldownMs: 0,
   },
   {
@@ -486,7 +486,7 @@ export const unwoundBelfryOpponentAbilities: AbilityDef[] = [
     ],
     windUpMs: 580,
     recoveryMs: 720,
-    cooldownMs: 9_000,
+    cooldownMs: 11_700,
   },
   {
     id: "pendulum-rat-gnaw",
@@ -496,7 +496,7 @@ export const unwoundBelfryOpponentAbilities: AbilityDef[] = [
     targeting: { kind: "closest-opponent" },
     effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
     windUpMs: 400,
-    recoveryMs: 640,
+    recoveryMs: 1680,
     cooldownMs: 0,
   },
   {
@@ -511,7 +511,7 @@ export const unwoundBelfryOpponentAbilities: AbilityDef[] = [
     ],
     windUpMs: 620,
     recoveryMs: 760,
-    cooldownMs: 9_500,
+    cooldownMs: 12_400,
   },
   {
     id: "sundial-gargoyle-stone-swipe",
@@ -521,7 +521,7 @@ export const unwoundBelfryOpponentAbilities: AbilityDef[] = [
     targeting: { kind: "closest-opponent" },
     effects: [{ kind: "damage", channel: "physical", coefficient: 1 }],
     windUpMs: 470,
-    recoveryMs: 700,
+    recoveryMs: 1870,
     cooldownMs: 0,
   },
 ];
