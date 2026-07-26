@@ -19,9 +19,9 @@ export const ENCOUNTER_BUDGETS = {
   4: { waves: [40, 40, 40, 40], boss: 240 },
   5: { waves: [50, 50, 50, 50], boss: 300 },
   6: { waves: [65, 65, 65, 65], boss: 390 },
-  7: { waves: [160, 160], boss: 480 },
-  8: { waves: [190, 190], boss: 570 },
-  9: { waves: [260, 260], boss: 900 },
+  7: { waves: [80, 80, 80, 80], boss: 480 },
+  8: { waves: [95, 95, 95, 95], boss: 570 },
+  9: { waves: [130, 130, 130, 130], boss: 900 },
   10: { waves: [], boss: 1500 },
 } as const;
 

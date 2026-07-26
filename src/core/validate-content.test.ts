@@ -223,14 +223,14 @@ describe("validateContent", () => {
 
   it("validates Stage 7 encounter budget when wave and boss xp totals match authored budget", () => {
     const waveOpponent = {
-      id: "fixture-wave-160",
-      name: "Fixture Wave 160",
+      id: "fixture-wave-80",
+      name: "Fixture Wave 80",
       family: "test",
       boss: false,
       base: { maxHealth: 40, physical: 8, spell: 0, armor: 5, elementalResistance: 5, firePower: 0, frostPower: 0, lightningPower: 0, lightPower: 0, critChance: 0.05, critDamage: 1.5 },
       abilityIds: ["grunt-attack"],
-      xpAward: 160,
-      spriteKey: "fixture-wave-160",
+      xpAward: 80,
+      spriteKey: "fixture-wave-80",
     };
     const bossOpponent = {
       id: "fixture-boss-480",
@@ -249,7 +249,12 @@ describe("validateContent", () => {
         {
           id: 7,
           name: "Stage Seven Fixture",
-          waves: [{ opponents: ["fixture-wave-160"] }, { opponents: ["fixture-wave-160"] }],
+          waves: [
+            { opponents: ["fixture-wave-80"] },
+            { opponents: ["fixture-wave-80"] },
+            { opponents: ["fixture-wave-80"] },
+            { opponents: ["fixture-wave-80"] },
+          ],
           boss: { opponents: ["fixture-boss-480"] },
           rarityOdds: [55, 35, 9, 1],
           backdropKey: "fixture-seven",
