@@ -58,7 +58,7 @@ describe("formatAbilityDescription", () => {
         production.statuses,
       ),
     ).toBe(
-      "Hold the Line: While below 50% Health, grant yourself Hold the Line for 6s: +60 Armor and +30 Elemental Resistance",
+      "Hold the Line: While below 50% Health, grant yourself Hold the Line for 7.8s: +60 Armor and +30 Elemental Resistance",
     );
     expect(
       formatAbilityDescription(
@@ -153,7 +153,7 @@ describe("formatAbilityDescription", () => {
     );
     expect(description).toContain("all Opponents");
     expect(description).toMatch(/Scorched/i);
-    expect(description).toContain(`${tickRaw} Fire Elemental Damage every 1s`);
+    expect(description).toContain(`${tickRaw} Fire Elemental Damage every 1.3s`);
   });
 
   it("never exposes coefficients or Power totals", () => {
@@ -205,7 +205,7 @@ describe("formatAbilityChoiceLabel", () => {
         knightBase,
         production.statuses,
       ),
-    ).toBe("Shield Brace — While you lack Braced, +50 Armor for 5s");
+    ).toBe("Shield Brace — While you lack Braced, +50 Armor for 6.5s");
   });
 });
 

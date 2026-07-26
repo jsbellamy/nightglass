@@ -322,7 +322,7 @@ describe("validateContent", () => {
 
   it("accepts shipped expansion status tick definitions", () => {
     const scorched = buildContent().statuses.find((status) => status.id === "scorched");
-    expect(scorched?.tickEveryMs).toBe(1_000);
+    expect(scorched?.tickEveryMs).toBe(1_300);
     expect(validateContent(buildContent())).toEqual([]);
   });
 
