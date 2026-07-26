@@ -3696,6 +3696,8 @@ const WILDFIRE_STATUS_IDS = ["scorched", "scalded", "shaken", "overdrive"] as co
 const wildfireStatuses = shippedStatuses.filter((status) =>
   WILDFIRE_STATUS_IDS.includes(status.id as (typeof WILDFIRE_STATUS_IDS)[number]),
 );
+const SCORCHED_DURATION_MS = 6_500;
+const SCORCHED_TICK_MS = 1_300;
 
 const scorchedTickContent: Content = {
   ...fixtureContent,
@@ -3733,8 +3735,8 @@ function snapshotWithScorchedOpponent(simNowMs: number) {
   opponent.statuses = [
     {
       statusId: "scorched",
-      expiresAtMs: simNowMs + 5_000,
-      nextTickAtMs: simNowMs + 1_000,
+      expiresAtMs: simNowMs + SCORCHED_DURATION_MS,
+      nextTickAtMs: simNowMs + SCORCHED_TICK_MS,
       sourceEntityId: wizardId,
       sourcePower: { physical: 4, spell: 16 },
     },
@@ -3743,30 +3745,35 @@ function snapshotWithScorchedOpponent(simNowMs: number) {
 }
 
 describe("ticking Status Effects", () => {
-  it("ticks Scorched at 1s through 4s after application and not at 5s expiry", () => {
+  it("ticks Scorched at each tick interval through expiry and not on expiry", () => {
     const startMs = 10_000;
     const snap = snapshotWithScorchedOpponent(startMs);
     const engine = createEngine(scorchedTickContent, snap, LOOT_SEED, fixtureNow);
-    const tickTimes = [1_000, 2_000, 3_000, 4_000].map((offset) => startMs + offset);
+    const tickTimes = [1, 2, 3, 4].map((index) => startMs + SCORCHED_TICK_MS * index);
 
-    const events = driveBy(engine, 5_000);
+    const events = driveBy(engine, SCORCHED_DURATION_MS);
     const tickImpacts = events.filter(
       (event): event is Extract<EngineEvent, { type: "impact" }> =>
         event.type === "impact" && event.abilityId === "status:scorched",
     );
     expect(tickImpacts.map((event) => event.atMs)).toEqual(tickTimes);
-    expect(events.some((event) => event.type === "impact" && event.atMs === startMs + 5_000)).toBe(
-      false,
-    );
-    expect(events.some((event) => event.type === "status-expired" && event.atMs === startMs + 5_000))
-      .toBe(true);
+    expect(
+      events.some(
+        (event) => event.type === "impact" && event.atMs === startMs + SCORCHED_DURATION_MS,
+      ),
+    ).toBe(false);
+    expect(
+      events.some(
+        (event) => event.type === "status-expired" && event.atMs === startMs + SCORCHED_DURATION_MS,
+      ),
+    ).toBe(true);
   });
 
   it("uses snapshotted Spell Power, Fire channel metadata, and current target mitigation", () => {
     const startMs = 2_000;
     const snap = snapshotWithScorchedOpponent(startMs);
     const engine = createEngine(scorchedTickContent, snap, LOOT_SEED, fixtureNow);
-    const events = driveBy(engine, 1_000);
+    const events = driveBy(engine, SCORCHED_TICK_MS);
     const tick = events.find(
       (event): event is Extract<EngineEvent, { type: "impact" }> =>
         event.type === "impact" && event.abilityId === "status:scorched",
@@ -3794,11 +3801,11 @@ describe("ticking Status Effects", () => {
 
     const lowEngine = createEngine(scorchedTickContent, lowSnap, LOOT_SEED, fixtureNow);
     const highEngine = createEngine(scorchedTickContent, highSnap, LOOT_SEED, fixtureNow);
-    const lowTick = driveBy(lowEngine, 1_000).find(
+    const lowTick = driveBy(lowEngine, SCORCHED_TICK_MS).find(
       (event): event is Extract<EngineEvent, { type: "impact" }> =>
         event.type === "impact" && event.abilityId === "status:scorched",
     );
-    const highTick = driveBy(highEngine, 1_000).find(
+    const highTick = driveBy(highEngine, SCORCHED_TICK_MS).find(
       (event): event is Extract<EngineEvent, { type: "impact" }> =>
         event.type === "impact" && event.abilityId === "status:scorched",
     );
@@ -3818,7 +3825,7 @@ describe("ticking Status Effects", () => {
     scorched.sourcePower = { physical: 0, spell: 0 };
 
     const engine = createEngine(scorchedTickContent, snap, LOOT_SEED, fixtureNow);
-    const tick = driveBy(engine, 1_000).find(
+    const tick = driveBy(engine, SCORCHED_TICK_MS).find(
       (event): event is Extract<EngineEvent, { type: "impact" }> =>
         event.type === "impact" && event.abilityId === "status:scorched",
     );
@@ -3829,7 +3836,7 @@ describe("ticking Status Effects", () => {
     const startMs = 0;
     const snap = snapshotWithScorchedOpponent(startMs);
     const engine = createEngine(scorchedTickContent, snap, LOOT_SEED, fixtureNow);
-    const firstTick = driveBy(engine, 1_000).find(
+    const firstTick = driveBy(engine, SCORCHED_TICK_MS).find(
       (event): event is Extract<EngineEvent, { type: "impact" }> =>
         event.type === "impact" && event.abilityId === "status:scorched",
     );
@@ -3842,7 +3849,7 @@ describe("ticking Status Effects", () => {
     }
     opponent.statuses.push({ statusId: "scalded", expiresAtMs: startMs + 10_000 });
     const resumed = createEngine(scorchedTickContent, mid, LOOT_SEED, fixtureNow);
-    const secondTick = driveBy(resumed, 1_000).find(
+    const secondTick = driveBy(resumed, SCORCHED_TICK_MS).find(
       (event): event is Extract<EngineEvent, { type: "impact" }> =>
         event.type === "impact" && event.abilityId === "status:scorched",
     );
@@ -3863,8 +3870,8 @@ describe("ticking Status Effects", () => {
     opponent.statuses = [
       {
         statusId: "scorched",
-        expiresAtMs: startMs + 5_000,
-        nextTickAtMs: startMs + 1_000,
+        expiresAtMs: startMs + SCORCHED_DURATION_MS,
+        nextTickAtMs: startMs + SCORCHED_TICK_MS,
         sourceEntityId: knightFront,
         sourcePower: { physical: 10, spell: 10 },
       },
@@ -3910,18 +3917,18 @@ describe("ticking Status Effects", () => {
         .find((c) => c.side === "opponent")
         ?.statuses.find((status) => status.statusId === "scorched"),
     ).toMatchObject({
-      expiresAtMs: 5_000,
-      nextTickAtMs: 1_000,
+      expiresAtMs: SCORCHED_DURATION_MS,
+      nextTickAtMs: SCORCHED_TICK_MS,
       sourceEntityId: wizardMiddle,
       sourcePower: { physical: 4, spell: 16 },
     });
 
-    const afterRefresh = driveBy(engine, 999);
+    const afterRefresh = driveBy(engine, SCORCHED_TICK_MS - 1);
     const tickImpacts = afterRefresh.filter(
       (event): event is Extract<EngineEvent, { type: "impact" }> =>
         event.type === "impact" && event.abilityId === "status:scorched",
     );
-    expect(tickImpacts.map((event) => event.atMs)).toEqual([1_000]);
+    expect(tickImpacts.map((event) => event.atMs)).toEqual([SCORCHED_TICK_MS]);
     expect(tickImpacts[0]?.results[0]).toMatchObject({ kind: "damage", amount: 2 });
   });
 
@@ -3936,13 +3943,13 @@ describe("ticking Status Effects", () => {
     opponent.maxHealth = 100;
 
     const engine = createEngine(scorchedTickContent, snap, LOOT_SEED, fixtureNow);
-    const events = engine.advanceBy(1_000);
+    const events = engine.advanceBy(SCORCHED_TICK_MS);
     expect(
       events.some(
         (event) =>
           event.type === "impact" &&
           event.abilityId === "status:scorched" &&
-          event.atMs === startMs + 1_000,
+          event.atMs === startMs + SCORCHED_TICK_MS,
       ),
     ).toBe(true);
     expect(
@@ -3958,7 +3965,7 @@ describe("ticking Status Effects", () => {
     const catchUpStart = Date.now();
     engine.advanceOffline(60_000);
     expect(Date.now() - catchUpStart).toBeLessThan(5_000);
-    expect(engine.snapshot().simNowMs).toBeGreaterThan(startMs + 1_000);
+    expect(engine.snapshot().simNowMs).toBeGreaterThan(startMs + SCORCHED_TICK_MS);
     const stillDowned = engine
       .snapshot()
       .attempt!.combatants.find((entry) => entry.entityId === opponent.entityId);

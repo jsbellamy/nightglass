@@ -179,6 +179,14 @@ describe("Class Kit number contract", () => {
     }
   });
 
+  it("Scorched and Tolling tick five times across their authored duration", () => {
+    for (const id of ["scorched", "tolling"] as const) {
+      const status = statusById(id, classKit.statuses);
+      expect(status.tickEveryMs).toBeDefined();
+      expect(status.durationMs / status.tickEveryMs!).toBe(5);
+    }
+  });
+
   it("Level 1 bases and default Ability Loadouts match the reviewed contract", () => {
     expect(content.classes).toHaveLength(4);
     expect(REVIEWED_CLASS_BASES).toHaveLength(4);
