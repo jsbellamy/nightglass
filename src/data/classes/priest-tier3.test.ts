@@ -55,7 +55,7 @@ describe("Priest Talent Tier 3 exports", () => {
       ],
       windUpMs: 700,
       recoveryMs: 700,
-      cooldownMs: 16_000,
+      cooldownMs: 20_800,
       validWhile: "any-ally-missing-health",
     });
 
@@ -72,7 +72,7 @@ describe("Priest Talent Tier 3 exports", () => {
       ],
       windUpMs: 850,
       recoveryMs: 700,
-      cooldownMs: 14_000,
+      cooldownMs: 18_200,
     });
   });
 

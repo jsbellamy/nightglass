@@ -314,7 +314,7 @@ export const REVIEWED_CLASS_KIT_ABILITIES: AbilityDef[] = [
     targeting: { kind: "closest-opponent" },
     effects: [{ kind: "damage", channel: "elemental", element: "lightning", coefficient: 1 }],
     windUpMs: 450,
-    recoveryMs: 750,
+    recoveryMs: 1950,
     cooldownMs: 0,
   },
   {
@@ -327,7 +327,7 @@ export const REVIEWED_CLASS_KIT_ABILITIES: AbilityDef[] = [
     effects: [{ kind: "damage", channel: "elemental", element: "fire", coefficient: 0.8 }],
     windUpMs: 600,
     recoveryMs: 700,
-    cooldownMs: 7000,
+    cooldownMs: 9100,
   },
   {
     id: "frost-lance",
@@ -339,7 +339,7 @@ export const REVIEWED_CLASS_KIT_ABILITIES: AbilityDef[] = [
     effects: [{ kind: "damage", channel: "elemental", element: "frost", coefficient: 1.8 }],
     windUpMs: 800,
     recoveryMs: 600,
-    cooldownMs: 8000,
+    cooldownMs: 10400,
   },
   {
     id: "prism-ward",
@@ -351,7 +351,7 @@ export const REVIEWED_CLASS_KIT_ABILITIES: AbilityDef[] = [
     effects: [{ kind: "apply-status", statusId: "warded" }],
     windUpMs: 300,
     recoveryMs: 500,
-    cooldownMs: 12000,
+    cooldownMs: 15600,
     validWhile: "status-absent",
   },
   {
@@ -363,11 +363,11 @@ export const REVIEWED_CLASS_KIT_ABILITIES: AbilityDef[] = [
     targeting: { kind: "all-opponents" },
     effects: [
       { kind: "damage", channel: "elemental", element: "lightning", coefficient: 0.6 },
-      { kind: "apply-status", statusId: "stun", stunMs: 1000 },
+      { kind: "apply-status", statusId: "stun", stunMs: 1300 },
     ],
     windUpMs: 500,
     recoveryMs: 800,
-    cooldownMs: 11000,
+    cooldownMs: 14300,
   },
   {
     id: "starfall",
@@ -379,7 +379,7 @@ export const REVIEWED_CLASS_KIT_ABILITIES: AbilityDef[] = [
     effects: [{ kind: "damage", channel: "elemental", element: "fire", coefficient: 1.6 }],
     windUpMs: 900,
     recoveryMs: 800,
-    cooldownMs: 14000,
+    cooldownMs: 18200,
   },
   {
     id: "prismatic-shelter",
@@ -391,7 +391,7 @@ export const REVIEWED_CLASS_KIT_ABILITIES: AbilityDef[] = [
     effects: [{ kind: "apply-status", statusId: "sheltered" }],
     windUpMs: 400,
     recoveryMs: 600,
-    cooldownMs: 15000,
+    cooldownMs: 19500,
   },
 
   // Priest
@@ -404,7 +404,7 @@ export const REVIEWED_CLASS_KIT_ABILITIES: AbilityDef[] = [
     targeting: { kind: "closest-opponent" },
     effects: [{ kind: "damage", channel: "elemental", element: "light", coefficient: 1 }],
     windUpMs: 500,
-    recoveryMs: 800,
+    recoveryMs: 2100,
     cooldownMs: 0,
   },
   {
@@ -417,7 +417,7 @@ export const REVIEWED_CLASS_KIT_ABILITIES: AbilityDef[] = [
     effects: [{ kind: "heal", coefficient: 1.4 }],
     windUpMs: 450,
     recoveryMs: 550,
-    cooldownMs: 5000,
+    cooldownMs: 6500,
   },
   {
     id: "dawn-recall",
@@ -429,7 +429,7 @@ export const REVIEWED_CLASS_KIT_ABILITIES: AbilityDef[] = [
     effects: [{ kind: "revive", coefficient: 2 }],
     windUpMs: 1200,
     recoveryMs: 800,
-    cooldownMs: 20000,
+    cooldownMs: 26000,
   },
   {
     id: "war-hymn",
@@ -441,7 +441,7 @@ export const REVIEWED_CLASS_KIT_ABILITIES: AbilityDef[] = [
     effects: [{ kind: "apply-status", statusId: "inspired" }],
     windUpMs: 400,
     recoveryMs: 600,
-    cooldownMs: 14000,
+    cooldownMs: 18200,
     validWhile: "status-absent",
   },
   {
@@ -454,7 +454,7 @@ export const REVIEWED_CLASS_KIT_ABILITIES: AbilityDef[] = [
     effects: [{ kind: "damage", channel: "elemental", element: "light", coefficient: 1.7 }],
     windUpMs: 700,
     recoveryMs: 600,
-    cooldownMs: 7000,
+    cooldownMs: 9100,
   },
   {
     id: "moonwell",
@@ -466,7 +466,7 @@ export const REVIEWED_CLASS_KIT_ABILITIES: AbilityDef[] = [
     effects: [{ kind: "heal", coefficient: 1 }],
     windUpMs: 800,
     recoveryMs: 700,
-    cooldownMs: 12000,
+    cooldownMs: 15600,
     validWhile: "any-ally-missing-health",
   },
   {
@@ -482,7 +482,7 @@ export const REVIEWED_CLASS_KIT_ABILITIES: AbilityDef[] = [
     ],
     windUpMs: 800,
     recoveryMs: 700,
-    cooldownMs: 12000,
+    cooldownMs: 15600,
   },
 
   // Hunter

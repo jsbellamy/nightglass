@@ -24,7 +24,7 @@ const EXPECTED_PRIEST_TIER2_ABILITIES: AbilityDef[] = [
     ],
     windUpMs: 700,
     recoveryMs: 700,
-    cooldownMs: 15_000,
+    cooldownMs: 19_500,
     validWhile: "any-ally-missing-health",
   },
   {
@@ -40,7 +40,7 @@ const EXPECTED_PRIEST_TIER2_ABILITIES: AbilityDef[] = [
     ],
     windUpMs: 1_200,
     recoveryMs: 800,
-    cooldownMs: 22_000,
+    cooldownMs: 28_600,
   },
 ];
 
